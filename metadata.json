@@ -1,0 +1,6 @@
+{
+  "name": "Site Vitrine Vestes & Marque",
+  "description": "Plateforme vitrine interactive pour mettre en valeur votre marque, votre logo et vos 2 modèles de vestes d'exception avec studio 360°, fiches détaillées, lookbook et configurateur.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
