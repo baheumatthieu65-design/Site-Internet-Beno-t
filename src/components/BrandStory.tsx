@@ -1,14 +1,37 @@
 import React from 'react';
 import { BrandConfig } from '../types';
-import { Mountain, Feather, Heart, Sparkles, MapPin, ShieldCheck, Quote } from 'lucide-react';
+import { Mountain, Feather, Heart, Sparkles, MapPin, ShieldCheck, Quote, Edit3 } from 'lucide-react';
+import { getCardClasses } from '../utils/themeStyles';
 
 interface BrandStoryProps {
   brandData: BrandConfig;
+  isAdminLoggedIn?: boolean;
+  onOpenEditorSection?: (tab: 'brand' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
 }
 
-export const BrandStory: React.FC<BrandStoryProps> = ({ brandData }) => {
+export const BrandStory: React.FC<BrandStoryProps> = ({
+  brandData,
+  isAdminLoggedIn,
+  onOpenEditorSection,
+}) => {
+  const cardStyle = getCardClasses(brandData.theme);
+
   return (
-    <section id="origines" className="py-24 bg-[#181e19] text-[#e2d5c3] relative overflow-hidden">
+    <section id="origines" className="py-24 bg-[#181e19] text-[#e2d5c3] relative overflow-hidden group/origines">
+      {/* Admin Quick Edit Trigger */}
+      {isAdminLoggedIn && onOpenEditorSection && (
+        <div className="absolute top-8 right-6 z-30 opacity-90 hover:opacity-100 transition-opacity">
+          <button
+            onClick={() => onOpenEditorSection('brand')}
+            className="flex items-center space-x-1.5 bg-[#1b241d]/90 backdrop-blur-md border border-[#d4af37]/60 px-3 py-1.5 rounded-full shadow-2xl text-xs text-[#d4af37]"
+            title="Modifier l'histoire et le manifeste de la marque"
+          >
+            <Edit3 className="w-3 h-3" />
+            <span>Éditer le Récit</span>
+          </button>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Left Column: Brand Logo & Emblem Display */}
@@ -22,7 +45,7 @@ export const BrandStory: React.FC<BrandStoryProps> = ({ brandData }) => {
               {brandData.storyTitle}
             </h2>
 
-            <div className="relative p-6 rounded-3xl bg-[#202922] border border-[#3b4b3e] shadow-2xl space-y-4">
+            <div className={`relative p-6 rounded-3xl ${cardStyle.card} space-y-4`}>
               <div className="flex items-center space-x-4">
                 {brandData.logoUrl && (
                   <img
@@ -59,7 +82,7 @@ export const BrandStory: React.FC<BrandStoryProps> = ({ brandData }) => {
 
           {/* Right Column: Story Narrative */}
           <div className="lg:col-span-7 space-y-6 text-sm sm:text-base text-[#b8c5ba] leading-relaxed">
-            <div className="p-8 rounded-3xl bg-[#141915]/80 border border-[#2e3b30] shadow-xl space-y-6">
+            <div className={`p-8 rounded-3xl ${cardStyle.card} space-y-6`}>
               <Quote className="w-10 h-10 text-[#d4af37]/30" />
               
               <p className="font-serif text-lg text-[#f3ece0] italic">

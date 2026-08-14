@@ -1,19 +1,29 @@
 import React, { useState } from 'react';
-import { JacketModel } from '../types';
-import { Camera, Eye, Sparkles, ZoomIn } from 'lucide-react';
+import { JacketModel, ThemeConfig } from '../types';
+import { Camera, Eye, Sparkles, ZoomIn, Edit3 } from 'lucide-react';
+import { getButtonClasses, getCardClasses } from '../utils/themeStyles';
 
 interface LookbookGalleryProps {
   jackets: [JacketModel, JacketModel];
   heroBgImage: string;
+  theme?: ThemeConfig;
+  isAdminLoggedIn?: boolean;
+  onOpenEditorSection?: (tab: 'brand' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
   onOpenInquiry: (jacketId: string) => void;
 }
 
 export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
   jackets,
   heroBgImage,
+  theme,
+  isAdminLoggedIn,
+  onOpenEditorSection,
   onOpenInquiry,
 }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const cardStyle = getCardClasses(theme);
+  const primaryBtnClass = getButtonClasses(theme, 'primary');
+  const orderText = theme?.orderButtonText || 'Commander';
 
   const galleryItems = [
     {
@@ -61,7 +71,21 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
   ];
 
   return (
-    <section id="lookbook" className="py-20 bg-[#121613] text-[#e2d5c3]">
+    <section id="lookbook" className="py-20 bg-[#121613] text-[#e2d5c3] relative group/lookbook">
+      {/* Admin Quick Edit Trigger */}
+      {isAdminLoggedIn && onOpenEditorSection && (
+        <div className="absolute top-8 right-6 z-30 opacity-90 hover:opacity-100 transition-opacity">
+          <button
+            onClick={() => onOpenEditorSection('j1')}
+            className="flex items-center space-x-1.5 bg-[#1b241d]/90 backdrop-blur-md border border-[#d4af37]/60 px-3 py-1.5 rounded-full shadow-2xl text-xs text-[#d4af37]"
+            title="Modifier les photos du lookbook et des vestes"
+          >
+            <Edit3 className="w-3 h-3" />
+            <span>Éditer les Photos</span>
+          </button>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -110,9 +134,9 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
                       e.stopPropagation();
                       onOpenInquiry(item.jacketId);
                     }}
-                    className="px-3 py-1 text-[10px] uppercase tracking-wider bg-[#d4af37] text-[#121613] font-bold rounded-lg hover:brightness-110"
+                    className={`px-3.5 py-1.5 text-[10px] uppercase tracking-wider font-bold ${primaryBtnClass}`}
                   >
-                    Commander
+                    {orderText}
                   </button>
                 </div>
               </div>

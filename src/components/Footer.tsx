@@ -1,31 +1,58 @@
 import React from 'react';
 import { BrandConfig } from '../types';
-import { Mountain, Mail, MapPin, Phone, Instagram, Send, Sparkles } from 'lucide-react';
+import { Mountain, Mail, MapPin, Phone, Instagram, Send, Sparkles, Lock, ShieldCheck, Sliders, Edit3 } from 'lucide-react';
+import { getButtonClasses } from '../utils/themeStyles';
 
 interface FooterProps {
   brandData: BrandConfig;
-  onOpenCustomizer: () => void;
+  isAdminLoggedIn: boolean;
+  onOpenLogin: () => void;
+  onOpenCustomizer: (tab?: 'brand' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
   onOpenInquiry: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
   brandData,
+  isAdminLoggedIn,
+  onOpenLogin,
   onOpenCustomizer,
   onOpenInquiry,
 }) => {
+  const theme = brandData.theme;
+  const secondaryBtnClass = getButtonClasses(theme, 'secondary');
+  const workshopText = theme?.workshopButtonText || "Prendre Rendez-vous à l'Atelier";
+
   return (
-    <footer id="contact" className="bg-[#0e120f] text-[#e2d5c3] border-t border-[#2a352c] pt-16 pb-12">
+    <footer id="contact" className="bg-[#0e120f] text-[#e2d5c3] border-t border-[#2a352c] pt-16 pb-12 relative group/footer">
+      {/* Admin Quick Edit Trigger */}
+      {isAdminLoggedIn && (
+        <div className="absolute top-6 right-6 z-30 opacity-90 hover:opacity-100 transition-opacity">
+          <button
+            onClick={() => onOpenCustomizer('brand')}
+            className="flex items-center space-x-1.5 bg-[#1b241d]/90 backdrop-blur-md border border-[#d4af37]/60 px-3 py-1.5 rounded-full shadow-2xl text-xs text-[#d4af37]"
+            title="Modifier les coordonnées et liens de contact"
+          >
+            <Edit3 className="w-3 h-3" />
+            <span>Éditer Contact</span>
+          </button>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-[#222b24]">
           {/* Brand Info */}
           <div className="md:col-span-5 space-y-4">
             <div className="flex items-center space-x-3">
-              {brandData.logoUrl && (
+              {brandData.logoUrl ? (
                 <img
                   src={brandData.logoUrl}
                   alt={brandData.brandName}
                   className="w-12 h-12 rounded-full border border-[#d4af37] object-cover"
                 />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-[#202922] border border-[#d4af37] flex items-center justify-center font-serif font-bold text-[#d4af37]">
+                  MP
+                </div>
               )}
               <div>
                 <span className="font-serif text-2xl font-semibold text-[#f3ece0] block">
@@ -111,7 +138,7 @@ export const Footer: React.FC<FooterProps> = ({
               />
               <button
                 type="submit"
-                className="px-4 py-2.5 bg-[#d4af37] text-[#121613] text-xs uppercase font-bold rounded-xl hover:brightness-110 flex items-center justify-center"
+                className="px-4 py-2.5 bg-[#d4af37] text-[#121613] text-xs uppercase font-bold rounded-xl hover:brightness-110 flex items-center justify-center cursor-pointer"
               >
                 <Send className="w-3.5 h-3.5" />
               </button>
@@ -119,25 +146,44 @@ export const Footer: React.FC<FooterProps> = ({
 
             <div className="pt-2">
               <button
+                id="footer-workshop-btn"
                 onClick={onOpenInquiry}
-                className="w-full py-2.5 rounded-xl bg-[#222d25] border border-[#3e5041] text-[#e2d5c3] text-xs uppercase tracking-wider font-semibold hover:border-[#d4af37] transition-all flex items-center justify-center space-x-2"
+                className={`w-full py-3 px-4 text-xs uppercase tracking-wider font-semibold flex items-center justify-center space-x-2 ${secondaryBtnClass}`}
               >
                 <Sparkles className="w-3.5 h-3.5 text-[#d4af37]" />
-                <span>Prendre Rendez-vous à l'Atelier</span>
+                <span>{workshopText}</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Bottom Copyright */}
+        {/* Bottom Copyright & Admin Access */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#7a8a7c] space-y-4 sm:space-y-0">
           <div>
             © {new Date().getFullYear()} {brandData.brandName}. Fait avec passion dans les Pyrénées.
           </div>
-          <div className="flex items-center space-x-6">
-            <button onClick={onOpenCustomizer} className="hover:text-[#d4af37] transition-colors underline">
-              Éditeur de Site & Contenu
-            </button>
+          <div className="flex items-center space-x-4 sm:space-x-6">
+            {isAdminLoggedIn ? (
+              <div className="flex items-center space-x-3">
+                <button
+                  id="footer-admin-edit-btn"
+                  onClick={() => onOpenCustomizer('theme')}
+                  className="text-[#d4af37] hover:text-[#f3ece0] transition-colors flex items-center space-x-1.5 font-medium underline cursor-pointer"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Personnaliser le site</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                id="footer-admin-login-btn"
+                onClick={onOpenLogin}
+                className="hover:text-[#d4af37] transition-colors flex items-center space-x-1 text-[#8f9f91] cursor-pointer"
+              >
+                <Lock className="w-3 h-3 text-[#b89f74]" />
+                <span>Accès Espace Administrateur</span>
+              </button>
+            )}
             <span className="text-[#354337]">|</span>
             <span>Design Champêtre Chic & Haute Montagne</span>
           </div>

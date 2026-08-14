@@ -1,19 +1,30 @@
 import React from 'react';
-import { JacketModel } from '../types';
-import { Mountain, CloudRain, Shield, Sparkles, Scale, ArrowRight } from 'lucide-react';
+import { JacketModel, ThemeConfig } from '../types';
+import { Mountain, CloudRain, Shield, Sparkles, Scale, ArrowRight, Edit3 } from 'lucide-react';
+import { getButtonClasses, getCardClasses } from '../utils/themeStyles';
 
 interface JacketComparisonProps {
   jackets: [JacketModel, JacketModel];
+  theme?: ThemeConfig;
+  isAdminLoggedIn?: boolean;
+  onOpenEditorSection?: (tab: 'brand' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
   onSelectJacket: (id: string) => void;
   onOpenInquiry: (id: string) => void;
 }
 
 export const JacketComparison: React.FC<JacketComparisonProps> = ({
   jackets,
+  theme,
+  isAdminLoggedIn,
+  onOpenEditorSection,
   onSelectJacket,
   onOpenInquiry,
 }) => {
   const [j1, j2] = jackets;
+  const cardStyle = getCardClasses(theme);
+  const primaryBtnClass = getButtonClasses(theme, 'primary');
+  const secondaryBtnClass = getButtonClasses(theme, 'secondary');
+  const orderText = theme?.orderButtonText || 'Commander';
 
   const comparisonRows = [
     { label: 'Style principal', val1: j1.category, val2: j2.category },
@@ -28,7 +39,21 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
   ];
 
   return (
-    <section id="comparatif" className="py-20 bg-[#121613] text-[#e2d5c3] relative">
+    <section id="comparatif" className="py-20 bg-[#121613] text-[#e2d5c3] relative group/comparatif">
+      {/* Admin Quick Edit Trigger */}
+      {isAdminLoggedIn && onOpenEditorSection && (
+        <div className="absolute top-8 right-6 z-30 opacity-90 hover:opacity-100 transition-opacity">
+          <button
+            onClick={() => onOpenEditorSection('j1')}
+            className="flex items-center space-x-1.5 bg-[#1b241d]/90 backdrop-blur-md border border-[#d4af37]/60 px-3 py-1.5 rounded-full shadow-2xl text-xs text-[#d4af37]"
+            title="Modifier les caractéristiques des vestes"
+          >
+            <Edit3 className="w-3 h-3" />
+            <span>Éditer les specs</span>
+          </button>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -53,54 +78,66 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
                   Caractéristiques
                 </th>
                 {/* Jacket 1 Column Header */}
-                <th className="py-6 px-6 w-1/3 bg-[#18201a] rounded-t-2xl border-t border-x border-[#39483c] text-center">
+                <th className={`py-6 px-6 w-1/3 text-center ${cardStyle.card} rounded-t-2xl`}>
                   <span className="text-[10px] uppercase tracking-widest text-[#d4af37] font-serif font-bold block">
                     Modèle N°1
                   </span>
                   <h3 className="font-serif text-xl font-bold text-[#f3ece0] mt-1">
                     {j1.name}
                   </h3>
-                  <p className="text-xs text-[#a3b0a2] mt-0.5">{j1.price} {j1.currency}</p>
-                  <button
-                    onClick={() => onOpenInquiry(j1.id)}
-                    className="mt-3 px-4 py-1.5 text-xs uppercase tracking-wider bg-[#d4af37] text-[#121613] font-bold rounded-lg hover:brightness-110 transition-all"
-                  >
-                    Choisir la N°1
-                  </button>
+                  <span className="text-sm text-[#c2a26d] font-serif font-semibold block mt-1">
+                    {j1.price} {j1.currency}
+                  </span>
                 </th>
-
                 {/* Jacket 2 Column Header */}
-                <th className="py-6 px-6 w-1/3 bg-[#1d261f] rounded-t-2xl border-t border-x border-[#39483c] text-center">
+                <th className={`py-6 px-6 w-1/3 text-center ${cardStyle.card} rounded-t-2xl`}>
                   <span className="text-[10px] uppercase tracking-widest text-[#d4af37] font-serif font-bold block">
                     Modèle N°2
                   </span>
                   <h3 className="font-serif text-xl font-bold text-[#f3ece0] mt-1">
                     {j2.name}
                   </h3>
-                  <p className="text-xs text-[#a3b0a2] mt-0.5">{j2.price} {j2.currency}</p>
-                  <button
-                    onClick={() => onOpenInquiry(j2.id)}
-                    className="mt-3 px-4 py-1.5 text-xs uppercase tracking-wider bg-[#b89f74] text-[#121613] font-bold rounded-lg hover:brightness-110 transition-all"
-                  >
-                    Choisir la N°2
-                  </button>
+                  <span className="text-sm text-[#c2a26d] font-serif font-semibold block mt-1">
+                    {j2.price} {j2.currency}
+                  </span>
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#273229] text-xs sm:text-sm">
+            <tbody className="divide-y divide-[#263128]">
               {comparisonRows.map((row, idx) => (
-                <tr key={idx} className="hover:bg-[#181f19] transition-colors">
-                  <td className="py-4 px-4 font-semibold text-[#c4ceb8] uppercase tracking-wider text-[11px]">
+                <tr key={idx} className="hover:bg-[#161c17] transition-colors">
+                  <td className="py-4 px-4 text-xs uppercase tracking-wider font-semibold text-[#a3b1a5]">
                     {row.label}
                   </td>
-                  <td className="py-4 px-6 text-center bg-[#18201a]/50 text-[#e2d5c3] border-x border-[#273229]">
+                  <td className="py-4 px-6 text-sm text-[#e2d5c3] text-center bg-[#171e19]/40">
                     {row.val1}
                   </td>
-                  <td className="py-4 px-6 text-center bg-[#1d261f]/50 text-[#e2d5c3] border-x border-[#273229]">
+                  <td className="py-4 px-6 text-sm text-[#e2d5c3] text-center bg-[#1b221d]/40">
                     {row.val2}
                   </td>
                 </tr>
               ))}
+              <tr>
+                <td className="py-6 px-4"></td>
+                <td className="py-6 px-6 text-center bg-[#171e19]/60 rounded-b-2xl">
+                  <button
+                    onClick={() => onOpenInquiry(j1.id)}
+                    className={`w-full py-3 px-4 text-xs uppercase tracking-widest flex items-center justify-center space-x-2 ${primaryBtnClass}`}
+                  >
+                    <span>{orderText} N°1</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </td>
+                <td className="py-6 px-6 text-center bg-[#1b221d]/60 rounded-b-2xl">
+                  <button
+                    onClick={() => onOpenInquiry(j2.id)}
+                    className={`w-full py-3 px-4 text-xs uppercase tracking-widest flex items-center justify-center space-x-2 ${primaryBtnClass}`}
+                  >
+                    <span>{orderText} N°2</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>

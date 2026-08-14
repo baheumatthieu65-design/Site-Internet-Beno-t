@@ -1,4 +1,5 @@
 import { BrandConfig } from '../types';
+import { defaultThemeConfig } from '../utils/themeStyles';
 
 import pyreneesHeroImg from '../assets/images/pyrenees_landscape_hero_1785338591988.jpg';
 import pyreneesJacket1Img from '../assets/images/pyrenees_jacket_1_1785338603269.jpg';
@@ -158,5 +159,6 @@ export const initialBrandData: BrandConfig = {
         }
       ]
     }
-  ]
+  ],
+  theme: defaultThemeConfig
 };
