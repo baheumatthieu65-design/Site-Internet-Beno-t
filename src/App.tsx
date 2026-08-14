@@ -9,10 +9,11 @@ import { BrandStory } from './components/BrandStory';
 import { LookbookGallery } from './components/LookbookGallery';
 import { InquiryModal } from './components/InquiryModal';
 import { BrandCustomizerModal } from './components/BrandCustomizerModal';
+import { OrdersModal } from './components/OrdersModal';
 import { AdminLoginModal } from './components/AdminLoginModal';
 import { AdminBar } from './components/AdminBar';
 import { Footer } from './components/Footer';
-import { getInitialAdminSession, setAdminSession, getStoredCredentials } from './utils/auth';
+import { verifyAdminSessionServer, logoutAdminServer, getStoredCredentials } from './utils/auth';
 import { defaultThemeConfig } from './utils/themeStyles';
 
 export default function App() {
@@ -43,12 +44,20 @@ export default function App() {
   const [inquirySize, setInquirySize] = useState<string | undefined>(undefined);
 
   // Admin & Customizer states
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => getInitialAdminSession());
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(false);
   const [adminUsername, setAdminUsername] = useState<string>(() => getStoredCredentials().username);
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState<boolean>(false);
   const [isCustomizerOpen, setIsCustomizerOpen] = useState<boolean>(false);
+  const [isOrdersOpen, setIsOrdersOpen] = useState<boolean>(false);
   const [customizerTab, setCustomizerTab] = useState<'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security' | 'github'>('theme');
   const [activeSection, setActiveSection] = useState('collection');
+
+  // Verify server session on mount
+  useEffect(() => {
+    verifyAdminSessionServer().then((isAuth) => {
+      setIsAdminLoggedIn(isAuth);
+    });
+  }, []);
 
   // Save changes to localStorage
   const handleSaveBrandData = (newData: BrandConfig) => {
@@ -88,15 +97,24 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    setAdminSession(false);
+    logoutAdminServer();
     setIsAdminLoggedIn(false);
     setIsCustomizerOpen(false);
+    setIsOrdersOpen(false);
   };
 
   const handleOpenEditor = (tab: 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security' | 'github' = 'theme') => {
     if (isAdminLoggedIn) {
       setCustomizerTab(tab);
       setIsCustomizerOpen(true);
+    } else {
+      setIsAdminLoginOpen(true);
+    }
+  };
+
+  const handleOpenOrders = () => {
+    if (isAdminLoggedIn) {
+      setIsOrdersOpen(true);
     } else {
       setIsAdminLoginOpen(true);
     }
@@ -398,6 +416,7 @@ export default function App() {
           onToggleDragReorderMode={() => setIsDragReorderMode(!isDragReorderMode)}
           onQuickChangeButtonStyle={handleQuickChangeButtonStyle}
           onOpenEditor={handleOpenEditor}
+          onOpenOrders={handleOpenOrders}
           onOpenSecurity={handleOpenSecurity}
           onLogout={handleLogout}
         />
@@ -434,6 +453,13 @@ export default function App() {
         isOpen={isAdminLoginOpen}
         onClose={() => setIsAdminLoginOpen(false)}
         onLoginSuccess={handleLoginSuccess}
+      />
+
+      {/* Standalone Orders & Reservations Reception Modal */}
+      <OrdersModal
+        isOpen={isOrdersOpen}
+        onClose={() => setIsOrdersOpen(false)}
+        ordersEmail={brandData.ordersEmail}
       />
 
       {/* Brand & Content Customizer Modal for Admin */}

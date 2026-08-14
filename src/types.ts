@@ -46,6 +46,12 @@ export interface Hotspot {
   category: 'fabric' | 'hardware' | 'cut' | 'utility';
 }
 
+export interface ComparisonCriterion {
+  id: string;
+  label: string;
+  key: string;
+}
+
 export interface JacketModel {
   id: string;
   name: string;
@@ -70,6 +76,7 @@ export interface JacketModel {
     origin: string;
     care: string;
   };
+  customSpecs?: Record<string, string>;
   hotspots: Hotspot[];
 }
 
@@ -100,13 +107,21 @@ export interface ThemeConfig {
   containerWidth?: ContainerWidthId;
   productBlocksOrder?: ProductBlockId[];
   formFieldsOrder?: FormFieldId[];
-  // Custom button labels
+  // Custom button & tab labels
   orderButtonText: string;
   discoverButtonText: string;
   inquiryButtonText: string;
   workshopButtonText: string;
   heroBadgeText: string;
   heroTitlePrefix: string;
+  // Custom Section & Tab Navigation Labels
+  collectionTabLabel?: string;
+  comparatifTabLabel?: string;
+  originesTabLabel?: string;
+  lookbookTabLabel?: string;
+  contactTabLabel?: string;
+  // Custom Comparison Table Criteria
+  comparisonCriteria?: ComparisonCriterion[];
 }
 
 export interface BrandConfig {

@@ -10,6 +10,7 @@ import {
   ShowcaseLayoutId,
   SectionId,
   ThemeConfig,
+  ComparisonCriterion,
   ProductBlockId,
   TextAlignId,
   ButtonAlignId,
@@ -60,7 +61,8 @@ import {
   MapPin,
   Ruler,
   SlidersHorizontal,
-  MousePointer
+  MousePointer,
+  Scale
 } from 'lucide-react';
 import {
   buttonModelPresets,
@@ -71,7 +73,7 @@ import {
   getButtonClasses,
   getCardClasses,
 } from '../utils/themeStyles';
-import { getStoredCredentials, saveAdminCredentials, AdminCredentials } from '../utils/auth';
+import { getStoredCredentials, saveAdminCredentials, resetPasswordServer, maskEmail, AdminCredentials } from '../utils/auth';
 
 interface BrandCustomizerModalProps {
   isOpen: boolean;
@@ -79,7 +81,7 @@ interface BrandCustomizerModalProps {
   brandData: BrandConfig;
   onSave: (newData: BrandConfig) => void;
   onReset: () => void;
-  initialTab?: 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security' | 'github';
+  initialTab?: 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github';
 }
 
 const productBlockMeta: Record<ProductBlockId, { name: string; icon: string; desc: string }> = {
@@ -148,15 +150,15 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     return copy;
   });
 
-  const getInitialTab = (): 'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'github' => {
+  const getInitialTab = (): 'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' => {
     if (initialTab === 'j1' || initialTab === 'j2' || initialTab === 'articles') return 'articles';
-    if (initialTab === 'brand' || initialTab === 'theme' || initialTab === 'layouts' || initialTab === 'labels' || initialTab === 'security' || initialTab === 'github') {
+    if (initialTab === 'brand' || initialTab === 'theme' || initialTab === 'layouts' || initialTab === 'labels' || initialTab === 'security' || initialTab === 'orders' || initialTab === 'github') {
       return initialTab;
     }
     return 'theme';
   };
 
-  const [activeTab, setActiveTab] = useState<'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'github'>(
+  const [activeTab, setActiveTab] = useState<'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github'>(
     getInitialTab()
   );
 
@@ -169,7 +171,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   // Security Credentials state
   const [adminUsername, setAdminUsername] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
-  const [admin2FaPin, setAdmin2FaPin] = useState('0709');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -186,8 +187,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   useEffect(() => {
     const creds = getStoredCredentials();
     setAdminUsername(creds.username);
-    setAdminEmail(creds.email || 'baheu.matthieu65@gmail.com');
-    setAdmin2FaPin(creds.twoFactorPin || '0709');
+    setAdminEmail(creds.email && !creds.email.includes('baheu.matthieu65') ? creds.email : 'contact@maisondespyrenees.fr');
   }, [isOpen]);
 
   useEffect(() => {
@@ -216,6 +216,52 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
         ...fields,
       },
     }));
+  };
+
+  const DEFAULT_CRITERIA_LIST: ComparisonCriterion[] = [
+    { id: 'crit_category', label: 'Style principal', key: 'category' },
+    { id: 'crit_fabric', label: 'Tissu signature', key: 'fabric' },
+    { id: 'crit_warmth', label: 'Indice de Chaleur', key: 'warmth' },
+    { id: 'crit_water', label: 'Résistance à la pluie', key: 'water' },
+    { id: 'crit_weight', label: 'Poids de la veste', key: 'weight' },
+    { id: 'crit_fit', label: 'Coupe & Silhouette', key: 'fit' },
+    { id: 'crit_care', label: 'Entretien', key: 'care' },
+    { id: 'crit_price', label: 'Prix public', key: 'price' },
+  ];
+
+  const [newCriterionLabel, setNewCriterionLabel] = useState('');
+
+  const activeCriteria = currentTheme.comparisonCriteria && currentTheme.comparisonCriteria.length > 0
+    ? currentTheme.comparisonCriteria
+    : DEFAULT_CRITERIA_LIST;
+
+  const handleAddCriterion = (label: string) => {
+    if (!label.trim()) return;
+    const newKey = `custom_${Date.now()}`;
+    const newCrit: ComparisonCriterion = {
+      id: `crit_${Date.now()}`,
+      label: label.trim(),
+      key: newKey,
+    };
+    updateTheme({
+      comparisonCriteria: [...activeCriteria, newCrit],
+    });
+  };
+
+  const handleUpdateCriterionLabel = (id: string, newLabel: string) => {
+    const updated = activeCriteria.map((c) =>
+      c.id === id ? { ...c, label: newLabel } : c
+    );
+    updateTheme({ comparisonCriteria: updated });
+  };
+
+  const handleDeleteCriterion = (id: string) => {
+    if (activeCriteria.length <= 1) {
+      alert('Le tableau comparatif doit conserver au moins un critère.');
+      return;
+    }
+    const updated = activeCriteria.filter((c) => c.id !== id);
+    updateTheme({ comparisonCriteria: updated });
   };
 
   const handleChangeBrand = (field: keyof BrandConfig, value: any) => {
@@ -382,6 +428,21 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
         jackets[selectedJacketIndex] = {
           ...curr,
           sizes: updatedSizes,
+        };
+      }
+      return { ...prev, jackets };
+    });
+  };
+
+  const handleRemoveCustomSizeTerm = (sizeTerm: string) => {
+    setCustomSizesList((prev) => prev.filter((s) => s !== sizeTerm));
+    setFormData((prev) => {
+      const jackets = [...prev.jackets];
+      const curr = jackets[selectedJacketIndex];
+      if (curr && curr.sizes) {
+        jackets[selectedJacketIndex] = {
+          ...curr,
+          sizes: curr.sizes.filter((s) => s !== sizeTerm),
         };
       }
       return { ...prev, jackets };
@@ -589,57 +650,40 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     onClose();
   };
 
-  const handleUpdateCredentials = (e: React.FormEvent) => {
+  const handleUpdateCredentials = async (e: React.FormEvent) => {
     e.preventDefault();
     setSecurityMessage(null);
 
-    const stored = getStoredCredentials();
-    if (currentPassword && currentPassword !== stored.passwordHash) {
-      setSecurityMessage({
-        type: 'error',
-        text: 'Le mot de passe actuel saisi est incorrect.',
-      });
-      return;
-    }
+    if (newPassword) {
+      if (newPassword.length < 4) {
+        setSecurityMessage({
+          type: 'error',
+          text: 'Le nouveau mot de passe doit contenir au moins 4 caractères.',
+        });
+        return;
+      }
 
-    if (newPassword && !currentPassword) {
-      setSecurityMessage({
-        type: 'error',
-        text: 'Veuillez saisir votre mot de passe actuel pour le modifier.',
-      });
-      return;
-    }
+      if (newPassword !== confirmPassword) {
+        setSecurityMessage({
+          type: 'error',
+          text: 'La confirmation ne correspond pas au nouveau mot de passe.',
+        });
+        return;
+      }
 
-    if (newPassword && newPassword.length < 4) {
-      setSecurityMessage({
-        type: 'error',
-        text: 'Le nouveau mot de passe doit contenir au moins 4 caractères.',
-      });
-      return;
-    }
-
-    if (newPassword && newPassword !== confirmPassword) {
-      setSecurityMessage({
-        type: 'error',
-        text: 'La confirmation ne correspond pas au nouveau mot de passe.',
-      });
-      return;
-    }
-
-    const cleanPin = admin2FaPin.trim().replace(/\D/g, '');
-    if (cleanPin.length !== 4) {
-      setSecurityMessage({
-        type: 'error',
-        text: 'Le code de sécurité 2FA doit comporter exactement 4 chiffres (ex: 0709).',
-      });
-      return;
+      const res = await resetPasswordServer(currentPassword, newPassword);
+      if (!res.success) {
+        setSecurityMessage({
+          type: 'error',
+          text: res.message || 'Erreur lors de la mise à jour du mot de passe.',
+        });
+        return;
+      }
     }
 
     saveAdminCredentials({
       username: adminUsername.trim() || 'admin',
-      email: adminEmail.trim() || 'baheu.matthieu65@gmail.com',
-      passwordHash: newPassword || stored.passwordHash,
-      twoFactorPin: cleanPin,
+      email: adminEmail.trim() || 'contact@maisondespyrenees.fr',
       lastUpdated: new Date().toISOString(),
     });
 
@@ -648,7 +692,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     setConfirmPassword('');
     setSecurityMessage({
       type: 'success',
-      text: 'Identifiants, code 2FA et email administrateur enregistrés avec succès !',
+      text: 'Informations administrateur enregistrées avec succès !',
     });
   };
 
@@ -1596,26 +1640,46 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                     <div className="p-3.5 rounded-2xl bg-[#121613] border border-[#2e3b30] space-y-3">
                       {/* Size Checkbox Grid */}
                       <div className="flex flex-wrap gap-2">
-                        {customSizesList.map((sz) => {
+                        {Array.from(new Set([...customSizesList, ...(currentJacket.sizes || [])])).map((sz) => {
                           const isChecked = currentJacket.sizes?.includes(sz);
                           return (
-                            <label
+                            <div
                               key={sz}
-                              onClick={() => handleToggleSize(sz)}
-                              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer select-none flex items-center space-x-2 ${
+                              className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center space-x-2 ${
                                 isChecked
                                   ? 'bg-[#d4af37] text-[#121613] border-[#d4af37] shadow-md font-bold'
                                   : 'bg-[#1e2720] text-[#a3b1a5] border-[#374739] hover:border-[#a3b1a5]'
                               }`}
                             >
-                              <input
-                                type="checkbox"
-                                checked={isChecked}
-                                onChange={() => {}} // Handled by container onClick
-                                className="w-3.5 h-3.5 rounded text-[#d4af37] focus:ring-0 cursor-pointer pointer-events-none"
-                              />
-                              <span>{sz}</span>
-                            </label>
+                              <button
+                                type="button"
+                                onClick={() => handleToggleSize(sz)}
+                                className="flex items-center space-x-2 cursor-pointer focus:outline-none"
+                              >
+                                <span
+                                  className={`w-3.5 h-3.5 rounded flex items-center justify-center border text-[9px] font-bold ${
+                                    isChecked
+                                      ? 'bg-[#121613] text-[#d4af37] border-[#121613]'
+                                      : 'border-[#4a5c4d] bg-[#121613]'
+                                  }`}
+                                >
+                                  {isChecked && '✓'}
+                                </span>
+                                <span>{sz}</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoveCustomSizeTerm(sz);
+                                }}
+                                className="text-red-400/70 hover:text-red-300 p-0.5 rounded hover:bg-red-950/60 transition-colors cursor-pointer"
+                                title={`Supprimer définitivement la taille "${sz}"`}
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           );
                         })}
                       </div>
@@ -1808,6 +1872,40 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                           className="w-full bg-[#121613] border border-[#313f33] text-xs text-white px-3 py-1.5 rounded-lg"
                         />
                       </div>
+
+                      {/* Custom Added Comparison Criteria */}
+                      {activeCriteria
+                        .filter((c) => !['category', 'fabric', 'warmth', 'water', 'weight', 'fit', 'care', 'price'].includes(c.key))
+                        .map((crit) => (
+                          <div key={crit.id}>
+                            <span className="text-[11px] text-[#d4af37] font-semibold block mb-1">
+                              {crit.label} :
+                            </span>
+                            <input
+                              type="text"
+                              value={currentJacket.customSpecs?.[crit.key] || ''}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setFormData((prev) => {
+                                  const jackets = [...prev.jackets];
+                                  const curr = jackets[selectedJacketIndex];
+                                  if (curr) {
+                                    jackets[selectedJacketIndex] = {
+                                      ...curr,
+                                      customSpecs: {
+                                        ...(curr.customSpecs || {}),
+                                        [crit.key]: val,
+                                      },
+                                    };
+                                  }
+                                  return { ...prev, jackets };
+                                });
+                              }}
+                              placeholder={`Valeur pour ${crit.label}...`}
+                              className="w-full bg-[#121613] border border-[#d4af37]/40 text-xs text-white px-3 py-1.5 rounded-lg focus:border-[#d4af37]"
+                            />
+                          </div>
+                        ))}
                     </div>
                   </div>
                 </div>
@@ -1816,97 +1914,259 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           )}
 
           {/* ========================================================= */}
-          {/* TAB 4: CUSTOM LABELS & BUTTON TEXTS                       */}
+          {/* TAB 4: CUSTOM LABELS, TAB TITLES & COMPARISON CRITERIA    */}
           {/* ========================================================= */}
           {activeTab === 'labels' && (
-            <div className="space-y-6 animate-fadeIn">
-              <div className="p-4 rounded-2xl bg-[#1a221c] border border-[#3c4c3f]">
-                <h4 className="font-serif text-sm font-semibold text-[#d4af37] flex items-center space-x-2">
-                  <Type className="w-4 h-4" />
-                  <span>Personnalisation des Textes & Libellés des Boutons</span>
-                </h4>
-                <p className="text-xs text-[#a3b1a5] mt-1">
-                  Ajustez les textes d'appel à l'action affichés dans l'ensemble de votre boutique.
+            <div className="space-y-8 animate-fadeIn">
+              {/* SECTION: TAB NAVIGATION TITLES */}
+              <div className="p-5 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
+                <div className="flex items-center space-x-2 text-[#d4af37]">
+                  <SlidersHorizontal className="w-5 h-5" />
+                  <h4 className="font-serif text-base font-bold text-[#f3ece0]">
+                    Titres & Libellés des Onglets du Site
+                  </h4>
+                </div>
+                <p className="text-xs text-[#a3b1a5]">
+                  Personnalisez les intitulés affichés dans le menu de navigation haut et dans les en-têtes de sections.
                 </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-1.5 font-medium">
+                      Onglet Modèles & Collection :
+                    </label>
+                    <input
+                      type="text"
+                      value={currentTheme.collectionTabLabel || 'Les 2 Vestes'}
+                      onChange={(e) => updateTheme({ collectionTabLabel: e.target.value })}
+                      placeholder="Ex: Les 2 Vestes"
+                      className="w-full bg-[#121613] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-1.5 font-medium">
+                      Onglet Tableau Comparatif :
+                    </label>
+                    <input
+                      type="text"
+                      value={currentTheme.comparatifTabLabel || 'Tableau Comparatif des Vestes'}
+                      onChange={(e) => updateTheme({ comparatifTabLabel: e.target.value })}
+                      placeholder="Ex: Tableau Comparatif des Vestes"
+                      className="w-full bg-[#121613] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-1.5 font-medium">
+                      Onglet Histoire & Origines :
+                    </label>
+                    <input
+                      type="text"
+                      value={currentTheme.originesTabLabel || 'L’Esprit Pyrénées'}
+                      onChange={(e) => updateTheme({ originesTabLabel: e.target.value })}
+                      placeholder="Ex: L’Esprit Pyrénées"
+                      className="w-full bg-[#121613] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-1.5 font-medium">
+                      Onglet Lookbook / Galerie :
+                    </label>
+                    <input
+                      type="text"
+                      value={currentTheme.lookbookTabLabel || 'Lookbook'}
+                      onChange={(e) => updateTheme({ lookbookTabLabel: e.target.value })}
+                      placeholder="Ex: Lookbook"
+                      className="w-full bg-[#121613] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-1.5 font-medium">
+                      Onglet Contact & Atelier :
+                    </label>
+                    <input
+                      type="text"
+                      value={currentTheme.contactTabLabel || 'Contact & Atelier'}
+                      onChange={(e) => updateTheme({ contactTabLabel: e.target.value })}
+                      placeholder="Ex: Contact & Atelier"
+                      className="w-full bg-[#121613] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">
-                    Texte Bouton Commande Rapide :
-                  </label>
-                  <input
-                    type="text"
-                    value={currentTheme.orderButtonText || 'Commander'}
-                    onChange={(e) => updateTheme({ orderButtonText: e.target.value })}
-                    className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                    placeholder="Ex: Commander, Réserver..."
-                  />
+              {/* SECTION: COMPARISON TABLE CRITERIA MANAGER */}
+              <div className="p-5 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2 text-[#d4af37]">
+                    <Scale className="w-5 h-5" />
+                    <h4 className="font-serif text-base font-bold text-[#f3ece0]">
+                      Gestion des Critères Techniques du Tableau Comparatif
+                    </h4>
+                  </div>
+                  <span className="text-xs text-[#a3b1a5]">
+                    Total : <strong className="text-[#d4af37]">{activeCriteria.length}</strong> critères
+                  </span>
+                </div>
+                <p className="text-xs text-[#a3b1a5]">
+                  Ajoutez, modifiez le nom ou supprimez les critères techniques affichés dans les lignes du tableau comparatif des vestes.
+                </p>
+
+                {/* Criteria Items List */}
+                <div className="space-y-2.5">
+                  {activeCriteria.map((crit, idx) => (
+                    <div
+                      key={crit.id}
+                      className="flex items-center space-x-3 p-3 rounded-xl bg-[#121613] border border-[#2e3b30]"
+                    >
+                      <span className="w-6 text-center text-xs font-mono text-[#d4af37] font-bold">#{idx + 1}</span>
+                      <input
+                        type="text"
+                        value={crit.label}
+                        onChange={(e) => handleUpdateCriterionLabel(crit.id, e.target.value)}
+                        className="flex-1 bg-[#1a221c] border border-[#38483b] text-xs text-white px-3 py-1.5 rounded-lg outline-none focus:border-[#d4af37]"
+                        placeholder="Intitulé du critère..."
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCriterion(crit.id)}
+                        className="p-1.5 rounded-lg bg-red-950/40 text-red-300 hover:bg-red-900/60 hover:text-white text-xs cursor-pointer transition-colors flex items-center space-x-1"
+                        title="Supprimer ce critère"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span className="hidden sm:inline">Supprimer</span>
+                      </button>
+                    </div>
+                  ))}
                 </div>
 
-                <div>
-                  <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">
-                    Texte Bouton Découverte :
-                  </label>
+                {/* Add New Criterion Input */}
+                <div className="flex items-center space-x-2 pt-2 border-t border-[#2a362c]">
                   <input
                     type="text"
-                    value={currentTheme.discoverButtonText || 'Découvrir'}
-                    onChange={(e) => updateTheme({ discoverButtonText: e.target.value })}
-                    className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                    placeholder="Ex: Découvrir, Explorer..."
+                    value={newCriterionLabel}
+                    onChange={(e) => setNewCriterionLabel(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (newCriterionLabel.trim()) {
+                          handleAddCriterion(newCriterionLabel.trim());
+                          setNewCriterionLabel('');
+                        }
+                      }
+                    }}
+                    placeholder="Nouveau critère technique (ex: Doublure intérieure, Garantie, Respirabilité...)"
+                    className="flex-1 bg-[#121613] border border-[#38483b] text-xs text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
                   />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (newCriterionLabel.trim()) {
+                        handleAddCriterion(newCriterionLabel.trim());
+                        setNewCriterionLabel('');
+                      }
+                    }}
+                    className="px-4 py-2.5 rounded-xl bg-[#28362b] border border-[#d4af37] text-[#d4af37] hover:bg-[#344638] text-xs font-bold uppercase tracking-wider flex items-center space-x-1.5 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Ajouter Critère</span>
+                  </button>
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">
-                    Texte Bouton Sur-Mesure :
-                  </label>
-                  <input
-                    type="text"
-                    value={currentTheme.inquiryButtonText || 'Commander sur Mesure'}
-                    onChange={(e) => updateTheme({ inquiryButtonText: e.target.value })}
-                    className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                    placeholder="Ex: Commander sur Mesure..."
-                  />
+              {/* BUTTON & BADGE LABELS */}
+              <div className="p-5 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
+                <div className="flex items-center space-x-2 text-[#d4af37]">
+                  <Type className="w-5 h-5" />
+                  <h4 className="font-serif text-base font-bold text-[#f3ece0]">
+                    Personnalisation des Textes & Libellés des Boutons
+                  </h4>
                 </div>
+                <p className="text-xs text-[#a3b1a5]">
+                  Ajustez les textes d'appel à l'action affichés dans l'ensemble de votre boutique.
+                </p>
 
-                <div>
-                  <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">
-                    Texte Bouton Atelier (Pied de Page) :
-                  </label>
-                  <input
-                    type="text"
-                    value={currentTheme.workshopButtonText || "Prendre Rendez-vous à l'Atelier"}
-                    onChange={(e) => updateTheme({ workshopButtonText: e.target.value })}
-                    className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                    placeholder="Ex: Prendre Rendez-vous à l'Atelier..."
-                  />
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">
+                      Texte Bouton Commande Rapide :
+                    </label>
+                    <input
+                      type="text"
+                      value={currentTheme.orderButtonText || 'Commander'}
+                      onChange={(e) => updateTheme({ orderButtonText: e.target.value })}
+                      className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                      placeholder="Ex: Commander, Réserver..."
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">
-                    Badge de Sous-Titre Accueil (Haut de page) :
-                  </label>
-                  <input
-                    type="text"
-                    value={currentTheme.heroBadgeText || 'Édition Limitée des Pyrénées'}
-                    onChange={(e) => updateTheme({ heroBadgeText: e.target.value })}
-                    className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                    placeholder="Ex: Édition Limitée des Pyrénées..."
-                  />
-                </div>
+                  <div>
+                    <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">
+                      Texte Bouton Découverte :
+                    </label>
+                    <input
+                      type="text"
+                      value={currentTheme.discoverButtonText || 'Découvrir'}
+                      onChange={(e) => updateTheme({ discoverButtonText: e.target.value })}
+                      className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                      placeholder="Ex: Découvrir, Explorer..."
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">
-                    Surtitre d'Accueil (Italique au-dessus du nom) :
-                  </label>
-                  <input
-                    type="text"
-                    value={currentTheme.heroTitlePrefix || 'Thème Champêtre & Élégance'}
-                    onChange={(e) => updateTheme({ heroTitlePrefix: e.target.value })}
-                    className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                    placeholder="Ex: Thème Champêtre & Élégance..."
-                  />
+                  <div>
+                    <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">
+                      Texte Bouton Sur-Mesure :
+                    </label>
+                    <input
+                      type="text"
+                      value={currentTheme.inquiryButtonText || 'Commander sur Mesure'}
+                      onChange={(e) => updateTheme({ inquiryButtonText: e.target.value })}
+                      className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                      placeholder="Ex: Commander sur Mesure..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">
+                      Texte Bouton Atelier (Pied de Page) :
+                    </label>
+                    <input
+                      type="text"
+                      value={currentTheme.workshopButtonText || "Prendre Rendez-vous à l'Atelier"}
+                      onChange={(e) => updateTheme({ workshopButtonText: e.target.value })}
+                      className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                      placeholder="Ex: Prendre Rendez-vous à l'Atelier..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">
+                      Badge de Sous-Titre Accueil (Haut de page) :
+                    </label>
+                    <input
+                      type="text"
+                      value={currentTheme.heroBadgeText || 'Édition Limitée des Pyrénées'}
+                      onChange={(e) => updateTheme({ heroBadgeText: e.target.value })}
+                      className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                      placeholder="Ex: Édition Limitée des Pyrénées..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">
+                      Surtitre d'Accueil (Italique au-dessus du nom) :
+                    </label>
+                    <input
+                      type="text"
+                      value={currentTheme.heroTitlePrefix || 'Thème Champêtre & Élégance'}
+                      onChange={(e) => updateTheme({ heroTitlePrefix: e.target.value })}
+                      className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                      placeholder="Ex: Thème Champêtre & Élégance..."
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -2143,7 +2403,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                 )}
 
                 <form onSubmit={handleUpdateCredentials} className="space-y-4 max-w-2xl">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-1 font-medium">
                         Identifiant Admin :
@@ -2167,41 +2427,31 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                         required
                         value={adminEmail}
                         onChange={(e) => setAdminEmail(e.target.value)}
-                        placeholder="baheu.matthieu65@gmail.com"
+                        placeholder="contact@maisondespyrenees.fr"
                         className="w-full bg-[#121613] border border-[#d4af37]/60 text-sm text-[#f3ece0] px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs uppercase tracking-widest text-[#d4af37] mb-1 font-bold flex items-center space-x-1">
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>Code 2FA (4 chiffres) :</span>
-                      </label>
-                      <input
-                        type="text"
-                        maxLength={4}
-                        required
-                        value={admin2FaPin}
-                        onChange={(e) => setAdmin2FaPin(e.target.value.replace(/\D/g, ''))}
-                        placeholder="0709"
-                        className="w-full bg-[#121613] border border-[#d4af37]/60 text-base font-mono font-bold text-[#d4af37] text-center tracking-widest px-3.5 py-2 rounded-xl outline-none focus:border-[#d4af37]"
                       />
                     </div>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-[#121613] border border-[#2c382e] space-y-3">
-                    <span className="text-xs font-serif font-bold text-[#f3ece0] block">
-                      Modifier le Mot de Passe Administrateur (Optionnel) :
-                    </span>
+                    <div className="flex items-center space-x-2 text-[#d4af37]">
+                      <ShieldCheck className="w-4 h-4" />
+                      <span className="text-xs font-serif font-bold uppercase tracking-wider">
+                        Sécurité Serveur Vercel Active
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#a3b1a5]">
+                      Le mot de passe administrateur principal est géré de façon 100% sécurisée sur Vercel via la variable d'environnement <code className="text-[#d4af37] bg-black/40 px-1.5 py-0.5 rounded font-mono">Admin</code>. Aucun mot de passe en clair n'est présent dans le code source React.
+                    </p>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
                       <div>
-                        <label className="block text-[11px] text-[#a3b1a5] mb-1">Mot de passe actuel :</label>
+                        <label className="block text-[11px] text-[#a3b1a5] mb-1">Mot de passe de sécurité :</label>
                         <input
                           type="password"
                           value={currentPassword}
                           onChange={(e) => setCurrentPassword(e.target.value)}
-                          placeholder="Actuel"
+                          placeholder="Autorisation"
                           className="w-full bg-[#18201a] border border-[#364438] text-xs text-white px-3 py-2 rounded-xl outline-none focus:border-[#d4af37]"
                         />
                       </div>
@@ -2232,8 +2482,20 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                     type="submit"
                     className="px-5 py-2.5 rounded-xl bg-[#28362b] border border-[#d4af37] text-[#d4af37] hover:bg-[#344638] text-xs uppercase font-bold tracking-wider cursor-pointer transition-all"
                   >
-                    Enregistrer les identifiants, 2FA & email
+                    Enregistrer les informations administrateur
                   </button>
+
+                  {/* Email Password & Reset Request Block */}
+                  <div className="mt-4 pt-4 border-t border-[#2a362c] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-[#121613] p-4 rounded-xl border border-[#2e3b30]">
+                    <div>
+                      <span className="text-xs font-semibold text-[#d4af37] block">
+                        Gestion Sécurisée Vercel :
+                      </span>
+                      <p className="text-[11px] text-[#a3b1a5] mt-0.5">
+                        Pour modifier le mot de passe administrateur principal, mettez à jour la variable <code className="text-[#d4af37] bg-black/40 px-1 py-0.5 rounded font-mono">Admin</code> dans votre tableau de bord Vercel.
+                      </p>
+                    </div>
+                  </div>
                 </form>
               </div>
 

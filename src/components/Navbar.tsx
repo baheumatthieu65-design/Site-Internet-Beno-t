@@ -37,11 +37,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   }, []);
 
   const navLinks = [
-    { id: 'collection', label: 'Les 2 Vestes' },
-    { id: 'comparatif', label: 'Comparatif' },
-    { id: 'origines', label: 'L’Esprit Pyrénées' },
-    { id: 'lookbook', label: 'Lookbook' },
-    { id: 'contact', label: 'Contact & Atelier' },
+    { id: 'collection', label: theme?.collectionTabLabel || 'Les 2 Vestes' },
+    { id: 'comparatif', label: theme?.comparatifTabLabel || 'Tableau Comparatif' },
+    { id: 'origines', label: theme?.originesTabLabel || 'L’Esprit Pyrénées' },
+    { id: 'lookbook', label: theme?.lookbookTabLabel || 'Lookbook' },
+    { id: 'contact', label: theme?.contactTabLabel || 'Contact & Atelier' },
   ];
 
   const scrollTo = (id: string) => {

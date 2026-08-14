@@ -1,7 +1,8 @@
-import React from 'react';
-import { Sliders, ShieldCheck, LogOut, Key, Sparkles, Palette, Layers, Type, Tag, Move, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sliders, ShieldCheck, LogOut, Key, Sparkles, Palette, Layers, Type, Tag, Move, Check, ShoppingBag } from 'lucide-react';
 import { ButtonStyleId, ThemeConfig } from '../types';
 import { buttonModelPresets } from '../utils/themeStyles';
+import { getStoredOrders } from '../utils/orderStorage';
 
 interface AdminBarProps {
   username: string;
@@ -10,6 +11,7 @@ interface AdminBarProps {
   onToggleDragReorderMode?: () => void;
   onQuickChangeButtonStyle?: (styleId: ButtonStyleId) => void;
   onOpenEditor: (tab?: 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
+  onOpenOrders: () => void;
   onOpenSecurity: () => void;
   onLogout: () => void;
 }
@@ -21,11 +23,19 @@ export const AdminBar: React.FC<AdminBarProps> = ({
   onToggleDragReorderMode,
   onQuickChangeButtonStyle,
   onOpenEditor,
+  onOpenOrders,
   onOpenSecurity,
   onLogout,
 }) => {
   const currentStyleId = theme?.buttonStyle || 'gold-laiton';
   const currentPreset = buttonModelPresets.find((b) => b.id === currentStyleId) || buttonModelPresets[0];
+
+  const [ordersCount, setOrdersCount] = useState<number>(0);
+
+  useEffect(() => {
+    const orders = getStoredOrders();
+    setOrdersCount(orders.length);
+  }, []);
 
   return (
     <div
@@ -88,6 +98,21 @@ export const AdminBar: React.FC<AdminBarProps> = ({
 
         {/* Right: Quick Navigation Tabs to Open Customizer */}
         <div className="flex items-center space-x-1.5 sm:space-x-2">
+          {/* Orders Reception Space Tab */}
+          <button
+            onClick={onOpenOrders}
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#213023] via-[#2a3c2c] to-[#1e2a1f] hover:brightness-110 text-[#d4af37] border border-[#d4af37] transition-all font-bold cursor-pointer shadow-lg ring-1 ring-[#d4af37]/30"
+            title="Ouvrir l'espace spécifique de réception des commandes et réservations clients"
+          >
+            <ShoppingBag className="w-4 h-4 text-[#d4af37]" />
+            <span className="font-serif">Commandes</span>
+            {ordersCount > 0 && (
+              <span className="ml-1 px-1.5 py-0.5 rounded-full bg-[#d4af37] text-[#121613] font-mono text-[10px] font-black leading-none">
+                {ordersCount}
+              </span>
+            )}
+          </button>
+
           {/* Button & Styling Tab */}
           <button
             onClick={() => onOpenEditor('theme')}

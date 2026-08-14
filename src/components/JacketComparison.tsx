@@ -1,6 +1,6 @@
 import React from 'react';
-import { JacketModel, ThemeConfig } from '../types';
-import { Mountain, CloudRain, Shield, Sparkles, Scale, ArrowRight, Edit3 } from 'lucide-react';
+import { JacketModel, ThemeConfig, ComparisonCriterion } from '../types';
+import { Scale, ArrowRight, Edit3 } from 'lucide-react';
 import {
   getButtonClasses,
   getCardClasses,
@@ -18,12 +18,22 @@ interface JacketComparisonProps {
   onOpenInquiry: (id: string) => void;
 }
 
+const DEFAULT_CRITERIA: ComparisonCriterion[] = [
+  { id: 'crit_category', label: 'Style principal', key: 'category' },
+  { id: 'crit_fabric', label: 'Tissu signature', key: 'fabric' },
+  { id: 'crit_warmth', label: 'Indice de Chaleur', key: 'warmth' },
+  { id: 'crit_water', label: 'Résistance à la pluie', key: 'water' },
+  { id: 'crit_weight', label: 'Poids de la veste', key: 'weight' },
+  { id: 'crit_fit', label: 'Coupe & Silhouette', key: 'fit' },
+  { id: 'crit_care', label: 'Entretien', key: 'care' },
+  { id: 'crit_price', label: 'Prix public', key: 'price' },
+];
+
 export const JacketComparison: React.FC<JacketComparisonProps> = ({
   jackets,
   theme,
   isAdminLoggedIn,
   onOpenEditorSection,
-  onSelectJacket,
   onOpenInquiry,
 }) => {
   const cardStyle = getCardClasses(theme);
@@ -34,16 +44,33 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
   const containerWidthClass = getContainerWidthClass(theme);
   const contentPaddingClass = getContentPaddingClass(theme);
 
-  const specKeys = [
-    { label: 'Style principal', getVal: (j: JacketModel) => j.category },
-    { label: 'Tissu signature', getVal: (j: JacketModel) => j.fabrics[0] || 'Laine & Tissage Noble' },
-    { label: 'Indice de Chaleur', getVal: (j: JacketModel) => j.specs.warmthRating },
-    { label: 'Résistance à la pluie', getVal: (j: JacketModel) => j.specs.waterResistance },
-    { label: 'Poids de la veste', getVal: (j: JacketModel) => j.specs.weight },
-    { label: 'Coupe & Silhouette', getVal: (j: JacketModel) => j.specs.fitType },
-    { label: 'Entretien', getVal: (j: JacketModel) => j.specs.care },
-    { label: 'Prix public', getVal: (j: JacketModel) => `${j.price} ${j.currency}` },
-  ];
+  const sectionTitle = theme?.comparatifTabLabel || 'Tableau Comparatif des Vestes';
+  const criteria = theme?.comparisonCriteria && theme.comparisonCriteria.length > 0
+    ? theme.comparisonCriteria
+    : DEFAULT_CRITERIA;
+
+  const getCriterionValue = (crit: ComparisonCriterion, j: JacketModel) => {
+    switch (crit.key) {
+      case 'category':
+        return j.category || '—';
+      case 'fabric':
+        return j.fabrics?.[0] || 'Laine & Tissage Noble';
+      case 'warmth':
+        return j.specs?.warmthRating || '—';
+      case 'water':
+        return j.specs?.waterResistance || '—';
+      case 'weight':
+        return j.specs?.weight || '—';
+      case 'fit':
+        return j.specs?.fitType || '—';
+      case 'care':
+        return j.specs?.care || '—';
+      case 'price':
+        return `${j.price} ${j.currency || '€'}`;
+      default:
+        return j.customSpecs?.[crit.key] || '—';
+    }
+  };
 
   return (
     <section id="comparatif" className={`${contentPaddingClass} bg-[#121613] text-[#e2d5c3] relative group/comparatif`}>
@@ -51,12 +78,12 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
       {isAdminLoggedIn && onOpenEditorSection && (
         <div className="absolute top-8 right-6 z-30 opacity-90 hover:opacity-100 transition-opacity">
           <button
-            onClick={() => onOpenEditorSection('j1')}
-            className="flex items-center space-x-1.5 bg-[#1b241d]/90 backdrop-blur-md border border-[#d4af37]/60 px-3 py-1.5 rounded-full shadow-2xl text-xs text-[#d4af37]"
-            title="Modifier les caractéristiques des vestes"
+            onClick={() => onOpenEditorSection('theme')}
+            className="flex items-center space-x-1.5 bg-[#1b241d]/90 backdrop-blur-md border border-[#d4af37]/60 px-3 py-1.5 rounded-full shadow-2xl text-xs text-[#d4af37] cursor-pointer"
+            title="Gérer les critères techniques du tableau comparatif"
           >
             <Edit3 className="w-3 h-3" />
-            <span>Éditer les specs</span>
+            <span>Gérer les critères du Tableau</span>
           </button>
         </div>
       )}
@@ -69,7 +96,7 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
             <span>Guide de choix</span>
           </div>
           <h2 className="font-serif text-3xl sm:text-5xl font-light text-[#f3ece0]">
-            Comparatif des {jackets.length} Modèles
+            {sectionTitle}
           </h2>
           <p className="text-sm text-[#a3b0a2] mt-3 font-sans max-w-xl mx-auto">
             Découvrez en un coup d’œil quelle création correspond le mieux à votre style de vie et vos escapades dans les Pyrénées.
@@ -100,14 +127,14 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-[#263128]">
-              {specKeys.map((spec, sIdx) => (
-                <tr key={sIdx} className="hover:bg-[#161c17] transition-colors">
+              {criteria.map((crit) => (
+                <tr key={crit.id} className="hover:bg-[#161c17] transition-colors">
                   <td className="py-4 px-4 text-xs uppercase tracking-wider font-semibold text-[#a3b1a5]">
-                    {spec.label}
+                    {crit.label}
                   </td>
                   {jackets.map((j) => (
                     <td key={j.id} className="py-4 px-6 text-sm text-[#e2d5c3] text-center bg-[#171e19]/40">
-                      {spec.getVal(j)}
+                      {getCriterionValue(crit, j)}
                     </td>
                   ))}
                 </tr>
