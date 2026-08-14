@@ -109,8 +109,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right Actions */}
         <div className="flex items-center space-x-3">
-          {/* Admin Toggle Button */}
-          {isAdminLoggedIn ? (
+          {/* Admin Customizer Button (Only visible when logged in) */}
+          {isAdminLoggedIn && (
             <div className="flex items-center space-x-1.5">
               <button
                 id="open-customizer-btn"
@@ -122,16 +122,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="hidden sm:inline font-medium">Personnaliser</span>
               </button>
             </div>
-          ) : (
-            <button
-              id="open-login-btn"
-              onClick={onOpenLogin}
-              className="flex items-center space-x-1.5 px-3 py-1.5 text-xs tracking-wider uppercase rounded-full bg-[#202722] text-[#c0cdb5] border border-[#374639] hover:border-[#b89f74] hover:text-[#f3ece0] hover:bg-[#28322b] transition-all cursor-pointer"
-              title="Connexion Espace Administrateur"
-            >
-              <Lock className="w-3 h-3 text-[#b89f74]" />
-              <span className="hidden sm:inline">Accès Admin</span>
-            </button>
           )}
 
           {/* Commander / Inquiry Button Styled via active buttonStyle */}
@@ -173,8 +163,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               {link.label}
             </button>
           ))}
-          <div className="pt-2 flex flex-col space-y-2">
-            {isAdminLoggedIn ? (
+          {isAdminLoggedIn && (
+            <div className="pt-2 flex flex-col space-y-2">
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
@@ -184,19 +174,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 ⚙️ Panneau d'Administration (Personnaliser Tout)
               </button>
-            ) : (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenLogin();
-                }}
-                className="w-full text-center py-2.5 rounded-xl bg-[#202722] text-[#c0cdb5] text-xs uppercase tracking-wider border border-[#374639] flex items-center justify-center space-x-1.5"
-              >
-                <Lock className="w-3.5 h-3.5 text-[#b89f74]" />
-                <span>Connexion Administrateur</span>
-              </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </header>

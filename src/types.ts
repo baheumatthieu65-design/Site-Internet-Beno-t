@@ -73,6 +73,15 @@ export interface JacketModel {
   hotspots: Hotspot[];
 }
 
+export type TextAlignId = 'left' | 'center' | 'right';
+export type ButtonAlignId = 'left' | 'center' | 'right' | 'stretch';
+export type BadgePositionId = 'top' | 'below-title' | 'hidden';
+export type CardMediaPositionId = 'left' | 'top' | 'right';
+export type ContentPaddingId = 'compact' | 'comfortable' | 'spacious';
+export type ContainerWidthId = 'standard' | 'wide' | 'narrow';
+export type ProductBlockId = 'title-price' | 'description' | 'colors' | 'sizes' | 'specs' | 'cta';
+export type FormFieldId = 'name' | 'email' | 'phone' | 'jacket' | 'color' | 'size' | 'requestType' | 'message';
+
 export interface ThemeConfig {
   buttonStyle: ButtonStyleId;
   buttonRadius: ButtonRadiusId;
@@ -82,6 +91,15 @@ export interface ThemeConfig {
   sectionOrder: SectionId[];
   hiddenSections: SectionId[];
   accentColorHex?: string;
+  // Positioning & Alignment
+  textAlign?: TextAlignId;
+  buttonAlign?: ButtonAlignId;
+  heroBadgePosition?: BadgePositionId;
+  cardMediaPosition?: CardMediaPositionId;
+  contentPadding?: ContentPaddingId;
+  containerWidth?: ContainerWidthId;
+  productBlocksOrder?: ProductBlockId[];
+  formFieldsOrder?: FormFieldId[];
   // Custom button labels
   orderButtonText: string;
   discoverButtonText: string;
@@ -107,6 +125,6 @@ export interface BrandConfig {
   contactEmail: string;
   ordersEmail: string; // Destination email for customer reservations and orders
   instagram: string;
-  jackets: [JacketModel, JacketModel];
+  jackets: JacketModel[];
   theme?: ThemeConfig;
 }

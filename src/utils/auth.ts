@@ -1,7 +1,8 @@
 export interface AdminCredentials {
   username: string;
   email: string;
-  passwordHash: string; // stored plain or simple hash for client admin
+  passwordHash: string; // stored credentials
+  twoFactorPin: string; // 4-digit 2FA code (e.g., '0709')
   lastUpdated: string;
 }
 
@@ -9,6 +10,7 @@ const DEFAULT_ADMIN: AdminCredentials = {
   username: 'admin',
   email: 'baheu.matthieu65@gmail.com',
   passwordHash: 'pyrenees2025',
+  twoFactorPin: '0709',
   lastUpdated: new Date().toISOString(),
 };
 
@@ -21,9 +23,12 @@ export const getStoredCredentials = (): AdminCredentials => {
   if (stored) {
     try {
       const parsed = JSON.parse(stored);
-      // Ensure email exists if older format
+      // Ensure all fields exist
       if (!parsed.email) {
         parsed.email = DEFAULT_ADMIN.email;
+      }
+      if (!parsed.twoFactorPin) {
+        parsed.twoFactorPin = DEFAULT_ADMIN.twoFactorPin;
       }
       return parsed;
     } catch (e) {
@@ -46,12 +51,18 @@ export const verifyAdminLogin = (userInput: string, passwordInput: string): bool
   // Allow login by Username OR by associated Admin Email
   const isUserValid =
     cleanInput === storedUser ||
-    cleanInput === storedEmail ||
-    (storedUser === 'admin' && cleanInput === 'admin@maisondespyrenees.fr');
+    cleanInput === storedEmail;
 
   const isPassValid = passwordInput === creds.passwordHash;
 
   return isUserValid && isPassValid;
+};
+
+export const verifyTwoFactorPin = (pinInput: string): boolean => {
+  const creds = getStoredCredentials();
+  const cleanPin = pinInput.trim();
+  const storedPin = (creds.twoFactorPin || DEFAULT_ADMIN.twoFactorPin).trim();
+  return cleanPin === storedPin;
 };
 
 export interface PasswordResetRequestResult {
@@ -68,10 +79,10 @@ export const requestPasswordReset = (emailInput: string): PasswordResetRequestRe
   const storedUser = creds.username.trim().toLowerCase();
 
   // Check if input matches stored admin email or username
-  if (cleanInput !== storedEmail && cleanInput !== storedUser && cleanInput !== 'admin@maisondespyrenees.fr') {
+  if (cleanInput !== storedEmail && cleanInput !== storedUser && cleanInput !== 'baheu.matthieu65@gmail.com') {
     return {
       success: false,
-      message: `Aucun compte administrateur n'est associé à l'adresse "${emailInput}". Vérifiez l'adresse ou contactez le support.`,
+      message: `Aucun compte administrateur n'est associé à "${emailInput}". Vérifiez l'adresse saisie.`,
     };
   }
 
@@ -89,7 +100,7 @@ export const requestPasswordReset = (emailInput: string): PasswordResetRequestRe
 
   return {
     success: true,
-    message: `Un code sécurisé de récupération a été généré pour le compte associé à ${creds.email}.`,
+    message: `Un code de sécurité a été envoyé à l'adresse de récupération (${creds.email}).`,
     tempCode,
     destinationEmail: creds.email,
   };
@@ -98,7 +109,8 @@ export const requestPasswordReset = (emailInput: string): PasswordResetRequestRe
 export const verifyAndResetPassword = (
   emailInput: string,
   code: string,
-  newPassword: string
+  newPassword: string,
+  newPin?: string
 ): { success: boolean; message: string } => {
   const tokenRaw = localStorage.getItem(RESET_TOKEN_KEY);
   if (!tokenRaw) {
@@ -125,6 +137,7 @@ export const verifyAndResetPassword = (
     const updated: AdminCredentials = {
       ...creds,
       passwordHash: newPassword,
+      twoFactorPin: newPin && newPin.length === 4 ? newPin : creds.twoFactorPin,
       lastUpdated: new Date().toISOString(),
     };
     saveAdminCredentials(updated);
@@ -132,7 +145,7 @@ export const verifyAndResetPassword = (
 
     return {
       success: true,
-      message: 'Votre mot de passe a été mis à jour avec succès ! Vous pouvez maintenant vous connecter.',
+      message: 'Vos identifiants ont été mis à jour avec succès ! Vous pouvez maintenant vous connecter.',
     };
   } catch (e) {
     return { success: false, message: 'Erreur lors de la validation du code.' };

@@ -41,9 +41,11 @@ export const BrandStory: React.FC<BrandStoryProps> = ({
               <span>Savoir-Faire Pyrénéen</span>
             </div>
 
-            <h2 className="font-serif text-3xl sm:text-5xl font-light text-[#f3ece0] leading-tight">
-              {brandData.storyTitle}
-            </h2>
+            {brandData.storyTitle && (
+              <h2 className="font-serif text-3xl sm:text-5xl font-light text-[#f3ece0] leading-tight">
+                {brandData.storyTitle}
+              </h2>
+            )}
 
             <div className={`relative p-6 rounded-3xl ${cardStyle.card} space-y-4`}>
               <div className="flex items-center space-x-4">
@@ -58,26 +60,32 @@ export const BrandStory: React.FC<BrandStoryProps> = ({
                   <h3 className="font-serif text-xl text-[#f3ece0] font-semibold">
                     {brandData.brandName}
                   </h3>
-                  <p className="text-xs text-[#a3b1a5] uppercase tracking-wider">
-                    {brandData.designerLocation}
-                  </p>
+                  {brandData.designerLocation && (
+                    <p className="text-xs text-[#a3b1a5] uppercase tracking-wider">
+                      {brandData.designerLocation}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              <blockquote className="text-sm italic text-[#d0c5b4] font-serif border-l-2 border-[#d4af37] pl-4 py-1">
-                "{brandData.tagline}"
-              </blockquote>
+              {brandData.tagline && (
+                <blockquote className="text-sm italic text-[#d0c5b4] font-serif border-l-2 border-[#d4af37] pl-4 py-1">
+                  "{brandData.tagline}"
+                </blockquote>
+              )}
             </div>
 
             {/* Manifesto Bullet Points */}
-            <div className="space-y-3 pt-2">
-              {brandData.manifesto.map((item, idx) => (
-                <div key={idx} className="flex items-start space-x-3 text-sm text-[#b8c5ba]">
-                  <ShieldCheck className="w-5 h-5 text-[#d4af37] flex-shrink-0 mt-0.5" />
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
+            {brandData.manifesto && brandData.manifesto.length > 0 && (
+              <div className="space-y-3 pt-2">
+                {brandData.manifesto.map((item, idx) => (
+                  <div key={idx} className="flex items-start space-x-3 text-sm text-[#b8c5ba]">
+                    <ShieldCheck className="w-5 h-5 text-[#d4af37] flex-shrink-0 mt-0.5" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right Column: Story Narrative */}
@@ -85,13 +93,17 @@ export const BrandStory: React.FC<BrandStoryProps> = ({
             <div className={`p-8 rounded-3xl ${cardStyle.card} space-y-6`}>
               <Quote className="w-10 h-10 text-[#d4af37]/30" />
               
-              <p className="font-serif text-lg text-[#f3ece0] italic">
-                {brandData.storyText1}
-              </p>
+              {brandData.storyText1 && (
+                <p className="font-serif text-lg text-[#f3ece0] italic">
+                  {brandData.storyText1}
+                </p>
+              )}
 
-              <p>
-                {brandData.storyText2}
-              </p>
+              {brandData.storyText2 && (
+                <p>
+                  {brandData.storyText2}
+                </p>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-[#2e3b30] text-center">
                 <div className="p-3 rounded-2xl bg-[#1d251f]">

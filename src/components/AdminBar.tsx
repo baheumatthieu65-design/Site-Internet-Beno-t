@@ -1,13 +1,15 @@
 import React from 'react';
-import { Sliders, ShieldCheck, LogOut, Key, Sparkles, Palette, Layers, Type, Tag, ChevronDown, Check } from 'lucide-react';
+import { Sliders, ShieldCheck, LogOut, Key, Sparkles, Palette, Layers, Type, Tag, Move, Check } from 'lucide-react';
 import { ButtonStyleId, ThemeConfig } from '../types';
 import { buttonModelPresets } from '../utils/themeStyles';
 
 interface AdminBarProps {
   username: string;
   theme?: ThemeConfig;
+  isDragReorderMode?: boolean;
+  onToggleDragReorderMode?: () => void;
   onQuickChangeButtonStyle?: (styleId: ButtonStyleId) => void;
-  onOpenEditor: (tab?: 'brand' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
+  onOpenEditor: (tab?: 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
   onOpenSecurity: () => void;
   onLogout: () => void;
 }
@@ -15,6 +17,8 @@ interface AdminBarProps {
 export const AdminBar: React.FC<AdminBarProps> = ({
   username,
   theme,
+  isDragReorderMode = true,
+  onToggleDragReorderMode,
   onQuickChangeButtonStyle,
   onOpenEditor,
   onOpenSecurity,
@@ -37,6 +41,22 @@ export const AdminBar: React.FC<AdminBarProps> = ({
               Espace Administrateur
             </span>
           </div>
+
+          {/* Drag and Drop Mode Toggle */}
+          {onToggleDragReorderMode && (
+            <button
+              onClick={onToggleDragReorderMode}
+              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer border ${
+                isDragReorderMode
+                  ? 'bg-[#d4af37] text-[#121613] border-[#d4af37] shadow-sm ring-1 ring-[#d4af37]/60'
+                  : 'bg-[#1f2720] text-[#a3b1a5] border-[#364438] hover:text-white hover:bg-[#28342a]'
+              }`}
+              title="Déplacer directement les sections et les blocs par simple glisser-déposer sur la page"
+            >
+              <Move className="w-3.5 h-3.5" />
+              <span>{isDragReorderMode ? 'Glisser-Déposer : Activé' : 'Glisser-Déposer'}</span>
+            </button>
+          )}
 
           {/* Quick Button Preset Dropdown / Pill */}
           {onQuickChangeButtonStyle && (
@@ -98,14 +118,14 @@ export const AdminBar: React.FC<AdminBarProps> = ({
             <span className="hidden lg:inline">Textes Boutons</span>
           </button>
 
-          {/* Jackets Tab */}
+          {/* Articles & Jackets Tab */}
           <button
-            onClick={() => onOpenEditor('j1')}
+            onClick={() => onOpenEditor('articles')}
             className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-[#202922] hover:bg-[#2c382e] text-[#c4ceb8] border border-[#3b4b3e] hover:border-[#b89f74] transition-all cursor-pointer"
-            title="Modifier les 2 vestes (prix, descriptions, photos, matières)"
+            title="Gérer les articles (ajouter, supprimer, modifier prix, photos, matières)"
           >
-            <Sliders className="w-3.5 h-3.5 text-[#b89f74]" />
-            <span>Vestes</span>
+            <Tag className="w-3.5 h-3.5 text-[#b89f74]" />
+            <span>Articles</span>
           </button>
 
           {/* Security / Password Button */}

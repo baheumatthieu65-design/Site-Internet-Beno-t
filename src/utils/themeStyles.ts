@@ -36,6 +36,14 @@ export const defaultThemeConfig: ThemeConfig = {
   showcaseLayout: 'split-interactive',
   sectionOrder: ['hero', 'collection', 'comparatif', 'origines', 'lookbook', 'contact'],
   hiddenSections: [],
+  textAlign: 'center',
+  buttonAlign: 'center',
+  heroBadgePosition: 'top',
+  cardMediaPosition: 'left',
+  contentPadding: 'comfortable',
+  containerWidth: 'standard',
+  productBlocksOrder: ['title-price', 'description', 'colors', 'sizes', 'specs', 'cta'],
+  formFieldsOrder: ['name', 'email', 'phone', 'jacket', 'color', 'size', 'requestType', 'message'],
   orderButtonText: 'Commander',
   discoverButtonText: 'Découvrir',
   inquiryButtonText: 'Commander sur Mesure',
@@ -190,4 +198,54 @@ export function getCardClasses(theme?: ThemeConfig): { card: string; inner: stri
     inner: preset.innerClass,
     border: preset.borderClass,
   };
+}
+
+export function getTextAlignClass(theme?: ThemeConfig): string {
+  const align = theme?.textAlign || 'center';
+  switch (align) {
+    case 'left':
+      return 'text-left';
+    case 'right':
+      return 'text-right';
+    default:
+      return 'text-center';
+  }
+}
+
+export function getButtonAlignClass(theme?: ThemeConfig): string {
+  const align = theme?.buttonAlign || 'center';
+  switch (align) {
+    case 'left':
+      return 'justify-start';
+    case 'right':
+      return 'justify-end';
+    case 'stretch':
+      return 'justify-stretch';
+    default:
+      return 'justify-center';
+  }
+}
+
+export function getContentPaddingClass(theme?: ThemeConfig): string {
+  const pad = theme?.contentPadding || 'comfortable';
+  switch (pad) {
+    case 'compact':
+      return 'py-12 md:py-16';
+    case 'spacious':
+      return 'py-28 md:py-36';
+    default:
+      return 'py-20 md:py-24';
+  }
+}
+
+export function getContainerWidthClass(theme?: ThemeConfig): string {
+  const width = theme?.containerWidth || 'standard';
+  switch (width) {
+    case 'narrow':
+      return 'max-w-5xl mx-auto';
+    case 'wide':
+      return 'max-w-[1400px] mx-auto';
+    default:
+      return 'max-w-7xl mx-auto';
+  }
 }

@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
 import { JacketModel, ThemeConfig } from '../types';
 import { Camera, Eye, Sparkles, ZoomIn, Edit3 } from 'lucide-react';
-import { getButtonClasses, getCardClasses } from '../utils/themeStyles';
+import {
+  getButtonClasses,
+  getCardClasses,
+  getTextAlignClass,
+  getContentPaddingClass,
+  getContainerWidthClass,
+} from '../utils/themeStyles';
 
 interface LookbookGalleryProps {
-  jackets: [JacketModel, JacketModel];
+  jackets: JacketModel[];
   heroBgImage: string;
   theme?: ThemeConfig;
   isAdminLoggedIn?: boolean;
@@ -25,53 +31,47 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
   const primaryBtnClass = getButtonClasses(theme, 'primary');
   const orderText = theme?.orderButtonText || 'Commander';
 
-  const galleryItems = [
-    {
-      url: jackets[0].heroImage,
-      title: 'La Veste des Cimes — Portrait',
-      model: jackets[0].name,
-      jacketId: jackets[0].id,
-      location: 'Pic du Midi, Pyrénées',
-    },
-    {
-      url: jackets[0].gallery[1] || jackets[0].heroImage,
-      title: 'Drapeau de Laine sur les Crêtes',
-      model: 'Silhouette Sommet N°1',
-      jacketId: jackets[0].id,
-      location: 'Cirque de Gavarnie',
-    },
-    {
-      url: jackets[0].gallery[2] || jackets[0].heroImage,
-      title: 'Focus Matière : Laine Feutrée Vierge',
-      model: 'Macro Tissage & Boutons Corne',
-      jacketId: jackets[0].id,
-      location: 'Détail d’Atelier',
-    },
-    {
-      url: jackets[1].heroImage,
-      title: 'Le Manteau Pastorale — Portrait',
-      model: jackets[1].name,
-      jacketId: jackets[1].id,
-      location: 'Vallée d’Aspe',
-    },
-    {
-      url: jackets[1].gallery[1] || jackets[1].heroImage,
-      title: 'Coton Huilé aux Pâturages',
-      model: 'Chic Champêtre N°2',
-      jacketId: jackets[1].id,
-      location: 'Pâturages de Lourdios',
-    },
-    {
-      url: jackets[1].gallery[2] || jackets[1].heroImage,
-      title: 'Focus Imperméabilité & Cire d’Abeille',
-      model: 'Macro Coton Waxé & Cuir',
-      jacketId: jackets[1].id,
-      location: 'Détail d’Atelier',
-    },
-  ];
+  const textAlignClass = getTextAlignClass(theme);
+  const containerWidthClass = getContainerWidthClass(theme);
+  const contentPaddingClass = getContentPaddingClass(theme);
+
+  // Dynamic gallery items created from all registered jackets
+  const galleryItems = jackets.flatMap((j, jIdx) => {
+    const items = [
+      {
+        url: j.heroImage,
+        title: `${j.name} — Portrait & Silhouette`,
+        model: j.name,
+        jacketId: j.id,
+        location: `Atelier Pyrénéen • Création N°${jIdx + 1}`,
+      },
+    ];
+
+    if (j.gallery && j.gallery.length > 1) {
+      items.push({
+        url: j.gallery[1] || j.heroImage,
+        title: `${j.name} — Vue en Déplacement`,
+        model: `Silhouette Signature N°${jIdx + 1}`,
+        jacketId: j.id,
+        location: 'Massif des Pyrénées',
+      });
+    }
+
+    if (j.gallery && j.gallery.length > 2) {
+      items.push({
+        url: j.gallery[2] || j.heroImage,
+        title: `Focus Matières & Finitions — ${j.name}`,
+        model: j.fabrics[0] || 'Tissage Artisanal Noble',
+        jacketId: j.id,
+        location: 'Détail d’Atelier',
+      });
+    }
+
+    return items;
+  });
 
   return (
-    <section id="lookbook" className="py-20 bg-[#121613] text-[#e2d5c3] relative group/lookbook">
+    <section id="lookbook" className={`${contentPaddingClass} bg-[#121613] text-[#e2d5c3] relative group/lookbook`}>
       {/* Admin Quick Edit Trigger */}
       {isAdminLoggedIn && onOpenEditorSection && (
         <div className="absolute top-8 right-6 z-30 opacity-90 hover:opacity-100 transition-opacity">
@@ -86,9 +86,9 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className={`${containerWidthClass} px-4 sm:px-6 lg:px-8`}>
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <div className={`${textAlignClass} max-w-3xl mx-auto mb-16`}>
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#242e26] text-[#d4af37] text-xs uppercase tracking-widest font-serif mb-3">
             <Camera className="w-3.5 h-3.5" />
             <span>Galerie Editorial</span>
@@ -97,12 +97,12 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
             Lookbook Champêtre
           </h2>
           <p className="text-sm text-[#a3b0a2] mt-3 font-sans">
-            Mise en scène de nos 2 vestes au cœur des paysages sauvages des Pyrénées.
+            Mise en scène de nos créations au cœur des paysages sauvages des Pyrénées.
           </p>
         </div>
 
         {/* Editorial Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {galleryItems.map((item, idx) => (
             <div
               key={idx}

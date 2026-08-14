@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { JacketModel, Hotspot, ThemeConfig } from '../types';
+import { JacketModel, Hotspot, ThemeConfig, ProductBlockId } from '../types';
 import {
   Check,
   Info,
@@ -15,18 +15,31 @@ import {
   Ruler,
   Edit3,
   Sliders,
-  Maximize2
+  Maximize2,
+  GripVertical,
+  ChevronUp,
+  ChevronDown,
+  Move
 } from 'lucide-react';
-import { getButtonClasses, getCardClasses } from '../utils/themeStyles';
+import {
+  getButtonClasses,
+  getCardClasses,
+  getTextAlignClass,
+  getButtonAlignClass,
+  getContentPaddingClass,
+  getContainerWidthClass,
+} from '../utils/themeStyles';
 
 interface JacketsShowcaseProps {
-  jackets: [JacketModel, JacketModel];
+  jackets: JacketModel[];
   selectedJacketId: string;
   theme?: ThemeConfig;
   isAdminLoggedIn?: boolean;
+  isDragReorderMode?: boolean;
   onOpenEditorSection?: (tab: 'brand' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
   onSelectJacket: (id: string) => void;
   onOpenInquiry: (jacketId: string, color?: string, size?: string) => void;
+  onReorderProductBlocks?: (newOrder: ProductBlockId[]) => void;
 }
 
 export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
@@ -34,31 +47,324 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   selectedJacketId,
   theme,
   isAdminLoggedIn,
+  isDragReorderMode = true,
   onOpenEditorSection,
   onSelectJacket,
   onOpenInquiry,
+  onReorderProductBlocks,
 }) => {
   const activeJacket = jackets.find((j) => j.id === selectedJacketId) || jackets[0];
-  const [activeImage, setActiveImage] = useState(activeJacket.heroImage);
-  const [selectedColor, setSelectedColor] = useState(activeJacket.colors[0]?.name || '');
-  const [selectedSize, setSelectedSize] = useState(activeJacket.sizes[1] || 'M');
+  const [activeImage, setActiveImage] = useState(activeJacket?.heroImage || '');
+  const [selectedColor, setSelectedColor] = useState(activeJacket?.colors[0]?.name || '');
+  const [selectedSize, setSelectedSize] = useState(activeJacket?.sizes[1] || 'M');
   const [activeHotspot, setActiveHotspot] = useState<Hotspot | null>(null);
+
+  // Drag and drop state for product blocks
+  const [draggingBlockId, setDraggingBlockId] = useState<ProductBlockId | null>(null);
+  const [dragOverBlockId, setDragOverBlockId] = useState<ProductBlockId | null>(null);
 
   // Update image and color when active jacket changes
   useEffect(() => {
-    setActiveImage(activeJacket.heroImage);
-    if (activeJacket.colors.length > 0) {
-      setSelectedColor(activeJacket.colors[0].name);
+    if (activeJacket) {
+      setActiveImage(activeJacket.heroImage);
+      if (activeJacket.colors.length > 0) {
+        setSelectedColor(activeJacket.colors[0].name);
+      }
+      if (activeJacket.sizes.length > 0) {
+        setSelectedSize(activeJacket.sizes[1] || activeJacket.sizes[0]);
+      }
     }
-  }, [activeJacket.id]);
+  }, [activeJacket?.id]);
+
+  if (!activeJacket) return null;
 
   const layout = theme?.showcaseLayout || 'split-interactive';
   const cardStyle = getCardClasses(theme);
   const primaryBtnClass = getButtonClasses(theme, 'primary');
   const radius = theme?.buttonRadius || 'rounded-full';
 
+  const textAlignClass = getTextAlignClass(theme);
+  const buttonAlignClass = getButtonAlignClass(theme);
+  const containerWidthClass = getContainerWidthClass(theme);
+  const contentPaddingClass = getContentPaddingClass(theme);
+  const cardMediaPos = theme?.cardMediaPosition || 'left';
+
   const orderText = theme?.orderButtonText || 'Commander';
   const inquiryText = theme?.inquiryButtonText || 'Commander sur Mesure';
+
+  const blocksOrder: ProductBlockId[] = theme?.productBlocksOrder || [
+    'title-price',
+    'description',
+    'colors',
+    'sizes',
+    'specs',
+    'cta',
+  ];
+
+  const blockLabels: Record<ProductBlockId, string> = {
+    'title-price': 'Titre & Prix',
+    'description': 'Description & Récit',
+    'colors': 'Nuances de Couleurs',
+    'sizes': 'Tailles & Mensurations',
+    'specs': 'Spécifications Techniques',
+    'cta': 'Bouton de Commande',
+  };
+
+  const handleBlockDragStart = (blockId: ProductBlockId, e: React.DragEvent) => {
+    setDraggingBlockId(blockId);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', blockId);
+  };
+
+  const handleBlockDragOver = (blockId: ProductBlockId, e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverBlockId !== blockId) {
+      setDragOverBlockId(blockId);
+    }
+  };
+
+  const handleBlockDrop = (targetBlockId: ProductBlockId) => {
+    if (!draggingBlockId || draggingBlockId === targetBlockId) {
+      setDraggingBlockId(null);
+      setDragOverBlockId(null);
+      return;
+    }
+
+    const current = [...blocksOrder];
+    const fromIdx = current.indexOf(draggingBlockId);
+    const toIdx = current.indexOf(targetBlockId);
+
+    if (fromIdx !== -1 && toIdx !== -1 && onReorderProductBlocks) {
+      const updated = [...current];
+      const [moved] = updated.splice(fromIdx, 1);
+      updated.splice(toIdx, 0, moved);
+      onReorderProductBlocks(updated);
+    }
+
+    setDraggingBlockId(null);
+    setDragOverBlockId(null);
+  };
+
+  const handleMoveBlock = (blockId: ProductBlockId, direction: 'up' | 'down') => {
+    const current = [...blocksOrder];
+    const idx = current.indexOf(blockId);
+    if (idx === -1) return;
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= current.length) return;
+
+    if (onReorderProductBlocks) {
+      const updated = [...current];
+      const [moved] = updated.splice(idx, 1);
+      updated.splice(targetIdx, 0, moved);
+      onReorderProductBlocks(updated);
+    }
+  };
+
+  const renderRawProductBlock = (blockId: ProductBlockId) => {
+    switch (blockId) {
+      case 'title-price':
+        return (
+          <div key="title-price">
+            <div className="flex items-center justify-between">
+              <span className="text-xs uppercase tracking-widest text-[#a3b1a5] font-serif">
+                {activeJacket.subTitle}
+              </span>
+              <span className="px-2.5 py-0.5 rounded text-[10px] uppercase font-bold bg-[#382b1c] text-[#d4af37] border border-[#8c6d3f]">
+                Sur Commande
+              </span>
+            </div>
+            <h3 className="font-serif text-3xl sm:text-4xl text-[#f3ece0] font-normal mt-1">
+              {activeJacket.name}
+            </h3>
+            {activeJacket.tagline && (
+              <p className="text-sm text-[#c2a26d] italic font-serif mt-1">
+                "{activeJacket.tagline}"
+              </p>
+            )}
+
+            <div className="mt-4 flex items-baseline space-x-3">
+              <span className="font-serif text-3xl font-semibold text-[#f3ece0]">
+                {activeJacket.price} {activeJacket.currency}
+              </span>
+              <span className="text-xs text-[#a3b0a2]">
+                TVA incluse • Livraison offerte en France & Europe
+              </span>
+            </div>
+          </div>
+        );
+
+      case 'description':
+        return activeJacket.longDescription || activeJacket.description ? (
+          <div key="description" className="space-y-3">
+            <hr className="border-[#2f3b31]" />
+            <p className="text-sm text-[#b8c5ba] leading-relaxed">
+              {activeJacket.longDescription || activeJacket.description}
+            </p>
+          </div>
+        ) : null;
+
+      case 'colors':
+        return (
+          <div key="colors">
+            <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] font-medium mb-2">
+              Couleur sélectionnée : <span className="text-[#f3ece0] font-semibold">{selectedColor}</span>
+            </label>
+            <div className="flex items-center space-x-3">
+              {activeJacket.colors.map((color) => {
+                const isChosen = selectedColor === color.name;
+                return (
+                  <button
+                    key={color.name}
+                    onClick={() => setSelectedColor(color.name)}
+                    className={`relative w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+                      isChosen ? 'ring-2 ring-[#d4af37] ring-offset-2 ring-offset-[#151a16] scale-110' : 'hover:scale-105'
+                    }`}
+                    style={{ backgroundColor: color.hex }}
+                    title={color.name}
+                  >
+                    {isChosen && <Check className="w-4 h-4 text-white drop-shadow" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+
+      case 'sizes':
+        return (
+          <div key="sizes">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs uppercase tracking-widest text-[#a3b1a5] font-medium">
+                Taille : <span className="text-[#f3ece0] font-semibold">{selectedSize}</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => {}}
+                className="text-xs text-[#d4af37] flex items-center space-x-1"
+              >
+                <Ruler className="w-3.5 h-3.5" />
+                <span>Guide des tailles</span>
+              </button>
+            </div>
+            <div className="grid grid-cols-5 gap-2">
+              {activeJacket.sizes.map((sz) => {
+                const isSelected = selectedSize === sz;
+                return (
+                  <button
+                    key={sz}
+                    onClick={() => setSelectedSize(sz)}
+                    className={`py-2 text-xs uppercase tracking-wider font-semibold ${radius} border transition-all ${
+                      isSelected
+                        ? 'bg-[#d4af37] text-[#121613] border-[#d4af37] shadow-md font-bold'
+                        : 'bg-[#1e2520] text-[#c4ceb8] border-[#374639] hover:border-[#a3b0a2]'
+                    }`}
+                  >
+                    {sz}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+
+      case 'specs':
+        return (
+          <div key="specs" className="grid grid-cols-2 gap-3 text-xs">
+            <div className={`p-3 ${radius} ${cardStyle.card}`}>
+              <span className="block text-[#a3b0a2] text-[10px] uppercase tracking-wider">Origine</span>
+              <span className="font-semibold text-[#f3ece0]">{activeJacket.specs.origin}</span>
+            </div>
+            <div className={`p-3 ${radius} ${cardStyle.card}`}>
+              <span className="block text-[#a3b0a2] text-[10px] uppercase tracking-wider">Résistance</span>
+              <span className="font-semibold text-[#f3ece0]">{activeJacket.specs.waterResistance}</span>
+            </div>
+          </div>
+        );
+
+      case 'cta':
+        return (
+          <div key="cta" className="pt-2 space-y-3">
+            <div className={`flex ${buttonAlignClass}`}>
+              <button
+                id={`buy-jacket-${activeJacket.id}`}
+                onClick={() => onOpenInquiry(activeJacket.id, selectedColor, selectedSize)}
+                className={`w-full py-4 px-6 text-sm uppercase tracking-widest flex items-center justify-center space-x-3 ${primaryBtnClass}`}
+              >
+                <ShoppingBag className="w-5 h-5" />
+                <span>{orderText} / Réserver ({activeJacket.price} {activeJacket.currency})</span>
+              </button>
+            </div>
+
+            <p className="text-[11px] text-center text-[#a3b0a2] flex items-center justify-center space-x-1">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#d4af37]" />
+              <span>Atelier artisanal local • Réponse personnalisée sous 24h</span>
+            </p>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  const renderProductBlock = (blockId: ProductBlockId) => {
+    const rawBlock = renderRawProductBlock(blockId);
+    if (!rawBlock) return null;
+
+    if (!isAdminLoggedIn || !isDragReorderMode) {
+      return <div key={blockId}>{rawBlock}</div>;
+    }
+
+    const isDragging = draggingBlockId === blockId;
+    const isDragOver = dragOverBlockId === blockId;
+
+    return (
+      <div
+        key={blockId}
+        draggable
+        onDragStart={(e) => handleBlockDragStart(blockId, e)}
+        onDragOver={(e) => handleBlockDragOver(blockId, e)}
+        onDragLeave={() => setDragOverBlockId(null)}
+        onDrop={() => handleBlockDrop(blockId)}
+        className={`relative group/block transition-all rounded-2xl p-2 -m-2 ${
+          isDragging ? 'opacity-40 scale-[0.98]' : 'opacity-100'
+        } ${
+          isDragOver
+            ? 'border-2 border-dashed border-[#d4af37] bg-[#d4af37]/10 ring-2 ring-[#d4af37]/30'
+            : 'hover:bg-[#1a221b]/60 border border-transparent hover:border-[#38483b]'
+        }`}
+      >
+        {/* Drag handle tooltip bar for admin */}
+        <div className="opacity-0 group-hover/block:opacity-100 transition-opacity flex items-center justify-between bg-[#121613]/95 border border-[#d4af37]/50 rounded-lg px-2.5 py-1 mb-1.5 text-[10px] text-[#f3ece0] shadow-xl">
+          <div className="flex items-center space-x-1.5 cursor-grab active:cursor-grabbing text-[#d4af37]">
+            <GripVertical className="w-3.5 h-3.5" />
+            <span className="font-semibold">{blockLabels[blockId] || blockId}</span>
+            <span className="text-[#a3b1a5] font-normal hidden sm:inline">(Glisser pour déplacer)</span>
+          </div>
+
+          <div className="flex items-center space-x-1">
+            <button
+              onClick={() => handleMoveBlock(blockId, 'up')}
+              className="p-0.5 rounded hover:bg-[#28362b] text-[#a3b1a5] hover:text-[#d4af37]"
+              title="Monter ce bloc"
+            >
+              <ChevronUp className="w-3 h-3" />
+            </button>
+            <button
+              onClick={() => handleMoveBlock(blockId, 'down')}
+              className="p-0.5 rounded hover:bg-[#28362b] text-[#a3b1a5] hover:text-[#d4af37]"
+              title="Descendre ce bloc"
+            >
+              <ChevronDown className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
+
+        {rawBlock}
+      </div>
+    );
+  };
 
   return (
     <section id="collection" className="py-20 bg-[#151a16] text-[#e2d5c3] relative overflow-hidden group/showcase">
@@ -77,40 +383,40 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
             <button
               onClick={() => onOpenEditorSection('layouts')}
               className="px-2 py-0.5 rounded bg-[#28362b] hover:bg-[#344638] text-[#d4af37] flex items-center space-x-1"
-              title="Changer la présentation du Showcase"
+              title="Changer l'ordre des éléments et agencements"
             >
               <Layers className="w-3 h-3" />
-              <span>Format : {layout}</span>
+              <span>Agencement</span>
             </button>
             <button
-              onClick={() => onOpenEditorSection(activeJacket.id === jackets[0].id ? 'j1' : 'j2')}
+              onClick={() => onOpenEditorSection('j1')}
               className="px-2 py-0.5 rounded bg-[#28362b] hover:bg-[#344638] text-white flex items-center space-x-1"
-              title="Modifier les photos, prix et infos de cette veste"
+              title="Ajouter, supprimer ou modifier les articles"
             >
               <Edit3 className="w-3 h-3" />
-              <span>Éditer {activeJacket.name}</span>
+              <span>Articles ({jackets.length})</span>
             </button>
           </div>
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className={`${containerWidthClass} px-4 sm:px-6 lg:px-8`}>
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-10">
+        <div className={`${textAlignClass} max-w-3xl mx-auto mb-10`}>
           <span className="text-xs uppercase tracking-widest text-[#d4af37] font-serif font-medium">
             Mise en valeur exclusive
           </span>
           <h2 className="font-serif text-3xl sm:text-5xl font-light text-[#f3ece0] mt-2 mb-4">
-            Nos 2 Créations Signatures
+            Nos {jackets.length} Créations Signatures
           </h2>
           <p className="text-sm sm:text-base text-[#a3b1a5] font-sans">
-            Deux modèles pensés pour allier l’authenticité du grand air pyrénéen et l’élégance urbaine la plus raffinée.
+            Des modèles pensés pour allier l’authenticité du grand air pyrénéen et l’élégance urbaine la plus raffinée.
           </p>
         </div>
 
         {/* Jacket Selector Tabs */}
-        <div className="flex justify-center mb-10">
-          <div className={`inline-flex p-1.5 ${radius} bg-[#1e2520] border border-[#3b473e] shadow-xl`}>
+        <div className="flex justify-center mb-10 overflow-x-auto pb-2">
+          <div className={`inline-flex p-1.5 ${radius} bg-[#1e2520] border border-[#3b473e] shadow-xl flex-wrap justify-center gap-1`}>
             {jackets.map((j, idx) => {
               const isSelected = j.id === activeJacket.id;
               return (
@@ -118,13 +424,13 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                   key={j.id}
                   id={`jacket-tab-${j.id}`}
                   onClick={() => onSelectJacket(j.id)}
-                  className={`flex items-center space-x-3 px-6 py-3 ${radius} text-xs sm:text-sm uppercase tracking-widest transition-all font-medium ${
+                  className={`flex items-center space-x-2.5 px-5 py-2.5 ${radius} text-xs sm:text-sm uppercase tracking-widest transition-all font-medium ${
                     isSelected
                       ? 'bg-gradient-to-r from-[#2c372f] to-[#3b493e] text-[#f3ece0] border border-[#d4af37]/60 shadow-lg ring-1 ring-[#d4af37]/30'
                       : 'text-[#9eb0a0] hover:text-[#f3ece0]'
                   }`}
                 >
-                  <span className="w-6 h-6 rounded-full bg-black/40 text-[#d4af37] font-serif text-xs flex items-center justify-center font-bold">
+                  <span className="w-5 h-5 rounded-full bg-black/40 text-[#d4af37] font-serif text-xs flex items-center justify-center font-bold">
                     N°{idx + 1}
                   </span>
                   <span>{j.name}</span>
@@ -138,7 +444,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
         {layout === 'split-interactive' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
             {/* Left Image & Hotspots */}
-            <div className="lg:col-span-7 space-y-6">
+            <div className={`${cardMediaPos === 'right' ? 'lg:col-span-7 lg:order-2' : 'lg:col-span-7'} space-y-6`}>
               <div className="relative rounded-3xl bg-[#1d241f] border border-[#39483c] overflow-hidden shadow-2xl group min-h-[420px] sm:min-h-[520px] flex items-center justify-center">
                 <img
                   src={activeImage}
@@ -241,127 +547,9 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
               </div>
             </div>
 
-            {/* Right Details */}
-            <div className="lg:col-span-5 space-y-6">
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs uppercase tracking-widest text-[#a3b1a5] font-serif">
-                    {activeJacket.subTitle}
-                  </span>
-                  <span className="px-2.5 py-0.5 rounded text-[10px] uppercase font-bold bg-[#382b1c] text-[#d4af37] border border-[#8c6d3f]">
-                    Sur Commande
-                  </span>
-                </div>
-                <h3 className="font-serif text-3xl sm:text-4xl text-[#f3ece0] font-normal mt-1">
-                  {activeJacket.name}
-                </h3>
-                <p className="text-sm text-[#c2a26d] italic font-serif mt-1">
-                  "{activeJacket.tagline}"
-                </p>
-
-                <div className="mt-4 flex items-baseline space-x-3">
-                  <span className="font-serif text-3xl font-semibold text-[#f3ece0]">
-                    {activeJacket.price} {activeJacket.currency}
-                  </span>
-                  <span className="text-xs text-[#a3b0a2]">
-                    TVA incluse • Livraison offerte en France & Europe
-                  </span>
-                </div>
-              </div>
-
-              <hr className="border-[#2f3b31]" />
-
-              <p className="text-sm text-[#b8c5ba] leading-relaxed">
-                {activeJacket.longDescription}
-              </p>
-
-              {/* Color Selection */}
-              <div>
-                <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] font-medium mb-2">
-                  Couleur sélectionnée : <span className="text-[#f3ece0] font-semibold">{selectedColor}</span>
-                </label>
-                <div className="flex items-center space-x-3">
-                  {activeJacket.colors.map((color) => {
-                    const isChosen = selectedColor === color.name;
-                    return (
-                      <button
-                        key={color.name}
-                        onClick={() => setSelectedColor(color.name)}
-                        className={`relative w-9 h-9 rounded-full flex items-center justify-center transition-all ${
-                          isChosen ? 'ring-2 ring-[#d4af37] ring-offset-2 ring-offset-[#151a16] scale-110' : 'hover:scale-105'
-                        }`}
-                        style={{ backgroundColor: color.hex }}
-                        title={color.name}
-                      >
-                        {isChosen && <Check className="w-4 h-4 text-white drop-shadow" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Size Selector */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs uppercase tracking-widest text-[#a3b1a5] font-medium">
-                    Taille : <span className="text-[#f3ece0] font-semibold">{selectedSize}</span>
-                  </label>
-                  <button
-                    onClick={() => alert("Guide des tailles Pyrénéen : Coupe ajustée élégante. Si vous prévoyez de porter un pull chaud en laine en dessous, nous recommandons la taille supérieure.")}
-                    className="text-xs text-[#d4af37] hover:underline flex items-center space-x-1"
-                  >
-                    <Ruler className="w-3.5 h-3.5" />
-                    <span>Guide des tailles</span>
-                  </button>
-                </div>
-                <div className="grid grid-cols-5 gap-2">
-                  {activeJacket.sizes.map((sz) => {
-                    const isSelected = selectedSize === sz;
-                    return (
-                      <button
-                        key={sz}
-                        onClick={() => setSelectedSize(sz)}
-                        className={`py-2 text-xs uppercase tracking-wider font-semibold ${radius} border transition-all ${
-                          isSelected
-                            ? 'bg-[#d4af37] text-[#121613] border-[#d4af37] shadow-md font-bold'
-                            : 'bg-[#1e2520] text-[#c4ceb8] border-[#374639] hover:border-[#a3b0a2]'
-                        }`}
-                      >
-                        {sz}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Specs Box */}
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className={`p-3 ${radius} ${cardStyle.card}`}>
-                  <span className="block text-[#a3b0a2] text-[10px] uppercase tracking-wider">Origine</span>
-                  <span className="font-semibold text-[#f3ece0]">{activeJacket.specs.origin}</span>
-                </div>
-                <div className={`p-3 ${radius} ${cardStyle.card}`}>
-                  <span className="block text-[#a3b0a2] text-[10px] uppercase tracking-wider">Résistance</span>
-                  <span className="font-semibold text-[#f3ece0]">{activeJacket.specs.waterResistance}</span>
-                </div>
-              </div>
-
-              {/* CTA */}
-              <div className="pt-2 space-y-3">
-                <button
-                  id={`buy-jacket-${activeJacket.id}`}
-                  onClick={() => onOpenInquiry(activeJacket.id, selectedColor, selectedSize)}
-                  className={`w-full py-4 px-6 text-sm uppercase tracking-widest flex items-center justify-center space-x-3 ${primaryBtnClass}`}
-                >
-                  <ShoppingBag className="w-5 h-5" />
-                  <span>{orderText} / Réserver ({activeJacket.price} {activeJacket.currency})</span>
-                </button>
-
-                <p className="text-[11px] text-center text-[#a3b0a2] flex items-center justify-center space-x-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#d4af37]" />
-                  <span>Atelier artisanal local • Réponse personnalisée sous 24h</span>
-                </p>
-              </div>
+            {/* Right Details with Configurable Product Blocks Order */}
+            <div className={`${cardMediaPos === 'right' ? 'lg:col-span-5 lg:order-1' : 'lg:col-span-5'} space-y-6`}>
+              {blocksOrder.map((blockId) => renderProductBlock(blockId))}
             </div>
           </div>
         )}

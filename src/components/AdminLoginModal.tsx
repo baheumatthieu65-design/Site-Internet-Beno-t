@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Lock,
   User,
@@ -12,12 +12,14 @@ import {
   CheckCircle2,
   Mail,
   ArrowLeft,
-  HelpCircle,
   KeyRound,
-  Send
+  Send,
+  Smartphone,
+  ShieldAlert
 } from 'lucide-react';
 import {
   verifyAdminLogin,
+  verifyTwoFactorPin,
   setAdminSession,
   getStoredCredentials,
   requestPasswordReset,
@@ -38,7 +40,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   if (!isOpen) return null;
 
   const currentCreds = getStoredCredentials();
-  const [viewMode, setViewMode] = useState<'login' | 'forgot_request' | 'forgot_verify'>('login');
+  const [viewMode, setViewMode] = useState<'login' | 'login_2fa' | 'forgot_request' | 'forgot_verify'>('login');
 
   // Login form state
   const [username, setUsername] = useState('');
@@ -49,34 +51,106 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // 2FA Pin state (4 digits)
+  const [pinDigits, setPinDigits] = useState<string[]>(['', '', '', '']);
+  const pinInputRefs = [
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+    useRef<HTMLInputElement>(null),
+  ];
+
   // Recovery form state
   const [recoveryEmail, setRecoveryEmail] = useState('');
   const [recoveryCode, setRecoveryCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [newPin, setNewPin] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [generatedCodeNotification, setGeneratedCodeNotification] = useState<string | null>(null);
   const [recoveryMessage, setRecoveryMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const handleSubmitLogin = (e: React.FormEvent) => {
+  // Focus first PIN input when entering 2FA mode
+  useEffect(() => {
+    if (viewMode === 'login_2fa') {
+      setTimeout(() => {
+        pinInputRefs[0].current?.focus();
+      }, 100);
+    }
+  }, [viewMode]);
+
+  // Handle Step 1: Username & Password verification
+  const handleSubmitStep1 = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
 
     setTimeout(() => {
       const isValid = verifyAdminLogin(username, password);
+      setIsLoading(false);
       if (isValid) {
+        // Move to Step 2: 2FA 4-digit PIN
+        setViewMode('login_2fa');
+        setPinDigits(['', '', '', '']);
+      } else {
+        setError('Identifiant ou mot de passe incorrect.');
+      }
+    }, 350);
+  };
+
+  // Handle Step 2: 2FA PIN verification
+  const handleSubmitStep2Pin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const enteredPin = pinDigits.join('');
+    if (enteredPin.length < 4) {
+      setError('Veuillez saisir les 4 chiffres de votre code de sécurité 2FA.');
+      return;
+    }
+
+    setError(null);
+    setIsLoading(true);
+
+    setTimeout(() => {
+      const isPinValid = verifyTwoFactorPin(enteredPin);
+      if (isPinValid) {
         setSuccess(true);
         setAdminSession(true, rememberMe);
         setTimeout(() => {
           setIsLoading(false);
           onLoginSuccess(username || currentCreds.username);
           onClose();
-        }, 600);
+        }, 500);
       } else {
         setIsLoading(false);
-        setError('Identifiant ou mot de passe incorrect. Vous pouvez vous connecter avec votre identifiant ou votre email associé.');
+        setError('Code de sécurité 2FA incorrect. Veuillez vérifier les 4 chiffres.');
+        // clear PIN digits
+        setPinDigits(['', '', '', '']);
+        pinInputRefs[0].current?.focus();
       }
-    }, 400);
+    }, 350);
+  };
+
+  const handlePinChange = (index: number, value: string) => {
+    // Only accept numeric digit
+    const cleaned = value.replace(/\D/g, '');
+    const newDigits = [...pinDigits];
+
+    if (cleaned.length > 0) {
+      newDigits[index] = cleaned[cleaned.length - 1];
+      setPinDigits(newDigits);
+      // Auto-advance to next input
+      if (index < 3) {
+        pinInputRefs[index + 1].current?.focus();
+      }
+    } else {
+      newDigits[index] = '';
+      setPinDigits(newDigits);
+    }
+  };
+
+  const handlePinKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !pinDigits[index] && index > 0) {
+      pinInputRefs[index - 1].current?.focus();
+    }
   };
 
   const handleRequestReset = (e: React.FormEvent) => {
@@ -109,10 +183,9 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      const res = verifyAndResetPassword(recoveryEmail, recoveryCode, newPassword);
+      const res = verifyAndResetPassword(recoveryEmail, recoveryCode, newPassword, newPin);
       if (res.success) {
         setRecoveryMessage({ type: 'success', text: res.message });
-        // After 1.5s switch back to login with prefilled password
         setTimeout(() => {
           setViewMode('login');
           setUsername(currentCreds.username);
@@ -124,12 +197,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
         setRecoveryMessage({ type: 'error', text: res.message });
       }
     }, 400);
-  };
-
-  const handleFillDemo = () => {
-    setUsername(currentCreds.username);
-    setPassword(currentCreds.passwordHash);
-    setError(null);
   };
 
   return (
@@ -154,18 +221,23 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
         {/* Header Icon & Title */}
         <div className="text-center space-y-2 mb-6">
           <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-[#2a362c] to-[#1c241e] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] shadow-lg shadow-black/40">
-            {viewMode === 'login' ? <Lock className="w-7 h-7" /> : <KeyRound className="w-7 h-7" />}
+            {viewMode === 'login' && <Lock className="w-7 h-7" />}
+            {viewMode === 'login_2fa' && <Smartphone className="w-7 h-7" />}
+            {viewMode === 'forgot_request' && <KeyRound className="w-7 h-7" />}
+            {viewMode === 'forgot_verify' && <ShieldCheck className="w-7 h-7" />}
           </div>
           <span className="text-[10px] uppercase tracking-widest text-[#d4af37] font-serif font-semibold">
             Maison des Pyrénées • Administration
           </span>
           <h3 className="font-serif text-2xl text-[#f3ece0] font-bold">
             {viewMode === 'login' && "Espace Gestionnaire"}
+            {viewMode === 'login_2fa' && "Double Authentification (2FA)"}
             {viewMode === 'forgot_request' && "Récupération du Mot de Passe"}
             {viewMode === 'forgot_verify' && "Nouveau Mot de Passe"}
           </h3>
           <p className="text-xs text-[#a3b1a5] leading-relaxed">
-            {viewMode === 'login' && "Connectez-vous pour éditer les modèles de vestes, prix, photos, logos et textes de la marque."}
+            {viewMode === 'login' && "Connectez-vous pour accéder aux réglages et à la personnalisation."}
+            {viewMode === 'login_2fa' && "Saisissez votre code de sécurité à 4 chiffres (ex: 0709)."}
             {viewMode === 'forgot_request' && "Indiquez l'adresse email associée à votre compte admin pour recevoir le code de réinitialisation."}
             {viewMode === 'forgot_verify' && "Saisissez le code de sécurité reçu et choisissez votre nouveau mot de passe."}
           </p>
@@ -188,7 +260,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
             className="mb-4 p-3 rounded-xl bg-emerald-950/60 border border-emerald-700 text-emerald-200 text-xs flex items-center space-x-2.5"
           >
             <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-            <span>Connexion réussie ! Ouverture du panneau administrateur...</span>
+            <span>Authentification réussie ! Ouverture du panneau administrateur...</span>
           </div>
         )}
 
@@ -209,34 +281,11 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
           </div>
         )}
 
-        {/* Simulated Instant Code Notification */}
-        {generatedCodeNotification && viewMode === 'forgot_verify' && (
-          <div className="mb-4 p-3.5 rounded-2xl bg-[#1d271f] border border-[#d4af37]/60 text-xs text-[#e2d5c3] space-y-1.5 shadow-md">
-            <div className="flex items-center space-x-2 text-[#d4af37] font-semibold">
-              <Mail className="w-4 h-4" />
-              <span>Email de sécurité envoyé à {currentCreds.email}</span>
-            </div>
-            <div className="text-[11px] text-[#b8c5ba] flex items-center justify-between">
-              <span>Code de récupération :</span>
-              <span className="font-mono text-sm font-bold text-white bg-[#0e130f] px-2.5 py-0.5 rounded border border-[#3b4b3e] tracking-widest">
-                {generatedCodeNotification}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setRecoveryCode(generatedCodeNotification)}
-              className="text-[11px] text-[#d4af37] hover:underline cursor-pointer pt-1"
-            >
-              Cliquer pour pré-remplir ce code
-            </button>
-          </div>
-        )}
-
         {/* ------------------------------------------------------------- */}
-        {/* VIEW 1: NORMAL LOGIN FORM                                     */}
+        {/* VIEW 1: NORMAL LOGIN FORM (STEP 1)                            */}
         {/* ------------------------------------------------------------- */}
         {viewMode === 'login' && (
-          <form onSubmit={handleSubmitLogin} className="space-y-4">
+          <form onSubmit={handleSubmitStep1} className="space-y-4">
             {/* Username / Email Field */}
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-[#d4af37] mb-1.5">
@@ -252,7 +301,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder={`ex: ${currentCreds.username} ou ${currentCreds.email}`}
+                  placeholder="Identifiant ou email"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0f1410] border border-[#334235] text-[#f3ece0] text-sm focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-colors"
                 />
               </div>
@@ -268,7 +317,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
                   type="button"
                   onClick={() => {
                     setViewMode('forgot_request');
-                    setRecoveryEmail(currentCreds.email);
+                    setRecoveryEmail(currentCreds.email || '');
                     setError(null);
                   }}
                   className="text-[11px] text-[#b89f74] hover:text-[#f3ece0] underline cursor-pointer"
@@ -317,7 +366,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
             <button
               id="admin-submit-login-btn"
               type="submit"
-              disabled={isLoading || success}
+              disabled={isLoading}
               className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#8c6d3f] to-[#b89f74] text-[#121613] font-semibold text-sm tracking-wider uppercase flex items-center justify-center space-x-2 hover:brightness-110 active:scale-[0.99] transition-all shadow-lg shadow-black/40 disabled:opacity-50 cursor-pointer"
             >
               {isLoading ? (
@@ -330,8 +379,8 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
                 </span>
               ) : (
                 <>
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Accéder à l'Administration</span>
+                  <Lock className="w-4 h-4" />
+                  <span>Continuer (Étape 1/2)</span>
                 </>
               )}
             </button>
@@ -339,7 +388,68 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
         )}
 
         {/* ------------------------------------------------------------- */}
-        {/* VIEW 2: FORGOT PASSWORD - STEP 1 (EMAIL REQUEST)               */}
+        {/* VIEW 2: STEP 2 - DOUBLE AUTHENTICATION (2FA) 4 DIGITS          */}
+        {/* ------------------------------------------------------------- */}
+        {viewMode === 'login_2fa' && (
+          <form onSubmit={handleSubmitStep2Pin} className="space-y-5 animate-fadeIn">
+            <div className="p-4 rounded-2xl bg-[#111712] border border-[#2f3d31] text-center space-y-3">
+              <span className="text-xs uppercase tracking-widest text-[#d4af37] font-semibold block">
+                Code de Sécurité à 4 Chiffres
+              </span>
+
+              {/* 4 Digit Boxes */}
+              <div className="flex justify-center items-center space-x-3 py-2">
+                {pinDigits.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    ref={pinInputRefs[idx]}
+                    type="password"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handlePinChange(idx, e.target.value)}
+                    onKeyDown={(e) => handlePinKeyDown(idx, e)}
+                    className="w-12 h-14 text-center font-mono text-2xl font-bold rounded-xl bg-[#1a231d] border-2 border-[#3d4f40] focus:border-[#d4af37] focus:bg-[#202c23] text-[#f3ece0] outline-none shadow-inner transition-all"
+                  />
+                ))}
+              </div>
+
+              <p className="text-[11px] text-[#8e9f90]">
+                Vérification de sécurité administrateur requise.
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading || success}
+              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#8c6d3f] to-[#b89f74] text-[#121613] font-semibold text-sm tracking-wider uppercase flex items-center justify-center space-x-2 hover:brightness-110 active:scale-[0.99] transition-all shadow-lg cursor-pointer"
+            >
+              {isLoading ? (
+                <span>Validation 2FA...</span>
+              ) : (
+                <>
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>Valider et Se Connecter</span>
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setViewMode('login');
+                setError(null);
+              }}
+              className="w-full py-2 text-xs text-[#a3b1a5] hover:text-white flex items-center justify-center space-x-1 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Retour aux identifiants</span>
+            </button>
+          </form>
+        )}
+
+        {/* ------------------------------------------------------------- */}
+        {/* VIEW 3: FORGOT PASSWORD - STEP 1 (EMAIL REQUEST)               */}
         {/* ------------------------------------------------------------- */}
         {viewMode === 'forgot_request' && (
           <form onSubmit={handleRequestReset} className="space-y-4">
@@ -361,7 +471,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
                 />
               </div>
               <p className="text-[11px] text-[#7e8f81] mt-1.5">
-                Un code de vérification à 6 chiffres vous sera instantanément généré.
+                Un code de vérification vous sera généré pour réinitialiser vos accès.
               </p>
             </div>
 
@@ -390,7 +500,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
         )}
 
         {/* ------------------------------------------------------------- */}
-        {/* VIEW 3: FORGOT PASSWORD - STEP 2 (CODE & NEW PASSWORD)         */}
+        {/* VIEW 4: FORGOT PASSWORD - STEP 2 (CODE & NEW PASSWORD)         */}
         {/* ------------------------------------------------------------- */}
         {viewMode === 'forgot_verify' && (
           <form onSubmit={handleVerifyAndReset} className="space-y-4">
@@ -437,13 +547,27 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
               />
             </div>
 
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#d4af37] mb-1.5">
+                Nouveau Code 2FA (4 chiffres optionnel)
+              </label>
+              <input
+                type="text"
+                maxLength={4}
+                value={newPin}
+                onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
+                placeholder="0709"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0f1410] border border-[#334235] text-[#f3ece0] text-sm focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]"
+              />
+            </div>
+
             <button
               type="submit"
               disabled={isLoading}
               className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#8c6d3f] to-[#b89f74] text-[#121613] font-semibold text-sm tracking-wider uppercase flex items-center justify-center space-x-2 hover:brightness-110 active:scale-[0.99] transition-all shadow-lg cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>Valider le Nouveau Mot de Passe</span>
+              <span>Valider la Réinitialisation</span>
             </button>
 
             <button
@@ -459,33 +583,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
               <span>Annuler et revenir à la connexion</span>
             </button>
           </form>
-        )}
-
-        {/* Demo Credentials Quick Fill Banner (Only on login view) */}
-        {viewMode === 'login' && (
-          <div className="mt-6 pt-5 border-t border-[#2a352c] text-center space-y-2">
-            <div className="p-3 rounded-2xl bg-[#1d261e]/80 border border-[#344436] flex flex-col items-center justify-center space-y-1.5">
-              <div className="flex items-center space-x-1.5 text-xs text-[#d4af37] font-medium">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Identifiants & Email Admin Associé :</span>
-              </div>
-              <div className="text-xs text-[#c6d3c8] font-mono bg-[#111612] px-3 py-1.5 rounded-lg border border-[#2b392d] space-y-0.5">
-                <div>Login: <strong className="text-[#f3ece0]">{currentCreds.username}</strong> | MDP: <strong className="text-[#f3ece0]">{currentCreds.passwordHash}</strong></div>
-                <div className="text-[11px] text-[#a3b1a5]">Email : <strong className="text-[#d4af37]">{currentCreds.email}</strong></div>
-              </div>
-              <button
-                id="fill-demo-credentials-btn"
-                type="button"
-                onClick={handleFillDemo}
-                className="text-[11px] text-[#b89f74] hover:text-[#ecd0a2] underline underline-offset-2 transition-colors pt-0.5 cursor-pointer"
-              >
-                Pré-remplir automatiquement ces identifiants
-              </button>
-            </div>
-            <p className="text-[10px] text-[#7a887b]">
-              Vous pouvez vous connecter avec votre identifiant ou votre adresse email, et modifier vos accès dans l'onglet Sécurité.
-            </p>
-          </div>
         )}
       </div>
     </div>

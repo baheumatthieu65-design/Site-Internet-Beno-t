@@ -1,7 +1,14 @@
 import React from 'react';
 import { BrandConfig } from '../types';
-import { Mountain, ArrowDown, Sparkles, Shield, Compass, ChevronRight, Edit3, Sliders, Layers } from 'lucide-react';
-import { getButtonClasses, getCardClasses } from '../utils/themeStyles';
+import { Mountain, ArrowDown, Sparkles, Shield, Compass, ChevronRight, Edit3, Layers, Plus } from 'lucide-react';
+import {
+  getButtonClasses,
+  getCardClasses,
+  getTextAlignClass,
+  getButtonAlignClass,
+  getContentPaddingClass,
+  getContainerWidthClass,
+} from '../utils/themeStyles';
 
 interface HeroSectionProps {
   brandData: BrandConfig;
@@ -18,14 +25,21 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   onSelectJacket,
   onOpenInquiry,
 }) => {
-  const jacket1 = brandData.jackets[0];
-  const jacket2 = brandData.jackets[1];
+  const jackets = brandData.jackets && brandData.jackets.length > 0 ? brandData.jackets : [];
   const theme = brandData.theme;
 
   const layout = theme?.heroLayout || 'split-cards';
   const cardStyle = getCardClasses(theme);
   const primaryBtnClass = getButtonClasses(theme, 'primary');
   const secondaryBtnClass = getButtonClasses(theme, 'secondary');
+
+  const textAlignClass = getTextAlignClass(theme);
+  const buttonAlignClass = getButtonAlignClass(theme);
+  const containerWidthClass = getContainerWidthClass(theme);
+  const contentPaddingClass = getContentPaddingClass(theme);
+
+  const badgePosition = theme?.heroBadgePosition || 'top';
+  const cardMediaPos = theme?.cardMediaPosition || 'left';
 
   const scrollToCollection = () => {
     const el = document.getElementById('collection');
@@ -37,10 +51,24 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const orderText = theme?.orderButtonText || 'Commander';
   const discoverText = theme?.discoverButtonText || 'Découvrir';
 
+  const renderBadge = () => {
+    if (badgePosition === 'hidden') return null;
+    return (
+      <div className={`flex ${textAlignClass === 'text-left' ? 'justify-start' : textAlignClass === 'text-right' ? 'justify-end' : 'justify-center'} mb-6`}>
+        <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-[#273229]/80 backdrop-blur-md border border-[#4d5e50] text-[#d4af37] text-xs font-serif tracking-widest uppercase shadow-xl">
+          <Mountain className="w-3.5 h-3.5 text-[#d4af37]" />
+          <span>{brandData.designerLocation}</span>
+          <span className="text-[#627666]">|</span>
+          <span className="text-[#e2d5c3]">{badgeText}</span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <section
       id="hero-section"
-      className="relative min-h-screen flex flex-col justify-between pt-28 pb-12 overflow-hidden bg-[#121613] group/hero"
+      className={`relative min-h-screen flex flex-col justify-between pt-28 pb-12 overflow-hidden bg-[#121613] group/hero ${contentPaddingClass}`}
     >
       {/* Background Pyrenees Image with gradient overlay */}
       <div className="absolute inset-0 z-0">
@@ -62,55 +90,56 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <button
               onClick={() => onOpenEditorSection('layouts')}
               className="px-2 py-0.5 rounded bg-[#28362b] hover:bg-[#344638] text-[#d4af37] flex items-center space-x-1"
-              title="Changer le format d'affichage de l'accueil"
+              title="Changer l'alignement et les dispositions"
             >
               <Layers className="w-3 h-3" />
-              <span>Format : {layout}</span>
+              <span>Agencement</span>
             </button>
             <button
-              onClick={() => onOpenEditorSection('brand')}
+              onClick={() => onOpenEditorSection('j1')}
               className="px-2 py-0.5 rounded bg-[#28362b] hover:bg-[#344638] text-white flex items-center space-x-1"
-              title="Modifier les textes d'accueil"
+              title="Ajouter ou modifier des articles"
             >
-              <Edit3 className="w-3 h-3" />
-              <span>Modifier</span>
+              <Plus className="w-3 h-3 text-[#d4af37]" />
+              <span>Articles ({jackets.length})</span>
             </button>
           </div>
         </div>
       )}
 
       {/* Main Content Container */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 md:pt-14 flex-1 flex flex-col justify-center">
+      <div className={`relative z-10 ${containerWidthClass} px-4 sm:px-6 lg:px-8 pt-8 md:pt-14 flex-1 flex flex-col justify-center`}>
         {/* Top Heritage Badge */}
-        <div className="flex justify-center mb-6">
-          <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-[#273229]/80 backdrop-blur-md border border-[#4d5e50] text-[#d4af37] text-xs font-serif tracking-widest uppercase shadow-xl">
-            <Mountain className="w-3.5 h-3.5 text-[#d4af37]" />
-            <span>{brandData.designerLocation}</span>
-            <span className="text-[#627666]">|</span>
-            <span className="text-[#e2d5c3]">{badgeText}</span>
-          </div>
-        </div>
+        {badgePosition === 'top' && renderBadge()}
 
         {/* LAYOUT VARIANT: CENTERED MINIMAL */}
         {layout === 'centered-minimal' ? (
-          <div className="text-center max-w-4xl mx-auto space-y-6">
+          <div className={`${textAlignClass} max-w-4xl mx-auto space-y-6`}>
             <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl font-light text-[#f5eedf] tracking-tight leading-tight">
-              <span className="block font-serif italic text-[#c2a26d] font-normal text-3xl sm:text-5xl md:text-6xl mb-2">
-                {titlePrefix}
-              </span>
+              {titlePrefix && (
+                <span className="block font-serif italic text-[#c2a26d] font-normal text-3xl sm:text-5xl md:text-6xl mb-2">
+                  {titlePrefix}
+                </span>
+              )}
               {brandData.brandName}
             </h1>
 
-            <p className="text-xl sm:text-3xl text-[#d0c5b4] font-serif font-light max-w-2xl mx-auto italic">
-              "{brandData.tagline}"
-            </p>
+            {badgePosition === 'below-title' && renderBadge()}
 
-            <p className="text-sm sm:text-base text-[#a3b0a2] max-w-2xl mx-auto leading-relaxed font-sans pt-2">
-              {brandData.subtitle}
-            </p>
+            {brandData.tagline && (
+              <p className="text-xl sm:text-3xl text-[#d0c5b4] font-serif font-light max-w-2xl mx-auto italic">
+                "{brandData.tagline}"
+              </p>
+            )}
 
-            {/* Centered CTA Buttons */}
-            <div className="pt-6 flex flex-wrap items-center justify-center gap-4">
+            {brandData.subtitle && (
+              <p className="text-sm sm:text-base text-[#a3b0a2] max-w-2xl mx-auto leading-relaxed font-sans pt-2">
+                {brandData.subtitle}
+              </p>
+            )}
+
+            {/* CTA Buttons */}
+            <div className={`pt-6 flex flex-wrap items-center ${buttonAlignClass} gap-4`}>
               <button
                 onClick={() => onOpenInquiry()}
                 className={`px-8 py-3.5 text-sm uppercase tracking-widest flex items-center space-x-2 ${primaryBtnClass}`}
@@ -123,49 +152,53 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 onClick={scrollToCollection}
                 className={`px-7 py-3.5 text-sm uppercase tracking-widest flex items-center space-x-2 ${secondaryBtnClass}`}
               >
-                <span>{discoverText} les 2 Vestes</span>
+                <span>{discoverText} la collection ({jackets.length} créations)</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Subtle Pills for the 2 models */}
-            <div className="pt-8 flex flex-wrap justify-center gap-4">
-              <button
-                onClick={() => onSelectJacket(jacket1.id)}
-                className="px-4 py-2 rounded-xl bg-[#1b221d]/80 border border-[#38473b] hover:border-[#d4af37] text-xs text-[#e2d5c3] flex items-center space-x-2 transition-all hover:scale-105"
-              >
-                <span className="text-[#d4af37] font-serif font-bold">N°1</span>
-                <span>{jacket1.name} — {jacket1.price} {jacket1.currency}</span>
-              </button>
-              <button
-                onClick={() => onSelectJacket(jacket2.id)}
-                className="px-4 py-2 rounded-xl bg-[#1b221d]/80 border border-[#38473b] hover:border-[#d4af37] text-xs text-[#e2d5c3] flex items-center space-x-2 transition-all hover:scale-105"
-              >
-                <span className="text-[#d4af37] font-serif font-bold">N°2</span>
-                <span>{jacket2.name} — {jacket2.price} {jacket2.currency}</span>
-              </button>
+            {/* Dynamic Pills for all jacket models */}
+            <div className="pt-8 flex flex-wrap justify-center gap-3">
+              {jackets.map((j, idx) => (
+                <button
+                  key={j.id}
+                  onClick={() => onSelectJacket(j.id)}
+                  className="px-4 py-2 rounded-xl bg-[#1b221d]/80 border border-[#38473b] hover:border-[#d4af37] text-xs text-[#e2d5c3] flex items-center space-x-2 transition-all hover:scale-105"
+                >
+                  <span className="text-[#d4af37] font-serif font-bold">N°{idx + 1}</span>
+                  <span>{j.name} — {j.price} {j.currency}</span>
+                </button>
+              ))}
             </div>
           </div>
         ) : layout === 'side-by-side' ? (
           /* LAYOUT VARIANT: SIDE BY SIDE PANORAMA */
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center max-w-6xl mx-auto">
-            <div className="lg:col-span-6 space-y-5 text-left">
+            <div className={`lg:col-span-6 space-y-5 ${textAlignClass === 'text-right' ? 'text-right' : 'text-left'}`}>
               <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-light text-[#f5eedf] tracking-tight leading-tight">
-                <span className="block font-serif italic text-[#c2a26d] font-normal text-2xl sm:text-3xl mb-1">
-                  {titlePrefix}
-                </span>
+                {titlePrefix && (
+                  <span className="block font-serif italic text-[#c2a26d] font-normal text-2xl sm:text-3xl mb-1">
+                    {titlePrefix}
+                  </span>
+                )}
                 {brandData.brandName}
               </h1>
 
-              <p className="text-lg sm:text-xl text-[#d0c5b4] font-serif font-light italic">
-                "{brandData.tagline}"
-              </p>
+              {badgePosition === 'below-title' && renderBadge()}
 
-              <p className="text-sm text-[#a3b0a2] leading-relaxed font-sans">
-                {brandData.subtitle}
-              </p>
+              {brandData.tagline && (
+                <p className="text-lg sm:text-xl text-[#d0c5b4] font-serif font-light italic">
+                  "{brandData.tagline}"
+                </p>
+              )}
 
-              <div className="pt-3 flex flex-wrap items-center gap-3">
+              {brandData.subtitle && (
+                <p className="text-sm text-[#a3b0a2] leading-relaxed font-sans">
+                  {brandData.subtitle}
+                </p>
+              )}
+
+              <div className={`pt-3 flex flex-wrap items-center gap-3 ${buttonAlignClass}`}>
                 <button
                   onClick={() => onOpenInquiry()}
                   className={`px-6 py-3 text-xs uppercase tracking-widest flex items-center space-x-2 ${primaryBtnClass}`}
@@ -183,8 +216,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
 
             {/* Right Cards */}
-            <div className="lg:col-span-6 space-y-4">
-              {[jacket1, jacket2].map((j, idx) => (
+            <div className="lg:col-span-6 space-y-4 max-h-[520px] overflow-y-auto pr-1">
+              {jackets.map((j, idx) => (
                 <div
                   key={j.id}
                   onClick={() => onSelectJacket(j.id)}
@@ -221,98 +254,86 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           /* DEFAULT LAYOUT VARIANT: SPLIT CARDS */
           <>
             {/* Title & Taglines */}
-            <div className="text-center max-w-4xl mx-auto space-y-4">
+            <div className={`${textAlignClass} max-w-4xl mx-auto space-y-4`}>
               <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl font-light text-[#f5eedf] tracking-tight leading-tight">
-                <span className="block font-serif italic text-[#c2a26d] font-normal text-3xl sm:text-5xl md:text-6xl mb-1">
-                  {titlePrefix}
-                </span>
+                {titlePrefix && (
+                  <span className="block font-serif italic text-[#c2a26d] font-normal text-3xl sm:text-5xl md:text-6xl mb-1">
+                    {titlePrefix}
+                  </span>
+                )}
                 {brandData.brandName}
               </h1>
 
-              <p className="text-lg sm:text-2xl text-[#d0c5b4] font-serif font-light max-w-2xl mx-auto italic">
-                "{brandData.tagline}"
-              </p>
+              {badgePosition === 'below-title' && renderBadge()}
 
-              <p className="text-sm sm:text-base text-[#a3b0a2] max-w-xl mx-auto leading-relaxed font-sans pt-2">
-                {brandData.subtitle}
-              </p>
+              {brandData.tagline && (
+                <p className="text-lg sm:text-2xl text-[#d0c5b4] font-serif font-light max-w-2xl mx-auto italic">
+                  "{brandData.tagline}"
+                </p>
+              )}
+
+              {brandData.subtitle && (
+                <p className="text-sm sm:text-base text-[#a3b0a2] max-w-xl mx-auto leading-relaxed font-sans pt-2">
+                  {brandData.subtitle}
+                </p>
+              )}
             </div>
 
-            {/* The 2 Jackets Quick Display Cards in Hero */}
-            <div className="mt-12 md:mt-16 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto w-full">
-              {/* Jacket 1 Card */}
-              <div
-                onClick={() => onSelectJacket(jacket1.id)}
-                className={`group relative cursor-pointer rounded-2xl p-4 transition-all duration-300 flex items-center space-x-4 ${cardStyle.card}`}
-              >
-                <div className="relative w-24 h-28 sm:w-28 sm:h-32 rounded-xl overflow-hidden bg-black/40 flex-shrink-0">
-                  <img
-                    src={jacket1.heroImage}
-                    alt={jacket1.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <span className="absolute top-2 left-2 bg-[#121613]/90 text-[#d4af37] text-[10px] uppercase tracking-wider px-2 py-0.5 rounded font-serif border border-[#3d4c40]">
-                    N°1
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span className="text-[11px] uppercase tracking-widest text-[#a3b1a5] font-medium block">
-                    {jacket1.category}
-                  </span>
-                  <h3 className="font-serif text-lg sm:text-xl text-[#f3ece0] font-semibold truncate group-hover:text-[#d4af37] transition-colors">
-                    {jacket1.name}
-                  </h3>
-                  <p className="text-xs text-[#a8b5a9] line-clamp-2 mt-1">
-                    {jacket1.description}
-                  </p>
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className="font-serif text-base font-semibold text-[#c2a26d]">
-                      {jacket1.price} {jacket1.currency}
-                    </span>
-                    <span className="text-xs text-[#d4af37] group-hover:translate-x-1 transition-transform inline-flex items-center space-x-1 font-medium">
-                      <span>{discoverText}</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-                </div>
-              </div>
+            {/* Dynamic Jackets Display Cards in Hero */}
+            <div className={`mt-10 md:mt-14 grid grid-cols-1 ${jackets.length === 1 ? 'max-w-md' : jackets.length === 2 ? 'md:grid-cols-2 max-w-4xl' : 'md:grid-cols-2 lg:grid-cols-3 max-w-6xl'} gap-6 mx-auto w-full`}>
+              {jackets.map((j, idx) => {
+                const isMediaTop = cardMediaPos === 'top';
+                const isMediaRight = cardMediaPos === 'right';
 
-              {/* Jacket 2 Card */}
-              <div
-                onClick={() => onSelectJacket(jacket2.id)}
-                className={`group relative cursor-pointer rounded-2xl p-4 transition-all duration-300 flex items-center space-x-4 ${cardStyle.card}`}
-              >
-                <div className="relative w-24 h-28 sm:w-28 sm:h-32 rounded-xl overflow-hidden bg-black/40 flex-shrink-0">
-                  <img
-                    src={jacket2.heroImage}
-                    alt={jacket2.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <span className="absolute top-2 left-2 bg-[#121613]/90 text-[#d4af37] text-[10px] uppercase tracking-wider px-2 py-0.5 rounded font-serif border border-[#3d4c40]">
-                    N°2
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span className="text-[11px] uppercase tracking-widest text-[#a3b1a5] font-medium block">
-                    {jacket2.category}
-                  </span>
-                  <h3 className="font-serif text-lg sm:text-xl text-[#f3ece0] font-semibold truncate group-hover:text-[#d4af37] transition-colors">
-                    {jacket2.name}
-                  </h3>
-                  <p className="text-xs text-[#a8b5a9] line-clamp-2 mt-1">
-                    {jacket2.description}
-                  </p>
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className="font-serif text-base font-semibold text-[#c2a26d]">
-                      {jacket2.price} {jacket2.currency}
-                    </span>
-                    <span className="text-xs text-[#d4af37] group-hover:translate-x-1 transition-transform inline-flex items-center space-x-1 font-medium">
-                      <span>{discoverText}</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </span>
+                return (
+                  <div
+                    key={j.id}
+                    onClick={() => onSelectJacket(j.id)}
+                    className={`group relative cursor-pointer rounded-2xl p-4 transition-all duration-300 ${
+                      isMediaTop
+                        ? 'flex flex-col space-y-3'
+                        : isMediaRight
+                        ? 'flex flex-row-reverse space-x-reverse space-x-4 items-center'
+                        : 'flex items-center space-x-4'
+                    } ${cardStyle.card}`}
+                  >
+                    <div
+                      className={`relative rounded-xl overflow-hidden bg-black/40 flex-shrink-0 ${
+                        isMediaTop ? 'w-full h-48' : 'w-24 h-28 sm:w-28 sm:h-32'
+                      }`}
+                    >
+                      <img
+                        src={j.heroImage}
+                        alt={j.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <span className="absolute top-2 left-2 bg-[#121613]/90 text-[#d4af37] text-[10px] uppercase tracking-wider px-2 py-0.5 rounded font-serif border border-[#3d4c40]">
+                        N°{idx + 1}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[11px] uppercase tracking-widest text-[#a3b1a5] font-medium block">
+                        {j.category}
+                      </span>
+                      <h3 className="font-serif text-lg sm:text-xl text-[#f3ece0] font-semibold truncate group-hover:text-[#d4af37] transition-colors">
+                        {j.name}
+                      </h3>
+                      <p className="text-xs text-[#a8b5a9] line-clamp-2 mt-1">
+                        {j.description}
+                      </p>
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className="font-serif text-base font-semibold text-[#c2a26d]">
+                          {j.price} {j.currency}
+                        </span>
+                        <span className="text-xs text-[#d4af37] group-hover:translate-x-1 transition-transform inline-flex items-center space-x-1 font-medium">
+                          <span>{discoverText}</span>
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                );
+              })}
             </div>
           </>
         )}
@@ -329,7 +350,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </div>
           <div className="flex items-center space-x-2">
             <Sparkles className="w-4 h-4 text-[#c2a26d]" />
-            <span>Série Limitée sur Mesure</span>
+            <span>{jackets.length} Pièces Signatures sur Mesure</span>
           </div>
         </div>
       </div>

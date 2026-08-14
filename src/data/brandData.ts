@@ -29,7 +29,7 @@ export const initialBrandData: BrandConfig = {
     'Chic champêtre & raffinement intemporel'
   ],
   contactEmail: 'contact@maisondespyrenees.fr',
-  ordersEmail: 'baheu.matthieu65@gmail.com',
+  ordersEmail: 'contact@maisondespyrenees.fr',
   instagram: '@maison.des.pyrenees',
   jackets: [
     {
