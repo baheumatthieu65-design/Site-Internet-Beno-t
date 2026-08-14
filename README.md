@@ -48,27 +48,6 @@ git push -u origin main
 
 ---
 
-## 🌐 Hébergement Gratuit en Ligne (100% Propriétaire)
-
-### Option 1 : Déploiement sur Vercel (Recommandé - 1 Clic)
-1. Rendez-vous sur [vercel.com](https://vercel.com) et connectez-vous avec votre compte **GitHub**.
-2. Cliquez sur **"Add New Project"** > **"Import Git Repository"**.
-3. Sélectionnez votre dépôt GitHub `votre-depot-pyrenees`.
-4. Vercel détecte automatiquement le projet **Vite / React**.
-5. Cliquez sur **"Deploy"**. Votre site est en ligne avec HTTPS gratuit en moins de 60 secondes !
-
-### Option 2 : Déploiement sur Netlify
-1. Rendez-vous sur [netlify.com](https://netlify.com) et connectez-vous avec **GitHub**.
-2. Cliquez sur **"Add new site"** > **"Import an existing project"**.
-3. Choisissez votre dépôt GitHub.
-4. Paramètres de compilation :
-   - **Build command** : `npm run build`
-   - **Publish directory** : `dist`
-5. Cliquez sur **"Deploy site"**.
-
----
-
-## 💻 Développement Local
 
 ```bash
 # Installer les dépendances
@@ -84,7 +63,7 @@ npm run build
 ---
 
 ## 🔐 Identifiants Administrateur par Défaut
-
+admin pyrenees2025
 - **Identifiant** : `admin`
 - **Email associé** : `baheu.matthieu65@gmail.com`
 - **Mot de passe par défaut** : `pyrenees2025`
