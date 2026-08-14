@@ -1,0 +1,349 @@
+import React from 'react';
+import { BrandConfig } from '../types';
+import { Mountain, ArrowDown, Sparkles, Shield, Compass, ChevronRight, Edit3, Sliders, Layers } from 'lucide-react';
+import { getButtonClasses, getCardClasses } from '../utils/themeStyles';
+
+interface HeroSectionProps {
+  brandData: BrandConfig;
+  isAdminLoggedIn?: boolean;
+  onOpenEditorSection?: (tab: 'brand' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
+  onSelectJacket: (jacketId: string) => void;
+  onOpenInquiry: (jacketId?: string) => void;
+}
+
+export const HeroSection: React.FC<HeroSectionProps> = ({
+  brandData,
+  isAdminLoggedIn,
+  onOpenEditorSection,
+  onSelectJacket,
+  onOpenInquiry,
+}) => {
+  const jacket1 = brandData.jackets[0];
+  const jacket2 = brandData.jackets[1];
+  const theme = brandData.theme;
+
+  const layout = theme?.heroLayout || 'split-cards';
+  const cardStyle = getCardClasses(theme);
+  const primaryBtnClass = getButtonClasses(theme, 'primary');
+  const secondaryBtnClass = getButtonClasses(theme, 'secondary');
+
+  const scrollToCollection = () => {
+    const el = document.getElementById('collection');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const badgeText = theme?.heroBadgeText || 'Édition Limitée des Pyrénées';
+  const titlePrefix = theme?.heroTitlePrefix || 'Thème Champêtre & Élégance';
+  const orderText = theme?.orderButtonText || 'Commander';
+  const discoverText = theme?.discoverButtonText || 'Découvrir';
+
+  return (
+    <section
+      id="hero-section"
+      className="relative min-h-screen flex flex-col justify-between pt-28 pb-12 overflow-hidden bg-[#121613] group/hero"
+    >
+      {/* Background Pyrenees Image with gradient overlay */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src={brandData.heroBgImage}
+          alt="Les Pyrénées"
+          className="w-full h-full object-cover object-center scale-105 opacity-40 mix-blend-luminosity"
+        />
+        {/* Gradients */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#121613] via-[#121613]/70 to-black/60" />
+        <div className="absolute inset-0 bg-radial-vignette opacity-80" />
+      </div>
+
+      {/* Admin Quick Edit Trigger */}
+      {isAdminLoggedIn && onOpenEditorSection && (
+        <div className="absolute top-24 right-6 z-30 opacity-90 hover:opacity-100 transition-opacity">
+          <div className="flex items-center space-x-2 bg-[#1b241d]/90 backdrop-blur-md border border-[#d4af37]/60 px-3 py-1.5 rounded-full shadow-2xl text-xs text-[#f3ece0]">
+            <span className="text-[10px] text-[#d4af37] font-semibold uppercase tracking-wider">Accueil</span>
+            <button
+              onClick={() => onOpenEditorSection('layouts')}
+              className="px-2 py-0.5 rounded bg-[#28362b] hover:bg-[#344638] text-[#d4af37] flex items-center space-x-1"
+              title="Changer le format d'affichage de l'accueil"
+            >
+              <Layers className="w-3 h-3" />
+              <span>Format : {layout}</span>
+            </button>
+            <button
+              onClick={() => onOpenEditorSection('brand')}
+              className="px-2 py-0.5 rounded bg-[#28362b] hover:bg-[#344638] text-white flex items-center space-x-1"
+              title="Modifier les textes d'accueil"
+            >
+              <Edit3 className="w-3 h-3" />
+              <span>Modifier</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content Container */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 md:pt-14 flex-1 flex flex-col justify-center">
+        {/* Top Heritage Badge */}
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-[#273229]/80 backdrop-blur-md border border-[#4d5e50] text-[#d4af37] text-xs font-serif tracking-widest uppercase shadow-xl">
+            <Mountain className="w-3.5 h-3.5 text-[#d4af37]" />
+            <span>{brandData.designerLocation}</span>
+            <span className="text-[#627666]">|</span>
+            <span className="text-[#e2d5c3]">{badgeText}</span>
+          </div>
+        </div>
+
+        {/* LAYOUT VARIANT: CENTERED MINIMAL */}
+        {layout === 'centered-minimal' ? (
+          <div className="text-center max-w-4xl mx-auto space-y-6">
+            <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl font-light text-[#f5eedf] tracking-tight leading-tight">
+              <span className="block font-serif italic text-[#c2a26d] font-normal text-3xl sm:text-5xl md:text-6xl mb-2">
+                {titlePrefix}
+              </span>
+              {brandData.brandName}
+            </h1>
+
+            <p className="text-xl sm:text-3xl text-[#d0c5b4] font-serif font-light max-w-2xl mx-auto italic">
+              "{brandData.tagline}"
+            </p>
+
+            <p className="text-sm sm:text-base text-[#a3b0a2] max-w-2xl mx-auto leading-relaxed font-sans pt-2">
+              {brandData.subtitle}
+            </p>
+
+            {/* Centered CTA Buttons */}
+            <div className="pt-6 flex flex-wrap items-center justify-center gap-4">
+              <button
+                onClick={() => onOpenInquiry()}
+                className={`px-8 py-3.5 text-sm uppercase tracking-widest flex items-center space-x-2 ${primaryBtnClass}`}
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>{orderText}</span>
+              </button>
+
+              <button
+                onClick={scrollToCollection}
+                className={`px-7 py-3.5 text-sm uppercase tracking-widest flex items-center space-x-2 ${secondaryBtnClass}`}
+              >
+                <span>{discoverText} les 2 Vestes</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Subtle Pills for the 2 models */}
+            <div className="pt-8 flex flex-wrap justify-center gap-4">
+              <button
+                onClick={() => onSelectJacket(jacket1.id)}
+                className="px-4 py-2 rounded-xl bg-[#1b221d]/80 border border-[#38473b] hover:border-[#d4af37] text-xs text-[#e2d5c3] flex items-center space-x-2 transition-all hover:scale-105"
+              >
+                <span className="text-[#d4af37] font-serif font-bold">N°1</span>
+                <span>{jacket1.name} — {jacket1.price} {jacket1.currency}</span>
+              </button>
+              <button
+                onClick={() => onSelectJacket(jacket2.id)}
+                className="px-4 py-2 rounded-xl bg-[#1b221d]/80 border border-[#38473b] hover:border-[#d4af37] text-xs text-[#e2d5c3] flex items-center space-x-2 transition-all hover:scale-105"
+              >
+                <span className="text-[#d4af37] font-serif font-bold">N°2</span>
+                <span>{jacket2.name} — {jacket2.price} {jacket2.currency}</span>
+              </button>
+            </div>
+          </div>
+        ) : layout === 'side-by-side' ? (
+          /* LAYOUT VARIANT: SIDE BY SIDE PANORAMA */
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center max-w-6xl mx-auto">
+            <div className="lg:col-span-6 space-y-5 text-left">
+              <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-light text-[#f5eedf] tracking-tight leading-tight">
+                <span className="block font-serif italic text-[#c2a26d] font-normal text-2xl sm:text-3xl mb-1">
+                  {titlePrefix}
+                </span>
+                {brandData.brandName}
+              </h1>
+
+              <p className="text-lg sm:text-xl text-[#d0c5b4] font-serif font-light italic">
+                "{brandData.tagline}"
+              </p>
+
+              <p className="text-sm text-[#a3b0a2] leading-relaxed font-sans">
+                {brandData.subtitle}
+              </p>
+
+              <div className="pt-3 flex flex-wrap items-center gap-3">
+                <button
+                  onClick={() => onOpenInquiry()}
+                  className={`px-6 py-3 text-xs uppercase tracking-widest flex items-center space-x-2 ${primaryBtnClass}`}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>{orderText}</span>
+                </button>
+                <button
+                  onClick={scrollToCollection}
+                  className={`px-5 py-3 text-xs uppercase tracking-widest flex items-center space-x-1.5 ${secondaryBtnClass}`}
+                >
+                  <span>{discoverText} la collection</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Right Cards */}
+            <div className="lg:col-span-6 space-y-4">
+              {[jacket1, jacket2].map((j, idx) => (
+                <div
+                  key={j.id}
+                  onClick={() => onSelectJacket(j.id)}
+                  className={`p-4 rounded-2xl cursor-pointer flex items-center space-x-4 ${cardStyle.card}`}
+                >
+                  <div className="relative w-20 h-24 rounded-xl overflow-hidden bg-black/40 flex-shrink-0">
+                    <img src={j.heroImage} alt={j.name} className="w-full h-full object-cover" />
+                    <span className="absolute top-1 left-1 bg-black/80 text-[#d4af37] text-[9px] px-1.5 py-0.5 rounded font-serif">
+                      N°{idx + 1}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[10px] uppercase tracking-widest text-[#a3b1a5]">
+                      {j.category}
+                    </span>
+                    <h3 className="font-serif text-lg text-[#f3ece0] font-semibold truncate">
+                      {j.name}
+                    </h3>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="font-serif text-sm font-semibold text-[#c2a26d]">
+                        {j.price} {j.currency}
+                      </span>
+                      <span className="text-xs text-[#d4af37] inline-flex items-center space-x-1 font-medium">
+                        <span>Sélectionner</span>
+                        <ChevronRight className="w-3 h-3" />
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* DEFAULT LAYOUT VARIANT: SPLIT CARDS */
+          <>
+            {/* Title & Taglines */}
+            <div className="text-center max-w-4xl mx-auto space-y-4">
+              <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl font-light text-[#f5eedf] tracking-tight leading-tight">
+                <span className="block font-serif italic text-[#c2a26d] font-normal text-3xl sm:text-5xl md:text-6xl mb-1">
+                  {titlePrefix}
+                </span>
+                {brandData.brandName}
+              </h1>
+
+              <p className="text-lg sm:text-2xl text-[#d0c5b4] font-serif font-light max-w-2xl mx-auto italic">
+                "{brandData.tagline}"
+              </p>
+
+              <p className="text-sm sm:text-base text-[#a3b0a2] max-w-xl mx-auto leading-relaxed font-sans pt-2">
+                {brandData.subtitle}
+              </p>
+            </div>
+
+            {/* The 2 Jackets Quick Display Cards in Hero */}
+            <div className="mt-12 md:mt-16 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto w-full">
+              {/* Jacket 1 Card */}
+              <div
+                onClick={() => onSelectJacket(jacket1.id)}
+                className={`group relative cursor-pointer rounded-2xl p-4 transition-all duration-300 flex items-center space-x-4 ${cardStyle.card}`}
+              >
+                <div className="relative w-24 h-28 sm:w-28 sm:h-32 rounded-xl overflow-hidden bg-black/40 flex-shrink-0">
+                  <img
+                    src={jacket1.heroImage}
+                    alt={jacket1.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <span className="absolute top-2 left-2 bg-[#121613]/90 text-[#d4af37] text-[10px] uppercase tracking-wider px-2 py-0.5 rounded font-serif border border-[#3d4c40]">
+                    N°1
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-[11px] uppercase tracking-widest text-[#a3b1a5] font-medium block">
+                    {jacket1.category}
+                  </span>
+                  <h3 className="font-serif text-lg sm:text-xl text-[#f3ece0] font-semibold truncate group-hover:text-[#d4af37] transition-colors">
+                    {jacket1.name}
+                  </h3>
+                  <p className="text-xs text-[#a8b5a9] line-clamp-2 mt-1">
+                    {jacket1.description}
+                  </p>
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="font-serif text-base font-semibold text-[#c2a26d]">
+                      {jacket1.price} {jacket1.currency}
+                    </span>
+                    <span className="text-xs text-[#d4af37] group-hover:translate-x-1 transition-transform inline-flex items-center space-x-1 font-medium">
+                      <span>{discoverText}</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Jacket 2 Card */}
+              <div
+                onClick={() => onSelectJacket(jacket2.id)}
+                className={`group relative cursor-pointer rounded-2xl p-4 transition-all duration-300 flex items-center space-x-4 ${cardStyle.card}`}
+              >
+                <div className="relative w-24 h-28 sm:w-28 sm:h-32 rounded-xl overflow-hidden bg-black/40 flex-shrink-0">
+                  <img
+                    src={jacket2.heroImage}
+                    alt={jacket2.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <span className="absolute top-2 left-2 bg-[#121613]/90 text-[#d4af37] text-[10px] uppercase tracking-wider px-2 py-0.5 rounded font-serif border border-[#3d4c40]">
+                    N°2
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-[11px] uppercase tracking-widest text-[#a3b1a5] font-medium block">
+                    {jacket2.category}
+                  </span>
+                  <h3 className="font-serif text-lg sm:text-xl text-[#f3ece0] font-semibold truncate group-hover:text-[#d4af37] transition-colors">
+                    {jacket2.name}
+                  </h3>
+                  <p className="text-xs text-[#a8b5a9] line-clamp-2 mt-1">
+                    {jacket2.description}
+                  </p>
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="font-serif text-base font-semibold text-[#c2a26d]">
+                      {jacket2.price} {jacket2.currency}
+                    </span>
+                    <span className="text-xs text-[#d4af37] group-hover:translate-x-1 transition-transform inline-flex items-center space-x-1 font-medium">
+                      <span>{discoverText}</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Feature Badges below */}
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-6 sm:gap-12 text-xs uppercase tracking-widest text-[#a3b0a2]">
+          <div className="flex items-center space-x-2">
+            <Shield className="w-4 h-4 text-[#c2a26d]" />
+            <span>Matières 100% Nobles</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Compass className="w-4 h-4 text-[#c2a26d]" />
+            <span>Conçu dans les Pyrénées</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Sparkles className="w-4 h-4 text-[#c2a26d]" />
+            <span>Série Limitée sur Mesure</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Down Arrow */}
+      <div className="relative z-10 text-center pt-8">
+        <button
+          onClick={scrollToCollection}
+          className="inline-flex items-center space-x-2 text-xs uppercase tracking-widest text-[#a3b0a2] hover:text-[#d4af37] transition-colors group"
+        >
+          <span>Découvrir la collection en détails</span>
+          <ArrowDown className="w-4 h-4 group-hover:translate-y-1 transition-transform text-[#d4af37]" />
+        </button>
+      </div>
+    </section>
+  );
+};
