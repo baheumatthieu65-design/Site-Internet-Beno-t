@@ -53,11 +53,26 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
     refreshData();
   }, []);
 
-  const refreshData = () => {
-    const loadedOrders = getStoredOrders();
+  const refreshData = async () => {
     const loadedStatuses = getAvailableStatuses();
-    setOrders(loadedOrders);
     setAvailableStatuses(loadedStatuses);
+
+    try {
+      const res = await fetch('/api/admin/orders');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.orders)) {
+          setOrders(data.orders);
+          saveOrders(data.orders);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Could not fetch orders from Redis server, using local cache:', e);
+    }
+
+    const loadedOrders = getStoredOrders();
+    setOrders(loadedOrders);
   };
 
   const showToast = (msg: string) => {
@@ -86,15 +101,26 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
   };
 
   // Change individual order status
-  const handleUpdateOrderStatus = (orderId: string, newStatus: string) => {
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
     const updated = orders.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o));
     setOrders(updated);
     saveOrders(updated);
+
+    try {
+      await fetch('/api/admin/orders', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, status: newStatus }),
+      });
+    } catch (e) {
+      console.error('Error updating order status on server:', e);
+    }
+
     showToast(`Statut de la commande ${orderId} passé à : « ${newStatus} »`);
   };
 
   // Delete an order with 2-step interactive click (iframe safe)
-  const handleDeleteOrder = (orderId: string) => {
+  const handleDeleteOrder = async (orderId: string) => {
     if (deletingOrderId !== orderId) {
       setDeletingOrderId(orderId);
       // Reset confirmation if not clicked within 5 seconds
@@ -109,6 +135,15 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
     setOrders(updated);
     saveOrders(updated);
     setDeletingOrderId(null);
+
+    try {
+      await fetch(`/api/admin/orders?id=${encodeURIComponent(orderId)}`, {
+        method: 'DELETE',
+      });
+    } catch (e) {
+      console.error('Error deleting order on server:', e);
+    }
+
     showToast(`Commande ${orderId} supprimée définitivement de l'espace de réception.`);
   };
 

@@ -1,6 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+
 import { initialBrandData } from './data/brandData';
-import { BrandConfig, ButtonStyleId, SectionId, ProductBlockId } from './types';
+import {
+  BrandConfig,
+  ButtonStyleId,
+  ProductBlockId,
+  SectionId,
+} from './types';
+
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { JacketsShowcase } from './components/JacketsShowcase';
@@ -12,234 +19,645 @@ import { BrandCustomizerModal } from './components/BrandCustomizerModal';
 import { OrdersModal } from './components/OrdersModal';
 import { AdminLoginModal } from './components/AdminLoginModal';
 import { AdminBar } from './components/AdminBar';
+import { AdminProductModal } from './components/AdminProductModal';
 import { Footer } from './components/Footer';
-import { verifyAdminSessionServer, logoutAdminServer, getStoredCredentials } from './utils/auth';
+
+import {
+  verifyAdminSessionServer,
+  logoutAdminServer,
+  getStoredCredentials,
+} from './utils/auth';
+
 import { defaultThemeConfig } from './utils/themeStyles';
 
+type CustomizerTab =
+  | 'brand'
+  | 'articles'
+  | 'j1'
+  | 'j2'
+  | 'theme'
+  | 'layouts'
+  | 'labels'
+  | 'security'
+  | 'github';
+
 export default function App() {
+  // ===========================================================================
+  // BRAND DATA
+  // ===========================================================================
+
   const [brandData, setBrandData] = useState<BrandConfig>(() => {
-    const saved = localStorage.getItem('pyrenees_brand_config');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (!parsed.theme) {
-          parsed.theme = { ...defaultThemeConfig };
-        }
-        return parsed;
-      } catch (e) {
-        console.error('Failed to parse saved brand config:', e);
+    try {
+      const saved = localStorage.getItem('pyrenees_brand_config');
+
+      if (saved) {
+        const parsed = JSON.parse(saved) as BrandConfig;
+
+        return {
+          ...initialBrandData,
+          ...parsed,
+          theme: {
+            ...defaultThemeConfig,
+            ...(parsed.theme || {}),
+          },
+        };
       }
+    } catch (error) {
+      console.error(
+        'Erreur lors de la lecture de pyrenees_brand_config:',
+        error
+      );
     }
-    return initialBrandData;
+
+    return {
+      ...initialBrandData,
+      theme: {
+        ...defaultThemeConfig,
+        ...(initialBrandData.theme || {}),
+      },
+    };
   });
 
+  // ===========================================================================
+  // SELECTED PRODUCT
+  // ===========================================================================
+
   const [selectedJacketId, setSelectedJacketId] = useState<string>(
-    brandData.jackets[0].id
+    brandData.jackets?.[0]?.id || ''
   );
 
-  // Inquiry Order Modal state
-  const [isInquiryOpen, setIsInquiryOpen] = useState(false);
-  const [inquiryJacketId, setInquiryJacketId] = useState<string | undefined>(undefined);
-  const [inquiryColor, setInquiryColor] = useState<string | undefined>(undefined);
-  const [inquirySize, setInquirySize] = useState<string | undefined>(undefined);
+  // ===========================================================================
+  // INQUIRY / ORDER MODAL
+  // ===========================================================================
 
-  // Admin & Customizer states
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(false);
-  const [adminUsername, setAdminUsername] = useState<string>(() => getStoredCredentials().username);
-  const [isAdminLoginOpen, setIsAdminLoginOpen] = useState<boolean>(false);
-  const [isCustomizerOpen, setIsCustomizerOpen] = useState<boolean>(false);
-  const [isOrdersOpen, setIsOrdersOpen] = useState<boolean>(false);
-  const [customizerTab, setCustomizerTab] = useState<'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security' | 'github'>('theme');
+  const [isInquiryOpen, setIsInquiryOpen] = useState(false);
+
+  const [inquiryJacketId, setInquiryJacketId] = useState<
+    string | undefined
+  >(undefined);
+
+  const [inquiryColor, setInquiryColor] = useState<string | undefined>(
+    undefined
+  );
+
+  const [inquirySize, setInquirySize] = useState<string | undefined>(
+    undefined
+  );
+
+  // ===========================================================================
+  // ADMIN STATE
+  // ===========================================================================
+
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+
+  const [adminUsername, setAdminUsername] = useState<string>(() => {
+    try {
+      return getStoredCredentials().username || 'admin';
+    } catch {
+      return 'admin';
+    }
+  });
+
+  const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
+  const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
+  const [isOrdersOpen, setIsOrdersOpen] = useState(false);
+  const [isProductsOpen, setIsProductsOpen] = useState(false);
+
+  const [customizerTab, setCustomizerTab] =
+    useState<CustomizerTab>('theme');
+
   const [activeSection, setActiveSection] = useState('collection');
 
-  // Verify server session on mount
-  useEffect(() => {
-    verifyAdminSessionServer().then((isAuth) => {
-      setIsAdminLoggedIn(isAuth);
-    });
-  }, []);
+  // ===========================================================================
+  // SECTION DRAG / REORDER
+  // ===========================================================================
 
-  // Save changes to localStorage
-  const handleSaveBrandData = (newData: BrandConfig) => {
-    setBrandData(newData);
-    localStorage.setItem('pyrenees_brand_config', JSON.stringify(newData));
+  const [isDragReorderMode, setIsDragReorderMode] = useState(true);
+
+  const [draggingSectionId, setDraggingSectionId] =
+    useState<SectionId | null>(null);
+
+  const [dragOverSectionId, setDragOverSectionId] =
+    useState<SectionId | null>(null);
+
+  const [reorderToast, setReorderToast] = useState<string | null>(null);
+
+  // ===========================================================================
+  // THEME
+  // ===========================================================================
+
+  const theme = {
+    ...defaultThemeConfig,
+    ...(brandData.theme || {}),
   };
+
+  const sectionOrder: SectionId[] =
+    theme.sectionOrder?.length > 0
+      ? theme.sectionOrder
+      : defaultThemeConfig.sectionOrder;
+
+  const hiddenSections: SectionId[] = theme.hiddenSections || [];
+
+  // ===========================================================================
+  // SAVE BRAND DATA
+  // ===========================================================================
+
+  const handleSaveBrandData = (newData: BrandConfig) => {
+    const normalizedData: BrandConfig = {
+      ...newData,
+      theme: {
+        ...defaultThemeConfig,
+        ...(newData.theme || {}),
+      },
+    };
+
+    setBrandData(normalizedData);
+
+    try {
+      localStorage.setItem(
+        'pyrenees_brand_config',
+        JSON.stringify(normalizedData)
+      );
+    } catch (error) {
+      console.error(
+        'Impossible de sauvegarder la configuration locale:',
+        error
+      );
+    }
+  };
+
+  // ===========================================================================
+  // RESET BRAND DATA
+  // ===========================================================================
 
   const handleResetBrandData = () => {
-    setBrandData(initialBrandData);
-    localStorage.removeItem('pyrenees_brand_config');
+    const resetData: BrandConfig = {
+      ...initialBrandData,
+      theme: {
+        ...defaultThemeConfig,
+        ...(initialBrandData.theme || {}),
+      },
+    };
+
+    setBrandData(resetData);
+
+    setSelectedJacketId(resetData.jackets?.[0]?.id || '');
+
+    try {
+      localStorage.removeItem('pyrenees_brand_config');
+    } catch (error) {
+      console.error(
+        'Impossible de supprimer la configuration locale:',
+        error
+      );
+    }
   };
 
-  const handleQuickChangeButtonStyle = (styleId: ButtonStyleId) => {
-    const updated: BrandConfig = {
+  // ===========================================================================
+  // LOAD PRODUCTS FROM SERVER
+  // ===========================================================================
+
+  const fetchServerProducts = async () => {
+    try {
+      const response = await fetch('/api/products', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        console.warn(
+          `Impossible de charger les produits serveur. HTTP ${response.status}`
+        );
+        return;
+      }
+
+      const data = await response.json();
+
+      if (!data?.success || !Array.isArray(data.products)) {
+        console.warn('Réponse produits serveur invalide.');
+        return;
+      }
+
+      const products = data.products;
+
+      setBrandData((previous) => ({
+        ...previous,
+        jackets: products,
+      }));
+
+      setSelectedJacketId((currentId) => {
+        if (
+          currentId &&
+          products.some(
+            (product: { id?: string }) => product.id === currentId
+          )
+        ) {
+          return currentId;
+        }
+
+        return products[0]?.id || '';
+      });
+    } catch (error) {
+      console.warn(
+        'Impossible de récupérer les produits depuis le serveur. Utilisation des données locales.',
+        error
+      );
+    }
+  };
+
+  // ===========================================================================
+  // INITIALIZATION
+  // ===========================================================================
+
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        const isAuthenticated = await verifyAdminSessionServer();
+        setIsAdminLoggedIn(isAuthenticated);
+      } catch (error) {
+        console.warn(
+          'Impossible de vérifier la session administrateur:',
+          error
+        );
+
+        setIsAdminLoggedIn(false);
+      }
+
+      await fetchServerProducts();
+    };
+
+    void initializeApp();
+  }, []);
+
+  // ===========================================================================
+  // BUTTON STYLE
+  // ===========================================================================
+
+  const handleQuickChangeButtonStyle = (
+    styleId: ButtonStyleId
+  ) => {
+    const updatedData: BrandConfig = {
       ...brandData,
       theme: {
-        ...(brandData.theme || defaultThemeConfig),
+        ...theme,
         buttonStyle: styleId,
       },
     };
-    handleSaveBrandData(updated);
+
+    handleSaveBrandData(updatedData);
   };
 
-  const handleOpenInquiry = (jacketId?: string, color?: string, size?: string) => {
-    setInquiryJacketId(jacketId || selectedJacketId);
+  // ===========================================================================
+  // OPEN INQUIRY
+  // ===========================================================================
+
+  const handleOpenInquiry = (
+    jacketId?: string,
+    color?: string,
+    size?: string
+  ) => {
+    setInquiryJacketId(
+      jacketId || selectedJacketId || brandData.jackets?.[0]?.id
+    );
+
     setInquiryColor(color);
     setInquirySize(size);
+
     setIsInquiryOpen(true);
   };
 
+  // ===========================================================================
+  // ADMIN LOGIN
+  // ===========================================================================
+
   const handleLoginSuccess = (user: string) => {
     setIsAdminLoggedIn(true);
-    setAdminUsername(user);
-    // Automatically open customizer on first successful login on the theme tab
+    setAdminUsername(user || 'admin');
+
     setCustomizerTab('theme');
     setIsCustomizerOpen(true);
+    setIsAdminLoginOpen(false);
   };
 
-  const handleLogout = () => {
-    logoutAdminServer();
+  // ===========================================================================
+  // ADMIN LOGOUT
+  // ===========================================================================
+
+  const handleLogout = async () => {
+    try {
+      await logoutAdminServer();
+    } catch (error) {
+      console.warn(
+        'Erreur lors de la déconnexion administrateur:',
+        error
+      );
+    }
+
     setIsAdminLoggedIn(false);
     setIsCustomizerOpen(false);
     setIsOrdersOpen(false);
+    setIsProductsOpen(false);
   };
 
-  const handleOpenEditor = (tab: 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security' | 'github' = 'theme') => {
+  // ===========================================================================
+  // OPEN EDITOR
+  // ===========================================================================
+
+  const handleOpenEditor = (
+    tab: CustomizerTab = 'theme'
+  ) => {
     if (isAdminLoggedIn) {
       setCustomizerTab(tab);
       setIsCustomizerOpen(true);
-    } else {
-      setIsAdminLoginOpen(true);
+      return;
     }
+
+    setIsAdminLoginOpen(true);
   };
+
+  // ===========================================================================
+  // OPEN ORDERS
+  // ===========================================================================
 
   const handleOpenOrders = () => {
     if (isAdminLoggedIn) {
       setIsOrdersOpen(true);
-    } else {
-      setIsAdminLoginOpen(true);
+      return;
     }
+
+    setIsAdminLoginOpen(true);
   };
+
+  // ===========================================================================
+  // OPEN SECURITY
+  // ===========================================================================
 
   const handleOpenSecurity = () => {
     if (isAdminLoggedIn) {
       setCustomizerTab('security');
       setIsCustomizerOpen(true);
-    } else {
-      setIsAdminLoginOpen(true);
+      return;
     }
+
+    setIsAdminLoginOpen(true);
   };
 
-  const theme = brandData.theme || defaultThemeConfig;
-  const sectionOrder: SectionId[] = theme.sectionOrder || defaultThemeConfig.sectionOrder;
-  const hiddenSections = theme.hiddenSections || [];
-
-  // Drag and drop state for page sections
-  const [isDragReorderMode, setIsDragReorderMode] = useState<boolean>(true);
-  const [draggingSectionId, setDraggingSectionId] = useState<SectionId | null>(null);
-  const [dragOverSectionId, setDragOverSectionId] = useState<SectionId | null>(null);
-  const [reorderToast, setReorderToast] = useState<string | null>(null);
+  // ===========================================================================
+  // SECTION METADATA
+  // ===========================================================================
 
   const sectionMeta: Record<
     SectionId,
-    { label: string; tab: 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security' }
+    {
+      label: string;
+      tab:
+        | 'brand'
+        | 'articles'
+        | 'j1'
+        | 'j2'
+        | 'theme'
+        | 'layouts'
+        | 'labels'
+        | 'security';
+    }
   > = {
-    hero: { label: '1. Accueil & Bannière Principale', tab: 'brand' },
-    collection: { label: '2. Showcase Articles & Modèles', tab: 'articles' },
-    comparatif: { label: '3. Tableau Comparatif des Vestes', tab: 'layouts' },
-    origines: { label: '4. Récit & Terroir Pyrénéen', tab: 'brand' },
-    lookbook: { label: '5. Galerie & Lookbook', tab: 'brand' },
-    contact: { label: '6. Pied de page & Atelier', tab: 'brand' },
+    hero: {
+      label: '1. Accueil & Bannière Principale',
+      tab: 'brand',
+    },
+
+    collection: {
+      label: '2. Showcase Articles & Modèles',
+      tab: 'articles',
+    },
+
+    comparatif: {
+      label: '3. Tableau Comparatif des Vestes',
+      tab: 'layouts',
+    },
+
+    origines: {
+      label: '4. Récit & Terroir Pyrénéen',
+      tab: 'brand',
+    },
+
+    lookbook: {
+      label: '5. Galerie & Lookbook',
+      tab: 'brand',
+    },
+
+    contact: {
+      label: '6. Pied de page & Atelier',
+      tab: 'brand',
+    },
   };
 
-  const handleSectionDragStart = (secId: SectionId, e: React.DragEvent) => {
-    setDraggingSectionId(secId);
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', secId);
+  // ===========================================================================
+  // DRAG START
+  // ===========================================================================
+
+  const handleSectionDragStart = (
+    sectionId: SectionId,
+    event: React.DragEvent<HTMLDivElement>
+  ) => {
+    setDraggingSectionId(sectionId);
+
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', sectionId);
   };
 
-  const handleSectionDragOver = (secId: SectionId, e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    if (dragOverSectionId !== secId) {
-      setDragOverSectionId(secId);
+  // ===========================================================================
+  // DRAG OVER
+  // ===========================================================================
+
+  const handleSectionDragOver = (
+    sectionId: SectionId,
+    event: React.DragEvent<HTMLDivElement>
+  ) => {
+    event.preventDefault();
+
+    event.dataTransfer.dropEffect = 'move';
+
+    if (dragOverSectionId !== sectionId) {
+      setDragOverSectionId(sectionId);
     }
   };
 
-  const handleSectionDrop = (targetSecId: SectionId) => {
-    if (!draggingSectionId || draggingSectionId === targetSecId) {
+  // ===========================================================================
+  // DROP
+  // ===========================================================================
+
+  const handleSectionDrop = (
+    targetSectionId: SectionId
+  ) => {
+    if (
+      !draggingSectionId ||
+      draggingSectionId === targetSectionId
+    ) {
       setDraggingSectionId(null);
       setDragOverSectionId(null);
       return;
     }
 
     const currentOrder = [...sectionOrder];
+
     const fromIndex = currentOrder.indexOf(draggingSectionId);
-    const toIndex = currentOrder.indexOf(targetSecId);
+    const toIndex = currentOrder.indexOf(targetSectionId);
 
-    if (fromIndex !== -1 && toIndex !== -1) {
-      const updated = [...currentOrder];
-      const [moved] = updated.splice(fromIndex, 1);
-      updated.splice(toIndex, 0, moved);
-
-      const newBrandData: BrandConfig = {
-        ...brandData,
-        theme: {
-          ...(brandData.theme || defaultThemeConfig),
-          sectionOrder: updated,
-        },
-      };
-      handleSaveBrandData(newBrandData);
-      setReorderToast(`Section « ${sectionMeta[draggingSectionId]?.label || draggingSectionId} » déplacée avec succès !`);
-      setTimeout(() => setReorderToast(null), 3000);
+    if (fromIndex === -1 || toIndex === -1) {
+      setDraggingSectionId(null);
+      setDragOverSectionId(null);
+      return;
     }
+
+    const updatedOrder = [...currentOrder];
+
+    const [movedSection] = updatedOrder.splice(
+      fromIndex,
+      1
+    );
+
+    updatedOrder.splice(
+      toIndex,
+      0,
+      movedSection
+    );
+
+    const updatedBrandData: BrandConfig = {
+      ...brandData,
+      theme: {
+        ...theme,
+        sectionOrder: updatedOrder,
+      },
+    };
+
+    handleSaveBrandData(updatedBrandData);
+
+    const movedLabel =
+      sectionMeta[draggingSectionId]?.label ||
+      draggingSectionId;
+
+    setReorderToast(
+      `Section « ${movedLabel} » déplacée avec succès !`
+    );
+
+    window.setTimeout(() => {
+      setReorderToast(null);
+    }, 3000);
 
     setDraggingSectionId(null);
     setDragOverSectionId(null);
   };
 
-  const handleMoveSectionDirect = (secId: SectionId, direction: 'up' | 'down') => {
+  // ===========================================================================
+  // MOVE SECTION UP / DOWN
+  // ===========================================================================
+
+  const handleMoveSectionDirect = (
+    sectionId: SectionId,
+    direction: 'up' | 'down'
+  ) => {
     const currentOrder = [...sectionOrder];
-    const index = currentOrder.indexOf(secId);
-    if (index === -1) return;
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= currentOrder.length) return;
 
-    const updated = [...currentOrder];
-    const [moved] = updated.splice(index, 1);
-    updated.splice(targetIndex, 0, moved);
+    const index = currentOrder.indexOf(sectionId);
 
-    const newBrandData: BrandConfig = {
+    if (index === -1) {
+      return;
+    }
+
+    const targetIndex =
+      direction === 'up'
+        ? index - 1
+        : index + 1;
+
+    if (
+      targetIndex < 0 ||
+      targetIndex >= currentOrder.length
+    ) {
+      return;
+    }
+
+    const updatedOrder = [...currentOrder];
+
+    const [movedSection] = updatedOrder.splice(
+      index,
+      1
+    );
+
+    updatedOrder.splice(
+      targetIndex,
+      0,
+      movedSection
+    );
+
+    const updatedBrandData: BrandConfig = {
       ...brandData,
       theme: {
-        ...(brandData.theme || defaultThemeConfig),
-        sectionOrder: updated,
+        ...theme,
+        sectionOrder: updatedOrder,
       },
     };
-    handleSaveBrandData(newBrandData);
-    setReorderToast(`Section déplacée avec succès !`);
-    setTimeout(() => setReorderToast(null), 2500);
+
+    handleSaveBrandData(updatedBrandData);
+
+    setReorderToast(
+      direction === 'up'
+        ? 'Section montée avec succès !'
+        : 'Section descendue avec succès !'
+    );
+
+    window.setTimeout(() => {
+      setReorderToast(null);
+    }, 2500);
   };
 
-  const handleReorderProductBlocks = (newOrder: ProductBlockId[]) => {
-    const newBrandData: BrandConfig = {
+  // ===========================================================================
+  // PRODUCT BLOCK REORDER
+  // ===========================================================================
+
+  const handleReorderProductBlocks = (
+    newOrder: ProductBlockId[]
+  ) => {
+    const updatedBrandData: BrandConfig = {
       ...brandData,
       theme: {
-        ...(brandData.theme || defaultThemeConfig),
+        ...theme,
         productBlocksOrder: newOrder,
       },
     };
-    handleSaveBrandData(newBrandData);
-    setReorderToast(`Disposition du bloc produit mise à jour !`);
-    setTimeout(() => setReorderToast(null), 2500);
+
+    handleSaveBrandData(updatedBrandData);
+
+    setReorderToast(
+      'Disposition du bloc produit mise à jour !'
+    );
+
+    window.setTimeout(() => {
+      setReorderToast(null);
+    }, 2500);
   };
 
-  // Helper to render sections according to order
-  const renderSection = (secId: SectionId, index: number) => {
-    if (hiddenSections.includes(secId)) return null;
+  // ===========================================================================
+  // RENDER SECTION
+  // ===========================================================================
+
+  const renderSection = (
+    sectionId: SectionId,
+    index: number
+  ) => {
+    if (hiddenSections.includes(sectionId)) {
+      return null;
+    }
 
     let content: React.ReactNode = null;
 
-    switch (secId) {
+    switch (sectionId) {
+      // -----------------------------------------------------------------------
+      // HERO
+      // -----------------------------------------------------------------------
+
       case 'hero':
         content = (
           <HeroSection
@@ -248,13 +666,24 @@ export default function App() {
             onOpenEditorSection={handleOpenEditor}
             onSelectJacket={(id) => {
               setSelectedJacketId(id);
-              const el = document.getElementById('collection');
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
+
+              window.setTimeout(() => {
+                const element =
+                  document.getElementById('collection');
+
+                element?.scrollIntoView({
+                  behavior: 'smooth',
+                });
+              }, 0);
             }}
             onOpenInquiry={handleOpenInquiry}
           />
         );
         break;
+
+      // -----------------------------------------------------------------------
+      // COLLECTION
+      // -----------------------------------------------------------------------
 
       case 'collection':
         content = (
@@ -267,10 +696,16 @@ export default function App() {
             onOpenEditorSection={handleOpenEditor}
             onSelectJacket={setSelectedJacketId}
             onOpenInquiry={handleOpenInquiry}
-            onReorderProductBlocks={handleReorderProductBlocks}
+            onReorderProductBlocks={
+              handleReorderProductBlocks
+            }
           />
         );
         break;
+
+      // -----------------------------------------------------------------------
+      // COMPARISON
+      // -----------------------------------------------------------------------
 
       case 'comparatif':
         content = (
@@ -285,6 +720,10 @@ export default function App() {
         );
         break;
 
+      // -----------------------------------------------------------------------
+      // STORY
+      // -----------------------------------------------------------------------
+
       case 'origines':
         content = (
           <BrandStory
@@ -294,6 +733,10 @@ export default function App() {
           />
         );
         break;
+
+      // -----------------------------------------------------------------------
+      // LOOKBOOK
+      // -----------------------------------------------------------------------
 
       case 'lookbook':
         content = (
@@ -308,14 +751,22 @@ export default function App() {
         );
         break;
 
+      // -----------------------------------------------------------------------
+      // FOOTER / CONTACT
+      // -----------------------------------------------------------------------
+
       case 'contact':
         content = (
           <Footer
             brandData={brandData}
             isAdminLoggedIn={isAdminLoggedIn}
-            onOpenLogin={() => setIsAdminLoginOpen(true)}
+            onOpenLogin={() =>
+              setIsAdminLoginOpen(true)
+            }
             onOpenCustomizer={handleOpenEditor}
-            onOpenInquiry={() => handleOpenInquiry()}
+            onOpenInquiry={() =>
+              handleOpenInquiry()
+            }
           />
         );
         break;
@@ -324,66 +775,137 @@ export default function App() {
         return null;
     }
 
-    if (!isAdminLoggedIn || !isDragReorderMode) {
-      return <div key={secId}>{content}</div>;
+    // -------------------------------------------------------------------------
+    // NORMAL VISITOR MODE
+    // -------------------------------------------------------------------------
+
+    if (
+      !isAdminLoggedIn ||
+      !isDragReorderMode
+    ) {
+      return (
+        <div key={sectionId}>
+          {content}
+        </div>
+      );
     }
 
-    const isDragging = draggingSectionId === secId;
-    const isDragOver = dragOverSectionId === secId;
-    const meta = sectionMeta[secId] || { label: secId, tab: 'theme' };
+    // -------------------------------------------------------------------------
+    // ADMIN DRAG MODE
+    // -------------------------------------------------------------------------
+
+    const isDragging =
+      draggingSectionId === sectionId;
+
+    const isDragOver =
+      dragOverSectionId === sectionId;
+
+    const meta =
+      sectionMeta[sectionId];
 
     return (
       <div
-        key={secId}
+        key={sectionId}
         draggable
-        onDragStart={(e) => handleSectionDragStart(secId, e)}
-        onDragOver={(e) => handleSectionDragOver(secId, e)}
-        onDragLeave={() => setDragOverSectionId(null)}
-        onDrop={() => handleSectionDrop(secId)}
+        onDragStart={(event) =>
+          handleSectionDragStart(
+            sectionId,
+            event
+          )
+        }
+        onDragOver={(event) =>
+          handleSectionDragOver(
+            sectionId,
+            event
+          )
+        }
+        onDragLeave={() =>
+          setDragOverSectionId(null)
+        }
+        onDrop={() =>
+          handleSectionDrop(sectionId)
+        }
         className={`relative transition-all ${
-          isDragging ? 'opacity-30 scale-[0.99]' : 'opacity-100'
+          isDragging
+            ? 'opacity-30 scale-[0.99]'
+            : 'opacity-100'
         } ${
           isDragOver
             ? 'border-4 border-dashed border-[#d4af37] bg-[#d4af37]/5 shadow-2xl'
             : ''
         }`}
       >
-        {/* Floating Admin Section Drag Bar */}
+        {/* ADMIN DRAG BAR */}
+
         <div className="bg-[#121613] border-y border-[#d4af37]/40 px-4 py-2 flex items-center justify-between z-20 text-xs text-[#f3ece0] select-none">
           <div className="flex items-center space-x-2.5 cursor-grab active:cursor-grabbing text-[#d4af37]">
             <span className="p-1 rounded bg-[#212b23] border border-[#3b4b3e] text-[#d4af37] flex items-center justify-center">
               ⠿
             </span>
+
             <span className="font-serif font-bold text-sm text-[#f3ece0]">
-              {meta.label}
+              {meta?.label || sectionId}
             </span>
+
             <span className="text-[11px] text-[#a3b1a5] hidden sm:inline font-sans">
-              (Cliquez & glissez cette barre pour déplacer la section)
+              Cliquez et glissez pour déplacer
+              la section
             </span>
           </div>
 
           <div className="flex items-center space-x-1.5">
+            {/* UP */}
+
             <button
               type="button"
-              onClick={() => handleMoveSectionDirect(secId, 'up')}
+              onClick={(event) => {
+                event.stopPropagation();
+
+                handleMoveSectionDirect(
+                  sectionId,
+                  'up'
+                );
+              }}
               disabled={index === 0}
               className="px-2 py-1 rounded bg-[#1e2720] hover:bg-[#28352b] border border-[#38483b] text-xs text-[#c4ceb8] disabled:opacity-30 cursor-pointer transition-all"
               title="Monter cette section"
             >
               ▲ Monter
             </button>
+
+            {/* DOWN */}
+
             <button
               type="button"
-              onClick={() => handleMoveSectionDirect(secId, 'down')}
-              disabled={index === sectionOrder.length - 1}
+              onClick={(event) => {
+                event.stopPropagation();
+
+                handleMoveSectionDirect(
+                  sectionId,
+                  'down'
+                );
+              }}
+              disabled={
+                index ===
+                sectionOrder.length - 1
+              }
               className="px-2 py-1 rounded bg-[#1e2720] hover:bg-[#28352b] border border-[#38483b] text-xs text-[#c4ceb8] disabled:opacity-30 cursor-pointer transition-all"
               title="Descendre cette section"
             >
               ▼ Descendre
             </button>
+
+            {/* EDIT */}
+
             <button
               type="button"
-              onClick={() => handleOpenEditor(meta.tab)}
+              onClick={(event) => {
+                event.stopPropagation();
+
+                handleOpenEditor(
+                  meta?.tab || 'theme'
+                );
+              }}
               className="px-2.5 py-1 rounded bg-[#28362b] hover:bg-[#344638] border border-[#d4af37]/60 text-[#d4af37] text-xs font-semibold cursor-pointer transition-all"
               title="Éditer le contenu de cette section"
             >
@@ -397,75 +919,166 @@ export default function App() {
     );
   };
 
+  // ===========================================================================
+  // RENDER APP
+  // ===========================================================================
+
   return (
     <div className="min-h-screen bg-[#121613] text-[#e2d5c3] font-sans selection:bg-[#d4af37] selection:text-[#121613] relative">
-      {/* Toast notification on reorder */}
+      {/* =====================================================================
+          REORDER TOAST
+      ====================================================================== */}
+
       {reorderToast && (
-        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl bg-[#19221b] border border-[#d4af37] text-[#d4af37] text-xs font-semibold shadow-2xl flex items-center space-x-2 animate-bounce">
+        <div className="fixed bottom-6 right-6 z-[100] px-4 py-3 rounded-xl bg-[#19221b] border border-[#d4af37] text-[#d4af37] text-xs font-semibold shadow-2xl flex items-center space-x-2 animate-bounce">
           <span>✓</span>
-          <span>{reorderToast}</span>
+
+          <span>
+            {reorderToast}
+          </span>
         </div>
       )}
 
-      {/* Top Admin Sticky Bar when connected */}
+      {/* =====================================================================
+          ADMIN BAR
+      ====================================================================== */}
+
       {isAdminLoggedIn && (
         <AdminBar
           username={adminUsername}
           theme={theme}
-          isDragReorderMode={isDragReorderMode}
-          onToggleDragReorderMode={() => setIsDragReorderMode(!isDragReorderMode)}
-          onQuickChangeButtonStyle={handleQuickChangeButtonStyle}
+          isDragReorderMode={
+            isDragReorderMode
+          }
+          onToggleDragReorderMode={() =>
+            setIsDragReorderMode(
+              (current) => !current
+            )
+          }
+          onQuickChangeButtonStyle={
+            handleQuickChangeButtonStyle
+          }
           onOpenEditor={handleOpenEditor}
           onOpenOrders={handleOpenOrders}
-          onOpenSecurity={handleOpenSecurity}
+          onOpenProducts={() =>
+            setIsProductsOpen(true)
+          }
+          onOpenSecurity={
+            handleOpenSecurity
+          }
           onLogout={handleLogout}
         />
       )}
 
-      {/* Sticky Header */}
+      {/* =====================================================================
+          NAVBAR
+      ====================================================================== */}
+
       <Navbar
         brandData={brandData}
         isAdminLoggedIn={isAdminLoggedIn}
-        onOpenLogin={() => setIsAdminLoginOpen(true)}
-        onOpenCustomizer={handleOpenEditor}
-        onOpenInquiry={handleOpenInquiry}
+        onOpenLogin={() =>
+          setIsAdminLoginOpen(true)
+        }
+        onOpenCustomizer={
+          handleOpenEditor
+        }
+        onOpenInquiry={
+          handleOpenInquiry
+        }
         activeSection={activeSection}
       />
 
-      {/* Dynamic Ordered Sections */}
+      {/* =====================================================================
+          PAGE SECTIONS
+      ====================================================================== */}
+
       <main>
-        {sectionOrder.map((secId, index) => renderSection(secId, index))}
+        {sectionOrder.map(
+          (sectionId, index) =>
+            renderSection(
+              sectionId,
+              index
+            )
+        )}
       </main>
 
-      {/* Inquiry / Reservation Modal */}
+      {/* =====================================================================
+          INQUIRY MODAL
+      ====================================================================== */}
+
       <InquiryModal
         isOpen={isInquiryOpen}
-        onClose={() => setIsInquiryOpen(false)}
+        onClose={() =>
+          setIsInquiryOpen(false)
+        }
         jackets={brandData.jackets}
-        preselectedJacketId={inquiryJacketId}
-        preselectedColor={inquiryColor}
-        preselectedSize={inquirySize}
-        ordersEmail={brandData.ordersEmail}
+        preselectedJacketId={
+          inquiryJacketId
+        }
+        preselectedColor={
+          inquiryColor
+        }
+        preselectedSize={
+          inquirySize
+        }
+        ordersEmail={
+          brandData.ordersEmail
+        }
       />
 
-      {/* Admin Login Dialog */}
+      {/* =====================================================================
+          ADMIN LOGIN
+      ====================================================================== */}
+
       <AdminLoginModal
         isOpen={isAdminLoginOpen}
-        onClose={() => setIsAdminLoginOpen(false)}
-        onLoginSuccess={handleLoginSuccess}
+        onClose={() =>
+          setIsAdminLoginOpen(false)
+        }
+        onLoginSuccess={
+          handleLoginSuccess
+        }
       />
 
-      {/* Standalone Orders & Reservations Reception Modal */}
+      {/* =====================================================================
+          ORDERS
+      ====================================================================== */}
+
       <OrdersModal
         isOpen={isOrdersOpen}
-        onClose={() => setIsOrdersOpen(false)}
-        ordersEmail={brandData.ordersEmail}
+        onClose={() =>
+          setIsOrdersOpen(false)
+        }
+        ordersEmail={
+          brandData.ordersEmail
+        }
       />
 
-      {/* Brand & Content Customizer Modal for Admin */}
+      {/* =====================================================================
+          PRODUCT MANAGEMENT
+      ====================================================================== */}
+
+      <AdminProductModal
+        isOpen={isProductsOpen}
+        onClose={() =>
+          setIsProductsOpen(false)
+        }
+        products={brandData.jackets}
+        onRefreshProducts={
+          fetchServerProducts
+        }
+      />
+
+      {/* =====================================================================
+          BRAND CUSTOMIZER
+      ====================================================================== */}
+
       <BrandCustomizerModal
         isOpen={isCustomizerOpen}
-        onClose={() => setIsCustomizerOpen(false)}
+        onClose={() =>
+          setIsCustomizerOpen(false)
+        }
         brandData={brandData}
         onSave={handleSaveBrandData}
         onReset={handleResetBrandData}

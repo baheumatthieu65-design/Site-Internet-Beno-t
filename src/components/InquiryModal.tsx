@@ -45,7 +45,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const validJackets = Array.isArray(jackets) && jackets.length > 0 ? jackets : [];
+  const validJackets = Array.isArray(jackets) ? jackets.filter((j) => j.isAvailable !== false) : [];
   const defaultJacket = validJackets.find((j) => j.id === preselectedJacketId) || validJackets[0];
 
   const createInitialLine = (): OrderLineItem => ({

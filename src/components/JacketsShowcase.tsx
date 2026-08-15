@@ -53,7 +53,10 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   onOpenInquiry,
   onReorderProductBlocks,
 }) => {
-  const activeJacket = jackets.find((j) => j.id === selectedJacketId) || jackets[0];
+  const visibleJackets = Array.isArray(jackets)
+    ? jackets.filter((j) => isAdminLoggedIn || j.isAvailable !== false)
+    : [];
+  const activeJacket = visibleJackets.find((j) => j.id === selectedJacketId) || visibleJackets[0] || jackets[0];
   const [activeImage, setActiveImage] = useState(activeJacket?.heroImage || '');
   const [selectedColor, setSelectedColor] = useState(activeJacket?.colors[0]?.name || '');
   const [selectedSize, setSelectedSize] = useState(activeJacket?.sizes[1] || 'M');
@@ -417,7 +420,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
         {/* Jacket Selector Tabs */}
         <div className="flex justify-center mb-10 overflow-x-auto pb-2">
           <div className={`inline-flex p-1.5 ${radius} bg-[#1e2520] border border-[#3b473e] shadow-xl flex-wrap justify-center gap-1`}>
-            {jackets.map((j, idx) => {
+            {visibleJackets.map((j, idx) => {
               const isSelected = j.id === activeJacket.id;
               return (
                 <button

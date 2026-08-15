@@ -39,8 +39,8 @@ export type SectionId =
 
 export interface Hotspot {
   id: string;
-  x: number; // percentage 0-100
-  y: number; // percentage 0-100
+  x: number;
+  y: number;
   title: string;
   description: string;
   category: 'fabric' | 'hardware' | 'cut' | 'utility';
@@ -52,42 +52,116 @@ export interface ComparisonCriterion {
   key: string;
 }
 
+export interface JacketColor {
+  name: string;
+  hex: string;
+  image?: string;
+}
+
+export interface JacketFeature {
+  iconName: string;
+  title: string;
+  desc: string;
+}
+
+export interface JacketSpecs {
+  weight: string;
+  waterResistance: string;
+  warmthRating: string;
+  fitType: string;
+  origin: string;
+  care: string;
+}
+
 export interface JacketModel {
   id: string;
   name: string;
   subTitle: string;
   category: string;
+
+  /**
+   * Prix officiel du produit.
+   * Le serveur doit toujours utiliser cette valeur depuis Redis
+   * lors de la création d'une commande.
+   */
   price: number;
+
   currency: string;
+
   heroImage: string;
   gallery: string[];
+
   description: string;
   longDescription: string;
   tagline: string;
+
   fabrics: string[];
-  colors: { name: string; hex: string; image?: string }[];
+  colors: JacketColor[];
   sizes: string[];
-  features: { iconName: string; title: string; desc: string }[];
-  specs: {
-    weight: string;
-    waterResistance: string;
-    warmthRating: string;
-    fitType: string;
-    origin: string;
-    care: string;
-  };
+
+  features: JacketFeature[];
+  specs: JacketSpecs;
+
   customSpecs?: Record<string, string>;
+
   hotspots: Hotspot[];
+
+  /**
+   * true  = produit visible et commandable
+   * false = produit masqué / indisponible
+   * absent = considéré comme disponible pour compatibilité
+   */
+  isAvailable?: boolean;
 }
 
-export type TextAlignId = 'left' | 'center' | 'right';
-export type ButtonAlignId = 'left' | 'center' | 'right' | 'stretch';
-export type BadgePositionId = 'top' | 'below-title' | 'hidden';
-export type CardMediaPositionId = 'left' | 'top' | 'right';
-export type ContentPaddingId = 'compact' | 'comfortable' | 'spacious';
-export type ContainerWidthId = 'standard' | 'wide' | 'narrow';
-export type ProductBlockId = 'title-price' | 'description' | 'colors' | 'sizes' | 'specs' | 'cta';
-export type FormFieldId = 'name' | 'email' | 'phone' | 'jacket' | 'color' | 'size' | 'requestType' | 'message';
+export type TextAlignId =
+  | 'left'
+  | 'center'
+  | 'right';
+
+export type ButtonAlignId =
+  | 'left'
+  | 'center'
+  | 'right'
+  | 'stretch';
+
+export type BadgePositionId =
+  | 'top'
+  | 'below-title'
+  | 'hidden';
+
+export type CardMediaPositionId =
+  | 'left'
+  | 'top'
+  | 'right';
+
+export type ContentPaddingId =
+  | 'compact'
+  | 'comfortable'
+  | 'spacious';
+
+export type ContainerWidthId =
+  | 'standard'
+  | 'wide'
+  | 'narrow';
+
+export type ProductBlockId =
+  | 'title-price'
+  | 'description'
+  | 'colors'
+  | 'sizes'
+  | 'specs'
+  | 'cta';
+
+export type FormFieldId =
+  | 'name'
+  | 'email'
+  | 'phone'
+  | 'jacket'
+  | 'color'
+  | 'size'
+  | 'requestType'
+  | 'message';
 
 export interface ThemeConfig {
   buttonStyle: ButtonStyleId;
@@ -95,32 +169,40 @@ export interface ThemeConfig {
   cardStyle: CardStyleId;
   heroLayout: HeroLayoutId;
   showcaseLayout: ShowcaseLayoutId;
+
   sectionOrder: SectionId[];
   hiddenSections: SectionId[];
+
   accentColorHex?: string;
-  // Positioning & Alignment
+
+  // Positionnement & alignement
   textAlign?: TextAlignId;
   buttonAlign?: ButtonAlignId;
   heroBadgePosition?: BadgePositionId;
   cardMediaPosition?: CardMediaPositionId;
   contentPadding?: ContentPaddingId;
   containerWidth?: ContainerWidthId;
+
   productBlocksOrder?: ProductBlockId[];
   formFieldsOrder?: FormFieldId[];
-  // Custom button & tab labels
+
+  // Libellés personnalisables
   orderButtonText: string;
   discoverButtonText: string;
   inquiryButtonText: string;
   workshopButtonText: string;
+
   heroBadgeText: string;
   heroTitlePrefix: string;
-  // Custom Section & Tab Navigation Labels
+
+  // Navigation
   collectionTabLabel?: string;
   comparatifTabLabel?: string;
   originesTabLabel?: string;
   lookbookTabLabel?: string;
   contactTabLabel?: string;
-  // Custom Comparison Table Criteria
+
+  // Tableau comparatif
   comparisonCriteria?: ComparisonCriterion[];
 }
 
@@ -128,18 +210,32 @@ export interface BrandConfig {
   brandName: string;
   tagline: string;
   subtitle: string;
+
   logoUrl: string;
   accentColor: string;
+
   foundingYear: string;
   designerLocation: string;
+
   heroBgImage: string;
+
   storyTitle: string;
   storyText1: string;
   storyText2: string;
   manifesto: string[];
+
   contactEmail: string;
-  ordersEmail: string; // Destination email for customer reservations and orders
+  ordersEmail: string;
+
   instagram: string;
+
+  /**
+   * Catalogue actuellement chargé dans l'application.
+   *
+   * En production, cette liste est synchronisée avec
+   * GET /api/products puis avec Upstash Redis.
+   */
   jackets: JacketModel[];
+
   theme?: ThemeConfig;
 }

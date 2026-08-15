@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sliders, ShieldCheck, LogOut, Key, Sparkles, Palette, Layers, Type, Tag, Move, Check, ShoppingBag } from 'lucide-react';
+import { Sliders, ShieldCheck, LogOut, Key, Sparkles, Palette, Layers, Type, Tag, Move, Check, ShoppingBag, Package } from 'lucide-react';
 import { ButtonStyleId, ThemeConfig } from '../types';
 import { buttonModelPresets } from '../utils/themeStyles';
 import { getStoredOrders } from '../utils/orderStorage';
@@ -12,6 +12,7 @@ interface AdminBarProps {
   onQuickChangeButtonStyle?: (styleId: ButtonStyleId) => void;
   onOpenEditor: (tab?: 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
   onOpenOrders: () => void;
+  onOpenProducts?: () => void;
   onOpenSecurity: () => void;
   onLogout: () => void;
 }
@@ -24,6 +25,7 @@ export const AdminBar: React.FC<AdminBarProps> = ({
   onQuickChangeButtonStyle,
   onOpenEditor,
   onOpenOrders,
+  onOpenProducts,
   onOpenSecurity,
   onLogout,
 }) => {
@@ -144,14 +146,25 @@ export const AdminBar: React.FC<AdminBarProps> = ({
           </button>
 
           {/* Articles & Jackets Tab */}
-          <button
-            onClick={() => onOpenEditor('articles')}
-            className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-[#202922] hover:bg-[#2c382e] text-[#c4ceb8] border border-[#3b4b3e] hover:border-[#b89f74] transition-all cursor-pointer"
-            title="Gérer les articles (ajouter, supprimer, modifier prix, photos, matières)"
-          >
-            <Tag className="w-3.5 h-3.5 text-[#b89f74]" />
-            <span>Articles</span>
-          </button>
+          {onOpenProducts ? (
+            <button
+              onClick={onOpenProducts}
+              className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-[#243126] hover:bg-[#304133] text-[#d4af37] border border-[#d4af37]/60 transition-all font-bold cursor-pointer"
+              title="Gérer les produits du catalogue (Créer, modifier, supprimer, prix, disponibilité)"
+            >
+              <Package className="w-3.5 h-3.5 text-[#d4af37]" />
+              <span>Catalogue</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => onOpenEditor('articles')}
+              className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-[#202922] hover:bg-[#2c382e] text-[#c4ceb8] border border-[#3b4b3e] hover:border-[#b89f74] transition-all cursor-pointer"
+              title="Gérer les articles (ajouter, supprimer, modifier prix, photos, matières)"
+            >
+              <Tag className="w-3.5 h-3.5 text-[#b89f74]" />
+              <span>Articles</span>
+            </button>
+          )}
 
           {/* Security / Password Button */}
           <button
