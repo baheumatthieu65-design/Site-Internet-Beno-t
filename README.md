@@ -87,3 +87,5 @@ Le projet utilise notamment :
 ├── tsconfig.json
 ├── vercel.json
 └── vite.config.ts
+
+Test de déploiement Vercel
