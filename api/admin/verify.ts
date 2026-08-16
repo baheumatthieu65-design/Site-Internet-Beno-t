@@ -1,4 +1,4 @@
-import { parseCookies, verifySessionToken } from '../_helpers';
+import { parseCookies, verifySessionToken } from '../_helpers.js';
 
 export default async function handler(req: any, res: any) {
   try {
