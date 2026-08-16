@@ -1,4 +1,4 @@
-import { checkResetCode, createSessionToken, createSessionCookieHeader } from '../_helpers';
+import { checkResetCode, createSessionToken, createSessionCookieHeader } from '../_helpers.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
