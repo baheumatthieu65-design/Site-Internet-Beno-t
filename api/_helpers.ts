@@ -1,6 +1,5 @@
 import crypto from 'crypto';
 import { Redis } from '@upstash/redis';
-import { defaultInitialProducts } from './_initialProducts.js';
 
 // ============================================================
 // SESSION / AUTHENTIFICATION
@@ -189,6 +188,7 @@ export const parseCookies = (
       if (parts.length < 2) return;
 
       const name = parts[0].trim();
+
       const value = parts
         .slice(1)
         .join('=')
@@ -267,27 +267,13 @@ export const getRedisClient = (): Redis | null => {
 // FALLBACK LOCAL
 // ============================================================
 
-let localProductsCache:
-  | any[]
-  | null = null;
+let localProductsCache: any[] | null = null;
 
 let localOrdersCache: any[] = [];
 
 // ============================================================
 // PRODUITS
 // ============================================================
-
-const getInitialProducts = (): any[] => {
-  return defaultInitialProducts.map(
-    (product: any) => ({
-      ...product,
-      isAvailable:
-        product.isAvailable !== undefined
-          ? Boolean(product.isAvailable)
-          : true,
-    })
-  );
-};
 
 export const getProductsFromDB =
   async (): Promise<any[]> => {
@@ -301,26 +287,18 @@ export const getProductsFromDB =
           );
 
         if (Array.isArray(data)) {
-          // Important :
-          // un tableau vide est une vraie valeur.
-          // On ne réinjecte les produits initiaux
-          // que si la clé n'existe pas.
-          if (data.length > 0) {
-            return data;
-          }
-
-          return [];
+          return data;
         }
 
-        const initialProducts =
-          getInitialProducts();
-
+        // La base Redis n'est pas encore initialisée.
+        // On ne charge volontairement aucun fichier
+        // du frontend ici.
         await redis.set(
           'mdp_products',
-          initialProducts
+          []
         );
 
-        return initialProducts;
+        return [];
       } catch (error) {
         console.error(
           'Erreur lecture produits Redis:',
@@ -331,10 +309,9 @@ export const getProductsFromDB =
       }
     }
 
-    // Fallback développement local
+    // Fallback développement local.
     if (!localProductsCache) {
-      localProductsCache =
-        getInitialProducts();
+      localProductsCache = [];
     }
 
     return localProductsCache;
