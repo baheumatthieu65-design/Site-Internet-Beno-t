@@ -3,7 +3,7 @@ import {
   getOrdersFromDB,
   saveOrdersToDB,
   sendOrderEmailNotification,
-} from './_helpers';
+} from './_helpers.js';
 
 export default async function handler(
   req: any,
