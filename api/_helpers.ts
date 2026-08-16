@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { Redis } from '@upstash/redis';
-import { defaultInitialProducts } from './_initialProducts';
+import { defaultInitialProducts } from './_initialProducts.js';
 
 // ============================================================
 // SESSION / AUTHENTIFICATION
