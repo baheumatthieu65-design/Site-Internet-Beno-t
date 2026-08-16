@@ -1,4 +1,4 @@
-import { createClearCookieHeader } from '../_helpers';
+import { createClearCookieHeader } from '../_helpers.js';
 
 export default async function handler(req: any, res: any) {
   try {
