@@ -1,4 +1,4 @@
-import { ButtonStyleId, ButtonRadiusId, CardStyleId, ThemeConfig, SectionId } from '../types';
+import { ButtonStyleId, ButtonRadiusId, CardStyleId, ThemeConfig, SectionId } from '../types.js';
 
 export interface ButtonModelPreset {
   id: ButtonStyleId;
