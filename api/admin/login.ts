@@ -2,7 +2,7 @@ import {
   checkAdminPassword,
   createSessionToken,
   createSessionCookieHeader,
-} from '../_helpers.ts';
+} from '../_helpers.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
