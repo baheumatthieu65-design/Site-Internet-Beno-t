@@ -3,7 +3,7 @@ import {
   verifySessionToken,
   getProductsFromDB,
   saveProductsToDB,
-} from '../_helpers';
+} from '../_helpers.js';
 
 const parseBody = (body: any) => {
   if (!body) return {};
