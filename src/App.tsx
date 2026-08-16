@@ -228,19 +228,41 @@ export default function App() {
 
       if (!response.ok) {
         console.warn(
-          `Impossible de charger les produits serveur. HTTP ${response.status}`
+          `Impossible de charger les produits serveur. HTTP ${response.status}. Conservation des produits locaux.`
         );
+
         return;
       }
 
       const data = await response.json();
 
-      if (!data?.success || !Array.isArray(data.products)) {
-        console.warn('Réponse produits serveur invalide.');
+      if (
+        !data ||
+        data.success !== true ||
+        !Array.isArray(data.products)
+      ) {
+        console.warn(
+          'Réponse produits serveur invalide. Conservation des produits locaux.'
+        );
+
         return;
       }
 
       const products = data.products;
+
+      // IMPORTANT :
+      // Si l'API retourne un tableau vide, on conserve
+      // les produits présents dans initialBrandData.
+      //
+      // Cela évite que le site devienne vide/blanc lorsque
+      // Redis n'est pas encore initialisé.
+      if (products.length === 0) {
+        console.warn(
+          'API produits vide : conservation des produits locaux.'
+        );
+
+        return;
+      }
 
       setBrandData((previous) => ({
         ...previous,
@@ -251,7 +273,8 @@ export default function App() {
         if (
           currentId &&
           products.some(
-            (product: { id?: string }) => product.id === currentId
+            (product: { id?: string }) =>
+              product.id === currentId
           )
         ) {
           return currentId;
@@ -274,7 +297,9 @@ export default function App() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        const isAuthenticated = await verifyAdminSessionServer();
+        const isAuthenticated =
+          await verifyAdminSessionServer();
+
         setIsAdminLoggedIn(isAuthenticated);
       } catch (error) {
         console.warn(
@@ -319,7 +344,9 @@ export default function App() {
     size?: string
   ) => {
     setInquiryJacketId(
-      jacketId || selectedJacketId || brandData.jackets?.[0]?.id
+      jacketId ||
+        selectedJacketId ||
+        brandData.jackets?.[0]?.id
     );
 
     setInquiryColor(color);
@@ -465,7 +492,10 @@ export default function App() {
     setDraggingSectionId(sectionId);
 
     event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', sectionId);
+    event.dataTransfer.setData(
+      'text/plain',
+      sectionId
+    );
   };
 
   // ===========================================================================
@@ -498,26 +528,41 @@ export default function App() {
     ) {
       setDraggingSectionId(null);
       setDragOverSectionId(null);
+
       return;
     }
 
     const currentOrder = [...sectionOrder];
 
-    const fromIndex = currentOrder.indexOf(draggingSectionId);
-    const toIndex = currentOrder.indexOf(targetSectionId);
+    const fromIndex =
+      currentOrder.indexOf(
+        draggingSectionId
+      );
 
-    if (fromIndex === -1 || toIndex === -1) {
+    const toIndex =
+      currentOrder.indexOf(
+        targetSectionId
+      );
+
+    if (
+      fromIndex === -1 ||
+      toIndex === -1
+    ) {
       setDraggingSectionId(null);
       setDragOverSectionId(null);
+
       return;
     }
 
-    const updatedOrder = [...currentOrder];
+    const updatedOrder = [
+      ...currentOrder,
+    ];
 
-    const [movedSection] = updatedOrder.splice(
-      fromIndex,
-      1
-    );
+    const [movedSection] =
+      updatedOrder.splice(
+        fromIndex,
+        1
+      );
 
     updatedOrder.splice(
       toIndex,
@@ -533,10 +578,14 @@ export default function App() {
       },
     };
 
-    handleSaveBrandData(updatedBrandData);
+    handleSaveBrandData(
+      updatedBrandData
+    );
 
     const movedLabel =
-      sectionMeta[draggingSectionId]?.label ||
+      sectionMeta[
+        draggingSectionId
+      ]?.label ||
       draggingSectionId;
 
     setReorderToast(
@@ -559,9 +608,14 @@ export default function App() {
     sectionId: SectionId,
     direction: 'up' | 'down'
   ) => {
-    const currentOrder = [...sectionOrder];
+    const currentOrder = [
+      ...sectionOrder,
+    ];
 
-    const index = currentOrder.indexOf(sectionId);
+    const index =
+      currentOrder.indexOf(
+        sectionId
+      );
 
     if (index === -1) {
       return;
@@ -574,17 +628,21 @@ export default function App() {
 
     if (
       targetIndex < 0 ||
-      targetIndex >= currentOrder.length
+      targetIndex >=
+        currentOrder.length
     ) {
       return;
     }
 
-    const updatedOrder = [...currentOrder];
+    const updatedOrder = [
+      ...currentOrder,
+    ];
 
-    const [movedSection] = updatedOrder.splice(
-      index,
-      1
-    );
+    const [movedSection] =
+      updatedOrder.splice(
+        index,
+        1
+      );
 
     updatedOrder.splice(
       targetIndex,
@@ -600,7 +658,9 @@ export default function App() {
       },
     };
 
-    handleSaveBrandData(updatedBrandData);
+    handleSaveBrandData(
+      updatedBrandData
+    );
 
     setReorderToast(
       direction === 'up'
@@ -624,11 +684,14 @@ export default function App() {
       ...brandData,
       theme: {
         ...theme,
-        productBlocksOrder: newOrder,
+        productBlocksOrder:
+          newOrder,
       },
     };
 
-    handleSaveBrandData(updatedBrandData);
+    handleSaveBrandData(
+      updatedBrandData
+    );
 
     setReorderToast(
       'Disposition du bloc produit mise à jour !'
@@ -647,55 +710,73 @@ export default function App() {
     sectionId: SectionId,
     index: number
   ) => {
-    if (hiddenSections.includes(sectionId)) {
+    if (
+      hiddenSections.includes(
+        sectionId
+      )
+    ) {
       return null;
     }
 
     let content: React.ReactNode = null;
 
     switch (sectionId) {
-      // -----------------------------------------------------------------------
-      // HERO
-      // -----------------------------------------------------------------------
-
       case 'hero':
         content = (
           <HeroSection
             brandData={brandData}
-            isAdminLoggedIn={isAdminLoggedIn}
-            onOpenEditorSection={handleOpenEditor}
+            isAdminLoggedIn={
+              isAdminLoggedIn
+            }
+            onOpenEditorSection={
+              handleOpenEditor
+            }
             onSelectJacket={(id) => {
               setSelectedJacketId(id);
 
               window.setTimeout(() => {
                 const element =
-                  document.getElementById('collection');
+                  document.getElementById(
+                    'collection'
+                  );
 
                 element?.scrollIntoView({
                   behavior: 'smooth',
                 });
               }, 0);
             }}
-            onOpenInquiry={handleOpenInquiry}
+            onOpenInquiry={
+              handleOpenInquiry
+            }
           />
         );
         break;
 
-      // -----------------------------------------------------------------------
-      // COLLECTION
-      // -----------------------------------------------------------------------
-
       case 'collection':
         content = (
           <JacketsShowcase
-            jackets={brandData.jackets}
-            selectedJacketId={selectedJacketId}
+            jackets={
+              brandData.jackets
+            }
+            selectedJacketId={
+              selectedJacketId
+            }
             theme={theme}
-            isAdminLoggedIn={isAdminLoggedIn}
-            isDragReorderMode={isDragReorderMode}
-            onOpenEditorSection={handleOpenEditor}
-            onSelectJacket={setSelectedJacketId}
-            onOpenInquiry={handleOpenInquiry}
+            isAdminLoggedIn={
+              isAdminLoggedIn
+            }
+            isDragReorderMode={
+              isDragReorderMode
+            }
+            onOpenEditorSection={
+              handleOpenEditor
+            }
+            onSelectJacket={
+              setSelectedJacketId
+            }
+            onOpenInquiry={
+              handleOpenInquiry
+            }
             onReorderProductBlocks={
               handleReorderProductBlocks
             }
@@ -703,67 +784,81 @@ export default function App() {
         );
         break;
 
-      // -----------------------------------------------------------------------
-      // COMPARISON
-      // -----------------------------------------------------------------------
-
       case 'comparatif':
         content = (
           <JacketComparison
-            jackets={brandData.jackets}
+            jackets={
+              brandData.jackets
+            }
             theme={theme}
-            isAdminLoggedIn={isAdminLoggedIn}
-            onOpenEditorSection={handleOpenEditor}
-            onSelectJacket={setSelectedJacketId}
-            onOpenInquiry={handleOpenInquiry}
+            isAdminLoggedIn={
+              isAdminLoggedIn
+            }
+            onOpenEditorSection={
+              handleOpenEditor
+            }
+            onSelectJacket={
+              setSelectedJacketId
+            }
+            onOpenInquiry={
+              handleOpenInquiry
+            }
           />
         );
         break;
-
-      // -----------------------------------------------------------------------
-      // STORY
-      // -----------------------------------------------------------------------
 
       case 'origines':
         content = (
           <BrandStory
             brandData={brandData}
-            isAdminLoggedIn={isAdminLoggedIn}
-            onOpenEditorSection={handleOpenEditor}
+            isAdminLoggedIn={
+              isAdminLoggedIn
+            }
+            onOpenEditorSection={
+              handleOpenEditor
+            }
           />
         );
         break;
-
-      // -----------------------------------------------------------------------
-      // LOOKBOOK
-      // -----------------------------------------------------------------------
 
       case 'lookbook':
         content = (
           <LookbookGallery
-            jackets={brandData.jackets}
-            heroBgImage={brandData.heroBgImage}
+            jackets={
+              brandData.jackets
+            }
+            heroBgImage={
+              brandData.heroBgImage
+            }
             theme={theme}
-            isAdminLoggedIn={isAdminLoggedIn}
-            onOpenEditorSection={handleOpenEditor}
-            onOpenInquiry={handleOpenInquiry}
+            isAdminLoggedIn={
+              isAdminLoggedIn
+            }
+            onOpenEditorSection={
+              handleOpenEditor
+            }
+            onOpenInquiry={
+              handleOpenInquiry
+            }
           />
         );
         break;
-
-      // -----------------------------------------------------------------------
-      // FOOTER / CONTACT
-      // -----------------------------------------------------------------------
 
       case 'contact':
         content = (
           <Footer
             brandData={brandData}
-            isAdminLoggedIn={isAdminLoggedIn}
-            onOpenLogin={() =>
-              setIsAdminLoginOpen(true)
+            isAdminLoggedIn={
+              isAdminLoggedIn
             }
-            onOpenCustomizer={handleOpenEditor}
+            onOpenLogin={() =>
+              setIsAdminLoginOpen(
+                true
+              )
+            }
+            onOpenCustomizer={
+              handleOpenEditor
+            }
             onOpenInquiry={() =>
               handleOpenInquiry()
             }
@@ -775,9 +870,9 @@ export default function App() {
         return null;
     }
 
-    // -------------------------------------------------------------------------
+    // =========================================================================
     // NORMAL VISITOR MODE
-    // -------------------------------------------------------------------------
+    // =========================================================================
 
     if (
       !isAdminLoggedIn ||
@@ -790,18 +885,22 @@ export default function App() {
       );
     }
 
-    // -------------------------------------------------------------------------
+    // =========================================================================
     // ADMIN DRAG MODE
-    // -------------------------------------------------------------------------
+    // =========================================================================
 
     const isDragging =
-      draggingSectionId === sectionId;
+      draggingSectionId ===
+      sectionId;
 
     const isDragOver =
-      dragOverSectionId === sectionId;
+      dragOverSectionId ===
+      sectionId;
 
     const meta =
-      sectionMeta[sectionId];
+      sectionMeta[
+        sectionId
+      ];
 
     return (
       <div
@@ -820,10 +919,14 @@ export default function App() {
           )
         }
         onDragLeave={() =>
-          setDragOverSectionId(null)
+          setDragOverSectionId(
+            null
+          )
         }
         onDrop={() =>
-          handleSectionDrop(sectionId)
+          handleSectionDrop(
+            sectionId
+          )
         }
         className={`relative transition-all ${
           isDragging
@@ -835,8 +938,6 @@ export default function App() {
             : ''
         }`}
       >
-        {/* ADMIN DRAG BAR */}
-
         <div className="bg-[#121613] border-y border-[#d4af37]/40 px-4 py-2 flex items-center justify-between z-20 text-xs text-[#f3ece0] select-none">
           <div className="flex items-center space-x-2.5 cursor-grab active:cursor-grabbing text-[#d4af37]">
             <span className="p-1 rounded bg-[#212b23] border border-[#3b4b3e] text-[#d4af37] flex items-center justify-center">
@@ -844,7 +945,8 @@ export default function App() {
             </span>
 
             <span className="font-serif font-bold text-sm text-[#f3ece0]">
-              {meta?.label || sectionId}
+              {meta?.label ||
+                sectionId}
             </span>
 
             <span className="text-[11px] text-[#a3b1a5] hidden sm:inline font-sans">
@@ -854,8 +956,6 @@ export default function App() {
           </div>
 
           <div className="flex items-center space-x-1.5">
-            {/* UP */}
-
             <button
               type="button"
               onClick={(event) => {
@@ -872,8 +972,6 @@ export default function App() {
             >
               ▲ Monter
             </button>
-
-            {/* DOWN */}
 
             <button
               type="button"
@@ -895,15 +993,14 @@ export default function App() {
               ▼ Descendre
             </button>
 
-            {/* EDIT */}
-
             <button
               type="button"
               onClick={(event) => {
                 event.stopPropagation();
 
                 handleOpenEditor(
-                  meta?.tab || 'theme'
+                  meta?.tab ||
+                    'theme'
                 );
               }}
               className="px-2.5 py-1 rounded bg-[#28362b] hover:bg-[#344638] border border-[#d4af37]/60 text-[#d4af37] text-xs font-semibold cursor-pointer transition-all"
@@ -925,10 +1022,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#121613] text-[#e2d5c3] font-sans selection:bg-[#d4af37] selection:text-[#121613] relative">
-      {/* =====================================================================
-          REORDER TOAST
-      ====================================================================== */}
-
       {reorderToast && (
         <div className="fixed bottom-6 right-6 z-[100] px-4 py-3 rounded-xl bg-[#19221b] border border-[#d4af37] text-[#d4af37] text-xs font-semibold shadow-2xl flex items-center space-x-2 animate-bounce">
           <span>✓</span>
@@ -938,10 +1031,6 @@ export default function App() {
           </span>
         </div>
       )}
-
-      {/* =====================================================================
-          ADMIN BAR
-      ====================================================================== */}
 
       {isAdminLoggedIn && (
         <AdminBar
@@ -958,25 +1047,29 @@ export default function App() {
           onQuickChangeButtonStyle={
             handleQuickChangeButtonStyle
           }
-          onOpenEditor={handleOpenEditor}
-          onOpenOrders={handleOpenOrders}
+          onOpenEditor={
+            handleOpenEditor
+          }
+          onOpenOrders={
+            handleOpenOrders
+          }
           onOpenProducts={() =>
             setIsProductsOpen(true)
           }
           onOpenSecurity={
             handleOpenSecurity
           }
-          onLogout={handleLogout}
+          onLogout={
+            handleLogout
+          }
         />
       )}
 
-      {/* =====================================================================
-          NAVBAR
-      ====================================================================== */}
-
       <Navbar
         brandData={brandData}
-        isAdminLoggedIn={isAdminLoggedIn}
+        isAdminLoggedIn={
+          isAdminLoggedIn
+        }
         onOpenLogin={() =>
           setIsAdminLoginOpen(true)
         }
@@ -986,16 +1079,17 @@ export default function App() {
         onOpenInquiry={
           handleOpenInquiry
         }
-        activeSection={activeSection}
+        activeSection={
+          activeSection
+        }
       />
-
-      {/* =====================================================================
-          PAGE SECTIONS
-      ====================================================================== */}
 
       <main>
         {sectionOrder.map(
-          (sectionId, index) =>
+          (
+            sectionId,
+            index
+          ) =>
             renderSection(
               sectionId,
               index
@@ -1003,16 +1097,14 @@ export default function App() {
         )}
       </main>
 
-      {/* =====================================================================
-          INQUIRY MODAL
-      ====================================================================== */}
-
       <InquiryModal
         isOpen={isInquiryOpen}
         onClose={() =>
           setIsInquiryOpen(false)
         }
-        jackets={brandData.jackets}
+        jackets={
+          brandData.jackets
+        }
         preselectedJacketId={
           inquiryJacketId
         }
@@ -1027,26 +1119,24 @@ export default function App() {
         }
       />
 
-      {/* =====================================================================
-          ADMIN LOGIN
-      ====================================================================== */}
-
       <AdminLoginModal
-        isOpen={isAdminLoginOpen}
+        isOpen={
+          isAdminLoginOpen
+        }
         onClose={() =>
-          setIsAdminLoginOpen(false)
+          setIsAdminLoginOpen(
+            false
+          )
         }
         onLoginSuccess={
           handleLoginSuccess
         }
       />
 
-      {/* =====================================================================
-          ORDERS
-      ====================================================================== */}
-
       <OrdersModal
-        isOpen={isOrdersOpen}
+        isOpen={
+          isOrdersOpen
+        }
         onClose={() =>
           setIsOrdersOpen(false)
         }
@@ -1055,34 +1145,40 @@ export default function App() {
         }
       />
 
-      {/* =====================================================================
-          PRODUCT MANAGEMENT
-      ====================================================================== */}
-
       <AdminProductModal
-        isOpen={isProductsOpen}
+        isOpen={
+          isProductsOpen
+        }
         onClose={() =>
           setIsProductsOpen(false)
         }
-        products={brandData.jackets}
+        products={
+          brandData.jackets
+        }
         onRefreshProducts={
           fetchServerProducts
         }
       />
 
-      {/* =====================================================================
-          BRAND CUSTOMIZER
-      ====================================================================== */}
-
       <BrandCustomizerModal
-        isOpen={isCustomizerOpen}
+        isOpen={
+          isCustomizerOpen
+        }
         onClose={() =>
           setIsCustomizerOpen(false)
         }
-        brandData={brandData}
-        onSave={handleSaveBrandData}
-        onReset={handleResetBrandData}
-        initialTab={customizerTab}
+        brandData={
+          brandData
+        }
+        onSave={
+          handleSaveBrandData
+        }
+        onReset={
+          handleResetBrandData
+        }
+        initialTab={
+          customizerTab
+        }
       />
     </div>
   );
