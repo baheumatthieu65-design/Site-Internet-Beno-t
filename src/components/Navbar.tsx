@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrandConfig } from '../types';
-import { Sliders, Sparkles, Lock, ShieldCheck, ChevronDown, Mountain, Compass, Palette, Layers } from 'lucide-react';
+import { Sliders, Sparkles } from 'lucide-react';
 import { getButtonClasses } from '../utils/themeStyles';
 
 interface NavbarProps {
@@ -10,6 +10,12 @@ interface NavbarProps {
   onOpenCustomizer: (tab?: 'brand' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
   onOpenInquiry: (jacketId?: string) => void;
   activeSection: string;
+}
+
+declare global {
+  interface Window {
+    __pyreneesOpenAdminOrders?: () => void;
+  }
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -29,9 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const badgeText = theme?.heroBadgeText || 'Pyrénées • Édition Limitée';
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 40);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -46,10 +50,12 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const scrollTo = (id: string) => {
     setMobileMenuOpen(false);
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const openOrders = () => {
+    if (!isAdminLoggedIn) return;
+    window.__pyreneesOpenAdminOrders?.();
   };
 
   return (
@@ -62,7 +68,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        {/* Brand Logo & Title */}
         <button
           id="nav-logo-btn"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -75,21 +80,14 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover border border-[#b89f74]/50 group-hover:border-[#d4af37] transition-all shadow-md"
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-[#3b473e] flex items-center justify-center text-[#e2d5c3] font-serif font-bold">
-              MP
-            </div>
+            <div className="w-10 h-10 rounded-full bg-[#3b473e] flex items-center justify-center text-[#e2d5c3] font-serif font-bold">MP</div>
           )}
           <div>
-            <span className="block font-serif text-lg sm:text-xl tracking-widest text-[#f3ece0] font-semibold group-hover:text-[#d4af37] transition-colors">
-              {brandData.brandName}
-            </span>
-            <span className="block text-[10px] tracking-wider uppercase text-[#a3b1a5] font-light">
-              {badgeText}
-            </span>
+            <span className="block font-serif text-lg sm:text-xl tracking-widest text-[#f3ece0] font-semibold group-hover:text-[#d4af37] transition-colors">{brandData.brandName}</span>
+            <span className="block text-[10px] tracking-wider uppercase text-[#a3b1a5] font-light">{badgeText}</span>
           </div>
         </button>
 
-        {/* Desktop Navigation Links */}
         <nav id="desktop-nav" className="hidden md:flex items-center space-x-8">
           {navLinks.map((link) => (
             <button
@@ -107,24 +105,30 @@ export const Navbar: React.FC<NavbarProps> = ({
           ))}
         </nav>
 
-        {/* Right Actions */}
-        <div className="flex items-center space-x-3">
-          {/* Admin Customizer Button (Only visible when logged in) */}
+        <div className="flex items-center space-x-2">
           {isAdminLoggedIn && (
-            <div className="flex items-center space-x-1.5">
-              <button
-                id="open-customizer-btn"
-                onClick={() => onOpenCustomizer('theme')}
-                className="flex items-center space-x-1.5 px-3 py-1.5 text-xs tracking-wider uppercase rounded-full bg-[#2a372e] text-[#f3ece0] border border-[#d4af37]/70 hover:bg-[#34463a] transition-all shadow-sm ring-1 ring-[#d4af37]/40 cursor-pointer"
-                title="Panneau d'Administration : Modifier les boutons, formats, vestes & textes"
-              >
-                <Sliders className="w-3.5 h-3.5 text-[#d4af37]" />
-                <span className="hidden sm:inline font-medium">Personnaliser</span>
-              </button>
-            </div>
+            <button
+              id="nav-orders-btn"
+              onClick={openOrders}
+              className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 text-xs tracking-wider uppercase rounded-full bg-[#2a372e] text-[#d4af37] border border-[#d4af37]/70 hover:bg-[#34463a] transition-all shadow-sm cursor-pointer"
+              title="Ouvrir les commandes"
+            >
+              <span>Commandes</span>
+            </button>
           )}
 
-          {/* Commander / Inquiry Button Styled via active buttonStyle */}
+          {isAdminLoggedIn && (
+            <button
+              id="open-customizer-btn"
+              onClick={() => onOpenCustomizer('theme')}
+              className="flex items-center space-x-1.5 px-3 py-1.5 text-xs tracking-wider uppercase rounded-full bg-[#2a372e] text-[#f3ece0] border border-[#d4af37]/70 hover:bg-[#34463a] transition-all shadow-sm ring-1 ring-[#d4af37]/40 cursor-pointer"
+              title="Panneau d'Administration"
+            >
+              <Sliders className="w-3.5 h-3.5 text-[#d4af37]" />
+              <span className="hidden sm:inline font-medium">Personnaliser</span>
+            </button>
+          )}
+
           <button
             id="nav-order-btn"
             onClick={() => onOpenInquiry()}
@@ -134,7 +138,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>{orderText}</span>
           </button>
 
-          {/* Mobile menu toggle */}
           <button
             id="mobile-menu-toggle-btn"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -151,29 +154,15 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div id="mobile-nav-drawer" className="md:hidden bg-[#181d19] border-b border-[#3b473e] px-4 pt-4 pb-6 mt-2 space-y-3 animate-fadeIn">
           {navLinks.map((link) => (
-            <button
-              key={link.id}
-              onClick={() => scrollTo(link.id)}
-              className="block w-full text-left py-2 text-sm uppercase tracking-widest text-[#e2d5c3] hover:text-[#d4af37] border-b border-[#2a332d]"
-            >
-              {link.label}
-            </button>
+            <button key={link.id} onClick={() => scrollTo(link.id)} className="block w-full text-left py-2 text-sm uppercase tracking-widest text-[#e2d5c3] hover:text-[#d4af37] border-b border-[#2a332d]">{link.label}</button>
           ))}
           {isAdminLoggedIn && (
             <div className="pt-2 flex flex-col space-y-2">
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenCustomizer('theme');
-                }}
-                className="w-full text-center py-2.5 rounded-xl bg-[#28362b] text-[#f3ece0] text-xs uppercase tracking-wider border border-[#d4af37]/70 font-semibold"
-              >
-                ⚙️ Panneau d'Administration (Personnaliser Tout)
-              </button>
+              <button onClick={openOrders} className="w-full text-center py-2.5 rounded-xl bg-[#28362b] text-[#d4af37] text-xs uppercase tracking-wider border border-[#d4af37]/70 font-semibold">Commandes</button>
+              <button onClick={() => { setMobileMenuOpen(false); onOpenCustomizer('theme'); }} className="w-full text-center py-2.5 rounded-xl bg-[#28362b] text-[#f3ece0] text-xs uppercase tracking-wider border border-[#d4af37]/70 font-semibold">⚙️ Personnaliser</button>
             </div>
           )}
         </div>
