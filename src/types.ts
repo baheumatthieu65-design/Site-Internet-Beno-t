@@ -229,6 +229,81 @@ export interface BrandConfig {
 
   instagram: string;
 
+  export type ButtonStyleId =
+  | 'gold-laiton'
+  | 'cuir-naturel'
+  | 'sapin-cimes'
+  | 'minimal-couture'
+  | 'pill-terroir'
+  | 'brut-montagne';
+
+export type ButtonRadiusId =
+  | 'rounded-full'
+  | 'rounded-2xl'
+  | 'rounded-xl'
+  | 'rounded-md'
+  | 'rounded-none';
+
+export type CardStyleId =
+  | 'atelier-relief'
+  | 'epure-noir'
+  | 'cadre-champetre'
+  | 'verre-altitude';
+
+export type HeroLayoutId =
+  | 'split-cards'
+  | 'centered-minimal'
+  | 'side-by-side';
+
+export type ShowcaseLayoutId =
+  | 'split-interactive'
+  | 'magazine-editorial'
+  | 'lookbook-focus';
+
+export type SectionId =
+  | 'hero'
+  | 'collection'
+  | 'comparatif'
+  | 'origines'
+  | 'lookbook'
+  | 'contact';
+
+export type MediaType = 'image' | 'gif' | 'video';
+export type AdminBarPosition = 'top' | 'bottom' | 'left' | 'right';
+
+export interface BackgroundMedia {
+  type: MediaType;
+  url: string;
+  poster?: string;
+  overlay?: number;
+  positionX?: number;
+  positionY?: number;
+  objectFit?: 'cover' | 'contain';
+}
+
+export interface EditableSiteBlock {
+  id: string;
+  type: 'text' | 'heading' | 'button' | 'image' | 'video' | 'spacer';
+  section: SectionId;
+  x: number;
+  y: number;
+  text?: string;
+  url?: string;
+  mediaUrl?: string;
+  visible: boolean;
+}
+
+export interface AdminBarConfig {
+  position: AdminBarPosition;
+  collapsed: boolean;
+}
+
+/*
+ * IMPORTANT:
+ * Ce fichier est un PATCH, pas un remplacement complet de types.ts.
+ * Les types ci-dessus doivent être ajoutés à ton types.ts existant.
+ */
+
   /**
    * Catalogue actuellement chargé dans l'application.
    *
