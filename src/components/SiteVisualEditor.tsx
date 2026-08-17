@@ -21,6 +21,7 @@ export interface EditorBlock {
   link?: string;
   fontFamily?: string;
   fontSize?: string;
+  color?: string;
 }
 
 export interface SiteEditorConfig {
@@ -39,28 +40,56 @@ interface LibraryItem { url: string; pathname?: string; size?: number; uploadedA
 
 const FONT_OPTIONS = [
   ['Inter', 'Inter, Arial, sans-serif'],
-  ['Arial', 'Arial, sans-serif'],
-  ['Helvetica', 'Helvetica, Arial, sans-serif'],
+  ['Montserrat', 'Montserrat, Arial, sans-serif'],
+  ['Playfair Display', 'Playfair Display, Georgia, serif'],
+  ['Cormorant Garamond', 'Cormorant Garamond, Georgia, serif'],
+  ['Libre Baskerville', 'Libre Baskerville, Georgia, serif'],
+  ['Bodoni Moda', 'Bodoni Moda, Georgia, serif'],
+  ['Cinzel', 'Cinzel, Georgia, serif'],
+  ['Georgia', 'Georgia, serif'],
+  ['Garamond', 'Garamond, Georgia, serif'],
+  ['Baskerville', 'Baskerville, Georgia, serif'],
+  ['Palatino', 'Palatino Linotype, Palatino, serif'],
+  ['Times New Roman', 'Times New Roman, serif'],
+  ['Great Vibes ✨', 'Great Vibes, cursive'],
+  ['Allura ✨', 'Allura, cursive'],
+  ['Alex Brush ✨', 'Alex Brush, cursive'],
+  ['Ballet ✨', 'Ballet, cursive'],
+  ['Berkshire Swash ✨', 'Berkshire Swash, cursive'],
+  ['Bonheur Royale ✨', 'Bonheur Royale, cursive'],
+  ['Clicker Script ✨', 'Clicker Script, cursive'],
+  ['Dancing Script ✨', 'Dancing Script, cursive'],
+  ['Italianno ✨', 'Italianno, cursive'],
+  ['Lovers Quarrel ✨', 'Lovers Quarrel, cursive'],
+  ['Mrs Saint Delafield ✨', 'Mrs Saint Delafield, cursive'],
+  ['Parisienne ✨', 'Parisienne, cursive'],
+  ['Pinyon Script ✨', 'Pinyon Script, cursive'],
+  ['Sacramento ✨', 'Sacramento, cursive'],
+  ['Tangerine ✨', 'Tangerine, cursive'],
+  ['Qwigley ✨', 'Qwigley, cursive'],
+  ['Petit Formal Script ✨', 'Petit Formal Script, cursive'],
+  ['Lavishly Yours ✨', 'Lavishly Yours, cursive'],
+  ['Mea Culpa ✨', 'Mea Culpa, cursive'],
+  ['Ms Madi ✨', 'Ms Madi, cursive'],
+  ['WindSong ✨', 'WindSong, cursive'],
+  ['Water Brush ✨', 'Water Brush, cursive'],
+  ['UnifrakturCook', 'UnifrakturCook, cursive'],
   ['Verdana', 'Verdana, sans-serif'],
   ['Tahoma', 'Tahoma, sans-serif'],
-  ['Trebuchet MS', '"Trebuchet MS", sans-serif'],
-  ['Georgia', 'Georgia, serif'],
-  ['Times New Roman', '"Times New Roman", serif'],
-  ['Garamond', 'Garamond, "Times New Roman", serif'],
-  ['Palatino', '"Palatino Linotype", Palatino, serif'],
-  ['Book Antiqua', '"Book Antiqua", Palatino, serif'],
-  ['Baskerville', 'Baskerville, Georgia, serif'],
-  ['Courier New', '"Courier New", monospace'],
-  ['Lucida Console', '"Lucida Console", monospace'],
+  ['Trebuchet MS', 'Trebuchet MS, sans-serif'],
+  ['Arial', 'Arial, sans-serif'],
+  ['Helvetica', 'Helvetica, Arial, sans-serif'],
+  ['Courier New', 'Courier New, monospace'],
   ['Impact', 'Impact, sans-serif'],
-  ['Arial Black', '"Arial Black", sans-serif'],
-  ['Comic Sans MS', '"Comic Sans MS", cursive'],
+  ['Comic Sans MS', 'Comic Sans MS, cursive'],
   ['System UI', 'system-ui, sans-serif'],
   ['Serif classique', 'serif'],
   ['Sans-serif classique', 'sans-serif'],
 ];
 
 const FONT_SIZES = ['12px','14px','16px','18px','20px','22px','24px','28px','32px','36px','40px','48px','56px','64px','72px','80px','96px'];
+
+const GOOGLE_FONT_URL = 'https://fonts.googleapis.com/css2?family=Alex+Brush&family=Allura&family=Ballet&family=Berkshire+Swash&family=Bonheur+Royale&family=Cinzel&family=Clicker+Script&family=Cormorant+Garamond:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&family=Great+Vibes&family=Italianno&family=Lavishly+Yours&family=Lovers+Quarrel&family=Mea+Culpa&family=Montserrat:wght@400;500;600;700&family=Mrs+Saint+Delafield&family=Ms+Madi&family=Parisienne&family=Petit+Formal+Script&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Qwigley&family=Sacramento&family=Tangerine:wght@400;700&family=UnifrakturCook:wght@700&family=Water+Brush&family=WindSong&display=swap';
 
 const textTags = new Set(['H1','H2','H3','H4','H5','H6','P','SPAN','BUTTON','A','LABEL','LI','SMALL','STRONG','EM']);
 
@@ -96,6 +125,12 @@ const cssPath = (element: HTMLElement) => {
   return parts.join(' > ');
 };
 
+const rgbToHex = (value: string) => {
+  const match = value.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+  if (!match) return value;
+  return '#' + [match[1], match[2], match[3]].map(v => Number(v).toString(16).padStart(2, '0')).join('');
+};
+
 const applySavedOverrides = (blocks: EditorBlock[]) => {
   blocks.forEach(block => {
     if (!block.selector) return;
@@ -111,6 +146,7 @@ const applySavedOverrides = (blocks: EditorBlock[]) => {
       if (block.text != null) element.textContent = block.text;
       if (block.fontFamily) element.style.fontFamily = block.fontFamily;
       if (block.fontSize) element.style.fontSize = block.fontSize;
+      if (block.color) element.style.color = block.color;
     }
   });
 };
@@ -135,6 +171,7 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
   const [replacementText, setReplacementText] = useState('');
   const [fontFamily, setFontFamily] = useState(FONT_OPTIONS[0][1]);
   const [fontSize, setFontSize] = useState('16px');
+  const [textColor, setTextColor] = useState('#f3ece0');
   const [newText, setNewText] = useState('Nouveau texte');
   const [newLink, setNewLink] = useState('#');
   const [saving, setSaving] = useState(false);
@@ -150,6 +187,16 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
     applyAdminBarPosition(config.adminBarPosition || 'top');
     applySavedOverrides(config.blocks);
   }, [config.adminBarPosition, config.blocks]);
+
+  useEffect(() => {
+    const existing = document.querySelector('link[data-vce-google-fonts="true"]');
+    if (existing) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = GOOGLE_FONT_URL;
+    link.dataset.vceGoogleFonts = 'true';
+    document.head.appendChild(link);
+  }, []);
 
   useEffect(() => {
     if (!directEdit && !addMode) return;
@@ -170,7 +217,7 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
           addFileRef.current?.click(); return;
         }
         const type = addMode;
-        const block: EditorBlock = { id:`block-${Date.now()}`, type, section:'hero', x, y, text:newText || (type==='button'?'Nouveau bouton':'Nouveau texte'), link:type==='button'?newLink||'#':undefined, visible:true, fontFamily, fontSize };
+        const block: EditorBlock = { id:`block-${Date.now()}`, type, section:'hero', x, y, text:newText || (type==='button'?'Nouveau bouton':'Nouveau texte'), link:type==='button'?newLink||'#':undefined, visible:true, fontFamily, fontSize, color:textColor };
         onChange({ ...config, blocks:[...config.blocks, block] });
         setAddMode(null); setMessage('Bloc ajouté. Cliquez sur Enregistrer pour publier.'); event.preventDefault(); event.stopPropagation(); return;
       }
@@ -190,6 +237,8 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
         setReplacementText(saved?.text ?? element.textContent ?? '');
         setFontFamily(saved?.fontFamily ?? computed.fontFamily);
         setFontSize(saved?.fontSize ?? computed.fontSize);
+        const computedColor = saved?.color ?? computed.color ?? '#f3ece0';
+        setTextColor(computedColor.startsWith('rgb') ? rgbToHex(computedColor) : computedColor);
         setMessage('Texte sélectionné. Modifiez-le dans le panneau puis enregistrez.');
       }
     };
@@ -205,11 +254,12 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
     const blocks = config.blocks.filter(b => b.selector !== selector);
     blocks.push({
       id:`text-${Date.now()}`, type:selected.element.tagName.startsWith('H')?'heading':selected.element.tagName==='BUTTON'?'button':'text', section:'hero', x:50, y:50,
-      text:replacementText, visible:true, selector, kind:'text', fontFamily, fontSize,
+      text:replacementText, visible:true, selector, kind:'text', fontFamily, fontSize, color:textColor,
     });
     selected.element.textContent = replacementText;
     selected.element.style.fontFamily = fontFamily;
     selected.element.style.fontSize = fontSize;
+    selected.element.style.color = textColor;
     return { ...config, blocks };
   };
 
@@ -280,7 +330,7 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
 
   return <>
     <div id="site-visual-editor-panel" data-vce-ignore="true" className="fixed bottom-4 right-4 z-[2000] w-[min(500px,calc(100vw-2rem))] max-h-[90vh] overflow-hidden rounded-2xl bg-[#111711] text-white border border-[#d4af37]/70 shadow-2xl">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#334236] bg-[#172019]"><div><strong className="text-[#d4af37] block">Éditeur visuel V6</strong><span className="text-[10px] text-[#9aaa9d]">Cliquez sur un texte pour le modifier</span></div><button type="button" onClick={()=>{setOpen(false);setDirectEdit(false);setAddMode(null);setSelected(null);}} className="p-2 rounded-lg hover:bg-white/10 cursor-pointer"><X className="w-5 h-5"/></button></div>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#334236] bg-[#172019]"><div><strong className="text-[#d4af37] block">Éditeur visuel V7</strong><span className="text-[10px] text-[#9aaa9d]">Cliquez sur un texte pour le modifier</span></div><button type="button" onClick={()=>{setOpen(false);setDirectEdit(false);setAddMode(null);setSelected(null);}} className="p-2 rounded-lg hover:bg-white/10 cursor-pointer"><X className="w-5 h-5"/></button></div>
       <div className="p-4 overflow-y-auto max-h-[calc(90vh-128px)] space-y-3">
         <button type="button" data-vce-ignore="true" onClick={()=>{setDirectEdit(v=>!v);setAddMode(null);setSelected(null);setMessage(null);}} className={`w-full rounded-lg py-3 font-bold cursor-pointer border ${directEdit?'bg-[#d4af37] text-black border-[#d4af37]':'bg-[#263329] text-white border-[#405044]'}`}><Type className="inline w-4 h-4 mr-2"/>{directEdit?'Mode sélection de texte : ACTIVÉ':'✏️ Modifier directement la page'}</button>
 
@@ -292,7 +342,17 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
             <div><label className="block text-[10px] uppercase tracking-wider text-[#94a395] mb-1">Police</label><select value={fontFamily} onChange={e=>setFontFamily(e.target.value)} className="w-full rounded-lg bg-[#0b100c] border border-[#405044] px-2 py-2 text-xs text-white">{FONT_OPTIONS.map(([label,value])=><option key={value} value={value}>{label}</option>)}</select></div>
             <div><label className="block text-[10px] uppercase tracking-wider text-[#94a395] mb-1">Taille</label><select value={fontSize} onChange={e=>setFontSize(e.target.value)} className="w-full rounded-lg bg-[#0b100c] border border-[#405044] px-2 py-2 text-xs text-white">{FONT_SIZES.map(size=><option key={size} value={size}>{size}</option>)}</select></div>
           </div>
-          <div className="rounded-lg bg-[#0b100c] border border-[#344437] p-3"><div className="text-[10px] text-[#94a395] mb-1">Aperçu</div><div style={{fontFamily,fontSize}} className="text-[#f3ece0] break-words">{replacementText || 'Votre nouveau texte apparaîtra ici.'}</div></div>
+          <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
+            <div>
+              <label className="block text-[10px] uppercase tracking-wider text-[#94a395] mb-1">Couleur du texte</label>
+              <div className="flex gap-2">
+                <input type="color" value={textColor} onChange={e=>setTextColor(e.target.value)} className="w-12 h-10 rounded-lg bg-[#0b100c] border border-[#405044] p-1 cursor-pointer" />
+                <input value={textColor} onChange={e=>setTextColor(e.target.value)} className="flex-1 rounded-lg bg-[#0b100c] border border-[#405044] px-3 py-2 text-xs uppercase" placeholder="#F3ECE0" />
+              </div>
+            </div>
+            <button type="button" onClick={()=>setTextColor('#d4af37')} className="h-10 rounded-lg border border-[#d4af37]/50 px-3 text-xs text-[#d4af37] cursor-pointer">Or</button>
+          </div>
+          <div className="rounded-lg bg-[#0b100c] border border-[#344437] p-3"><div className="text-[10px] text-[#94a395] mb-1">Aperçu</div><div style={{fontFamily,fontSize,color:textColor}} className="break-words">{replacementText || 'Votre nouveau texte apparaîtra ici.'}</div></div>
         </div>}
 
         {selected?.type==='media' && <div className="rounded-lg border border-[#d4af37]/60 p-3 space-y-2"><div className="text-xs text-[#d4af37]">Média sélectionné</div><input ref={fileInputRef} type="file" accept="image/*,video/mp4,video/webm,video/quicktime" className="hidden" onChange={e=>{const f=e.target.files?.[0];if(f)void upload(f);e.target.value='';}}/><div className="grid grid-cols-2 gap-2"><button type="button" disabled={uploading} onClick={()=>fileInputRef.current?.click()} className="rounded-lg bg-[#d4af37] text-black font-bold py-2 cursor-pointer disabled:opacity-60">{uploading?<Loader2 className="inline w-4 h-4 animate-spin"/>:<Upload className="inline w-4 h-4 mr-1"/>}Importer</button><button type="button" onClick={loadLibrary} className="rounded-lg bg-[#263329] py-2 cursor-pointer"><ImageIcon className="inline w-4 h-4 mr-1"/>Bibliothèque</button></div></div>}
