@@ -37,6 +37,60 @@ export type SectionId =
   | 'lookbook'
   | 'contact';
 
+/* =========================================================
+   ÉDITEUR VISUEL
+   ========================================================= */
+
+export type MediaType = 'image' | 'gif' | 'video';
+
+export type AdminBarPosition =
+  | 'top'
+  | 'bottom'
+  | 'left'
+  | 'right';
+
+export interface BackgroundMedia {
+  type: MediaType;
+  url: string;
+  poster?: string;
+  overlay?: number;
+  positionX?: number;
+  positionY?: number;
+  objectFit?: 'cover' | 'contain';
+}
+
+export interface EditableSiteBlock {
+  id: string;
+
+  type:
+    | 'text'
+    | 'heading'
+    | 'button'
+    | 'image'
+    | 'video'
+    | 'spacer';
+
+  section: SectionId;
+
+  x: number;
+  y: number;
+
+  text?: string;
+  url?: string;
+  mediaUrl?: string;
+
+  visible: boolean;
+}
+
+export interface AdminBarConfig {
+  position: AdminBarPosition;
+  collapsed: boolean;
+}
+
+/* =========================================================
+   HOTSPOTS
+   ========================================================= */
+
 export interface Hotspot {
   id: string;
   x: number;
@@ -46,11 +100,19 @@ export interface Hotspot {
   category: 'fabric' | 'hardware' | 'cut' | 'utility';
 }
 
+/* =========================================================
+   COMPARATIF
+   ========================================================= */
+
 export interface ComparisonCriterion {
   id: string;
   label: string;
   key: string;
 }
+
+/* =========================================================
+   PRODUITS
+   ========================================================= */
 
 export interface JacketColor {
   name: string;
@@ -96,10 +158,13 @@ export interface JacketModel {
   tagline: string;
 
   fabrics: string[];
+
   colors: JacketColor[];
+
   sizes: string[];
 
   features: JacketFeature[];
+
   specs: JacketSpecs;
 
   customSpecs?: Record<string, string>;
@@ -113,6 +178,10 @@ export interface JacketModel {
    */
   isAvailable?: boolean;
 }
+
+/* =========================================================
+   ALIGNEMENTS / MISE EN PAGE
+   ========================================================= */
 
 export type TextAlignId =
   | 'left'
@@ -145,6 +214,10 @@ export type ContainerWidthId =
   | 'wide'
   | 'narrow';
 
+/* =========================================================
+   ORDRE DES BLOCS PRODUIT
+   ========================================================= */
+
 export type ProductBlockId =
   | 'title-price'
   | 'description'
@@ -152,6 +225,10 @@ export type ProductBlockId =
   | 'sizes'
   | 'specs'
   | 'cta';
+
+/* =========================================================
+   FORMULAIRE
+   ========================================================= */
 
 export type FormFieldId =
   | 'name'
@@ -163,146 +240,138 @@ export type FormFieldId =
   | 'requestType'
   | 'message';
 
+/* =========================================================
+   THÈME
+   ========================================================= */
+
 export interface ThemeConfig {
   buttonStyle: ButtonStyleId;
+
   buttonRadius: ButtonRadiusId;
+
   cardStyle: CardStyleId;
+
   heroLayout: HeroLayoutId;
+
   showcaseLayout: ShowcaseLayoutId;
 
   sectionOrder: SectionId[];
+
   hiddenSections: SectionId[];
 
   accentColorHex?: string;
 
-  // Positionnement & alignement
+  /* Positionnement & alignement */
+
   textAlign?: TextAlignId;
+
   buttonAlign?: ButtonAlignId;
+
   heroBadgePosition?: BadgePositionId;
+
   cardMediaPosition?: CardMediaPositionId;
+
   contentPadding?: ContentPaddingId;
+
   containerWidth?: ContainerWidthId;
 
+  /* Ordre des blocs */
+
   productBlocksOrder?: ProductBlockId[];
+
   formFieldsOrder?: FormFieldId[];
 
-  // Libellés personnalisables
+  /* Libellés personnalisables */
+
   orderButtonText: string;
+
   discoverButtonText: string;
+
   inquiryButtonText: string;
+
   workshopButtonText: string;
 
   heroBadgeText: string;
+
   heroTitlePrefix: string;
 
-  // Navigation
+  /* Navigation */
+
   collectionTabLabel?: string;
+
   comparatifTabLabel?: string;
+
   originesTabLabel?: string;
+
   lookbookTabLabel?: string;
+
   contactTabLabel?: string;
 
-  // Tableau comparatif
+  /* Tableau comparatif */
+
   comparisonCriteria?: ComparisonCriterion[];
 }
 
+/* =========================================================
+   CONFIGURATION DE LA MARQUE / DU SITE
+   ========================================================= */
+
 export interface BrandConfig {
   brandName: string;
+
   tagline: string;
+
   subtitle: string;
 
   logoUrl: string;
+
   accentColor: string;
 
   foundingYear: string;
+
   designerLocation: string;
+
+  /* Fond historique du site */
 
   heroBgImage: string;
 
+  /* Nouveau fond éditable : image / GIF / vidéo */
+
+  heroBackground?: BackgroundMedia;
+
+  /* Position de la barre administrateur */
+
+  adminBar?: AdminBarConfig;
+
+  /* Blocs ajoutés par l'éditeur visuel */
+
+  editableBlocks?: EditableSiteBlock[];
+
+  /* =======================================================
+     HISTOIRE / PRÉSENTATION
+     ======================================================= */
+
   storyTitle: string;
+
   storyText1: string;
+
   storyText2: string;
+
   manifesto: string[];
 
+  /* =======================================================
+     CONTACT
+     ======================================================= */
+
   contactEmail: string;
+
   ordersEmail: string;
 
   instagram: string;
 
-  export type ButtonStyleId =
-  | 'gold-laiton'
-  | 'cuir-naturel'
-  | 'sapin-cimes'
-  | 'minimal-couture'
-  | 'pill-terroir'
-  | 'brut-montagne';
-
-export type ButtonRadiusId =
-  | 'rounded-full'
-  | 'rounded-2xl'
-  | 'rounded-xl'
-  | 'rounded-md'
-  | 'rounded-none';
-
-export type CardStyleId =
-  | 'atelier-relief'
-  | 'epure-noir'
-  | 'cadre-champetre'
-  | 'verre-altitude';
-
-export type HeroLayoutId =
-  | 'split-cards'
-  | 'centered-minimal'
-  | 'side-by-side';
-
-export type ShowcaseLayoutId =
-  | 'split-interactive'
-  | 'magazine-editorial'
-  | 'lookbook-focus';
-
-export type SectionId =
-  | 'hero'
-  | 'collection'
-  | 'comparatif'
-  | 'origines'
-  | 'lookbook'
-  | 'contact';
-
-export type MediaType = 'image' | 'gif' | 'video';
-export type AdminBarPosition = 'top' | 'bottom' | 'left' | 'right';
-
-export interface BackgroundMedia {
-  type: MediaType;
-  url: string;
-  poster?: string;
-  overlay?: number;
-  positionX?: number;
-  positionY?: number;
-  objectFit?: 'cover' | 'contain';
-}
-
-export interface EditableSiteBlock {
-  id: string;
-  type: 'text' | 'heading' | 'button' | 'image' | 'video' | 'spacer';
-  section: SectionId;
-  x: number;
-  y: number;
-  text?: string;
-  url?: string;
-  mediaUrl?: string;
-  visible: boolean;
-}
-
-export interface AdminBarConfig {
-  position: AdminBarPosition;
-  collapsed: boolean;
-}
-
-/*
- * IMPORTANT:
- * Ce fichier est un PATCH, pas un remplacement complet de types.ts.
- * Les types ci-dessus doivent être ajoutés à ton types.ts existant.
- */
+  /* =======================================================
+     CATALOGUE
+     ======================================================= */
 
   /**
    * Catalogue actuellement chargé dans l'application.
@@ -311,6 +380,10 @@ export interface AdminBarConfig {
    * GET /api/products puis avec Upstash Redis.
    */
   jackets: JacketModel[];
+
+  /* =======================================================
+     THÈME
+     ======================================================= */
 
   theme?: ThemeConfig;
 }
