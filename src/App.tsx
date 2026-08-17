@@ -25,6 +25,7 @@ import {
   SiteVisualEditor,
   SiteEditorConfig,
 } from './components/SiteVisualEditor';
+import { SiteBlocksRenderer } from './components/SiteBlocksRenderer';
 
 import {
   verifyAdminSessionServer,
@@ -1178,6 +1179,8 @@ export default function App() {
           }
         />
       )}
+
+      <SiteBlocksRenderer config={siteEditorConfig} />
 
       {isAdminLoggedIn && (
         <SiteVisualEditor

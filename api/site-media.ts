@@ -1,31 +1,45 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { put } from '@vercel/blob';
+import { list, put } from '@vercel/blob';
 import { parseCookies, verifySessionToken } from './_helpers.js';
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+export const config = { api: { bodyParser: false } };
 
 const json = (res: VercelResponse, status: number, data: unknown) =>
   res.status(status).setHeader('Content-Type', 'application/json').json(data);
 
+const authorized = (req: VercelRequest) =>
+  verifySessionToken(parseCookies(req.headers.cookie).admin_session).valid;
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') return json(res, 405, { success: false, error: 'Method not allowed' });
-
-  const session = verifySessionToken(parseCookies(req.headers.cookie).admin_session);
-  if (!session.valid) return json(res, 401, { success: false, error: 'Non autorisé' });
-
+  if (!authorized(req)) return json(res, 401, { success: false, error: 'Non autorisé' });
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     return json(res, 503, { success: false, error: 'BLOB_READ_WRITE_TOKEN non configuré sur Vercel.' });
   }
+
+  if (req.method === 'GET') {
+    try {
+      const result = await list({ prefix: 'site-media/', limit: 100 });
+      return json(res, 200, {
+        success: true,
+        items: result.blobs.map((blob) => ({
+          url: blob.url,
+          pathname: blob.pathname,
+          size: blob.size,
+          uploadedAt: blob.uploadedAt,
+        })),
+      });
+    } catch (error) {
+      console.error('Liste médias:', error);
+      return json(res, 500, { success: false, error: 'Bibliothèque indisponible.' });
+    }
+  }
+
+  if (req.method !== 'POST') return json(res, 405, { success: false, error: 'Method not allowed' });
 
   try {
     const chunks: Buffer[] = [];
     for await (const chunk of req) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
     const body = Buffer.concat(chunks);
-
     const contentType = String(req.headers['content-type'] || '');
     const match = contentType.match(/boundary=([^;]+)/);
     if (!match) return json(res, 400, { success: false, error: 'FormData invalide.' });
@@ -44,11 +58,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const rawBinary = filePart.slice(headerEnd + 4).replace(/\r\n$/, '');
     const fileBuffer = Buffer.from(rawBinary, 'binary');
 
-    const blob = await put(`site-media/${Date.now()}-${filename.replace(/[^a-zA-Z0-9._-]/g, '-')}`, fileBuffer, {
-      access: 'public',
-      contentType: mime,
-      addRandomSuffix: false,
-    });
+    const blob = await put(
+      `site-media/${Date.now()}-${filename.replace(/[^a-zA-Z0-9._-]/g, '-')}`,
+      fileBuffer,
+      { access: 'public', contentType: mime, addRandomSuffix: false }
+    );
 
     return json(res, 200, { success: true, url: blob.url });
   } catch (error) {
