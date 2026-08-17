@@ -483,10 +483,11 @@ export default function App() {
   // SAVE VISUAL EDITOR
   // ===========================================================================
 
-  const handleSaveVisualEditor = async () => {
-    const success = await saveSiteConfig(brandData, siteEditorConfig);
+  const handleSaveVisualEditor = async (nextEditorConfig: SiteEditorConfig = siteEditorConfig) => {
+    const success = await saveSiteConfig(brandData, nextEditorConfig);
 
     if (success) {
+      setSiteEditorConfig(nextEditorConfig);
       setReorderToast('Configuration visuelle enregistrée !');
 
       window.setTimeout(() => {
