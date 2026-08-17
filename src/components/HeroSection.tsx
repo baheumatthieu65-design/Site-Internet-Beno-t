@@ -70,14 +70,42 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       id="hero-section"
       className={`relative min-h-screen flex flex-col justify-between pt-28 pb-12 overflow-hidden bg-[#121613] group/hero ${contentPaddingClass}`}
     >
-      {/* Background Pyrenees Image with gradient overlay */}
+      {/* Background media: image / GIF / video + gradient overlay */}
       <div className="absolute inset-0 z-0">
-        <img
-          src={brandData.heroBgImage}
-          alt="Les Pyrénées"
-          className="w-full h-full object-cover object-center scale-105 opacity-40 mix-blend-luminosity"
-        />
-        {/* Gradients */}
+        {brandData.heroBackground?.type === 'video' ? (
+          <video
+            src={brandData.heroBackground.url}
+            poster={brandData.heroBackground.poster}
+            autoPlay
+            muted
+            loop
+            playsInline
+            aria-label="Vidéo de présentation des Pyrénées"
+            className="w-full h-full object-cover scale-105"
+            style={{
+              objectPosition: `${brandData.heroBackground.positionX ?? 50}% ${brandData.heroBackground.positionY ?? 50}%`,
+            }}
+          />
+        ) : (
+          <img
+            src={brandData.heroBackground?.url || brandData.heroBgImage}
+            alt="Les Pyrénées"
+            className="w-full h-full object-cover object-center scale-105 opacity-40 mix-blend-luminosity"
+            style={{
+              objectPosition: `${brandData.heroBackground?.positionX ?? 50}% ${brandData.heroBackground?.positionY ?? 50}%`,
+            }}
+          />
+        )}
+
+        {/* Custom media overlay */}
+        {typeof brandData.heroBackground?.overlay === 'number' && (
+          <div
+            className="absolute inset-0 bg-black"
+            style={{ opacity: brandData.heroBackground.overlay }}
+          />
+        )}
+
+        {/* Existing gradients */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#121613] via-[#121613]/70 to-black/60" />
         <div className="absolute inset-0 bg-radial-vignette opacity-80" />
       </div>
@@ -368,3 +396,4 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     </section>
   );
 };
+
