@@ -647,7 +647,7 @@ export const publishedSiteContent = {
         "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787063825877-20260605_205836.jpg"
       },
       {
-        "id": "element-1787067565762",
+        "id": "element-1787067832814",
         "type": "image",
         "section": "hero",
         "x": 50,
