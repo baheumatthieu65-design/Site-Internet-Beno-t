@@ -486,7 +486,8 @@ export const publishedSiteContent = {
           "label": "Entretien",
           "key": "care"
         }
-      ]
+      ],
+      "collectionTabLabel": "Les Articles"
     }
   },
   "editorConfig": {
