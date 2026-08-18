@@ -549,7 +549,7 @@ export const publishedSiteContent = {
         "visible": true,
         "selector": "[data-vce-role=\"hero-line-2\"]",
         "kind": "text",
-        "text": "MAISON MAILHA",
+        "text": "MAISON MAILHAG",
         "fontFamily": "ui-serif",
         "fontSize": "72px",
         "color": "rgb(245, 238, 223)"
