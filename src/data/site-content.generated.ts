@@ -403,7 +403,7 @@ export const publishedSiteContent = {
       }
     ],
     "theme": {
-      "buttonStyle": "pill-terroir",
+      "buttonStyle": "gold-laiton",
       "buttonRadius": "rounded-full",
       "cardStyle": "atelier-relief",
       "heroLayout": "split-cards",
