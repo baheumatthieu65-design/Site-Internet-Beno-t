@@ -654,6 +654,17 @@ export const publishedSiteContent = {
         "selector": "[data-vce-role=\"jacket-veste-des-cimes-gallery-2\"]",
         "kind": "media",
         "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787063825877-20260605_205836.jpg"
+      },
+      {
+        "id": "element-1787068153660",
+        "type": "image",
+        "section": "hero",
+        "x": 50,
+        "y": 50,
+        "visible": true,
+        "selector": "div:nth-of-type(3) \u003e div:nth-of-type(3) \u003e div:nth-of-type(1) \u003e img:nth-of-type(1)",
+        "kind": "media",
+        "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787063825877-20260605_205836.jpg"
       }
     ]
   }
