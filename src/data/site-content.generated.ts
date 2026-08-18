@@ -410,7 +410,7 @@ export const publishedSiteContent = {
       "buttonBackgroundOverlay": 28,
       "buttonOverrides": {
         "navbar-order": {
-          "buttonStyle": "gold-laiton"
+          "buttonStyle": "brut-montagne"
         },
         "hero-discover": {
           "buttonSize": "standard",
