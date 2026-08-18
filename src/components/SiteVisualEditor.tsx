@@ -1,372 +1,204 @@
-import React, { useEffect, useRef, useState } from 'react';
-import {
-  Check, Image as ImageIcon, Loader2, Move, Plus, Save, Settings2,
-  Trash2, Type, Upload, X,
-} from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Image as ImageIcon, Loader2, Save, Settings2, Type, Upload, X } from 'lucide-react';
 import type { BrandConfig, SectionId } from '../types';
 
-export type AdminBarPosition = 'top' | 'bottom' | 'left' | 'right';
+export type AdminBarPosition = 'top'|'bottom'|'left'|'right';
+export type EditableKind = 'text'|'media';
 
 export interface EditorBlock {
-  id: string;
-  type: 'text' | 'heading' | 'button' | 'image' | 'video' | 'spacer';
-  section: SectionId;
-  x: number;
-  y: number;
-  text?: string;
-  url?: string;
-  visible: boolean;
-  selector?: string;
-  kind?: 'text' | 'media';
-  link?: string;
-  fontFamily?: string;
-  fontSize?: string;
-  color?: string;
+  id:string;
+  type:'text'|'heading'|'button'|'image'|'video'|'spacer';
+  section:SectionId;
+  x:number;
+  y:number;
+  text?:string;
+  url?:string;
+  visible:boolean;
+  selector?:string;
+  kind?:EditableKind;
+  fontFamily?:string;
+  fontSize?:string;
+  color?:string;
+  link?:string;
 }
 
 export interface SiteEditorConfig {
-  adminBarPosition: AdminBarPosition;
-  blocks: EditorBlock[];
+  adminBarPosition:AdminBarPosition;
+  heroBackground?: {
+    type:'image'|'gif'|'video';
+    url:string;
+    poster?:string;
+    overlay?:number;
+    positionX?:number;
+    positionY?:number;
+  };
+  blocks:EditorBlock[];
 }
 
 interface Props {
-  brandData: BrandConfig;
-  config: SiteEditorConfig;
-  onChange: (config: SiteEditorConfig) => void;
-  onSave: (config?: SiteEditorConfig) => Promise<void> | void;
+  brandData:BrandConfig;
+  config:SiteEditorConfig;
+  onChange:(config:SiteEditorConfig)=>void;
+  onSave:(config?:SiteEditorConfig)=>Promise<void>|void;
 }
 
-interface LibraryItem { url: string; pathname?: string; size?: number; uploadedAt?: string; }
-
-const FONT_OPTIONS = [
-  ['Inter', 'Inter, Arial, sans-serif'],
-  ['Montserrat', 'Montserrat, Arial, sans-serif'],
-  ['Playfair Display', 'Playfair Display, Georgia, serif'],
-  ['Cormorant Garamond', 'Cormorant Garamond, Georgia, serif'],
-  ['Libre Baskerville', 'Libre Baskerville, Georgia, serif'],
-  ['Bodoni Moda', 'Bodoni Moda, Georgia, serif'],
-  ['Cinzel', 'Cinzel, Georgia, serif'],
-  ['Georgia', 'Georgia, serif'],
-  ['Garamond', 'Garamond, Georgia, serif'],
-  ['Baskerville', 'Baskerville, Georgia, serif'],
-  ['Palatino', 'Palatino Linotype, Palatino, serif'],
-  ['Times New Roman', 'Times New Roman, serif'],
-  ['Great Vibes ✨', 'Great Vibes, cursive'],
-  ['Allura ✨', 'Allura, cursive'],
-  ['Alex Brush ✨', 'Alex Brush, cursive'],
-  ['Ballet ✨', 'Ballet, cursive'],
-  ['Berkshire Swash ✨', 'Berkshire Swash, cursive'],
-  ['Bonheur Royale ✨', 'Bonheur Royale, cursive'],
-  ['Clicker Script ✨', 'Clicker Script, cursive'],
-  ['Dancing Script ✨', 'Dancing Script, cursive'],
-  ['Italianno ✨', 'Italianno, cursive'],
-  ['Lovers Quarrel ✨', 'Lovers Quarrel, cursive'],
-  ['Mrs Saint Delafield ✨', 'Mrs Saint Delafield, cursive'],
-  ['Parisienne ✨', 'Parisienne, cursive'],
-  ['Pinyon Script ✨', 'Pinyon Script, cursive'],
-  ['Sacramento ✨', 'Sacramento, cursive'],
-  ['Tangerine ✨', 'Tangerine, cursive'],
-  ['Qwigley ✨', 'Qwigley, cursive'],
-  ['Petit Formal Script ✨', 'Petit Formal Script, cursive'],
-  ['Lavishly Yours ✨', 'Lavishly Yours, cursive'],
-  ['Mea Culpa ✨', 'Mea Culpa, cursive'],
-  ['Ms Madi ✨', 'Ms Madi, cursive'],
-  ['WindSong ✨', 'WindSong, cursive'],
-  ['Water Brush ✨', 'Water Brush, cursive'],
-  ['UnifrakturCook', 'UnifrakturCook, cursive'],
-  ['Verdana', 'Verdana, sans-serif'],
-  ['Tahoma', 'Tahoma, sans-serif'],
-  ['Trebuchet MS', 'Trebuchet MS, sans-serif'],
-  ['Arial', 'Arial, sans-serif'],
-  ['Helvetica', 'Helvetica, Arial, sans-serif'],
-  ['Courier New', 'Courier New, monospace'],
-  ['Impact', 'Impact, sans-serif'],
-  ['Comic Sans MS', 'Comic Sans MS, cursive'],
-  ['System UI', 'system-ui, sans-serif'],
-  ['Serif classique', 'serif'],
-  ['Sans-serif classique', 'sans-serif'],
+const fonts = [
+ ['Playfair Display','"Playfair Display", serif'],
+ ['Cormorant Garamond','"Cormorant Garamond", serif'],
+ ['Bodoni Moda','"Bodoni Moda", serif'],
+ ['Cinzel','"Cinzel", serif'],
+ ['Libre Baskerville','"Libre Baskerville", serif'],
+ ['DM Serif Display','"DM Serif Display", serif'],
+ ['EB Garamond','"EB Garamond", serif'],
+ ['Lora','"Lora", serif'],
+ ['Montserrat','"Montserrat", sans-serif'],
+ ['Inter','"Inter", sans-serif'],
+ ['Great Vibes','"Great Vibes", cursive'],
+ ['Allura','"Allura", cursive'],
+ ['Alex Brush','"Alex Brush", cursive'],
+ ['Ballet','"Ballet", cursive'],
+ ['Berkshire Swash','"Berkshire Swash", cursive'],
+ ['Bonheur Royale','"Bonheur Royale", cursive'],
+ ['Clicker Script','"Clicker Script", cursive'],
+ ['Dancing Script','"Dancing Script", cursive'],
+ ['Italianno','"Italianno", cursive'],
+ ['Lovers Quarrel','"Lovers Quarrel", cursive'],
+ ['Mrs Saint Delafield','"Mrs Saint Delafield", cursive'],
+ ['Parisienne','"Parisienne", cursive'],
+ ['Pinyon Script','"Pinyon Script", cursive'],
+ ['Sacramento','"Sacramento", cursive'],
+ ['Tangerine','"Tangerine", cursive'],
+ ['Qwigley','"Qwigley", cursive'],
+ ['Lavishly Yours','"Lavishly Yours", cursive'],
+ ['Mea Culpa','"Mea Culpa", cursive'],
+ ['Ms Madi','"Ms Madi", cursive'],
+ ['WindSong','"WindSong", cursive'],
+ ['Water Brush','"Water Brush", cursive'],
 ];
 
-const FONT_SIZES = ['12px','14px','16px','18px','20px','22px','24px','28px','32px','36px','40px','48px','56px','64px','72px','80px','96px'];
+const sizes = ['12px','14px','16px','18px','20px','22px','24px','28px','32px','36px','40px','48px','56px','64px','72px','80px','96px'];
 
-const GOOGLE_FONT_URL = 'https://fonts.googleapis.com/css2?family=Alex+Brush&family=Allura&family=Ballet&family=Berkshire+Swash&family=Bonheur+Royale&family=Cinzel&family=Clicker+Script&family=Cormorant+Garamond:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&family=Great+Vibes&family=Italianno&family=Lavishly+Yours&family=Lovers+Quarrel&family=Mea+Culpa&family=Montserrat:wght@400;500;600;700&family=Mrs+Saint+Delafield&family=Ms+Madi&family=Parisienne&family=Petit+Formal+Script&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Qwigley&family=Sacramento&family=Tangerine:wght@400;700&family=UnifrakturCook:wght@700&family=Water+Brush&family=WindSong&display=swap';
+const GOOGLE_FONTS = 'https://fonts.googleapis.com/css2?family=Alex+Brush&family=Allura&family=Ballet&family=Berkshire+Swash&family=Bonheur+Royale&family=Cinzel:wght@400;500;600;700;800;900&family=Clicker+Script&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Dancing+Script:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&family=EB+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Great+Vibes&family=Inter:wght@400;500;600;700&family=Italianno&family=Lavishly+Yours&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,600;1,400&family=Lovers+Quarrel&family=Mea+Culpa&family=Montserrat:wght@400;500;600;700&family=Mrs+Saint+Delafield&family=Ms+Madi&family=Parisienne&family=Pinyon+Script&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Qwigley&family=Sacramento&family=Tangerine:wght@400;700&family=Water+Brush&family+WindSong:wght@400;500&display=swap';
 
-const textTags = new Set(['H1','H2','H3','H4','H5','H6','P','SPAN','BUTTON','A','LABEL','LI','SMALL','STRONG','EM']);
-
-const findEditableText = (target: HTMLElement | null) => {
-  if (!target) return null;
-  const known = target.closest('h1,h2,h3,h4,h5,h6,p,span,button,a,label,li,small,strong,em') as HTMLElement | null;
-  if (known && textTags.has(known.tagName)) return known;
-  let node: HTMLElement | null = target;
-  while (node && node !== document.body) {
-    const hasDirectText = Array.from(node.childNodes).some(c => c.nodeType === Node.TEXT_NODE && Boolean(c.textContent?.trim()));
-    if (hasDirectText && Array.from(node.children).length <= 1) return node;
-    node = node.parentElement;
-  }
-  return null;
+const cssPath=(el:Element)=>{
+ const parts:string[]=[]; let n:Element|null=el;
+ while(n&&n.nodeType===1&&parts.length<7){
+  let s=n.tagName.toLowerCase();
+  if((n as HTMLElement).id) {s+=`#${CSS.escape((n as HTMLElement).id)}`;parts.unshift(s);break;}
+  const cls=Array.from(n.classList).filter(c=>!c.includes(':')&&!c.includes('[')).slice(0,2);
+  if(cls.length)s+='.'+cls.map(CSS.escape).join('.');
+  const parent=n.parentElement;
+  if(parent){const same=Array.from(parent.children).filter(x=>x.tagName===n!.tagName); if(same.length>1)s+=`:nth-of-type(${same.indexOf(n)+1})`;}
+  parts.unshift(s);n=n.parentElement;
+ }
+ return parts.join(' > ');
 };
 
-const cssPath = (element: HTMLElement) => {
-  if (element.id) return `#${CSS.escape(element.id)}`;
-  const parts: string[] = [];
-  let node: HTMLElement | null = element;
-  while (node && node !== document.body && parts.length < 10) {
-    let part = node.tagName.toLowerCase();
-    const classes = Array.from(node.classList).filter(c => !c.includes(':')).slice(0, 2);
-    if (classes.length) part += '.' + classes.map(c => CSS.escape(c)).join('.');
-    const parent = node.parentElement;
-    if (parent) {
-      const siblings = Array.from(parent.children).filter(child => child.tagName === node!.tagName);
-      if (siblings.length > 1) part += `:nth-of-type(${siblings.indexOf(node) + 1})`;
-    }
-    parts.unshift(part);
-    node = parent;
-  }
-  return parts.join(' > ');
+const isEditableText=(el:Element)=>{
+ const tag=el.tagName;
+ if(['H1','H2','H3','H4','H5','H6','P','SPAN','BUTTON','A','LI','BLOCKQUOTE'].includes(tag)) return true;
+ return !!el.closest('[data-vce-editable="true"]');
 };
 
-const rgbToHex = (value: string) => {
-  const match = value.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
-  if (!match) return value;
-  return '#' + [match[1], match[2], match[3]].map(v => Number(v).toString(16).padStart(2, '0')).join('');
+const applyPosition=(p:AdminBarPosition)=>{
+ const bar=document.getElementById('admin-top-bar'); if(!bar)return;
+ Object.assign(bar.style,{position:'fixed',zIndex:'4000',top:'auto',bottom:'auto',left:'auto',right:'auto',width:'auto',transform:''});
+ if(p==='top')Object.assign(bar.style,{top:'0',left:'0',right:'0',width:'100%'});
+ if(p==='bottom')Object.assign(bar.style,{bottom:'0',left:'0',right:'0',width:'100%'});
+ if(p==='left')Object.assign(bar.style,{top:'50%',left:'0',transform:'translateY(-50%)'});
+ if(p==='right')Object.assign(bar.style,{top:'50%',right:'0',transform:'translateY(-50%)'});
 };
 
-const applySavedOverrides = (blocks: EditorBlock[]) => {
-  blocks.forEach(block => {
-    if (!block.selector) return;
-    let el: Element | null = null;
-    try { el = document.querySelector(block.selector); } catch { return; }
-    if (!el) return;
-    const element = el as HTMLElement;
-    if (block.kind === 'media' && block.url) {
-      if (element instanceof HTMLImageElement) element.src = block.url;
-      if (element instanceof HTMLVideoElement) { element.src = block.url; element.load(); }
-    }
-    if (block.kind === 'text') {
-      if (block.text != null) element.textContent = block.text;
-      if (block.fontFamily) element.style.fontFamily = block.fontFamily;
-      if (block.fontSize) element.style.fontSize = block.fontSize;
-      if (block.color) element.style.color = block.color;
-    }
-  });
+export const SiteVisualEditor:React.FC<Props>=({config,onChange,onSave})=>{
+ const [open,setOpen]=useState(false),[direct,setDirect]=useState(false),[selected,setSelected]=useState<{el:HTMLElement,type:'text'|'media'}|null>(null);
+ const [current,setCurrent]=useState(''),[replacement,setReplacement]=useState('');
+ const [font,setFont]=useState(fonts[0][1]),[size,setSize]=useState('24px'),[color,setColor]=useState('#f3ece0');
+ const [saving,setSaving]=useState(false),[uploading,setUploading]=useState(false),[error,setError]=useState<string|null>(null),[message,setMessage]=useState('');
+ const input=useRef<HTMLInputElement>(null);
+
+ useEffect(()=>{applyPosition(config.adminBarPosition||'top')},[config.adminBarPosition]);
+ useEffect(()=>{let l=document.querySelector('link[data-vce-fonts]');if(!l){l=document.createElement('link');l.rel='stylesheet';l.setAttribute('data-vce-fonts','true');l.setAttribute('href',GOOGLE_FONTS);document.head.appendChild(l)}},[]);
+
+ useEffect(()=>{
+  if(!open||!direct)return;
+  const handler=(e:MouseEvent)=>{
+   const t=e.target as HTMLElement|null;
+   if(!t||t.closest('#site-visual-editor-panel')||t.closest('#admin-top-bar')||t.closest('#main-nav-header')||t.closest('[data-vce-ignore="true"]'))return;
+   const media=t.closest('img,video') as HTMLElement|null;
+   const text=media?null:(isEditableText(t)?t:t.closest('h1,h2,h3,h4,h5,h6,p,span,button,a,li,blockquote') as HTMLElement|null);
+   if(!media&&!text)return;
+   e.preventDefault();e.stopPropagation();
+   const el=media||text!;
+   const selector=cssPath(el);
+   const saved=config.blocks.find(b=>b.selector===selector);
+   setSelected({el,type:media?'media':'text'});
+   if(text){
+    const cs=getComputedStyle(text);
+    setCurrent(text.textContent||'');setReplacement(saved?.text??text.textContent??'');
+    setFont(saved?.fontFamily??cs.fontFamily);setSize(saved?.fontSize??cs.fontSize);setColor(saved?.color??rgbHex(cs.color));
+   }
+   setMessage(media?'Image / vidéo sélectionnée.':'Texte sélectionné.');
+  };
+  document.addEventListener('click',handler,true);return()=>document.removeEventListener('click',handler,true);
+ },[open,direct,config.blocks]);
+
+ const save=async()=>{
+  if(!selected)return;
+  setSaving(true);setError(null);setMessage('');
+  try{
+   const selector=cssPath(selected.el);
+   let blocks=config.blocks.filter(b=>b.selector!==selector);
+   if(selected.type==='text'){
+    selected.el.textContent=replacement;Object.assign(selected.el.style,{fontFamily:font,fontSize:size,color});
+    blocks.push({id:`text-${Date.now()}`,type:'text',section:'hero',x:50,y:50,text:replacement,visible:true,selector,kind:'text',fontFamily:font,fontSize:size,color});
+   }else{
+    // Image changes are handled by upload()/library chooser.
+    setMessage('Choisissez une nouvelle image puis enregistrez.');
+   }
+   const next={...config,blocks};onChange(next);await onSave(next);setSelected(null);setMessage('Publié : les visiteurs verront cette modification.');
+  }catch(e){setError(e instanceof Error?e.message:'Enregistrement impossible.')}finally{setSaving(false)}
+ };
+
+ const upload=async(file:File)=>{
+  if(!selected||selected.type!=='media')return;
+  setUploading(true);setError(null);
+  try{
+   const fd=new FormData();fd.append('file',file);
+   const r=await fetch('/api/site-media',{method:'POST',credentials:'include',body:fd});const d=await r.json();
+   if(!r.ok||!d?.url)throw new Error(d?.error||`Upload HTTP ${r.status}`);
+   const selector=cssPath(selected.el);const blocks=config.blocks.filter(b=>b.selector!==selector);
+   const type=file.type.startsWith('video/')?'video':'image';
+   blocks.push({id:`media-${Date.now()}`,type,section:'hero',x:50,y:50,url:d.url,visible:true,selector,kind:'media'});
+   if(selected.el instanceof HTMLImageElement)selected.el.src=d.url;
+   if(selected.el instanceof HTMLVideoElement){selected.el.src=d.url;selected.el.load()}
+   const next={...config,blocks};onChange(next);await onSave(next);setSelected(null);setMessage('Média remplacé et publié.');
+  }catch(e){setError(e instanceof Error?e.message:'Upload impossible.')}finally{setUploading(false)}
+ };
+
+ const changeAdmin=(p:AdminBarPosition)=>{const next={...config,adminBarPosition:p};onChange(next);applyPosition(p)};
+
+ if(!open)return <button type="button" data-vce-ignore="true" onClick={()=>setOpen(true)} className="fixed bottom-4 right-4 z-[5000] rounded-full bg-[#d4af37] text-black p-3 shadow-2xl"><Settings2 className="w-5 h-5"/></button>;
+
+ return <aside id="site-visual-editor-panel" data-vce-ignore="true" className="fixed bottom-4 right-4 z-[5000] w-[min(520px,calc(100vw-2rem))] max-h-[90vh] overflow-auto rounded-2xl bg-[#111711] text-white border border-[#d4af37]/70 shadow-2xl">
+  <header className="sticky top-0 z-10 flex justify-between items-center p-4 bg-[#172019] border-b border-[#334236]"><div><b className="text-[#d4af37]">Éditeur visuel</b><div className="text-[10px] text-[#9aaa9d]">Un seul module pour texte, style et médias</div></div><button type="button" onClick={()=>{setOpen(false);setDirect(false);setSelected(null)}}><X/></button></header>
+  <div className="p-4 space-y-3">
+   <button type="button" onClick={()=>{setDirect(v=>!v);setSelected(null)}} className={`w-full rounded-lg py-3 font-bold ${direct?'bg-[#d4af37] text-black':'bg-[#263329]'}`}><Type className="inline w-4 h-4 mr-2"/>{direct?'Sélection directe ACTIVÉE':'Modifier directement sur la page'}</button>
+   <div><label className="text-xs text-[#c4ceb8]">Barre administrateur</label><select value={config.adminBarPosition||'top'} onChange={e=>changeAdmin(e.target.value as AdminBarPosition)} className="w-full mt-1 rounded-lg bg-[#1c261e] border border-[#405044] p-2"><option value="top">Haut</option><option value="bottom">Bas</option><option value="left">Gauche</option><option value="right">Droite</option></select></div>
+   {selected?.type==='text'&&<section className="rounded-xl border border-[#d4af37]/60 p-3 space-y-3">
+    <b className="text-[#d4af37]">Modifier le texte</b>
+    <div><label className="text-[10px] text-[#94a395]">Texte actuel</label><textarea readOnly value={current} className="w-full rounded bg-black/30 p-2 text-xs"/></div>
+    <div><label className="text-[10px] text-[#94a395]">Texte de remplacement</label><textarea value={replacement} onChange={e=>setReplacement(e.target.value)} className="w-full rounded bg-black/40 border border-[#d4af37]/50 p-2"/></div>
+    <div className="grid grid-cols-2 gap-2"><div><label className="text-[10px]">Police</label><select value={font} onChange={e=>setFont(e.target.value)} className="w-full rounded bg-black/40 p-2 text-xs">{fonts.map(([n,v])=><option key={v} value={v}>{n}</option>)}</select></div><div><label className="text-[10px]">Taille</label><select value={size} onChange={e=>setSize(e.target.value)} className="w-full rounded bg-black/40 p-2 text-xs">{sizes.map(s=><option key={s}>{s}</option>)}</select></div></div>
+    <div className="flex gap-2 items-end"><div className="flex-1"><label className="text-[10px]">Couleur</label><input type="color" value={color} onChange={e=>setColor(e.target.value)} className="w-full h-10 rounded bg-black/40"/></div><div className="flex-[2]"><input value={color} onChange={e=>setColor(e.target.value)} className="w-full h-10 rounded bg-black/40 p-2 uppercase text-xs"/></div></div>
+    <div style={{fontFamily:font,fontSize:size,color}} className="rounded bg-black/30 p-3">Aperçu : {replacement}</div>
+    <button type="button" disabled={saving} onClick={save} className="w-full rounded-lg bg-[#d4af37] text-black font-bold p-3 disabled:opacity-50">{saving?<><Loader2 className="inline animate-spin mr-2"/>Publication...</>:<><Save className="inline mr-2"/>Enregistrer et publier</>}</button>
+   </section>}
+   {selected?.type==='media'&&<section className="rounded-xl border border-[#d4af37]/60 p-3 space-y-2"><b className="text-[#d4af37]">Remplacer le média</b><input ref={input} type="file" accept="image/*,video/*" className="hidden" onChange={e=>{const f=e.target.files?.[0];e.target.value='';if(f)upload(f)}}/><button type="button" onClick={()=>input.current?.click()} disabled={uploading} className="w-full rounded-lg bg-[#d4af37] text-black font-bold p-3">{uploading?<><Loader2 className="inline animate-spin mr-2"/>Upload...</>:<><Upload className="inline mr-2"/>Importer et publier</>}</button></section>}
+   {message&&<div className="text-xs text-emerald-300 bg-emerald-950/40 rounded p-2">{message}</div>}
+   {error&&<div className="text-xs text-red-300 bg-red-950/40 rounded p-2">{error}</div>}
+   <p className="text-[10px] text-[#819084]">En mode sélection directe, clique sur n'importe quel texte ou image du site. Pour une nouvelle fiche produit, ses images sont sélectionnables automatiquement dès qu'elles sont rendues par la page.</p>
+  </div>
+ </aside>
 };
 
-const applyAdminBarPosition = (position: AdminBarPosition) => {
-  const bar = document.getElementById('admin-top-bar');
-  if (!bar) return;
-  bar.style.position = 'fixed'; bar.style.zIndex = '1000'; bar.style.margin = '0'; bar.style.transform = '';
-  bar.style.top = 'auto'; bar.style.bottom = 'auto'; bar.style.left = 'auto'; bar.style.right = 'auto';
-  if (position === 'top') { bar.style.top='0'; bar.style.left='0'; bar.style.right='0'; bar.style.width='100%'; }
-  else if (position === 'bottom') { bar.style.bottom='0'; bar.style.left='0'; bar.style.right='0'; bar.style.width='100%'; }
-  else if (position === 'left') { bar.style.top='50%'; bar.style.left='0'; bar.style.width='min(92vw,420px)'; bar.style.transform='translateY(-50%)'; }
-  else { bar.style.top='50%'; bar.style.right='0'; bar.style.width='min(92vw,420px)'; bar.style.transform='translateY(-50%)'; }
-};
-
-export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) => {
-  const [open, setOpen] = useState(false);
-  const [directEdit, setDirectEdit] = useState(false);
-  const [addMode, setAddMode] = useState<EditorBlock['type'] | null>(null);
-  const [selected, setSelected] = useState<{ element: HTMLElement; type: 'text'|'media' } | null>(null);
-  const [currentText, setCurrentText] = useState('');
-  const [replacementText, setReplacementText] = useState('');
-  const [fontFamily, setFontFamily] = useState(FONT_OPTIONS[0][1]);
-  const [fontSize, setFontSize] = useState('16px');
-  const [textColor, setTextColor] = useState('#f3ece0');
-  const [newText, setNewText] = useState('Nouveau texte');
-  const [newLink, setNewLink] = useState('#');
-  const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [library, setLibrary] = useState<LibraryItem[]>([]);
-  const [libraryOpen, setLibraryOpen] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const addFileRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    applyAdminBarPosition(config.adminBarPosition || 'top');
-    applySavedOverrides(config.blocks);
-  }, [config.adminBarPosition, config.blocks]);
-
-  useEffect(() => {
-    const existing = document.querySelector('link[data-vce-google-fonts="true"]');
-    if (existing) return;
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = GOOGLE_FONT_URL;
-    link.dataset.vceGoogleFonts = 'true';
-    document.head.appendChild(link);
-  }, []);
-
-  useEffect(() => {
-    if (!directEdit && !addMode) return;
-    const click = (event: MouseEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (!target || target.closest('#site-visual-editor-panel') || target.closest('#admin-top-bar') || target.closest('#main-nav-header') || target.closest('[data-vce-ignore="true"]')) return;
-      const hero = document.getElementById('hero-section');
-      const media = target.closest('img, video') as HTMLElement | null;
-      const text = findEditableText(target);
-
-      if (addMode) {
-        if (!hero) { setError('La section Accueil est introuvable.'); return; }
-        const rect = hero.getBoundingClientRect();
-        const x = Math.max(2, Math.min(98, ((event.clientX - rect.left) / rect.width) * 100));
-        const y = Math.max(4, Math.min(96, ((event.clientY - rect.top) / rect.height) * 100));
-        if (addMode === 'image' || addMode === 'video') {
-          (window as any).__vcePendingPlacement = { x, y, type: addMode };
-          addFileRef.current?.click(); return;
-        }
-        const type = addMode;
-        const block: EditorBlock = { id:`block-${Date.now()}`, type, section:'hero', x, y, text:newText || (type==='button'?'Nouveau bouton':'Nouveau texte'), link:type==='button'?newLink||'#':undefined, visible:true, fontFamily, fontSize, color:textColor };
-        onChange({ ...config, blocks:[...config.blocks, block] });
-        setAddMode(null); setMessage('Bloc ajouté. Cliquez sur Enregistrer pour publier.'); event.preventDefault(); event.stopPropagation(); return;
-      }
-
-      const element = media || text;
-      if (!element) return;
-      event.preventDefault(); event.stopPropagation();
-      if (media) {
-        setSelected({ element, type:'media' });
-        setMessage('Média sélectionné.');
-      } else {
-        const selector = cssPath(element);
-        const saved = config.blocks.find(b => b.selector === selector && b.kind === 'text');
-        const computed = window.getComputedStyle(element);
-        setSelected({ element, type:'text' });
-        setCurrentText(element.textContent || '');
-        setReplacementText(saved?.text ?? element.textContent ?? '');
-        setFontFamily(saved?.fontFamily ?? computed.fontFamily);
-        setFontSize(saved?.fontSize ?? computed.fontSize);
-        const computedColor = saved?.color ?? computed.color ?? '#f3ece0';
-        setTextColor(computedColor.startsWith('rgb') ? rgbToHex(computedColor) : computedColor);
-        setMessage('Texte sélectionné. Modifiez-le dans le panneau puis enregistrez.');
-      }
-    };
-    document.addEventListener('click', click, true);
-    return () => document.removeEventListener('click', click, true);
-  }, [directEdit, addMode, config, newText, newLink, fontFamily, fontSize, onChange]);
-
-  const update = (patch: Partial<SiteEditorConfig>) => onChange({ ...config, ...patch });
-
-  const buildTextSaveConfig = () => {
-    if (!selected || selected.type !== 'text') return config;
-    const selector = cssPath(selected.element);
-    const blocks = config.blocks.filter(b => b.selector !== selector);
-    blocks.push({
-      id:`text-${Date.now()}`, type:selected.element.tagName.startsWith('H')?'heading':selected.element.tagName==='BUTTON'?'button':'text', section:'hero', x:50, y:50,
-      text:replacementText, visible:true, selector, kind:'text', fontFamily, fontSize, color:textColor,
-    });
-    selected.element.textContent = replacementText;
-    selected.element.style.fontFamily = fontFamily;
-    selected.element.style.fontSize = fontSize;
-    selected.element.style.color = textColor;
-    return { ...config, blocks };
-  };
-
-  const save = async () => {
-    setSaving(true); setError(null); setMessage(null);
-    try {
-      const nextConfig = selected?.type === 'text' ? buildTextSaveConfig() : config;
-      await onSave(nextConfig);
-      if (selected?.type === 'text') {
-        setCurrentText(replacementText);
-        setSelected(null);
-      }
-      setMessage('Modifications enregistrées et appliquées.');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Impossible d’enregistrer.');
-    } finally { setSaving(false); }
-  };
-
-  const upload = async (file: File, placement?: {x:number;y:number;type:'image'|'video'}) => {
-    setUploading(true); setError(null);
-    try {
-      const body = new FormData(); body.append('file', file);
-      const response = await fetch('/api/site-media', { method:'POST', credentials:'include', body });
-      const data = await response.json();
-      if (!response.ok || !data?.url) throw new Error(data?.error || `Upload HTTP ${response.status}`);
-      if (placement) {
-        update({ blocks:[...config.blocks,{ id:`block-${Date.now()}`, type:placement.type, section:'hero', x:placement.x, y:placement.y, url:data.url, visible:true }] });
-        setMessage('Média ajouté. Cliquez sur Enregistrer.');
-      } else if (selected) {
-        const selector = cssPath(selected.element);
-        const blocks = config.blocks.filter(b=>b.selector!==selector);
-        blocks.push({ id:`media-${Date.now()}`, type:selected.element instanceof HTMLVideoElement?'video':'image', section:'hero', x:50,y:50,url:data.url,visible:true,selector,kind:'media' });
-        update({ blocks });
-        if (selected.element instanceof HTMLImageElement) selected.element.src=data.url;
-        if (selected.element instanceof HTMLVideoElement) { selected.element.src=data.url; selected.element.load(); }
-        setSelected(null); setMessage('Média remplacé. Cliquez sur Enregistrer.');
-      }
-      setAddMode(null);
-    } catch(err) { setError(err instanceof Error?err.message:'Upload impossible.'); }
-    finally { setUploading(false); }
-  };
-
-  const handleAddFile = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file=event.target.files?.[0]; event.target.value='';
-    const pending=(window as any).__vcePendingPlacement as {x:number;y:number;type:'image'|'video'}|undefined;
-    if(file&&pending){delete (window as any).__vcePendingPlacement; void upload(file,pending);}
-  };
-
-  const loadLibrary = async () => {
-    try { const r=await fetch('/api/site-media',{credentials:'include'}); const d=await r.json(); if(!r.ok) throw new Error(d?.error||`HTTP ${r.status}`); setLibrary(Array.isArray(d?.items)?d.items:[]); setLibraryOpen(true); }
-    catch(err){setError(err instanceof Error?err.message:'Bibliothèque indisponible.');}
-  };
-
-  const chooseLibraryItem = (item: LibraryItem) => {
-    if(!selected) return;
-    const selector=cssPath(selected.element); const isVideo=/\.(mp4|webm|mov)(\?|$)/i.test(item.url);
-    const blocks=config.blocks.filter(b=>b.selector!==selector);
-    blocks.push({id:`media-${Date.now()}`,type:isVideo?'video':'image',section:'hero',x:50,y:50,url:item.url,visible:true,selector,kind:'media'});
-    update({blocks});
-    if(selected.element instanceof HTMLImageElement) selected.element.src=item.url;
-    if(selected.element instanceof HTMLVideoElement){selected.element.src=item.url;selected.element.load();}
-    setLibraryOpen(false);setSelected(null);setMessage('Média remplacé depuis la bibliothèque. Cliquez sur Enregistrer.');
-  };
-
-  const removeBlock=(id:string)=>update({blocks:config.blocks.filter(b=>b.id!==id)});
-
-  if(!open) return <button type="button" data-vce-ignore="true" onClick={()=>setOpen(true)} className="fixed bottom-4 right-4 z-[2000] rounded-full bg-[#d4af37] text-black p-3 shadow-2xl cursor-pointer hover:scale-105 transition-transform" title="Ouvrir l’éditeur visuel"><Settings2 className="w-5 h-5"/></button>;
-
-  return <>
-    <div id="site-visual-editor-panel" data-vce-ignore="true" className="fixed bottom-4 right-4 z-[2000] w-[min(500px,calc(100vw-2rem))] max-h-[90vh] overflow-hidden rounded-2xl bg-[#111711] text-white border border-[#d4af37]/70 shadow-2xl">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#334236] bg-[#172019]"><div><strong className="text-[#d4af37] block">Éditeur visuel V7</strong><span className="text-[10px] text-[#9aaa9d]">Cliquez sur un texte pour le modifier</span></div><button type="button" onClick={()=>{setOpen(false);setDirectEdit(false);setAddMode(null);setSelected(null);}} className="p-2 rounded-lg hover:bg-white/10 cursor-pointer"><X className="w-5 h-5"/></button></div>
-      <div className="p-4 overflow-y-auto max-h-[calc(90vh-128px)] space-y-3">
-        <button type="button" data-vce-ignore="true" onClick={()=>{setDirectEdit(v=>!v);setAddMode(null);setSelected(null);setMessage(null);}} className={`w-full rounded-lg py-3 font-bold cursor-pointer border ${directEdit?'bg-[#d4af37] text-black border-[#d4af37]':'bg-[#263329] text-white border-[#405044]'}`}><Type className="inline w-4 h-4 mr-2"/>{directEdit?'Mode sélection de texte : ACTIVÉ':'✏️ Modifier directement la page'}</button>
-
-        {selected?.type==='text' && <div className="rounded-xl border border-[#d4af37]/70 bg-[#182119] p-3 space-y-3">
-          <div className="text-sm font-bold text-[#d4af37]">Texte sélectionné</div>
-          <div><label className="block text-[10px] uppercase tracking-wider text-[#94a395] mb-1">Texte actuel</label><textarea value={currentText} readOnly rows={2} className="w-full rounded-lg bg-[#0b100c] border border-[#344437] px-3 py-2 text-xs text-[#aeb8af] resize-none"/></div>
-          <div><label className="block text-[10px] uppercase tracking-wider text-[#94a395] mb-1">Nouveau texte</label><textarea value={replacementText} onChange={e=>setReplacementText(e.target.value)} rows={3} className="w-full rounded-lg bg-[#0b100c] border border-[#d4af37]/60 px-3 py-2 text-sm text-white resize-y" placeholder="Écrivez le texte de remplacement ici..."/></div>
-          <div className="grid grid-cols-2 gap-2">
-            <div><label className="block text-[10px] uppercase tracking-wider text-[#94a395] mb-1">Police</label><select value={fontFamily} onChange={e=>setFontFamily(e.target.value)} className="w-full rounded-lg bg-[#0b100c] border border-[#405044] px-2 py-2 text-xs text-white">{FONT_OPTIONS.map(([label,value])=><option key={value} value={value}>{label}</option>)}</select></div>
-            <div><label className="block text-[10px] uppercase tracking-wider text-[#94a395] mb-1">Taille</label><select value={fontSize} onChange={e=>setFontSize(e.target.value)} className="w-full rounded-lg bg-[#0b100c] border border-[#405044] px-2 py-2 text-xs text-white">{FONT_SIZES.map(size=><option key={size} value={size}>{size}</option>)}</select></div>
-          </div>
-          <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
-            <div>
-              <label className="block text-[10px] uppercase tracking-wider text-[#94a395] mb-1">Couleur du texte</label>
-              <div className="flex gap-2">
-                <input type="color" value={textColor} onChange={e=>setTextColor(e.target.value)} className="w-12 h-10 rounded-lg bg-[#0b100c] border border-[#405044] p-1 cursor-pointer" />
-                <input value={textColor} onChange={e=>setTextColor(e.target.value)} className="flex-1 rounded-lg bg-[#0b100c] border border-[#405044] px-3 py-2 text-xs uppercase" placeholder="#F3ECE0" />
-              </div>
-            </div>
-            <button type="button" onClick={()=>setTextColor('#d4af37')} className="h-10 rounded-lg border border-[#d4af37]/50 px-3 text-xs text-[#d4af37] cursor-pointer">Or</button>
-          </div>
-          <div className="rounded-lg bg-[#0b100c] border border-[#344437] p-3"><div className="text-[10px] text-[#94a395] mb-1">Aperçu</div><div style={{fontFamily,fontSize,color:textColor}} className="break-words">{replacementText || 'Votre nouveau texte apparaîtra ici.'}</div></div>
-        </div>}
-
-        {selected?.type==='media' && <div className="rounded-lg border border-[#d4af37]/60 p-3 space-y-2"><div className="text-xs text-[#d4af37]">Média sélectionné</div><input ref={fileInputRef} type="file" accept="image/*,video/mp4,video/webm,video/quicktime" className="hidden" onChange={e=>{const f=e.target.files?.[0];if(f)void upload(f);e.target.value='';}}/><div className="grid grid-cols-2 gap-2"><button type="button" disabled={uploading} onClick={()=>fileInputRef.current?.click()} className="rounded-lg bg-[#d4af37] text-black font-bold py-2 cursor-pointer disabled:opacity-60">{uploading?<Loader2 className="inline w-4 h-4 animate-spin"/>:<Upload className="inline w-4 h-4 mr-1"/>}Importer</button><button type="button" onClick={loadLibrary} className="rounded-lg bg-[#263329] py-2 cursor-pointer"><ImageIcon className="inline w-4 h-4 mr-1"/>Bibliothèque</button></div></div>}
-
-        <div><label className="text-xs block mb-1 text-[#c4ceb8]">Position de la barre administrateur</label><select value={config.adminBarPosition||'top'} onChange={e=>{const p=e.target.value as AdminBarPosition;update({adminBarPosition:p});requestAnimationFrame(()=>applyAdminBarPosition(p));}} className="w-full rounded-lg bg-[#1c261e] border border-[#405044] px-3 py-2 text-white cursor-pointer"><option value="top">Haut</option><option value="bottom">Bas</option><option value="left">Gauche</option><option value="right">Droite</option></select></div>
-        <div className="grid grid-cols-2 gap-2"><input value={newText} onChange={e=>setNewText(e.target.value)} placeholder="Texte du nouveau bloc" className="rounded-lg bg-[#0d120e] border border-[#405044] px-3 py-2 text-xs"/><input value={newLink} onChange={e=>setNewLink(e.target.value)} placeholder="Lien du bouton" className="rounded-lg bg-[#0d120e] border border-[#405044] px-3 py-2 text-xs"/></div>
-        <div className="grid grid-cols-4 gap-2"><button type="button" onClick={()=>{setAddMode('text');setDirectEdit(false);setMessage('Cliquez à l’endroit où placer le texte.');}} className="rounded-lg bg-[#263329] p-2 text-xs cursor-pointer"><Plus className="inline w-3 h-3"/>Texte</button><button type="button" onClick={()=>{setAddMode('heading');setDirectEdit(false);setMessage('Cliquez à l’endroit où placer le titre.');}} className="rounded-lg bg-[#263329] p-2 text-xs cursor-pointer"><Plus className="inline w-3 h-3"/>Titre</button><button type="button" onClick={()=>{setAddMode('button');setDirectEdit(false);setMessage('Cliquez à l’endroit où placer le bouton.');}} className="rounded-lg bg-[#263329] p-2 text-xs cursor-pointer"><Plus className="inline w-3 h-3"/>Bouton</button><button type="button" onClick={()=>{setAddMode('image');setDirectEdit(false);setMessage('Cliquez à l’endroit où placer le média.');}} className="rounded-lg bg-[#263329] p-2 text-xs cursor-pointer"><ImageIcon className="inline w-3 h-3"/>Média</button></div>
-        <input ref={addFileRef} type="file" accept="image/*,video/mp4,video/webm,video/quicktime" className="hidden" onChange={handleAddFile}/>
-
-        <div className="rounded-lg border border-[#334236] p-3"><div className="flex items-center gap-2 mb-2 text-xs text-[#c4ceb8]"><Move className="w-3.5 h-3.5 text-[#d4af37]"/>Blocs ajoutés</div>{config.blocks.filter(b=>!b.selector).map(block=><div key={block.id} className="border border-[#405044] rounded-lg p-2 mb-2"><div className="flex gap-2 items-center"><input value={block.text||''} onChange={e=>update({blocks:config.blocks.map(b=>b.id===block.id?{...b,text:e.target.value}:b)})} className="flex-1 min-w-0 bg-[#0c110d] border border-[#354437] rounded px-2 py-1 text-xs"/><button type="button" onClick={()=>removeBlock(block.id)} className="text-red-300 p-1 cursor-pointer"><Trash2 className="w-4 h-4"/></button></div><div className="grid grid-cols-2 gap-2 mt-2 text-[10px]"><label>X {Math.round(block.x)}%<input type="range" min="0" max="100" value={block.x} onChange={e=>update({blocks:config.blocks.map(b=>b.id===block.id?{...b,x:Number(e.target.value)}:b)})} className="w-full cursor-pointer"/></label><label>Y {Math.round(block.y)}%<input type="range" min="0" max="100" value={block.y} onChange={e=>update({blocks:config.blocks.map(b=>b.id===block.id?{...b,y:Number(e.target.value)}:b)})} className="w-full cursor-pointer"/></label></div></div>)}</div>
-        {message&&<div className="rounded-lg bg-emerald-950/40 border border-emerald-700/60 px-3 py-2 text-xs text-emerald-200"><Check className="inline w-3.5 h-3.5 mr-1"/>{message}</div>}{error&&<div className="rounded-lg bg-red-950/50 border border-red-800/60 px-3 py-2 text-xs text-red-200">{error}</div>}
-      </div>
-      <div className="border-t border-[#334236] bg-[#172019] p-3"><button type="button" disabled={saving} onClick={save} className="w-full rounded-lg bg-[#d4af37] text-black font-bold py-3 cursor-pointer disabled:opacity-60">{saving?<><Loader2 className="inline w-4 h-4 mr-1 animate-spin"/>Enregistrement...</>:<><Save className="inline w-4 h-4 mr-1"/>Enregistrer les modifications</>}</button></div>
-    </div>
-    {libraryOpen&&<div className="fixed inset-0 z-[3000] bg-black/70 flex items-center justify-center p-4" data-vce-ignore="true"><div className="w-full max-w-3xl max-h-[80vh] overflow-auto rounded-2xl bg-[#151c17] border border-[#d4af37]/60 p-4"><div className="flex items-center justify-between mb-3"><strong className="text-[#d4af37]">Bibliothèque média</strong><button type="button" onClick={()=>setLibraryOpen(false)}><X/></button></div>{library.length===0?<div className="text-sm text-[#a3b1a5] py-10 text-center">Aucun média importé.</div>:<div className="grid grid-cols-2 sm:grid-cols-3 gap-3">{library.map(item=><button key={item.url} type="button" onClick={()=>chooseLibraryItem(item)} className="rounded-xl overflow-hidden border border-[#334236] hover:border-[#d4af37] bg-[#0c110d] cursor-pointer">{/\.(mp4|webm|mov)(\?|$)/i.test(item.url)?<video src={item.url} muted className="w-full h-32 object-cover"/>:<img src={item.url} alt="" className="w-full h-32 object-cover"/>}<span className="block p-2 text-[10px] text-left truncate text-[#c4ceb8]">{item.pathname||item.url}</span></button>)}</div>}</div></div>}
-  </>;
-};
+function rgbHex(rgb:string){const m=rgb.match(/\d+/g)?.map(Number);if(!m||m.length<3)return '#f3ece0';return '#'+m.slice(0,3).map(x=>x.toString(16).padStart(2,'0')).join('')}
