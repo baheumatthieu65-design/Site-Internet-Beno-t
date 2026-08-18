@@ -204,13 +204,13 @@ export const SiteVisualEditor: React.FC<Props> = ({
       event.stopPropagation();
 
       if (media) {
-        const mediaEl = media as HTMLElement;
         const url = media instanceof HTMLImageElement
           ? media.currentSrc || media.src
           : media instanceof HTMLVideoElement
             ? media.currentSrc || media.src
             : '';
 
+        const mediaEl = media as HTMLElement;
         const galleryRole =
           mediaEl.getAttribute('data-vce-gallery-main') === 'true'
             ? 'main'
@@ -239,7 +239,7 @@ export const SiteVisualEditor: React.FC<Props> = ({
         setImageUrl(url);
         setSelecting(false);
         return;
-      
+      }
 
       if (isText(element)) {
         const style = getComputedStyle(element);
@@ -326,11 +326,14 @@ export const SiteVisualEditor: React.FC<Props> = ({
   const chooseImage = (url: string) => {
     if (!selected || selected.kind !== 'media') return;
 
-    // Le choix d'une nouvelle image passe uniquement par la configuration
-    // de l'éditeur. Nous ne touchons jamais directement à l'état React de
-    // la galerie : la grande image reste pilotée par JacketsShowcase.
-    setImageUrl(url);
     const el = selected.element;
+    if (el instanceof HTMLImageElement) el.src = url;
+    if (el instanceof HTMLVideoElement) {
+      el.src = url;
+      el.load();
+    }
+
+    setImageUrl(url);
     commitBlock({
       type: el instanceof HTMLVideoElement ? 'video' : 'image',
       kind: 'media',
@@ -338,11 +341,7 @@ export const SiteVisualEditor: React.FC<Props> = ({
       url,
       visible: true,
     });
-    setMessage(
-      selected.galleryRole === 'thumbnail'
-        ? 'Miniature remplacée. Enregistre pour publier.'
-        : 'Image remplacée. Enregistre pour publier.'
-    );
+    setMessage('Image remplacée. Enregistre pour publier.');
   };
 
   const uploadImage = async (file: File) => {
@@ -585,6 +584,11 @@ export const SiteVisualEditor: React.FC<Props> = ({
                 </>
               ) : (
                 <>
+                  <div className="flex items-center gap-3">
+                    <ImageIcon size={18} />
+                    <div className="min-w-0 text-xs truncate">{imageUrl || 'Aucune image'}</div>
+                  </div>
+
                   <div className="space-y-2">
                     <div className="text-[11px] uppercase tracking-[0.14em] text-[#87968a]">
                       Aperçu de l’image sélectionnée
