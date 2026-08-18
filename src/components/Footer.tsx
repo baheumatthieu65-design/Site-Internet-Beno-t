@@ -19,8 +19,8 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenInquiry,
 }) => {
   const theme = brandData.theme;
-  const secondaryBtnClass = getButtonClasses(theme, 'secondary', 'footer-workshop');
-  const buttonInlineStyle = getButtonInlineStyle(theme, 'footer-workshop');
+  const secondaryBtnClass = getButtonClasses(theme, 'secondary');
+  const buttonInlineStyle = getButtonInlineStyle(theme);
   const workshopText = theme?.workshopButtonText || "Prendre Rendez-vous à l'Atelier";
 
   return (

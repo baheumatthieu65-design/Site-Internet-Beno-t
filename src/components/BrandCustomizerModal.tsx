@@ -76,7 +76,6 @@ import {
   getCardClasses,
 } from '../utils/themeStyles';
 import { getStoredCredentials, saveAdminCredentials, resetPasswordServer, maskEmail, AdminCredentials } from '../utils/auth';
-import { ButtonManager } from './ButtonManager';
 
 interface BrandCustomizerModalProps {
   isOpen: boolean;
@@ -790,16 +789,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center space-x-3">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl bg-[#111612] border border-[#3c4c3f]">
-              <span className="text-[9px] uppercase tracking-widest text-[#87968a]">Aperçu</span>
-              <span
-                style={getButtonInlineStyle(currentTheme, 'navbar-order')}
-                className={`min-w-[120px] justify-center text-[10px] uppercase tracking-widest ${getButtonClasses(currentTheme, 'primary', 'navbar-order')}`}
-              >
-                {currentTheme.orderButtonText || 'Commander'}
-              </span>
-            </div>
+          <div className="flex items-center space-x-2">
             <button
               type="button"
               onClick={handleSave}
@@ -919,6 +909,39 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           {/* ========================================================= */}
           {activeTab === 'theme' && (
             <div className="space-y-8 animate-fadeIn">
+              {/* Interactive Live Swatch Box */}
+              <div className="p-6 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2 text-[#d4af37] text-xs uppercase font-serif tracking-widest font-semibold">
+                    <Sparkles className="w-4 h-4" />
+                    <span>Aperçu en Direct de vos Choix Graphiques</span>
+                  </div>
+                  <span className="text-[11px] text-[#a3b1a5]">
+                    Modèle sélectionné : <strong>{currentTheme.buttonStyle}</strong> • Arrondi : <strong>{currentTheme.buttonRadius}</strong>
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center pt-2">
+                  <div className="space-y-3">
+                    <span className="text-xs text-[#a3b1a5] block uppercase tracking-wider">Boutons en Action :</span>
+                    <div className="flex flex-wrap gap-3">
+                      <button className={`px-6 py-3 text-xs uppercase tracking-widest ${previewBtnClasses}`}>
+                        {currentTheme.orderButtonText || 'Commander'}
+                      </button>
+                      <button className={`px-5 py-3 text-xs uppercase tracking-widest ${previewSecBtnClasses}`}>
+                        {currentTheme.discoverButtonText || 'Découvrir'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className={`p-4 rounded-2xl ${previewCard.card} space-y-2`}>
+                    <span className="text-[10px] uppercase tracking-widest text-[#d4af37]">Modèle de Carte Actif</span>
+                    <h4 className="font-serif text-base text-[#f3ece0]">Carte Présentation Produit</h4>
+                    <p className="text-xs text-[#a3b1a5]">Rendu visuel des encadrements, reliefs et liserés.</p>
+                  </div>
+                </div>
+              </div>
+
               {/* 1. BUTTON STYLE SELECTION */}
               <div className="space-y-4">
                 <h4 className="font-serif text-lg text-[#f3ece0] font-semibold flex items-center space-x-2">
@@ -1002,8 +1025,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                   })}
                 </div>
               </div>
-
-              <ButtonManager theme={currentTheme} updateTheme={updateTheme} />
 
               {/* 3. CARD STYLES */}
               <div className="space-y-4 pt-4 border-t border-[#2a362c]">

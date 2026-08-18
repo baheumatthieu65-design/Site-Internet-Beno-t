@@ -1,5 +1,5 @@
 import React from 'react';
-import { ButtonStyleId, ButtonRadiusId, ButtonSizeId, ButtonTargetId, ButtonOverride, CardStyleId, ThemeConfig, SectionId } from '../types.js';
+import { ButtonStyleId, ButtonRadiusId, ButtonSizeId, CardStyleId, ThemeConfig, SectionId } from '../types.js';
 
 export interface ButtonModelPreset {
   id: ButtonStyleId;
@@ -190,44 +190,36 @@ export const sectionMeta: { [key in SectionId]: { name: string; icon: string; de
 };
 
 // Style Resolver Functions
-function resolveButtonOverride(theme?: ThemeConfig, targetId?: ButtonTargetId): ButtonOverride {
-  const currentTheme = theme || defaultThemeConfig;
-  const override = targetId ? currentTheme.buttonOverrides?.[targetId] : undefined;
-  return override || {};
-}
-
 export function getButtonClasses(
   theme?: ThemeConfig,
-  variant: 'primary' | 'secondary' | 'outline' = 'primary',
-  targetId?: ButtonTargetId
+  variant: 'primary' | 'secondary' | 'outline' = 'primary'
 ): string {
   const currentTheme = theme || defaultThemeConfig;
-  const override = resolveButtonOverride(theme, targetId);
-  const styleId = override.buttonStyle || currentTheme.buttonStyle;
-  const radius = override.buttonRadius || currentTheme.buttonRadius || 'rounded-full';
-  const sizeId = override.buttonSize || currentTheme.buttonSize || 'standard';
-  const stylePreset = buttonModelPresets.find((b) => b.id === styleId) || buttonModelPresets[0];
-  const sizePreset = buttonSizePresets.find((s) => s.id === sizeId) || buttonSizePresets[1];
+  const stylePreset = buttonModelPresets.find((b) => b.id === currentTheme.buttonStyle) || buttonModelPresets[0];
+  const radius = currentTheme.buttonRadius || 'rounded-full';
+  const sizePreset =
+    buttonSizePresets.find((s) => s.id === currentTheme.buttonSize) ||
+    buttonSizePresets.find((s) => s.id === 'standard')!;
 
   let base = `${radius} ${sizePreset.cssClass} transition-all duration-200 cursor-pointer `;
-  const backgroundImageUrl = Object.prototype.hasOwnProperty.call(override, 'backgroundImageUrl') ? override.backgroundImageUrl : currentTheme.buttonBackgroundImageUrl;
-  if (backgroundImageUrl) base += 'bg-cover bg-center bg-no-repeat ';
-
-  if (variant === 'primary') return `${base} ${stylePreset.primaryClass}`;
-  if (variant === 'secondary') return `${base} ${stylePreset.secondaryClass}`;
-  return `${base} ${stylePreset.outlineClass}`;
+  if (currentTheme.buttonBackgroundImageUrl) {
+    base += 'bg-cover bg-center bg-no-repeat ';
+  }
+  if (variant === 'primary') {
+    return `${base} ${stylePreset.primaryClass}`;
+  } else if (variant === 'secondary') {
+    return `${base} ${stylePreset.secondaryClass}`;
+  } else {
+    return `${base} ${stylePreset.outlineClass}`;
+  }
 }
 
-export function getButtonInlineStyle(theme?: ThemeConfig, targetId?: ButtonTargetId): React.CSSProperties {
+export function getButtonInlineStyle(theme?: ThemeConfig): React.CSSProperties {
   const currentTheme = theme || defaultThemeConfig;
-  const override = resolveButtonOverride(theme, targetId);
-  const backgroundImageUrl = Object.prototype.hasOwnProperty.call(override, 'backgroundImageUrl') ? override.backgroundImageUrl : currentTheme.buttonBackgroundImageUrl;
-  if (!backgroundImageUrl) return {};
+  if (!currentTheme.buttonBackgroundImageUrl) return {};
 
-  const overlay = Math.max(0, Math.min(100,
-    override.backgroundOverlay ?? currentTheme.buttonBackgroundOverlay ?? 28
-  )) / 100;
-  const image = `url(${JSON.stringify(backgroundImageUrl)})`;
+  const overlay = Math.max(0, Math.min(100, currentTheme.buttonBackgroundOverlay ?? 28)) / 100;
+  const image = `url(${JSON.stringify(currentTheme.buttonBackgroundImageUrl)})`;
   return {
     backgroundImage: `linear-gradient(rgba(0,0,0,${overlay}), rgba(0,0,0,${overlay})), ${image}`,
     backgroundSize: 'cover',

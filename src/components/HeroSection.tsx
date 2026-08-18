@@ -31,10 +31,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
   const layout = theme?.heroLayout || 'split-cards';
   const cardStyle = getCardClasses(theme);
-  const primaryBtnClass = getButtonClasses(theme, 'primary', 'hero-primary');
-  const primaryButtonInlineStyle = getButtonInlineStyle(theme, 'hero-primary');
-  const secondaryButtonInlineStyle = getButtonInlineStyle(theme, 'hero-secondary');
-  const secondaryBtnClass = getButtonClasses(theme, 'secondary', 'hero-secondary');
+  const primaryBtnClass = getButtonClasses(theme, 'primary');
+  const buttonInlineStyle = getButtonInlineStyle(theme);
+  const secondaryBtnClass = getButtonClasses(theme, 'secondary');
 
   const textAlignClass = getTextAlignClass(theme);
   const buttonAlignClass = getButtonAlignClass(theme);
@@ -204,7 +203,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <div className={`pt-6 flex flex-wrap items-center ${buttonAlignClass} gap-4`}>
               <button
                 onClick={() => onOpenInquiry()}
-                style={primaryButtonInlineStyle}
+                style={buttonInlineStyle}
                 className={`px-8 py-3.5 text-sm uppercase tracking-widest flex items-center space-x-2 ${primaryBtnClass}`}
               >
                 <Sparkles className="w-4 h-4" />
@@ -213,7 +212,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
               <button
                 onClick={scrollToCollection}
-                style={secondaryButtonInlineStyle}
+                style={buttonInlineStyle}
                 className={`px-7 py-3.5 text-sm uppercase tracking-widest flex items-center space-x-2 ${secondaryBtnClass}`}
               >
                 <span>{discoverText} la collection ({jackets.length} créations)</span>
@@ -261,7 +260,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               <div className={`pt-3 flex flex-wrap items-center gap-3 ${buttonAlignClass}`}>
                 <button
                   onClick={() => onOpenInquiry()}
-                style={primaryButtonInlineStyle}
+                style={buttonInlineStyle}
                   className={`px-6 py-3 text-xs uppercase tracking-widest flex items-center space-x-2 ${primaryBtnClass}`}
                 >
                   <Sparkles className="w-3.5 h-3.5" />
@@ -269,7 +268,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 </button>
                 <button
                   onClick={scrollToCollection}
-                style={secondaryButtonInlineStyle}
+                style={buttonInlineStyle}
                   className={`px-5 py-3 text-xs uppercase tracking-widest flex items-center space-x-1.5 ${secondaryBtnClass}`}
                 >
                   <span>{discoverText} la collection</span>

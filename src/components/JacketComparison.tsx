@@ -38,8 +38,8 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
   onOpenInquiry,
 }) => {
   const cardStyle = getCardClasses(theme);
-  const primaryBtnClass = getButtonClasses(theme, 'primary', 'comparison-order');
-  const buttonInlineStyle = getButtonInlineStyle(theme, 'comparison-order');
+  const primaryBtnClass = getButtonClasses(theme, 'primary');
+  const buttonInlineStyle = getButtonInlineStyle(theme);
   const orderText = theme?.orderButtonText || 'Commander';
 
   const textAlignClass = getTextAlignClass(theme);

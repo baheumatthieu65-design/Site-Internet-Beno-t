@@ -155,9 +155,6 @@ export const SiteVisualEditor: React.FC<Props> = ({
     originalUrl: string;
     originalStyle: string;
     originalConfig: SiteEditorConfig;
-    galleryRole?: 'main' | 'thumbnail' | 'independent';
-    galleryProductId?: string;
-    galleryIndex?: number;
   } | null>(null);
 
   const [text, setText] = useState('');
@@ -210,31 +207,14 @@ export const SiteVisualEditor: React.FC<Props> = ({
             ? media.currentSrc || media.src
             : '';
 
-        const mediaEl = media as HTMLElement;
-        const galleryRole =
-          mediaEl.getAttribute('data-vce-gallery-main') === 'true'
-            ? 'main'
-            : mediaEl.getAttribute('data-vce-gallery-thumbnail') === 'true'
-              ? 'thumbnail'
-              : 'independent';
-
-        const galleryProductId =
-          mediaEl.getAttribute('data-vce-gallery-product-id') || undefined;
-
-        const rawGalleryIndex =
-          mediaEl.getAttribute('data-vce-gallery-index');
-
         setSelected({
           selector: selectorFor(media),
           element: media,
           kind: 'media',
           originalText: '',
           originalUrl: url,
-          originalStyle: mediaEl.getAttribute('style') || '',
+          originalStyle: (media as HTMLElement).getAttribute('style') || '',
           originalConfig: cloneEditorConfig(config),
-          galleryRole,
-          galleryProductId,
-          galleryIndex: rawGalleryIndex == null ? undefined : Number(rawGalleryIndex),
         });
         setImageUrl(url);
         setSelecting(false);
@@ -587,41 +567,6 @@ export const SiteVisualEditor: React.FC<Props> = ({
                   <div className="flex items-center gap-3">
                     <ImageIcon size={18} />
                     <div className="min-w-0 text-xs truncate">{imageUrl || 'Aucune image'}</div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="text-[11px] uppercase tracking-[0.14em] text-[#87968a]">
-                      Aperçu de l’image sélectionnée
-                    </div>
-                    <div className="overflow-hidden rounded-xl border border-[#455248] bg-black/30">
-                      {imageUrl ? (
-                        <img
-                          src={imageUrl}
-                          alt="Image sélectionnée"
-                          className="block h-40 w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-40 items-center justify-center text-sm text-[#87968a]">
-                          Aperçu indisponible
-                        </div>
-                      )}
-                    </div>
-                    <div className="truncate text-[10px] text-[#66756a]" title={imageUrl}>
-                      {imageUrl || 'Aucune image'}
-                    </div>
-                    <div className="text-[10px] text-[#87968a]">
-                      La sélection ne modifie pas l’image. Le remplacement se fait uniquement après ton choix.
-                      {selected.galleryRole === 'thumbnail' && (
-                        <span className="block mt-1 text-[#d4af37]">
-                          Miniature de galerie — sa sélection ne change pas la grande image.
-                        </span>
-                      )}
-                      {selected.galleryRole === 'main' && (
-                        <span className="block mt-1 text-[#d4af37]">
-                          Image principale — la galerie reste pilotée par les miniatures.
-                        </span>
-                      )}
-                    </div>
                   </div>
 
                   <label className="block rounded-xl border border-dashed border-[#536258] p-4 text-center cursor-pointer">

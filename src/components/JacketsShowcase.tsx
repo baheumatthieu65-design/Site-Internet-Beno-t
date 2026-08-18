@@ -84,9 +84,8 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
 
   const layout = theme?.showcaseLayout || 'split-interactive';
   const cardStyle = getCardClasses(theme);
-  const primaryBtnClass = getButtonClasses(theme, 'primary', 'showcase-order');
-  const buttonInlineStyle = getButtonInlineStyle(theme, 'showcase-order');
-  const jacketTabClass = getButtonClasses(theme, 'secondary', 'showcase-jacket');
+  const primaryBtnClass = getButtonClasses(theme, 'primary');
+  const buttonInlineStyle = getButtonInlineStyle(theme);
   const radius = theme?.buttonRadius || 'rounded-full';
 
   const textAlignClass = getTextAlignClass(theme);
@@ -431,7 +430,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                   key={j.id}
                   id={`jacket-tab-${j.id}`}
                   onClick={() => onSelectJacket(j.id)}
-                  className={`flex items-center space-x-2.5 px-5 py-2.5 ${jacketTabClass} text-xs sm:text-sm uppercase tracking-widest transition-all font-medium ${
+                  className={`flex items-center space-x-2.5 px-5 py-2.5 ${radius} text-xs sm:text-sm uppercase tracking-widest transition-all font-medium ${
                     isSelected
                       ? 'bg-gradient-to-r from-[#2c372f] to-[#3b493e] text-[#f3ece0] border border-[#d4af37]/60 shadow-lg ring-1 ring-[#d4af37]/30'
                       : 'text-[#9eb0a0] hover:text-[#f3ece0]'
