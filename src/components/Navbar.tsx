@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrandConfig } from '../types';
 import { Sparkles } from 'lucide-react';
 import { getButtonClasses } from '../utils/themeStyles';
+import adminSheep from '../assets/admin-sheep.png';
 
 interface NavbarProps {
   brandData: BrandConfig;
@@ -45,9 +46,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const hiddenSections = theme?.hiddenSections || [];
   const defaultNavOrder = ['collection', 'comparatif', 'origines', 'lookbook', 'contact'] as const;
 
-  // Une section masquée dans Personnaliser est également retirée de la Navbar.
-  // Les liens utilisent toujours l'ID stable de la section : renommer le libellé
-  // ne modifie donc pas la destination.
   const allNavLinks = [
     { id: 'collection', label: theme?.collectionTabLabel || 'Les 2 Vestes' },
     { id: 'comparatif', label: theme?.comparatifTabLabel || 'Tableau Comparatif' },
@@ -141,19 +139,32 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>{orderText}</span>
           </button>
 
+          {/* Bouton admin : mouton hors connexion, croix une fois connecté. */}
           <button
             id="nav-admin-login-btn"
             type="button"
             onClick={isAdminLoggedIn ? onLogout : onOpenLogin}
             aria-label={isAdminLoggedIn ? 'Se déconnecter de l’administration' : 'Connexion administrateur'}
             title={isAdminLoggedIn ? 'Se déconnecter' : 'Connexion administrateur'}
-            className={`flex items-center justify-center w-7 h-7 rounded-full border bg-black/20 transition-all ${
+            className={`relative flex items-center justify-center shrink-0 transition-all focus:outline-none ${
               isAdminLoggedIn
-                ? 'border-red-300/40 text-red-200 hover:text-white hover:border-red-300/80 hover:bg-red-950/30'
-                : 'border-[#b89f74]/35 text-[#a3b1a5] hover:text-[#d4af37] hover:border-[#d4af37]/60'
+                ? 'w-8 h-8 rounded-full border border-red-300/50 bg-black/25 text-red-200 hover:text-white hover:border-red-300/90 hover:bg-red-950/30'
+                : 'w-10 h-10 rounded-md hover:scale-110'
             }`}
           >
-            <span className="text-sm leading-none">{isAdminLoggedIn ? '×' : '•'}</span>
+            {isAdminLoggedIn ? (
+              <span className="text-[22px] leading-none font-light">×</span>
+            ) : (
+              <>
+                <img
+                  src={adminSheep}
+                  alt=""
+                  aria-hidden="true"
+                  className="w-9 h-9 object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]"
+                />
+                <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#d4af37] border border-[#111612]" />
+              </>
+            )}
           </button>
 
           <button
