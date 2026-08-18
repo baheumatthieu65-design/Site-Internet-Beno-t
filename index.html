@@ -1,11 +1,82 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" class="site-preloading">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Maison Mailha</title>
+
+    <style>
+      /*
+       * FIRST-PAINT PROTECTION
+       *
+       * Le navigateur ne doit jamais peindre une ancienne version du site
+       * pendant que le bundle React démarre.
+       *
+       * Le voile est retiré par src/main.tsx immédiatement après le montage
+       * React. Il ne dépend ni d'Upstash, ni de GitHub, ni de Vercel API.
+       */
+      html.site-preloading,
+      html.site-preloading body {
+        background: #121613;
+      }
+
+      html.site-preloading #root {
+        visibility: hidden;
+      }
+
+      #site-first-paint-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 2147483647;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #121613;
+        color: #f5eedf;
+        opacity: 1;
+        transition: opacity 120ms ease;
+      }
+
+      #site-first-paint-loader-inner {
+        text-align: center;
+        font-family: Georgia, "Times New Roman", serif;
+      }
+
+      #site-first-paint-loader-spinner {
+        width: 28px;
+        height: 28px;
+        margin: 0 auto 14px;
+        border: 2px solid #39473d;
+        border-top-color: #d4af37;
+        border-radius: 50%;
+        animation: site-first-paint-spin 700ms linear infinite;
+      }
+
+      #site-first-paint-loader-title {
+        color: #d4af37;
+        font-size: 18px;
+        letter-spacing: 0.04em;
+      }
+
+      @keyframes site-first-paint-spin {
+        to { transform: rotate(360deg); }
+      }
+
+      html:not(.site-preloading) #site-first-paint-loader {
+        opacity: 0;
+        pointer-events: none;
+      }
+    </style>
   </head>
+
   <body>
+    <div id="site-first-paint-loader" aria-hidden="true">
+      <div id="site-first-paint-loader-inner">
+        <div id="site-first-paint-loader-spinner"></div>
+        <div id="site-first-paint-loader-title">Maison des Pyrénées</div>
+      </div>
+    </div>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
