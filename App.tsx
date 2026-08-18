@@ -50,6 +50,21 @@ type CustomizerTab =
   | 'security'
   | 'github';
 
+const removeInitialPreloader = () => {
+  if (typeof document === 'undefined') return;
+
+  const loader = document.getElementById('initial-site-loader');
+
+  if (loader) {
+    loader.style.opacity = '0';
+    loader.style.pointerEvents = 'none';
+
+    window.setTimeout(() => {
+      loader.remove();
+    }, 250);
+  }
+};
+
 export default function App() {
   // ===========================================================================
   // BRAND DATA
@@ -526,6 +541,8 @@ export default function App() {
       </main>
     );
   }
+
+  removeInitialPreloader();
 
   // ===========================================================================
   // BUTTON STYLE
