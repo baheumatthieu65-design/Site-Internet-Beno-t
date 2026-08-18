@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrandConfig } from '../types';
 import { Sparkles } from 'lucide-react';
-import { getButtonClasses } from '../utils/themeStyles';
+import { getButtonClasses, getButtonInlineStyle } from '../utils/themeStyles';
 
 interface NavbarProps {
   brandData: BrandConfig;
@@ -33,6 +33,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const theme = brandData.theme;
   const primaryBtnClass = getButtonClasses(theme, 'primary');
+  const buttonInlineStyle = getButtonInlineStyle(theme);
   const orderText = theme?.orderButtonText || 'Commander';
   const badgeText = theme?.heroBadgeText || 'Pyrénées • Édition Limitée';
 
@@ -42,22 +43,13 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const hiddenSections = theme?.hiddenSections || [];
-
-  // Une section masquée dans Personnaliser est également retirée de la Navbar.
-  // Les liens utilisent toujours l'ID stable de la section : renommer le libellé
-  // ne modifie donc pas la destination.
-  const allNavLinks = [
+  const navLinks = [
     { id: 'collection', label: theme?.collectionTabLabel || 'Les 2 Vestes' },
     { id: 'comparatif', label: theme?.comparatifTabLabel || 'Tableau Comparatif' },
     { id: 'origines', label: theme?.originesTabLabel || 'L’Esprit Pyrénées' },
     { id: 'lookbook', label: theme?.lookbookTabLabel || 'Lookbook' },
     { id: 'contact', label: theme?.contactTabLabel || 'Contact & Atelier' },
   ];
-
-  const navLinks = allNavLinks.filter(
-    (link) => !hiddenSections.includes(link.id as typeof hiddenSections[number]),
-  );
 
   const scrollTo = (id: string) => {
     setMobileMenuOpen(false);
@@ -88,10 +80,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             <img
               src={brandData.logoUrl}
               alt={brandData.brandName}
-              className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border border-[#b89f74]/50 group-hover:border-[#d4af37] transition-all shadow-md"
+              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover border border-[#b89f74]/50 group-hover:border-[#d4af37] transition-all shadow-md"
             />
           ) : (
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#3b473e] flex items-center justify-center text-[#e2d5c3] font-serif font-bold">MP</div>
+            <div className="w-10 h-10 rounded-full bg-[#3b473e] flex items-center justify-center text-[#e2d5c3] font-serif font-bold">MP</div>
           )}
           <div>
             <span className="block font-serif text-lg sm:text-xl tracking-widest text-[#f3ece0] font-semibold group-hover:text-[#d4af37] transition-colors">{brandData.brandName}</span>
@@ -99,7 +91,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </button>
 
-        <nav id="desktop-nav" className="hidden md:flex items-center gap-6 lg:gap-7">
+        <nav id="desktop-nav" className="hidden md:flex items-center space-x-8">
           {navLinks.map((link) => (
             <button
               key={link.id}
@@ -129,15 +121,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
 
           <button
-            id="nav-order-btn"
-            onClick={() => onOpenInquiry()}
-            className={`ml-3 flex items-center space-x-2 px-5 py-2 text-xs tracking-widest uppercase font-semibold ${primaryBtnClass}`}
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>{orderText}</span>
-          </button>
-
-          <button
             id="nav-admin-login-btn"
             type="button"
             onClick={isAdminLoggedIn ? onLogout : onOpenLogin}
@@ -150,6 +133,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <span className="text-sm leading-none">{isAdminLoggedIn ? '×' : '•'}</span>
+          </button>
+
+          <button
+            id="nav-order-btn"
+            onClick={() => onOpenInquiry()}
+                style={buttonInlineStyle}
+            className={`flex items-center space-x-2 px-5 py-2 text-xs tracking-widest uppercase font-semibold ${primaryBtnClass}`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>{orderText}</span>
           </button>
 
           <button
@@ -171,15 +164,11 @@ export const Navbar: React.FC<NavbarProps> = ({
       {mobileMenuOpen && (
         <div id="mobile-nav-drawer" className="md:hidden bg-[#181d19] border-b border-[#3b473e] px-4 pt-4 pb-6 mt-2 space-y-3 animate-fadeIn">
           {navLinks.map((link) => (
-            <button key={link.id} onClick={() => scrollTo(link.id)} className="block w-full text-left py-2 text-sm uppercase tracking-widest text-[#e2d5c3] hover:text-[#d4af37] border-b border-[#2a332d]">
-              {link.label}
-            </button>
+            <button key={link.id} onClick={() => scrollTo(link.id)} className="block w-full text-left py-2 text-sm uppercase tracking-widest text-[#e2d5c3] hover:text-[#d4af37] border-b border-[#2a332d]">{link.label}</button>
           ))}
           {isAdminLoggedIn && (
             <div className="pt-2 flex flex-col space-y-2">
-              <button onClick={openOrders} className="w-full text-center py-2.5 rounded-xl bg-[#28362b] text-[#d4af37] text-xs uppercase tracking-wider border border-[#d4af37]/70 font-semibold">
-                Commandes
-              </button>
+              <button onClick={openOrders} className="w-full text-center py-2.5 rounded-xl bg-[#28362b] text-[#d4af37] text-xs uppercase tracking-wider border border-[#d4af37]/70 font-semibold">Commandes</button>
             </div>
           )}
         </div>

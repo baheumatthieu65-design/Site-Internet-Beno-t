@@ -3,6 +3,7 @@ import { JacketModel, ThemeConfig } from '../types';
 import { Camera, Eye, Sparkles, ZoomIn, Edit3 } from 'lucide-react';
 import {
   getButtonClasses,
+  getButtonInlineStyle,
   getCardClasses,
   getTextAlignClass,
   getContentPaddingClass,
@@ -29,6 +30,7 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const cardStyle = getCardClasses(theme);
   const primaryBtnClass = getButtonClasses(theme, 'primary');
+  const buttonInlineStyle = getButtonInlineStyle(theme);
   const orderText = theme?.orderButtonText || 'Commander';
 
   const textAlignClass = getTextAlignClass(theme);
@@ -134,6 +136,7 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
                       e.stopPropagation();
                       onOpenInquiry(item.jacketId);
                     }}
+                style={buttonInlineStyle}
                     className={`px-3.5 py-1.5 text-[10px] uppercase tracking-wider font-bold ${primaryBtnClass}`}
                   >
                     {orderText}

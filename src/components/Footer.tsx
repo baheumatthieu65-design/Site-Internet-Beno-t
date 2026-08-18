@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrandConfig } from '../types';
 import { Mountain, Mail, MapPin, Phone, Instagram, Send, Sparkles, Lock, ShieldCheck, Sliders, Edit3 } from 'lucide-react';
-import { getButtonClasses } from '../utils/themeStyles';
+import { getButtonClasses, getButtonInlineStyle } from '../utils/themeStyles';
 
 interface FooterProps {
   brandData: BrandConfig;
@@ -20,6 +20,7 @@ export const Footer: React.FC<FooterProps> = ({
 }) => {
   const theme = brandData.theme;
   const secondaryBtnClass = getButtonClasses(theme, 'secondary');
+  const buttonInlineStyle = getButtonInlineStyle(theme);
   const workshopText = theme?.workshopButtonText || "Prendre Rendez-vous à l'Atelier";
 
   return (
@@ -148,6 +149,7 @@ export const Footer: React.FC<FooterProps> = ({
               <button
                 id="footer-workshop-btn"
                 onClick={onOpenInquiry}
+                style={buttonInlineStyle}
                 className={`w-full py-3 px-4 text-xs uppercase tracking-wider font-semibold flex items-center justify-center space-x-2 ${secondaryBtnClass}`}
               >
                 <Sparkles className="w-3.5 h-3.5 text-[#d4af37]" />

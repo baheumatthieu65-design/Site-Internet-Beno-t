@@ -3,6 +3,7 @@ import { JacketModel, ThemeConfig, ComparisonCriterion } from '../types';
 import { Scale, ArrowRight, Edit3 } from 'lucide-react';
 import {
   getButtonClasses,
+  getButtonInlineStyle,
   getCardClasses,
   getTextAlignClass,
   getContentPaddingClass,
@@ -38,6 +39,7 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
 }) => {
   const cardStyle = getCardClasses(theme);
   const primaryBtnClass = getButtonClasses(theme, 'primary');
+  const buttonInlineStyle = getButtonInlineStyle(theme);
   const orderText = theme?.orderButtonText || 'Commander';
 
   const textAlignClass = getTextAlignClass(theme);
@@ -145,6 +147,7 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
                   <td key={j.id} className="py-6 px-6 text-center bg-[#171e19]/60 rounded-b-2xl">
                     <button
                       onClick={() => onOpenInquiry(j.id)}
+                style={buttonInlineStyle}
                       className={`w-full py-3 px-4 text-xs uppercase tracking-widest flex items-center justify-center space-x-2 ${primaryBtnClass}`}
                     >
                       <span>{orderText} N°{idx + 1}</span>

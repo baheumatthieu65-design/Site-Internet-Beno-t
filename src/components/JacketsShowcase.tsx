@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import {
   getButtonClasses,
+  getButtonInlineStyle,
   getCardClasses,
   getTextAlignClass,
   getButtonAlignClass,
@@ -31,7 +32,6 @@ import {
 } from '../utils/themeStyles';
 
 interface JacketsShowcaseProps {
-  editorBlocks?: Array<{ selector?: string; kind?: 'text' | 'media'; url?: string; visible?: boolean }>;
   jackets: JacketModel[];
   selectedJacketId: string;
   theme?: ThemeConfig;
@@ -53,35 +53,12 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   onSelectJacket,
   onOpenInquiry,
   onReorderProductBlocks,
-  editorBlocks = [],
 }) => {
   const visibleJackets = Array.isArray(jackets)
     ? jackets.filter((j) => isAdminLoggedIn || j.isAvailable !== false)
     : [];
   const activeJacket = visibleJackets.find((j) => j.id === selectedJacketId) || visibleJackets[0] || jackets[0];
-
-  const getEditorImageOverride = (role: string, fallback: string) => {
-    const block = editorBlocks.find(
-      (b) =>
-        b.kind === 'media' &&
-        b.visible !== false &&
-        b.url &&
-        b.selector === `[data-vce-role="${role}"]`,
-    );
-    return block?.url || fallback;
-  };
-
-  const galleryImages = activeJacket
-    ? activeJacket.gallery.map((url, idx) =>
-        getEditorImageOverride(`jacket-${activeJacket.id}-gallery-${idx}`, url),
-      )
-    : [];
-
-  const mainImage = activeJacket
-    ? getEditorImageOverride(`jacket-${activeJacket.id}-main-image`, activeJacket.heroImage)
-    : '';
-
-  const [activeImage, setActiveImage] = useState(mainImage);
+  const [activeImage, setActiveImage] = useState(activeJacket?.heroImage || '');
   const [selectedColor, setSelectedColor] = useState(activeJacket?.colors[0]?.name || '');
   const [selectedSize, setSelectedSize] = useState(activeJacket?.sizes[1] || 'M');
   const [activeHotspot, setActiveHotspot] = useState<Hotspot | null>(null);
@@ -90,13 +67,10 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   const [draggingBlockId, setDraggingBlockId] = useState<ProductBlockId | null>(null);
   const [dragOverBlockId, setDragOverBlockId] = useState<ProductBlockId | null>(null);
 
-  // Update image and color when active jacket changes.
-  // The editor override is used only as data; React remains the sole owner
-  // of the gallery's displayed image, so thumbnail clicks can never be
-  // overwritten by a DOM-level `src` mutation.
+  // Update image and color when active jacket changes
   useEffect(() => {
     if (activeJacket) {
-      setActiveImage(mainImage || galleryImages[0] || '');
+      setActiveImage(activeJacket.heroImage);
       if (activeJacket.colors.length > 0) {
         setSelectedColor(activeJacket.colors[0].name);
       }
@@ -104,13 +78,14 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
         setSelectedSize(activeJacket.sizes[1] || activeJacket.sizes[0]);
       }
     }
-  }, [activeJacket?.id, mainImage]);
+  }, [activeJacket?.id]);
 
   if (!activeJacket) return null;
 
   const layout = theme?.showcaseLayout || 'split-interactive';
   const cardStyle = getCardClasses(theme);
   const primaryBtnClass = getButtonClasses(theme, 'primary');
+  const buttonInlineStyle = getButtonInlineStyle(theme);
   const radius = theme?.buttonRadius || 'rounded-full';
 
   const textAlignClass = getTextAlignClass(theme);
@@ -319,6 +294,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
               <button
                 id={`buy-jacket-${activeJacket.id}`}
                 onClick={() => onOpenInquiry(activeJacket.id, selectedColor, selectedSize)}
+                style={buttonInlineStyle}
                 className={`w-full py-4 px-6 text-sm uppercase tracking-widest flex items-center justify-center space-x-3 ${primaryBtnClass}`}
               >
                 <ShoppingBag className="w-5 h-5" />
@@ -477,6 +453,8 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
             <div className={`${cardMediaPos === 'right' ? 'lg:col-span-7 lg:order-2' : 'lg:col-span-7'} space-y-6`}>
               <div className="relative rounded-3xl bg-[#1d241f] border border-[#39483c] overflow-hidden shadow-2xl group min-h-[420px] sm:min-h-[520px] flex items-center justify-center">
                 <img
+                  data-vce-gallery-main="true"
+                  data-vce-gallery-product-id={activeJacket.id}
                   src={activeImage}
                   alt={activeJacket.name}
                   className="w-full h-full max-h-[620px] object-cover object-center transition-all duration-500"
@@ -540,7 +518,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
               {/* Gallery Thumbnails */}
               {activeJacket.gallery && activeJacket.gallery.length > 1 && (
                 <div className="flex items-center space-x-3 overflow-x-auto pb-1">
-                  {galleryImages.map((imgUrl, idx) => {
+                  {activeJacket.gallery.map((imgUrl, idx) => {
                     const isActive = activeImage === imgUrl;
                     return (
                       <button
@@ -553,8 +531,9 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                         }`}
                       >
                         <img
-                          data-vce-role={`jacket-${activeJacket.id}-gallery-${idx}`}
-                          data-vce-reactive-gallery="true"
+                          data-vce-gallery-thumbnail="true"
+                          data-vce-gallery-product-id={activeJacket.id}
+                          data-vce-gallery-index={idx}
                           src={imgUrl}
                           alt={`Vue ${idx + 1}`}
                           className="w-full h-full object-cover"
@@ -616,6 +595,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                   </span>
                   <button
                     onClick={() => onOpenInquiry(activeJacket.id, selectedColor, selectedSize)}
+                style={buttonInlineStyle}
                     className={`px-6 py-3 text-xs uppercase tracking-widest ${primaryBtnClass}`}
                   >
                     {orderText}
@@ -687,7 +667,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
         {layout === 'lookbook-focus' && (
           <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {galleryImages.map((img, idx) => (
+              {activeJacket.gallery.map((img, idx) => (
                 <div
                   key={idx}
                   onClick={() => setActiveImage(img)}
@@ -696,8 +676,9 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                   }`}
                 >
                   <img
-                    data-vce-role={`jacket-${activeJacket.id}-gallery-${idx}`}
-                    data-vce-reactive-gallery="true"
+                    data-vce-gallery-thumbnail="true"
+                    data-vce-gallery-product-id={activeJacket.id}
+                    data-vce-gallery-index={idx}
                     src={img}
                     alt=""
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
@@ -719,6 +700,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                 <span className="font-serif text-2xl font-bold text-[#c2a26d]">{activeJacket.price} {activeJacket.currency}</span>
                 <button
                   onClick={() => onOpenInquiry(activeJacket.id, selectedColor, selectedSize)}
+                style={buttonInlineStyle}
                   className={`px-6 py-3 text-xs uppercase tracking-widest ${primaryBtnClass}`}
                 >
                   {orderText}
