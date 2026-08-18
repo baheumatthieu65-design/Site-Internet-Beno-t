@@ -487,7 +487,14 @@ export const publishedSiteContent = {
           "key": "care"
         }
       ],
-      "collectionTabLabel": "Les Articles"
+      "collectionTabLabel": "Les Articles",
+      "navOrder": [
+        "comparatif",
+        "collection",
+        "origines",
+        "lookbook",
+        "contact"
+      ]
     }
   },
   "editorConfig": {
