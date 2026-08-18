@@ -403,7 +403,7 @@ export const publishedSiteContent = {
       }
     ],
     "theme": {
-      "buttonStyle": "gold-laiton",
+      "buttonStyle": "cuir-naturel",
       "buttonRadius": "rounded-full",
       "cardStyle": "atelier-relief",
       "heroLayout": "split-cards",
@@ -487,7 +487,7 @@ export const publishedSiteContent = {
     }
   },
   "editorConfig": {
-    "adminBarPosition": "left",
+    "adminBarPosition": "bottom",
     "blocks": [
       {
         "id": "block-1787003030958",
@@ -617,7 +617,7 @@ export const publishedSiteContent = {
         "visible": true,
         "selector": "div:nth-of-type(2) \u003e section:nth-of-type(1) \u003e div:nth-of-type(3) \u003e div:nth-of-type(3) \u003e div:nth-of-type(1) \u003e div:nth-of-type(1) \u003e img:nth-of-type(1)",
         "kind": "media",
-        "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787063825877-20260605_205836.jpg"
+        "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787063558934-20260605_205859.jpg"
       }
     ]
   }
