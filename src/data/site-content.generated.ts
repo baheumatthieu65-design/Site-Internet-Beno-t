@@ -409,8 +409,8 @@ export const publishedSiteContent = {
       "heroLayout": "split-cards",
       "showcaseLayout": "split-interactive",
       "sectionOrder": [
-        "hero",
         "collection",
+        "hero",
         "comparatif",
         "lookbook",
         "origines",
