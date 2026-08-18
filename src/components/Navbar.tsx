@@ -42,13 +42,22 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
+  const hiddenSections = theme?.hiddenSections || [];
+
+  // Une section masquée dans Personnaliser est également retirée de la Navbar.
+  // Les liens utilisent toujours l'ID stable de la section : renommer le libellé
+  // ne modifie donc pas la destination.
+  const allNavLinks = [
     { id: 'collection', label: theme?.collectionTabLabel || 'Les 2 Vestes' },
     { id: 'comparatif', label: theme?.comparatifTabLabel || 'Tableau Comparatif' },
     { id: 'origines', label: theme?.originesTabLabel || 'L’Esprit Pyrénées' },
     { id: 'lookbook', label: theme?.lookbookTabLabel || 'Lookbook' },
     { id: 'contact', label: theme?.contactTabLabel || 'Contact & Atelier' },
   ];
+
+  const navLinks = allNavLinks.filter(
+    (link) => !hiddenSections.includes(link.id as typeof hiddenSections[number]),
+  );
 
   const scrollTo = (id: string) => {
     setMobileMenuOpen(false);
@@ -162,11 +171,15 @@ export const Navbar: React.FC<NavbarProps> = ({
       {mobileMenuOpen && (
         <div id="mobile-nav-drawer" className="md:hidden bg-[#181d19] border-b border-[#3b473e] px-4 pt-4 pb-6 mt-2 space-y-3 animate-fadeIn">
           {navLinks.map((link) => (
-            <button key={link.id} onClick={() => scrollTo(link.id)} className="block w-full text-left py-2 text-sm uppercase tracking-widest text-[#e2d5c3] hover:text-[#d4af37] border-b border-[#2a332d]">{link.label}</button>
+            <button key={link.id} onClick={() => scrollTo(link.id)} className="block w-full text-left py-2 text-sm uppercase tracking-widest text-[#e2d5c3] hover:text-[#d4af37] border-b border-[#2a332d]">
+              {link.label}
+            </button>
           ))}
           {isAdminLoggedIn && (
             <div className="pt-2 flex flex-col space-y-2">
-              <button onClick={openOrders} className="w-full text-center py-2.5 rounded-xl bg-[#28362b] text-[#d4af37] text-xs uppercase tracking-wider border border-[#d4af37]/70 font-semibold">Commandes</button>
+              <button onClick={openOrders} className="w-full text-center py-2.5 rounded-xl bg-[#28362b] text-[#d4af37] text-xs uppercase tracking-wider border border-[#d4af37]/70 font-semibold">
+                Commandes
+              </button>
             </div>
           )}
         </div>
