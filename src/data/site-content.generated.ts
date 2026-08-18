@@ -593,6 +593,20 @@ export const publishedSiteContent = {
         "fontFamily": "ui-serif",
         "fontSize": "12px",
         "color": "rgb(243, 236, 224)"
+      },
+      {
+        "id": "element-1787061434525",
+        "type": "text",
+        "section": "hero",
+        "x": 50,
+        "y": 50,
+        "visible": true,
+        "selector": "div:nth-of-type(3) \u003e section:nth-of-type(1) \u003e div:nth-of-type(2) \u003e div:nth-of-type(1) \u003e h2:nth-of-type(1)",
+        "kind": "text",
+        "text": "Tableau des articles",
+        "fontFamily": "ui-serif",
+        "fontSize": "48px",
+        "color": "rgb(243, 236, 224)"
       }
     ]
   }
