@@ -13,6 +13,30 @@ export type ButtonRadiusId =
   | 'rounded-md'
   | 'rounded-none';
 
+
+export type ButtonSizeId =
+  | 'compact'
+  | 'standard'
+  | 'large'
+  | 'xl';
+
+export type ButtonTargetId =
+  | 'navbar-order'
+  | 'hero-order'
+  | 'hero-discover'
+  | 'showcase-order'
+  | 'lookbook-order'
+  | 'comparison-order'
+  | 'footer-workshop';
+
+export interface ButtonOverride {
+  buttonStyle?: ButtonStyleId;
+  buttonRadius?: ButtonRadiusId;
+  buttonSize?: ButtonSizeId;
+  backgroundImageUrl?: string;
+  backgroundOverlay?: number;
+}
+
 export type CardStyleId =
   | 'atelier-relief'
   | 'epure-noir'
@@ -255,6 +279,11 @@ export interface ThemeConfig {
   buttonStyle: ButtonStyleId;
 
   buttonRadius: ButtonRadiusId;
+
+  buttonSize?: ButtonSizeId;
+  buttonBackgroundImageUrl?: string;
+  buttonBackgroundOverlay?: number;
+  buttonOverrides?: Partial<Record<ButtonTargetId, ButtonOverride>>;
 
   cardStyle: CardStyleId;
 

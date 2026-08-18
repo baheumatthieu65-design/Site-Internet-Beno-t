@@ -75,6 +75,7 @@ import {
   getButtonClasses,
   getCardClasses,
 } from '../utils/themeStyles';
+import { ButtonManager } from './ButtonManager';
 import { getStoredCredentials, saveAdminCredentials, resetPasswordServer, maskEmail, AdminCredentials } from '../utils/auth';
 
 interface BrandCustomizerModalProps {
@@ -903,158 +904,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
         </div>
 
         {/* Scrollable Form Body */}
-        
-            {/* V39 — Interface du gestionnaire de boutons.
-                Cette première version est volontairement visuelle :
-                elle prépare l'interface sans modifier le rendu des boutons du site. */}
-            <section className="rounded-2xl border border-[#3b473e] bg-[#151a17] p-4 sm:p-5 space-y-5">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h3 className="text-sm font-semibold text-[#f3ece0]">Gestionnaire de boutons</h3>
-                  <p className="text-[11px] text-[#87968a] mt-1">
-                    Sélectionne un ou plusieurs boutons pour préparer une modification commune.
-                  </p>
-                </div>
-                <span className="text-[10px] uppercase tracking-wider text-[#66756a]">
-                  V39 • Interface
-                </span>
-              </div>
-
-              <div className="sticky top-0 z-10 rounded-xl border border-[#455248] bg-[#101410]/95 backdrop-blur p-3">
-                <div className="flex items-center justify-between gap-3 mb-3">
-                  <div className="text-[10px] uppercase tracking-[0.14em] text-[#87968a]">
-                    Aperçu permanent
-                  </div>
-                  <button
-                    type="button"
-                    className="px-4 py-2 text-xs uppercase tracking-widest font-semibold rounded-xl bg-[#d4af37] text-[#171b18]"
-                  >
-                    Commander
-                  </button>
-                </div>
-                <div className="h-16 rounded-lg border border-[#354037] bg-gradient-to-r from-[#222b25] to-[#151a17] flex items-center justify-center">
-                  <button
-                    type="button"
-                    className="px-6 py-2.5 rounded-xl border border-[#d4af37]/70 bg-[#28362b] text-[#f3ece0] text-sm font-semibold shadow-sm"
-                  >
-                    Aperçu du bouton
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-[#d8e0d6]">
-                    Boutons du site
-                  </h4>
-                  <button
-                    type="button"
-                    className="text-[10px] uppercase tracking-wider text-[#d4af37] hover:text-[#f3ece0]"
-                  >
-                    Tout sélectionner
-                  </button>
-                </div>
-
-                <div className="space-y-2">
-                  {[
-                    ['navbar-order', 'Commander', 'Navigation principale'],
-                    ['hero-order', 'Découvrir la collection', 'Hero'],
-                    ['showcase-order', 'Commander / Réserver', 'Fiche produit'],
-                    ['lookbook-order', 'Voir le lookbook', 'Lookbook'],
-                    ['contact-order', 'Contact & Atelier', 'Contact'],
-                    ['comparison-order', 'Comparer', 'Tableau comparatif'],
-                  ].map(([id, label, location]) => (
-                    <label
-                      key={id}
-                      className="flex items-center gap-3 rounded-xl border border-[#354037] bg-[#111612] px-3 py-2.5 cursor-pointer hover:border-[#536258] transition-colors"
-                    >
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 accent-[#d4af37]"
-                        aria-label={`Sélectionner ${label}`}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm text-[#f3ece0] truncate">{label}</div>
-                        <div className="text-[10px] text-[#758278]">{location}</div>
-                      </div>
-                      <button
-                        type="button"
-                        className="px-3 py-1.5 rounded-lg border border-[#536258] text-[10px] uppercase tracking-wider text-[#c4ceb8] hover:text-[#d4af37]"
-                        onClick={(event) => event.preventDefault()}
-                      >
-                        Modifier
-                      </button>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-[#354037] bg-[#111612] p-4 space-y-4">
-                <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-[#d8e0d6]">
-                    Style des boutons sélectionnés
-                  </h4>
-                  <p className="text-[10px] text-[#758278] mt-1">
-                    Cette zone prépare les réglages de la V39. Les boutons réels du site ne sont pas encore modifiés.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[10px] uppercase tracking-wider text-[#87968a]">Taille</label>
-                    <select className="mt-1 w-full rounded-lg border border-[#455248] bg-[#182019] px-3 py-2 text-xs text-[#f3ece0]">
-                      <option>Standard</option>
-                      <option>Compact</option>
-                      <option>Grand</option>
-                      <option>XL</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-[10px] uppercase tracking-wider text-[#87968a]">Forme</label>
-                    <select className="mt-1 w-full rounded-lg border border-[#455248] bg-[#182019] px-3 py-2 text-xs text-[#f3ece0]">
-                      <option>Arrondi</option>
-                      <option>Pilule</option>
-                      <option>Léger</option>
-                      <option>Carré</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-dashed border-[#536258] p-3">
-                  <div className="text-xs font-semibold text-[#f3ece0]">Fond du bouton</div>
-                  <div className="text-[10px] text-[#758278] mt-1">
-                    Couleur, dégradé ou image avec texte conservé au-dessus.
-                  </div>
-                  <div className="flex gap-2 mt-3">
-                    <button type="button" className="flex-1 rounded-lg border border-[#d4af37]/60 px-3 py-2 text-[10px] uppercase tracking-wider text-[#d4af37]">
-                      Couleur
-                    </button>
-                    <button type="button" className="flex-1 rounded-lg border border-[#455248] px-3 py-2 text-[10px] uppercase tracking-wider text-[#c4ceb8]">
-                      Image
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-[#354037] bg-[#111612] p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-xs font-semibold text-[#f3ece0]">Modèle actuel</div>
-                    <div className="text-[10px] text-[#758278] mt-1">
-                      Le style actuel pourra être enregistré comme modèle réutilisable.
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    className="rounded-lg border border-[#d4af37]/50 px-3 py-2 text-[10px] uppercase tracking-wider text-[#d4af37]"
-                  >
-                    Enregistrer
-                  </button>
-                </div>
-              </div>
-            </section>
-
-<div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* ========================================================= */}
           {/* TAB 1: THEME & BUTTONS PRESETS                            */}
           {/* ========================================================= */}
@@ -1092,6 +942,11 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                   </div>
                 </div>
               </div>
+
+              <ButtonManager
+                theme={currentTheme}
+                onChange={updateTheme}
+              />
 
               {/* 1. BUTTON STYLE SELECTION */}
               <div className="space-y-4">

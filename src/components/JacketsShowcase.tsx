@@ -84,8 +84,8 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
 
   const layout = theme?.showcaseLayout || 'split-interactive';
   const cardStyle = getCardClasses(theme);
-  const primaryBtnClass = getButtonClasses(theme, 'primary');
-  const buttonInlineStyle = getButtonInlineStyle(theme);
+  const primaryBtnClass = getButtonClasses(theme, 'primary', 'showcase-order');
+  const buttonInlineStyle = getButtonInlineStyle(theme, 'showcase-order');
   const radius = theme?.buttonRadius || 'rounded-full';
 
   const textAlignClass = getTextAlignClass(theme);

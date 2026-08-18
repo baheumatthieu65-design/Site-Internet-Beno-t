@@ -31,9 +31,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
   const layout = theme?.heroLayout || 'split-cards';
   const cardStyle = getCardClasses(theme);
-  const primaryBtnClass = getButtonClasses(theme, 'primary');
-  const buttonInlineStyle = getButtonInlineStyle(theme);
-  const secondaryBtnClass = getButtonClasses(theme, 'secondary');
+  const primaryBtnClass = getButtonClasses(theme, 'primary', 'hero-order');
+  const buttonInlineStyle = getButtonInlineStyle(theme, 'hero-order');
+  const discoverButtonInlineStyle = getButtonInlineStyle(theme, 'hero-discover');
+  const secondaryBtnClass = getButtonClasses(theme, 'secondary', 'hero-discover');
 
   const textAlignClass = getTextAlignClass(theme);
   const buttonAlignClass = getButtonAlignClass(theme);
@@ -212,7 +213,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
               <button
                 onClick={scrollToCollection}
-                style={buttonInlineStyle}
+                style={discoverButtonInlineStyle}
                 className={`px-7 py-3.5 text-sm uppercase tracking-widest flex items-center space-x-2 ${secondaryBtnClass}`}
               >
                 <span>{discoverText} la collection ({jackets.length} créations)</span>
@@ -268,7 +269,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 </button>
                 <button
                   onClick={scrollToCollection}
-                style={buttonInlineStyle}
+                style={discoverButtonInlineStyle}
                   className={`px-5 py-3 text-xs uppercase tracking-widest flex items-center space-x-1.5 ${secondaryBtnClass}`}
                 >
                   <span>{discoverText} la collection</span>

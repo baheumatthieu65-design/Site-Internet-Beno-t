@@ -32,7 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const theme = brandData.theme;
-  const primaryBtnClass = getButtonClasses(theme, 'primary');
+  const primaryBtnClass = getButtonClasses(theme, 'primary', 'navbar-order');
   const orderText = theme?.orderButtonText || 'Commander';
   const badgeText = theme?.heroBadgeText || 'Pyrénées • Édition Limitée';
 
