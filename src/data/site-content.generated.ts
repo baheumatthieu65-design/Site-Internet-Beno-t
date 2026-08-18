@@ -350,7 +350,44 @@ export const publishedSiteContent = {
       "inquiryButtonText": "Commander sur Mesure",
       "workshopButtonText": "Prendre Rendez-vous à l'Atelier",
       "heroBadgeText": "Édition Limitée des Pyrénées",
-      "heroTitlePrefix": "Thème Champêtre \u0026 Élégance"
+      "heroTitlePrefix": "Thème Champêtre \u0026 Élégance",
+      "comparisonCriteria": [
+        {
+          "id": "crit_category",
+          "label": "Style principal",
+          "key": "category"
+        },
+        {
+          "id": "crit_fabric",
+          "label": "Tissu signature",
+          "key": "fabric"
+        },
+        {
+          "id": "crit_warmth",
+          "label": "Indice de Chaleur",
+          "key": "warmth"
+        },
+        {
+          "id": "crit_water",
+          "label": "Résistance à la pluie",
+          "key": "water"
+        },
+        {
+          "id": "crit_weight",
+          "label": "Poids de la veste",
+          "key": "weight"
+        },
+        {
+          "id": "crit_fit",
+          "label": "Coupe \u0026 Silhouette",
+          "key": "fit"
+        },
+        {
+          "id": "crit_care",
+          "label": "Entretien",
+          "key": "care"
+        }
+      ]
     }
   },
   "editorConfig": {
