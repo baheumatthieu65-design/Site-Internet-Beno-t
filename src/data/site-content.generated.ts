@@ -416,7 +416,9 @@ export const publishedSiteContent = {
         "origines",
         "contact"
       ],
-      "hiddenSections": [],
+      "hiddenSections": [
+        "comparatif"
+      ],
       "textAlign": "center",
       "buttonAlign": "center",
       "heroBadgePosition": "top",
