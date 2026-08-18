@@ -48,7 +48,7 @@ interface Props {
   brandData: BrandConfig;
   config: SiteEditorConfig;
   onChange: (config: SiteEditorConfig) => void;
-  onSave: () => Promise<void> | void;
+  onSave: (nextConfig?: SiteEditorConfig) => Promise<void> | void;
 }
 
 const FONT_OPTIONS = [
@@ -293,42 +293,12 @@ export const SiteVisualEditor: React.FC<Props> = ({
         setReplacementText(textFromElement(text));
 
         const style = window.getComputedStyle(text);
-        const heroLine = text.getAttribute('data-vce-hero-line');
-        const heroRole = text.getAttribute('data-vce-role');
-
-        // Valeurs de départ correspondant au visuel demandé :
-        // ligne 1 = élégante, dorée et italique ;
-        // ligne 2 = serif claire, plus grande et très lisible.
-        const defaultHeroStyle =
-          heroLine === '1' || heroRole === 'hero-line-1'
-            ? {
-                fontFamily: 'Cormorant Garamond',
-                fontSize: '60px',
-                color: '#C2A26D',
-              }
-            : heroLine === '2' || heroRole === 'hero-line-2'
-              ? {
-                  fontFamily: 'Playfair Display',
-                  fontSize: '72px',
-                  color: '#F5EEDF',
-                }
-              : null;
-
         setFontFamily(
-          defaultHeroStyle?.fontFamily ||
-            style.fontFamily.split(',')[0].replace(/^['"]|['"]$/g, '') ||
+          style.fontFamily.split(',')[0].replace(/^['"]|['"]$/g, '') ||
             'Playfair Display'
         );
-        setFontSize(
-          defaultHeroStyle?.fontSize ||
-            style.fontSize ||
-            '48px'
-        );
-        setColor(
-          defaultHeroStyle?.color ||
-            style.color ||
-            '#F5EEDF'
-        );
+        setFontSize(style.fontSize || '48px');
+        setColor(style.color || '#F5EEDF');
       }
     };
 
@@ -345,8 +315,10 @@ export const SiteVisualEditor: React.FC<Props> = ({
     [selected, config.blocks]
   );
 
-  const updateBlock = (patch: Partial<EditorBlock>) => {
-    if (!selected) return;
+  const updateBlock = (
+    patch: Partial<EditorBlock>
+  ): SiteEditorConfig | null => {
+    if (!selected) return null;
 
     const blocks = [...config.blocks];
     const index = blocks.findIndex(
@@ -369,7 +341,9 @@ export const SiteVisualEditor: React.FC<Props> = ({
     if (index === -1) blocks.push(base);
     else blocks[index] = { ...blocks[index], ...patch };
 
-    onChange({ ...config, blocks });
+    const nextConfig = { ...config, blocks };
+    onChange(nextConfig);
+    return nextConfig;
   };
 
   const selectTextStyle = (
@@ -431,7 +405,7 @@ export const SiteVisualEditor: React.FC<Props> = ({
         visible: true,
       });
 
-      setMessage('Image importée. Cliquez sur « Enregistrer et publier ».');
+      setMessage('Image importée. Cliquez sur « Enregistrer et publier » pour la conserver.');
     } catch (err) {
       console.error(err);
       setError(
@@ -505,14 +479,17 @@ export const SiteVisualEditor: React.FC<Props> = ({
     setMessage(null);
 
     try {
+      let nextConfig: SiteEditorConfig | null = null;
+
       if (selected.kind === 'text') {
         const el = selected.element as HTMLElement;
+
         el.textContent = replacementText;
         el.style.fontFamily = fontFamily;
         el.style.fontSize = fontSize;
         el.style.color = color;
 
-        updateBlock({
+        nextConfig = updateBlock({
           type: 'text',
           kind: 'text',
           text: replacementText,
@@ -524,12 +501,18 @@ export const SiteVisualEditor: React.FC<Props> = ({
         });
       } else {
         if (!replacementImageUrl) {
-          throw new Error('Sélectionnez une image de remplacement.');
+          throw new Error(
+            'Sélectionnez une image de remplacement.'
+          );
         }
 
         const media = selected.element;
-        updateBlock({
-          type: media instanceof HTMLVideoElement ? 'video' : 'image',
+
+        nextConfig = updateBlock({
+          type:
+            media instanceof HTMLVideoElement
+              ? 'video'
+              : 'image',
           kind: 'media',
           url: replacementImageUrl,
           selector: selected.selector,
@@ -537,15 +520,32 @@ export const SiteVisualEditor: React.FC<Props> = ({
         });
       }
 
-      await onSave();
-      setMessage('Modification enregistrée et publiée.');
+      if (!nextConfig) {
+        throw new Error(
+          'Impossible de construire la nouvelle configuration.'
+        );
+      }
+
+      // IMPORTANT :
+      // on transmet la configuration fraîche à App.
+      // Ne pas appeler onSave() sans argument ici :
+      // le state React "config" peut encore contenir l'ancienne valeur.
+      await onSave(nextConfig);
+
+      setMessage(
+        'Modification enregistrée et publiée. Elle restera après rechargement.'
+      );
 
       window.setTimeout(() => {
         setMessage(null);
-      }, 3000);
+      }, 3500);
     } catch (err) {
       console.error(err);
-      setError('La modification n’a pas pu être publiée.');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'La modification n’a pas pu être publiée.'
+      );
     } finally {
       setSaving(false);
     }
@@ -738,54 +738,6 @@ export const SiteVisualEditor: React.FC<Props> = ({
                     />
                   </div>
                 </label>
-
-                {selected.element.getAttribute('data-vce-hero-line') && (
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        selectTextStyle(
-                          selected.element.getAttribute('data-vce-hero-line') === '1'
-                            ? {
-                                fontFamily: 'Cormorant Garamond',
-                                fontSize: '60px',
-                                color: '#C2A26D',
-                              }
-                            : {
-                                fontFamily: 'Playfair Display',
-                                fontSize: '72px',
-                                color: '#F5EEDF',
-                              }
-                        )
-                      }
-                      className="rounded-lg border border-[#405044] bg-[#1c261e] px-2 py-2 text-xs text-[#d4af37] hover:bg-[#263329]"
-                    >
-                      Réinitialiser le style de la ligne
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        selectTextStyle({
-                          fontFamily:
-                            selected.element.getAttribute('data-vce-hero-line') === '1'
-                              ? 'Great Vibes'
-                              : 'Cormorant Garamond',
-                          fontSize:
-                            selected.element.getAttribute('data-vce-hero-line') === '1'
-                              ? '58px'
-                              : '72px',
-                          color:
-                            selected.element.getAttribute('data-vce-hero-line') === '1'
-                              ? '#C2A26D'
-                              : '#F5EEDF',
-                        })
-                      }
-                      className="rounded-lg border border-[#d4af37]/50 bg-[#0b100c] px-2 py-2 text-xs text-white hover:bg-[#1c261e]"
-                    >
-                      Style élégant
-                    </button>
-                  </div>
-                )}
 
                 <div
                   className="rounded-lg border border-[#334236] bg-[#0b100c] p-4 text-center"
