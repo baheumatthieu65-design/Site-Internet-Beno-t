@@ -248,6 +248,32 @@ export type FormFieldId =
   | 'message';
 
 /* =========================================================
+   BOUTONS PERSONNALISABLES
+   ========================================================= */
+
+export type ButtonTargetId =
+  | 'navbar-order'
+  | 'hero-primary'
+  | 'hero-secondary'
+  | 'showcase-order'
+  | 'showcase-jacket'
+  | 'lookbook-order'
+  | 'comparison-order'
+  | 'footer-workshop';
+
+export interface ButtonOverride {
+  buttonStyle?: ButtonStyleId;
+  buttonRadius?: ButtonRadiusId;
+  buttonSize?: ButtonSizeId;
+  backgroundImageUrl?: string;
+  backgroundOverlay?: number;
+}
+
+export interface SavedButtonModel extends ButtonOverride {
+  name: string;
+}
+
+/* =========================================================
    THÈME
    ========================================================= */
 
@@ -255,6 +281,14 @@ export interface ThemeConfig {
   buttonStyle: ButtonStyleId;
 
   buttonRadius: ButtonRadiusId;
+
+  buttonSize?: ButtonSizeId;
+
+  /** Image globale de secours pour les boutons qui n'ont pas de personnalisation propre. */
+  buttonBackgroundImageUrl?: string;
+
+  /** Intensité du voile sur l'image globale. */
+  buttonBackgroundOverlay?: number;
 
   cardStyle: CardStyleId;
 
@@ -265,6 +299,12 @@ export interface ThemeConfig {
   sectionOrder: SectionId[];
 
   hiddenSections: SectionId[];
+
+  /** Styles propres à chaque bouton d'action. */
+  buttonOverrides?: Partial<Record<ButtonTargetId, ButtonOverride>>;
+
+  /** Dernier modèle de bouton mémorisé par l'administrateur. */
+  savedButtonModel?: SavedButtonModel;
 
   /** Ordre des onglets de navigation publique. Les IDs restent stables. */
   navOrder?: NavigationId[];

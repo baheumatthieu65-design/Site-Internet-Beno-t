@@ -29,8 +29,8 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
 }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const cardStyle = getCardClasses(theme);
-  const primaryBtnClass = getButtonClasses(theme, 'primary');
-  const buttonInlineStyle = getButtonInlineStyle(theme);
+  const primaryBtnClass = getButtonClasses(theme, 'primary', 'lookbook-order');
+  const buttonInlineStyle = getButtonInlineStyle(theme, 'lookbook-order');
   const orderText = theme?.orderButtonText || 'Commander';
 
   const textAlignClass = getTextAlignClass(theme);

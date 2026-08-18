@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrandConfig } from '../types';
 import { Sparkles } from 'lucide-react';
-import { getButtonClasses } from '../utils/themeStyles';
+import { getButtonClasses, getButtonInlineStyle } from '../utils/themeStyles';
 
 interface NavbarProps {
   brandData: BrandConfig;
@@ -32,7 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const theme = brandData.theme;
-  const primaryBtnClass = getButtonClasses(theme, 'primary');
+  const primaryBtnClass = getButtonClasses(theme, 'primary', 'navbar-order');
   const orderText = theme?.orderButtonText || 'Commander';
   const badgeText = theme?.heroBadgeText || 'Pyrénées • Édition Limitée';
 
@@ -135,6 +135,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="nav-order-btn"
             onClick={() => onOpenInquiry()}
+            style={buttonInlineStyle}
             className={`ml-3 flex items-center space-x-2 px-5 py-2 text-xs tracking-widest uppercase font-semibold ${primaryBtnClass}`}
           >
             <Sparkles className="w-3.5 h-3.5" />
@@ -155,6 +156,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <span className="text-sm leading-none">{isAdminLoggedIn ? '×' : '•'}</span>
           </button>
+
 
           <button
             id="mobile-menu-toggle-btn"
