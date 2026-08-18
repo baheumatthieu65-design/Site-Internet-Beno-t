@@ -151,6 +151,7 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [library, setLibrary] = useState<Array<{ url: string; pathname?: string }>>([]);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const [libraryLoading, setLibraryLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -178,7 +179,7 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
 
       const media = target.closest('img, video');
       const element = media || target.closest(
-        '[data-vce-editable="true"], [data-vce-role], [data-vce-hero-line], h1, h2, h3, h4, h5, h6, p, blockquote, li, span, a, button, label',
+        '[data-vce-editable="true"], h1, h2, h3, h4, h5, h6, p, blockquote, li, span',
       );
       if (!element) return;
 
@@ -412,7 +413,7 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
           >
             <span className="inline-flex items-center gap-2">
               <Type size={16} />
-              {selecting ? 'Clique maintenant sur un texte, bouton, logo ou image' : 'Sélectionner un élément'}
+              {selecting ? 'Clique maintenant sur un texte ou une image' : 'Sélectionner un élément'}
             </span>
           </button>
 
