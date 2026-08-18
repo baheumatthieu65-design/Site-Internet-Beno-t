@@ -405,6 +405,9 @@ export const publishedSiteContent = {
     "theme": {
       "buttonStyle": "gold-laiton",
       "buttonRadius": "rounded-full",
+      "buttonSize": "compact",
+      "buttonBackgroundImageUrl": "",
+      "buttonBackgroundOverlay": 28,
       "cardStyle": "atelier-relief",
       "heroLayout": "split-cards",
       "showcaseLayout": "split-interactive",
