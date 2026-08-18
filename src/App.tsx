@@ -34,6 +34,10 @@ import {
 } from './utils/auth';
 
 import { defaultThemeConfig } from './utils/themeStyles';
+import {
+  getInitialBrandData,
+  getInitialEditorConfig,
+} from './lib/publishedSite';
 
 type CustomizerTab =
   | 'brand'
@@ -52,6 +56,8 @@ export default function App() {
   // ===========================================================================
 
   const [brandData, setBrandData] = useState<BrandConfig>(() => {
+    const publishedData = getInitialBrandData(initialBrandData);
+
     try {
       const saved = localStorage.getItem('pyrenees_brand_config');
 
@@ -59,10 +65,11 @@ export default function App() {
         const parsed = JSON.parse(saved) as BrandConfig;
 
         return {
-          ...initialBrandData,
+          ...publishedData,
           ...parsed,
           theme: {
             ...defaultThemeConfig,
+            ...(publishedData.theme || {}),
             ...(parsed.theme || {}),
           },
         };
@@ -75,10 +82,10 @@ export default function App() {
     }
 
     return {
-      ...initialBrandData,
+      ...publishedData,
       theme: {
         ...defaultThemeConfig,
-        ...(initialBrandData.theme || {}),
+        ...(publishedData.theme || {}),
       },
     };
   });
@@ -128,10 +135,12 @@ export default function App() {
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [siteEditorConfig, setSiteEditorConfig] =
-    useState<SiteEditorConfig>({
-      adminBarPosition: 'top',
-      blocks: [],
-    });
+    useState<SiteEditorConfig>(() =>
+      getInitialEditorConfig<SiteEditorConfig>({
+        adminBarPosition: 'top',
+        blocks: [],
+      })
+    );
 
 
 
@@ -196,6 +205,20 @@ export default function App() {
         error
       );
     }
+
+    // Publication serveur + GitHub pour éviter que les changements
+    // du Customizer ou du réordonnancement reviennent en arrière.
+    void saveSiteConfig(normalizedData, siteEditorConfig).then((result) => {
+      if (!result.success) {
+        setReorderToast(
+          `Erreur de publication : ${result.error}`
+        );
+
+        window.setTimeout(() => {
+          setReorderToast(null);
+        }, 5000);
+      }
+    });
   };
 
   // ===========================================================================
@@ -207,6 +230,15 @@ export default function App() {
     nextEditorConfig: SiteEditorConfig = siteEditorConfig
   ) => {
     try {
+      const normalizedBrandData: BrandConfig = {
+        ...nextBrandData,
+        theme: {
+          ...defaultThemeConfig,
+          ...(nextBrandData.theme || {}),
+        },
+      };
+
+      // 1) Sauvegarde dynamique immédiate dans Upstash.
       const response = await fetch('/api/site-config', {
         method: 'PUT',
         credentials: 'include',
@@ -216,26 +248,84 @@ export default function App() {
         },
         body: JSON.stringify({
           config: {
-            brandData: nextBrandData,
+            brandData: normalizedBrandData,
             editorConfig: nextEditorConfig,
           },
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`Sauvegarde site: HTTP ${response.status}`);
+        const errorBody = await response.json().catch(() => null);
+        throw new Error(
+          errorBody?.error ||
+            `Sauvegarde Upstash: HTTP ${response.status}`
+        );
       }
 
-      return true;
+      // 2) Publication dans GitHub.
+      // Le serveur Vercel possède le GITHUB_TOKEN : le token ne passe
+      // jamais dans le navigateur.
+      const publishResponse = await fetch('/api/site-publish', {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          config: {
+            brandData: normalizedBrandData,
+            editorConfig: nextEditorConfig,
+          },
+        }),
+      });
+
+      if (!publishResponse.ok) {
+        const publishBody = await publishResponse.json().catch(() => null);
+        throw new Error(
+          publishBody?.error ||
+            `Publication GitHub: HTTP ${publishResponse.status}`
+        );
+      }
+
+      const publishData = await publishResponse.json().catch(() => null);
+
+      // Garder l'état React et localStorage synchronisés avec la version publiée.
+      setBrandData(normalizedBrandData);
+      setSiteEditorConfig(nextEditorConfig);
+
+      try {
+        localStorage.setItem(
+          'pyrenees_brand_config',
+          JSON.stringify(normalizedBrandData)
+        );
+      } catch (error) {
+        console.warn(
+          'Impossible de synchroniser la configuration locale:',
+          error
+        );
+      }
+
+      return {
+        success: true,
+        commitSha: publishData?.commitSha || null,
+      };
     } catch (error) {
       console.error(
-        'Impossible de sauvegarder la configuration visuelle dans Upstash:',
+        'Impossible de sauvegarder/publicer la configuration du site:',
         error
       );
 
-      return false;
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Erreur inconnue pendant la publication.',
+      };
     }
   };
+
 
   // ===========================================================================
   // RESET BRAND DATA
@@ -262,6 +352,8 @@ export default function App() {
         error
       );
     }
+
+    void saveSiteConfig(resetData, siteEditorConfig);
   };
 
   // ===========================================================================
@@ -483,24 +575,33 @@ export default function App() {
   // SAVE VISUAL EDITOR
   // ===========================================================================
 
-  const handleSaveVisualEditor = async (nextEditorConfig: SiteEditorConfig = siteEditorConfig) => {
-    const success = await saveSiteConfig(brandData, nextEditorConfig);
+  const handleSaveVisualEditor = async (
+    nextEditorConfig: SiteEditorConfig = siteEditorConfig
+  ) => {
+    const result = await saveSiteConfig(
+      brandData,
+      nextEditorConfig
+    );
 
-    if (success) {
+    if (result.success) {
       setSiteEditorConfig(nextEditorConfig);
-      setReorderToast('Configuration visuelle enregistrée !');
-
-      window.setTimeout(() => {
-        setReorderToast(null);
-      }, 2500);
-    } else {
       setReorderToast(
-        'Erreur : la configuration visuelle n’a pas pu être enregistrée.'
+        result.commitSha
+          ? '✓ Enregistré + publié sur GitHub. Vercel va redéployer le site.'
+          : '✓ Configuration enregistrée.'
       );
 
       window.setTimeout(() => {
         setReorderToast(null);
-      }, 3500);
+      }, 5000);
+    } else {
+      setReorderToast(
+        `Erreur : ${result.error}`
+      );
+
+      window.setTimeout(() => {
+        setReorderToast(null);
+      }, 6000);
     }
   };
 
@@ -1188,7 +1289,9 @@ export default function App() {
           brandData={brandData}
           config={siteEditorConfig}
           onChange={setSiteEditorConfig}
-          onSave={handleSaveVisualEditor}
+          onSave={async (nextConfig) => {
+            await handleSaveVisualEditor(nextConfig);
+          }}
         />
       )}
 
