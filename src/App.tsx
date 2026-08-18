@@ -122,10 +122,11 @@ export default function App() {
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
+  const [isAdminBarVisible, setIsAdminBarVisible] = useState(false);
   const [siteEditorConfig, setSiteEditorConfig] =
     useState<SiteEditorConfig>(() =>
       getInitialEditorConfig<SiteEditorConfig>({
-        adminBarPosition: 'bottom',
+        adminBarPosition: 'top',
         blocks: [],
       })
     );
@@ -509,9 +510,8 @@ export default function App() {
     setIsAdminLoggedIn(true);
     setAdminUsername(user || 'admin');
 
-    setCustomizerTab('theme');
-    setIsCustomizerOpen(true);
     setIsAdminLoginOpen(false);
+    setIsCustomizerOpen(false);
   };
 
   // ===========================================================================
@@ -532,6 +532,7 @@ export default function App() {
     setIsCustomizerOpen(false);
     setIsOrdersOpen(false);
     setIsProductsOpen(false);
+    setIsAdminBarVisible(false);
   };
 
   // ===========================================================================
@@ -1212,7 +1213,7 @@ export default function App() {
         </div>
       )}
 
-      {isAdminLoggedIn && (
+      {isAdminLoggedIn && isAdminBarVisible && (
         <AdminBar
           username={adminUsername}
           theme={theme}
@@ -1256,6 +1257,7 @@ export default function App() {
             await handleSaveVisualEditor(nextConfig);
           }}
           onOpenCustomizer={() => handleOpenEditor('theme')}
+          onOpenChange={setIsAdminBarVisible}
         />
       )}
 

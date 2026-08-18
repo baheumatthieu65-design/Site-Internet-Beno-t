@@ -40,6 +40,7 @@ interface Props {
   onChange: (config: SiteEditorConfig) => void;
   onSave: (nextConfig?: SiteEditorConfig) => Promise<void> | void;
   onOpenCustomizer?: () => void;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const FONT_OPTIONS = [
@@ -142,6 +143,7 @@ export const SiteVisualEditor: React.FC<Props> = ({
   onChange,
   onSave,
   onOpenCustomizer,
+  onOpenChange,
 }) => {
   const [open, setOpen] = useState(false);
   const [selecting, setSelecting] = useState(false);
@@ -430,7 +432,10 @@ export const SiteVisualEditor: React.FC<Props> = ({
       <button
         type="button"
         data-vce-ignore="true"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true);
+          onOpenChange?.(true);
+        }}
         className="fixed right-5 bottom-5 z-[1100] h-14 w-14 rounded-full bg-[#1c241f] text-[#d4af37] shadow-2xl border border-[#4a5a4c] flex items-center justify-center"
         title="Éditeur visuel"
       >
@@ -466,7 +471,14 @@ export const SiteVisualEditor: React.FC<Props> = ({
               </button>
             )}
           </div>
-          <button type="button" onClick={() => setOpen(false)} className="p-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              onOpenChange?.(false);
+            }}
+            className="p-2 shrink-0"
+          >
             <X size={18} />
           </button>
         </div>

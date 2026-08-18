@@ -118,6 +118,17 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
 
           <button
+            id="nav-admin-login-btn"
+            type="button"
+            onClick={onOpenLogin}
+            aria-label={isAdminLoggedIn ? 'Administration' : 'Connexion administrateur'}
+            title={isAdminLoggedIn ? 'Administration' : 'Connexion administrateur'}
+            className="flex items-center justify-center w-7 h-7 rounded-full border border-[#b89f74]/35 bg-black/20 text-[#a3b1a5] hover:text-[#d4af37] hover:border-[#d4af37]/60 transition-all"
+          >
+            <span className="text-[10px] leading-none">●</span>
+          </button>
+
+          <button
             id="nav-order-btn"
             onClick={() => onOpenInquiry()}
             className={`flex items-center space-x-2 px-5 py-2 text-xs tracking-widest uppercase font-semibold ${primaryBtnClass}`}
