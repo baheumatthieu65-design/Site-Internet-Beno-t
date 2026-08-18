@@ -579,6 +579,20 @@ export const publishedSiteContent = {
         "kind": "media",
         "text": "",
         "url": "https://site-internet-beno-t.vercel.app/assets/pyrenees_jacket_1_1785338603269-DB14hVWQ.jpg"
+      },
+      {
+        "id": "element-1787061362899",
+        "type": "text",
+        "section": "hero",
+        "x": 50,
+        "y": 50,
+        "visible": true,
+        "selector": "div:nth-of-type(1) \u003e div:nth-of-type(3) \u003e div:nth-of-type(1) \u003e div:nth-of-type(1) \u003e div:nth-of-type(1) \u003e span:nth-of-type(1)",
+        "kind": "text",
+        "text": "3. Tableau Comparatif",
+        "fontFamily": "ui-serif",
+        "fontSize": "12px",
+        "color": "rgb(243, 236, 224)"
       }
     ]
   }
