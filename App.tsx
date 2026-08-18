@@ -50,18 +50,22 @@ type CustomizerTab =
   | 'security'
   | 'github';
 
-const removeInitialPreloader = () => {
-  if (typeof document === 'undefined') return;
+const fetchSiteConfigWithTimeout = async () => {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 4000);
 
-  const loader = document.getElementById('initial-site-loader');
-
-  if (loader) {
-    loader.style.opacity = '0';
-    loader.style.pointerEvents = 'none';
-
-    window.setTimeout(() => {
-      loader.remove();
-    }, 250);
+  try {
+    return await fetch('/api/site-config', {
+      method: 'GET',
+      credentials: 'include',
+      cache: 'no-store',
+      signal: controller.signal,
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+  } finally {
+    window.clearTimeout(timeout);
   }
 };
 
@@ -145,11 +149,6 @@ export default function App() {
       })
     );
 
-  // Aucun contenu du site n'est affiché avant d'avoir chargé la
-  // configuration serveur publiée. Cela supprime le flash de l'ancienne
-  // version pendant le premier chargement.
-  const [isPublishedConfigReady, setIsPublishedConfigReady] =
-    useState(false);
 
 
 
@@ -463,14 +462,7 @@ export default function App() {
       }
 
       try {
-        const response = await fetch('/api/site-config', {
-          method: 'GET',
-          credentials: 'include',
-          cache: 'no-store',
-          headers: {
-            Accept: 'application/json',
-          },
-        });
+        const response = await fetchSiteConfigWithTimeout();
 
         if (response.ok) {
           const data = await response.json();
@@ -509,12 +501,13 @@ export default function App() {
         }
       } catch (error) {
         console.warn(
-          'Configuration visuelle serveur indisponible. Utilisation de la version publiée du bundle.',
+          'Configuration visuelle serveur indisponible. Le site utilise la version publiée du bundle.',
           error
         );
       } finally {
-        // Le site n'est affiché qu'après la réponse de configuration.
-        setIsPublishedConfigReady(true);
+        // La configuration serveur est facultative pour l'affichage.
+        // Le site conserve toujours la version publiée/localisée du bundle
+        // si l'API n'est pas disponible.
       }
 
       await fetchServerProducts();
@@ -522,27 +515,6 @@ export default function App() {
 
     void initializeApp();
   }, []);
-
-  // ===========================================================================
-  // FIRST RENDER GATE — NO OLD CONTENT FLASH
-  // ===========================================================================
-  if (!isPublishedConfigReady) {
-    return (
-      <main className="min-h-screen bg-[#121613] text-[#f5eedf] flex items-center justify-center">
-        <div className="text-center px-6">
-          <div className="mx-auto mb-5 w-10 h-10 rounded-full border-2 border-[#3d4b40] border-t-[#d4af37] animate-spin" />
-          <div className="font-serif text-xl tracking-wide text-[#d4af37]">
-            Maison des Pyrénées
-          </div>
-          <div className="mt-2 text-xs uppercase tracking-[0.25em] text-[#87968a]">
-            Chargement
-          </div>
-        </div>
-      </main>
-    );
-  }
-
-  removeInitialPreloader();
 
   // ===========================================================================
   // BUTTON STYLE
