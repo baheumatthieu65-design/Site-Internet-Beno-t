@@ -209,6 +209,10 @@ export const SiteVisualEditor: React.FC<Props> = ({
   const [fontSize, setFontSize] = useState('48px');
   const [color, setColor] = useState('#F5EEDF');
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [replacementImageUrl, setReplacementImageUrl] = useState('');
+  const [libraryItems, setLibraryItems] = useState<Array<{ url: string; pathname?: string }>>([]);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -255,18 +259,21 @@ export const SiteVisualEditor: React.FC<Props> = ({
         event.stopPropagation();
 
         const selector = getUniqueSelector(media);
+        const currentUrl =
+          media instanceof HTMLImageElement
+            ? media.currentSrc || media.src
+            : media instanceof HTMLVideoElement
+              ? media.currentSrc || media.src
+              : '';
+
         setSelected({
           selector,
           element: media,
           kind: 'media',
           originalText: '',
-          originalUrl:
-            media instanceof HTMLImageElement
-              ? media.currentSrc || media.src
-              : media instanceof HTMLVideoElement
-                ? media.currentSrc || media.src
-                : '',
+          originalUrl: currentUrl,
         });
+        setReplacementImageUrl(currentUrl);
         return;
       }
 
@@ -352,6 +359,114 @@ export const SiteVisualEditor: React.FC<Props> = ({
     }
   };
 
+  const uploadReplacementImage = async (file: File) => {
+    if (!selected || selected.kind !== 'media') return;
+
+    setUploadingImage(true);
+    setError(null);
+    setMessage(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/site-media', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.success || !data?.url) {
+        throw new Error(data?.error || `Upload image: HTTP ${response.status}`);
+      }
+
+      const url = String(data.url);
+      setReplacementImageUrl(url);
+
+      const media = selected.element;
+      if (media instanceof HTMLImageElement) {
+        media.src = url;
+      } else if (media instanceof HTMLVideoElement) {
+        media.src = url;
+        media.load();
+      }
+
+      updateBlock({
+        type: media instanceof HTMLVideoElement ? 'video' : 'image',
+        kind: 'media',
+        url,
+        selector: selected.selector,
+        visible: true,
+      });
+
+      setMessage('Image importée. Cliquez sur « Enregistrer et publier ».');
+    } catch (err) {
+      console.error(err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Impossible d’importer cette image.'
+      );
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const loadMediaLibrary = async () => {
+    setLibraryOpen(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/site-media', {
+        method: 'GET',
+        credentials: 'include',
+        headers: { Accept: 'application/json' },
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.success) {
+        throw new Error(data?.error || `Bibliothèque: HTTP ${response.status}`);
+      }
+
+      setLibraryItems(Array.isArray(data.items) ? data.items : []);
+    } catch (err) {
+      console.error(err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Impossible de charger la bibliothèque média.'
+      );
+    }
+  };
+
+  const chooseLibraryImage = (url: string) => {
+    if (!selected || selected.kind !== 'media') return;
+
+    setReplacementImageUrl(url);
+
+    const media = selected.element;
+    if (media instanceof HTMLImageElement) {
+      media.src = url;
+    } else if (media instanceof HTMLVideoElement) {
+      media.src = url;
+      media.load();
+    }
+
+    updateBlock({
+      type: media instanceof HTMLVideoElement ? 'video' : 'image',
+      kind: 'media',
+      url,
+      selector: selected.selector,
+      visible: true,
+    });
+
+    setLibraryOpen(false);
+    setMessage('Média sélectionné. Cliquez sur « Enregistrer et publier ».');
+  };
+
   const saveSelected = async () => {
     if (!selected) return;
 
@@ -378,10 +493,15 @@ export const SiteVisualEditor: React.FC<Props> = ({
           visible: true,
         });
       } else {
+        if (!replacementImageUrl) {
+          throw new Error('Sélectionnez une image de remplacement.');
+        }
+
+        const media = selected.element;
         updateBlock({
-          type: 'image',
+          type: media instanceof HTMLVideoElement ? 'video' : 'image',
           kind: 'media',
-          url: selected.originalUrl,
+          url: replacementImageUrl,
           selector: selected.selector,
           visible: true,
         });
@@ -601,13 +721,98 @@ export const SiteVisualEditor: React.FC<Props> = ({
                 </div>
               </>
             ) : (
-              <div className="text-sm text-[#cbd3cb]">
-                <ImageIcon className="inline w-4 h-4 mr-2 text-[#d4af37]" />
-                Cette image est sélectionnée indépendamment.
-                <div className="mt-2 text-xs text-[#87968a]">
-                  La prochaine étape d'importation permet de la remplacer
-                  depuis ton ordinateur ou ta bibliothèque média.
+              <div className="space-y-3">
+                <div className="text-sm text-[#cbd3cb]">
+                  <ImageIcon className="inline w-4 h-4 mr-2 text-[#d4af37]" />
+                  Image sélectionnée indépendamment.
                 </div>
+
+                <div className="rounded-xl border border-[#405044] bg-[#0b100c] p-3">
+                  <div className="text-xs font-semibold text-[#d4af37] mb-2">
+                    Sélectionner une image de remplacement
+                  </div>
+
+                  {replacementImageUrl && (
+                    <img
+                      src={replacementImageUrl}
+                      alt="Aperçu du remplacement"
+                      className="w-full h-32 object-cover rounded-lg mb-3 border border-[#334236]"
+                    />
+                  )}
+
+                  <label className="block cursor-pointer rounded-lg bg-[#d4af37] text-black font-bold text-center py-2.5 hover:brightness-110">
+                    {uploadingImage ? 'Importation...' : '📤 Importer une image'}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                      className="hidden"
+                      disabled={uploadingImage}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) void uploadReplacementImage(file);
+                        e.currentTarget.value = '';
+                      }}
+                    />
+                  </label>
+
+                  <button
+                    type="button"
+                    onClick={() => void loadMediaLibrary()}
+                    className="w-full mt-2 rounded-lg border border-[#405044] bg-[#1c261e] text-white py-2.5 font-semibold hover:bg-[#263329]"
+                  >
+                    📚 Choisir dans la bibliothèque
+                  </button>
+
+                  <div className="mt-2 text-[10px] text-[#87968a]">
+                    JPG, PNG, WebP, GIF ou AVIF. L'image est envoyée sur
+                    Vercel Blob puis publiée après « Enregistrer et publier ».
+                  </div>
+                </div>
+
+                {libraryOpen && (
+                  <div className="rounded-xl border border-[#405044] bg-[#080c09] p-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-[#c4ceb8]">
+                        Bibliothèque média
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setLibraryOpen(false)}
+                        className="text-xs text-[#aab6ac] hover:text-white"
+                      >
+                        Fermer
+                      </button>
+                    </div>
+
+                    {libraryItems.length === 0 ? (
+                      <div className="text-xs text-[#87968a] py-3 text-center">
+                        Aucune image disponible.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                        {libraryItems.map((item) => (
+                          <button
+                            type="button"
+                            key={item.url}
+                            onClick={() => chooseLibraryImage(item.url)}
+                            className={`rounded-lg overflow-hidden border ${
+                              replacementImageUrl === item.url
+                                ? 'border-[#d4af37]'
+                                : 'border-[#334236]'
+                            }`}
+                            title="Utiliser cette image"
+                          >
+                            <img
+                              src={item.url}
+                              alt=""
+                              className="w-full h-20 object-cover"
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
