@@ -410,7 +410,7 @@ export const publishedSiteContent = {
       "buttonBackgroundOverlay": 28,
       "buttonOverrides": {
         "navbar-order": {
-          "buttonStyle": "minimal-couture",
+          "buttonStyle": "cuir-naturel",
           "buttonSize": "compact",
           "buttonRadius": "rounded-full",
           "backgroundImageUrl": "",
