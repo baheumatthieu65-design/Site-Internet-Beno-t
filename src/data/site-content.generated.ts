@@ -412,8 +412,8 @@ export const publishedSiteContent = {
         "hero",
         "collection",
         "comparatif",
-        "origines",
         "lookbook",
+        "origines",
         "contact"
       ],
       "hiddenSections": [],
