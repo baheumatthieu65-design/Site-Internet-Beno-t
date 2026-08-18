@@ -404,7 +404,7 @@ export const publishedSiteContent = {
     ],
     "theme": {
       "buttonStyle": "gold-laiton",
-      "buttonRadius": "rounded-xl",
+      "buttonRadius": "rounded-full",
       "buttonSize": "standard",
       "buttonBackgroundImageUrl": "",
       "buttonBackgroundOverlay": 28,
