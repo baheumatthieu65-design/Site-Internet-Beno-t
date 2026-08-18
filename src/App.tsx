@@ -510,8 +510,10 @@ export default function App() {
     setIsAdminLoggedIn(true);
     setAdminUsername(user || 'admin');
 
+    // Connexion sans ouvrir automatiquement l'administration.
     setIsAdminLoginOpen(false);
     setIsCustomizerOpen(false);
+    setIsAdminBarVisible(false);
   };
 
   // ===========================================================================
@@ -943,7 +945,6 @@ export default function App() {
               selectedJacketId
             }
             theme={theme}
-            editorBlocks={siteEditorConfig.blocks}
             isAdminLoggedIn={
               isAdminLoggedIn
             }
