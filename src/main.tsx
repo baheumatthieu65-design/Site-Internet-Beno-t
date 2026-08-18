@@ -15,15 +15,11 @@ createRoot(rootElement).render(
   </StrictMode>,
 );
 
-// Retire le voile uniquement après que React a eu l'occasion de monter.
-// Cela ne dépend d'aucune API et ne peut donc pas provoquer de chargement
-// infini.
+// Aucun écran de chargement et aucune attente réseau.
+// On révèle simplement l'application après sa première peinture React.
 requestAnimationFrame(() => {
-  document.documentElement.classList.remove('site-preloading');
-
-  const loader = document.getElementById('site-first-paint-loader');
-
-  if (loader) {
-    window.setTimeout(() => loader.remove(), 140);
-  }
+  requestAnimationFrame(() => {
+    document.documentElement.classList.remove('site-booting');
+    document.documentElement.classList.add('site-ready');
+  });
 });
