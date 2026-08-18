@@ -4,72 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Maison Mailha</title>
-
-    <style>
-      html, body {
-        margin: 0;
-        min-height: 100%;
-        background: #121613;
-      }
-
-      #initial-site-loader {
-        position: fixed;
-        inset: 0;
-        z-index: 2147483647;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #121613;
-        color: #f5eedf;
-        opacity: 1;
-        transition: opacity 0.25s ease;
-      }
-
-      #initial-site-loader-inner {
-        text-align: center;
-        font-family: Georgia, "Times New Roman", serif;
-      }
-
-      #initial-site-loader-spinner {
-        width: 38px;
-        height: 38px;
-        margin: 0 auto 18px;
-        border: 2px solid #39473d;
-        border-top-color: #d4af37;
-        border-radius: 50%;
-        animation: maison-loader-spin 0.8s linear infinite;
-      }
-
-      #initial-site-loader-title {
-        color: #d4af37;
-        font-size: 20px;
-        letter-spacing: 0.04em;
-      }
-
-      #initial-site-loader-subtitle {
-        margin-top: 8px;
-        color: #87968a;
-        font-family: Arial, sans-serif;
-        font-size: 10px;
-        letter-spacing: 0.25em;
-        text-transform: uppercase;
-      }
-
-      @keyframes maison-loader-spin {
-        to { transform: rotate(360deg); }
-      }
-    </style>
   </head>
-
   <body>
-    <div id="initial-site-loader" aria-live="polite">
-      <div id="initial-site-loader-inner">
-        <div id="initial-site-loader-spinner"></div>
-        <div id="initial-site-loader-title">Maison des Pyrénées</div>
-        <div id="initial-site-loader-subtitle">Chargement</div>
-      </div>
-    </div>
-
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
