@@ -450,6 +450,8 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
             <div className={`${cardMediaPos === 'right' ? 'lg:col-span-7 lg:order-2' : 'lg:col-span-7'} space-y-6`}>
               <div className="relative rounded-3xl bg-[#1d241f] border border-[#39483c] overflow-hidden shadow-2xl group min-h-[420px] sm:min-h-[520px] flex items-center justify-center">
                 <img
+                  data-vce-gallery-main="true"
+                  data-vce-gallery-product-id={activeJacket.id}
                   src={activeImage}
                   alt={activeJacket.name}
                   className="w-full h-full max-h-[620px] object-cover object-center transition-all duration-500"
@@ -525,7 +527,14 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                             : 'border-[#39483c] opacity-70 hover:opacity-100'
                         }`}
                       >
-                        <img src={imgUrl} alt={`Vue ${idx + 1}`} className="w-full h-full object-cover" />
+                        <img
+                          data-vce-gallery-thumbnail="true"
+                          data-vce-gallery-product-id={activeJacket.id}
+                          data-vce-gallery-index={idx}
+                          src={imgUrl}
+                          alt={`Vue ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                        />
                       </button>
                     );
                   })}
@@ -662,7 +671,14 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                     activeImage === img ? 'border-[#d4af37] ring-2 ring-[#d4af37]/40' : 'border-[#39483c]'
                   }`}
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                  <img
+                    data-vce-gallery-thumbnail="true"
+                    data-vce-gallery-product-id={activeJacket.id}
+                    data-vce-gallery-index={idx}
+                    src={img}
+                    alt=""
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                  />
                   <span className="absolute bottom-2 left-2 bg-black/70 text-[#d4af37] text-[10px] px-2 py-0.5 rounded font-serif">
                     Angle {idx + 1}
                   </span>

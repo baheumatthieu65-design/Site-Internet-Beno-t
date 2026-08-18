@@ -155,6 +155,9 @@ export const SiteVisualEditor: React.FC<Props> = ({
     originalUrl: string;
     originalStyle: string;
     originalConfig: SiteEditorConfig;
+    galleryRole?: 'main' | 'thumbnail' | 'independent';
+    galleryProductId?: string;
+    galleryIndex?: number;
   } | null>(null);
 
   const [text, setText] = useState('');
@@ -201,11 +204,25 @@ export const SiteVisualEditor: React.FC<Props> = ({
       event.stopPropagation();
 
       if (media) {
+        const mediaEl = media as HTMLElement;
         const url = media instanceof HTMLImageElement
           ? media.currentSrc || media.src
           : media instanceof HTMLVideoElement
             ? media.currentSrc || media.src
             : '';
+
+        const galleryRole =
+          mediaEl.getAttribute('data-vce-gallery-main') === 'true'
+            ? 'main'
+            : mediaEl.getAttribute('data-vce-gallery-thumbnail') === 'true'
+              ? 'thumbnail'
+              : 'independent';
+
+        const galleryProductId =
+          mediaEl.getAttribute('data-vce-gallery-product-id') || undefined;
+
+        const rawGalleryIndex =
+          mediaEl.getAttribute('data-vce-gallery-index');
 
         setSelected({
           selector: selectorFor(media),
@@ -213,13 +230,16 @@ export const SiteVisualEditor: React.FC<Props> = ({
           kind: 'media',
           originalText: '',
           originalUrl: url,
-          originalStyle: (media as HTMLElement).getAttribute('style') || '',
+          originalStyle: mediaEl.getAttribute('style') || '',
           originalConfig: cloneEditorConfig(config),
+          galleryRole,
+          galleryProductId,
+          galleryIndex: rawGalleryIndex == null ? undefined : Number(rawGalleryIndex),
         });
         setImageUrl(url);
         setSelecting(false);
         return;
-      }
+      
 
       if (isText(element)) {
         const style = getComputedStyle(element);
@@ -306,15 +326,11 @@ export const SiteVisualEditor: React.FC<Props> = ({
   const chooseImage = (url: string) => {
     if (!selected || selected.kind !== 'media') return;
 
-    const el = selected.element;
-
-    // IMPORTANT:
-    // Do not mutate the live DOM here. Product galleries are often controlled
-    // by React state; changing `src` directly can desynchronise the main image
-    // from the thumbnail selection and leave the gallery blocked.
-    // The chosen replacement is kept in the editor config and is applied by
-    // the normal save/publish pipeline.
+    // Le choix d'une nouvelle image passe uniquement par la configuration
+    // de l'éditeur. Nous ne touchons jamais directement à l'état React de
+    // la galerie : la grande image reste pilotée par JacketsShowcase.
     setImageUrl(url);
+    const el = selected.element;
     commitBlock({
       type: el instanceof HTMLVideoElement ? 'video' : 'image',
       kind: 'media',
@@ -322,7 +338,11 @@ export const SiteVisualEditor: React.FC<Props> = ({
       url,
       visible: true,
     });
-    setMessage('Image remplacée. Enregistre pour publier.');
+    setMessage(
+      selected.galleryRole === 'thumbnail'
+        ? 'Miniature remplacée. Enregistre pour publier.'
+        : 'Image remplacée. Enregistre pour publier.'
+    );
   };
 
   const uploadImage = async (file: File) => {
@@ -587,6 +607,16 @@ export const SiteVisualEditor: React.FC<Props> = ({
                     </div>
                     <div className="text-[10px] text-[#87968a]">
                       La sélection ne modifie pas l’image. Le remplacement se fait uniquement après ton choix.
+                      {selected.galleryRole === 'thumbnail' && (
+                        <span className="block mt-1 text-[#d4af37]">
+                          Miniature de galerie — sa sélection ne change pas la grande image.
+                        </span>
+                      )}
+                      {selected.galleryRole === 'main' && (
+                        <span className="block mt-1 text-[#d4af37]">
+                          Image principale — la galerie reste pilotée par les miniatures.
+                        </span>
+                      )}
                     </div>
                   </div>
 

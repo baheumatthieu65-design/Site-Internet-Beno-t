@@ -9,6 +9,8 @@ const apply=(blocks:EditorBlock[])=>{
   const h=el as HTMLElement;
   if(b.kind==='text'){if(b.text!=null)h.textContent=b.text;if(b.fontFamily)h.style.fontFamily=b.fontFamily;if(b.fontSize)h.style.fontSize=b.fontSize;if(b.color)h.style.color=b.color}
   if(b.kind==='media'&&b.url){
+   // The selector identifies one exact media element. Never touch the gallery
+   // container or any sibling thumbnail/main image.
    if(el instanceof HTMLImageElement)el.src=b.url;
    if(el instanceof HTMLVideoElement){el.src=b.url;el.load()}
   }
