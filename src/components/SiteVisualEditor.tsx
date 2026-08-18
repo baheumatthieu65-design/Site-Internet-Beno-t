@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Check, Image as ImageIcon, Loader2, Save, Settings2, Type, X } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Check, Image as ImageIcon, Loader2, Move, Save, Settings2, Type, X } from 'lucide-react';
 import type { BrandConfig, SectionId } from '../types';
 
 export type AdminBarPosition = 'top' | 'bottom' | 'left' | 'right';
@@ -22,7 +22,8 @@ export interface EditorBlock {
 }
 
 export interface SiteEditorConfig {
-  adminBarPosition: AdminBarPosition;
+  // Conservé pour relire les configurations déjà publiées ; la barre est désormais intégrée à l'éditeur.
+  adminBarPosition?: AdminBarPosition;
   heroBackground?: {
     type: 'image' | 'gif' | 'video';
     url: string;
@@ -40,7 +41,7 @@ interface Props {
   onChange: (config: SiteEditorConfig) => void;
   onSave: (nextConfig?: SiteEditorConfig) => Promise<void> | void;
   onOpenCustomizer?: () => void;
-  onOpenChange?: (open: boolean) => void;
+  adminToolbar?: React.ReactNode;
 }
 
 const FONT_OPTIONS = [
@@ -116,36 +117,24 @@ function isText(el: Element) {
   return readableText(el).length > 0;
 }
 
-function applyBar(position: AdminBarPosition) {
-  const bar = document.getElementById('admin-top-bar');
-  if (!bar) return;
-
-  Object.assign(bar.style, {
-    position: 'fixed',
-    zIndex: '1000',
-    margin: '0',
-    transform: '',
-    top: 'auto',
-    bottom: 'auto',
-    left: 'auto',
-    right: 'auto',
-    width: '',
-  });
-
-  if (position === 'top') Object.assign(bar.style, { top: '0', left: '0', right: '0', width: '100%' });
-  if (position === 'bottom') Object.assign(bar.style, { bottom: '0', left: '0', right: '0', width: '100%' });
-  if (position === 'left') Object.assign(bar.style, { top: '50%', left: '0', width: 'min(92vw, 420px)', transform: 'translateY(-50%)' });
-  if (position === 'right') Object.assign(bar.style, { top: '50%', right: '0', width: 'min(92vw, 420px)', transform: 'translateY(-50%)' });
-}
-
 export const SiteVisualEditor: React.FC<Props> = ({
   config,
   onChange,
   onSave,
   onOpenCustomizer,
-  onOpenChange,
+  adminToolbar,
 }) => {
   const [open, setOpen] = useState(false);
+  const [panelPosition, setPanelPosition] = useState<{ x: number; y: number } | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{
+    startX: number;
+    startY: number;
+    originX: number;
+    originY: number;
+    width: number;
+    height: number;
+  } | null>(null);
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<{
     selector: string;
@@ -171,6 +160,54 @@ export const SiteVisualEditor: React.FC<Props> = ({
   const [error, setError] = useState('');
 
   useEffect(() => {
+    const movePanel = (event: PointerEvent) => {
+      const drag = dragRef.current;
+      if (!drag) return;
+
+      const x = Math.max(8, Math.min(
+        window.innerWidth - drag.width - 8,
+        drag.originX + event.clientX - drag.startX,
+      ));
+      const y = Math.max(8, Math.min(
+        window.innerHeight - drag.height - 8,
+        drag.originY + event.clientY - drag.startY,
+      ));
+
+      setPanelPosition({ x, y });
+    };
+
+    const stopDragging = () => {
+      dragRef.current = null;
+    };
+
+    window.addEventListener('pointermove', movePanel);
+    window.addEventListener('pointerup', stopDragging);
+
+    return () => {
+      window.removeEventListener('pointermove', movePanel);
+      window.removeEventListener('pointerup', stopDragging);
+    };
+  }, []);
+
+  const startPanelDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    if ((event.target as Element).closest('button, input, textarea, select, a')) return;
+
+    const rect = panelRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    event.preventDefault();
+    dragRef.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      originX: rect.left,
+      originY: rect.top,
+      width: rect.width,
+      height: rect.height,
+    };
+    setPanelPosition({ x: rect.left, y: rect.top });
+  };
+
+  useEffect(() => {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = FONT_URL;
@@ -178,10 +215,6 @@ export const SiteVisualEditor: React.FC<Props> = ({
     document.head.appendChild(link);
     return () => link.remove();
   }, []);
-
-  useEffect(() => {
-    if (open) applyBar(config.adminBarPosition || 'bottom');
-  }, [open, config.adminBarPosition]);
 
   useEffect(() => {
     if (!selecting) return;
@@ -432,10 +465,7 @@ export const SiteVisualEditor: React.FC<Props> = ({
       <button
         type="button"
         data-vce-ignore="true"
-        onClick={() => {
-          setOpen(true);
-          onOpenChange?.(true);
-        }}
+        onClick={() => setOpen(true)}
         className="fixed right-5 bottom-5 z-[1100] h-14 w-14 rounded-full bg-[#1c241f] text-[#d4af37] shadow-2xl border border-[#4a5a4c] flex items-center justify-center"
         title="Éditeur visuel"
       >
@@ -447,12 +477,19 @@ export const SiteVisualEditor: React.FC<Props> = ({
   return (
     <>
       <div
+        ref={panelRef}
         data-vce-panel="true"
         data-vce-ignore="true"
+        style={panelPosition ? { left: panelPosition.x, top: panelPosition.y, right: 'auto', bottom: 'auto' } : undefined}
         className="fixed right-4 bottom-4 z-[1100] w-[min(94vw,440px)] max-h-[88vh] overflow-auto rounded-2xl border border-[#536258] bg-[#111613]/98 text-[#f5eedf] shadow-2xl backdrop-blur"
       >
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#344139] bg-[#111613] px-4 py-3">
+        <div
+          onPointerDown={startPanelDrag}
+          className="sticky top-0 z-10 flex cursor-grab touch-none select-none items-center justify-between border-b border-[#344139] bg-[#111613] px-4 py-3 active:cursor-grabbing"
+          title="Glissez ici pour déplacer l’éditeur"
+        >
           <div className="flex min-w-0 items-center gap-3">
+            <Move size={16} className="shrink-0 text-[#87968a]" />
             <div className="min-w-0">
               <div className="text-sm font-semibold">Éditeur du site</div>
               <div className="text-[10px] uppercase tracking-[.18em] text-[#87968a]">
@@ -473,10 +510,7 @@ export const SiteVisualEditor: React.FC<Props> = ({
           </div>
           <button
             type="button"
-            onClick={() => {
-              setOpen(false);
-              onOpenChange?.(false);
-            }}
+            onClick={() => setOpen(false)}
             className="p-2 shrink-0"
           >
             <X size={18} />
@@ -648,30 +682,12 @@ export const SiteVisualEditor: React.FC<Props> = ({
             </div>
           )}
 
-          <div className="border-t border-[#344139] pt-4">
-            <div className="text-xs text-[#87968a] mb-2">Position du bandeau</div>
-            <div className="grid grid-cols-4 gap-2">
-              {(['top', 'bottom', 'left', 'right'] as AdminBarPosition[]).map((position) => (
-                <button
-                  type="button"
-                  key={position}
-                  onClick={() => {
-                    const next = { ...config, adminBarPosition: position };
-                    onChange(next);
-                    applyBar(position);
-                  }}
-                  className={`rounded-lg px-2 py-2 text-xs ${config.adminBarPosition === position ? 'bg-[#d4af37] text-black' : 'bg-[#263129]'}`}
-                >
-                  {{
-                    top: 'Haut',
-                    bottom: 'Bas',
-                    left: 'Gauche',
-                    right: 'Droite',
-                  }[position]}
-                </button>
-              ))}
+          {adminToolbar && (
+            <div className="border-t border-[#344139] pt-4">
+              <div className="mb-2 text-xs text-[#87968a]">Barre d’administration</div>
+              {adminToolbar}
             </div>
-          </div>
+          )}
 
           {message && <div className="rounded-lg bg-[#203428] px-3 py-2 text-xs text-[#cfe0d2]"><Check size={14} className="inline mr-1" />{message}</div>}
           {error && <div className="rounded-lg bg-[#3a2222] px-3 py-2 text-xs text-[#f2caca]">{error}</div>}
@@ -682,3 +698,4 @@ export const SiteVisualEditor: React.FC<Props> = ({
 };
 
 export default SiteVisualEditor;
+

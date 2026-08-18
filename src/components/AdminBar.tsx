@@ -34,6 +34,7 @@ interface AdminBarProps {
   onOpenProducts?: () => void;
   onOpenSecurity: () => void;
   onLogout: () => void;
+  embedded?: boolean;
 }
 
 declare global {
@@ -52,6 +53,7 @@ export const AdminBar: React.FC<AdminBarProps> = ({
   onOpenProducts,
   onOpenSecurity,
   onLogout,
+  embedded = false,
 }) => {
   const [ordersCount, setOrdersCount] = useState<number>(0);
 
@@ -68,9 +70,12 @@ export const AdminBar: React.FC<AdminBarProps> = ({
   return (
     <div
       id="admin-top-bar"
-      className="bg-[#161c17] border-t border-[#d4af37]/50 text-[#f3ece0] text-xs py-2 px-4 shadow-2xl relative z-50 fixed bottom-0 left-0 right-0 transition-all backdrop-blur-md"
+      className={embedded
+        ? 'rounded-xl border border-[#d4af37]/40 bg-[#161c17] px-3 py-3 text-xs text-[#f3ece0] shadow-inner'
+        : 'fixed bottom-0 left-0 right-0 z-50 border-t border-[#d4af37]/50 bg-[#161c17] px-4 py-2 text-xs text-[#f3ece0] shadow-2xl backdrop-blur-md'
+      }
     >
-      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div className={embedded ? 'flex flex-wrap items-center justify-between gap-3' : 'mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3'}>
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-[#d4af37]/15 border border-[#d4af37]/50 text-[#d4af37]">
             <ShieldCheck className="w-3.5 h-3.5 animate-pulse" />
@@ -163,3 +168,4 @@ export const AdminBar: React.FC<AdminBarProps> = ({
     </div>
   );
 };
+

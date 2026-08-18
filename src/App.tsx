@@ -122,7 +122,6 @@ export default function App() {
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
-  const [isAdminBarVisible, setIsAdminBarVisible] = useState(false);
 
   // Toutes les publications administrateur passent par une file unique.
   // Une action rapide ne peut donc plus écraser une action plus récente
@@ -1226,41 +1225,6 @@ export default function App() {
         </div>
       )}
 
-      {isAdminLoggedIn && (
-        <div className={isAdminBarVisible ? '' : 'hidden'}>
-          <AdminBar
-            username={adminUsername}
-            theme={theme}
-            isDragReorderMode={
-              isDragReorderMode
-            }
-            onToggleDragReorderMode={() =>
-              setIsDragReorderMode(
-                (current) => !current
-              )
-            }
-            onQuickChangeButtonStyle={
-              handleQuickChangeButtonStyle
-            }
-            onOpenEditor={
-              handleOpenEditor
-            }
-            onOpenOrders={
-              handleOpenOrders
-            }
-            onOpenProducts={() =>
-              setIsProductsOpen(true)
-            }
-            onOpenSecurity={
-              handleOpenSecurity
-            }
-            onLogout={
-              handleLogout
-            }
-          />
-        </div>
-      )}
-
       <SiteBlocksRenderer config={siteEditorConfig} />
 
       {isAdminLoggedIn && (
@@ -1272,7 +1236,23 @@ export default function App() {
             await handleSaveVisualEditor(nextConfig);
           }}
           onOpenCustomizer={() => handleOpenEditor('theme')}
-          onOpenChange={setIsAdminBarVisible}
+          adminToolbar={
+            <AdminBar
+              embedded
+              username={adminUsername}
+              theme={theme}
+              isDragReorderMode={isDragReorderMode}
+              onToggleDragReorderMode={() =>
+                setIsDragReorderMode((current) => !current)
+              }
+              onQuickChangeButtonStyle={handleQuickChangeButtonStyle}
+              onOpenEditor={handleOpenEditor}
+              onOpenOrders={handleOpenOrders}
+              onOpenProducts={() => setIsProductsOpen(true)}
+              onOpenSecurity={handleOpenSecurity}
+              onLogout={handleLogout}
+            />
+          }
         />
       )}
 
