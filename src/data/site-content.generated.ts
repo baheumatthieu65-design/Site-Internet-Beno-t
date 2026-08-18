@@ -416,9 +416,24 @@ export const publishedSiteContent = {
         },
         "hero-discover": {
           "buttonSize": "standard",
-          "buttonStyle": "cuir-naturel",
+          "buttonStyle": "gold-laiton",
           "backgroundOverlay": 26,
           "buttonRadius": "rounded-none"
+        },
+        "hero-order": {
+          "buttonStyle": "gold-laiton"
+        },
+        "showcase-order": {
+          "buttonStyle": "gold-laiton"
+        },
+        "lookbook-order": {
+          "buttonStyle": "gold-laiton"
+        },
+        "comparison-order": {
+          "buttonStyle": "gold-laiton"
+        },
+        "footer-workshop": {
+          "buttonStyle": "gold-laiton"
         }
       },
       "cardStyle": "atelier-relief",
