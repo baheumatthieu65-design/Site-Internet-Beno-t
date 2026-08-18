@@ -307,12 +307,13 @@ export const SiteVisualEditor: React.FC<Props> = ({
     if (!selected || selected.kind !== 'media') return;
 
     const el = selected.element;
-    if (el instanceof HTMLImageElement) el.src = url;
-    if (el instanceof HTMLVideoElement) {
-      el.src = url;
-      el.load();
-    }
 
+    // IMPORTANT:
+    // Do not mutate the live DOM here. Product galleries are often controlled
+    // by React state; changing `src` directly can desynchronise the main image
+    // from the thumbnail selection and leave the gallery blocked.
+    // The chosen replacement is kept in the editor config and is applied by
+    // the normal save/publish pipeline.
     setImageUrl(url);
     commitBlock({
       type: el instanceof HTMLVideoElement ? 'video' : 'image',
@@ -564,9 +565,29 @@ export const SiteVisualEditor: React.FC<Props> = ({
                 </>
               ) : (
                 <>
-                  <div className="flex items-center gap-3">
-                    <ImageIcon size={18} />
-                    <div className="min-w-0 text-xs truncate">{imageUrl || 'Aucune image'}</div>
+                  <div className="space-y-2">
+                    <div className="text-[11px] uppercase tracking-[0.14em] text-[#87968a]">
+                      Aperçu de l’image sélectionnée
+                    </div>
+                    <div className="overflow-hidden rounded-xl border border-[#455248] bg-black/30">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt="Image sélectionnée"
+                          className="block h-40 w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-40 items-center justify-center text-sm text-[#87968a]">
+                          Aperçu indisponible
+                        </div>
+                      )}
+                    </div>
+                    <div className="truncate text-[10px] text-[#66756a]" title={imageUrl}>
+                      {imageUrl || 'Aucune image'}
+                    </div>
+                    <div className="text-[10px] text-[#87968a]">
+                      La sélection ne modifie pas l’image. Le remplacement se fait uniquement après ton choix.
+                    </div>
                   </div>
 
                   <label className="block rounded-xl border border-dashed border-[#536258] p-4 text-center cursor-pointer">
