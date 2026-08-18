@@ -65,6 +65,41 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     );
   };
 
+  /**
+   * Titre Hero : les deux lignes sont des éléments DOM indépendants.
+   * L'éditeur visuel peut donc sélectionner et modifier chaque ligne
+   * sans sélectionner le <h1> parent.
+   */
+  const renderHeroTitle = (
+    prefixClass: string,
+    brandClass: string
+  ) => (
+    <h1
+      className="font-serif tracking-tight leading-tight"
+      data-vce-title-wrapper="hero-title"
+    >
+      {titlePrefix && (
+        <span
+          data-vce-editable="true"
+          data-vce-role="hero-line-1"
+          data-vce-hero-line="1"
+          className={`block ${prefixClass}`}
+        >
+          {titlePrefix}
+        </span>
+      )}
+
+      <span
+        data-vce-editable="true"
+        data-vce-role="hero-line-2"
+        data-vce-hero-line="2"
+        className={`block ${brandClass}`}
+      >
+        {brandData.brandName}
+      </span>
+    </h1>
+  );
+
   return (
     <section
       id="hero-section"
@@ -143,14 +178,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         {/* LAYOUT VARIANT: CENTERED MINIMAL */}
         {layout === 'centered-minimal' ? (
           <div className={`${textAlignClass} max-w-4xl mx-auto space-y-6`}>
-            <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl font-light text-[#f5eedf] tracking-tight leading-tight">
-              {titlePrefix && (
-                <span className="block font-serif italic text-[#c2a26d] font-normal text-3xl sm:text-5xl md:text-6xl mb-2">
-                  {titlePrefix}
-                </span>
-              )}
-              {brandData.brandName}
-            </h1>
+            {renderHeroTitle(
+              'font-serif italic text-[#c2a26d] font-normal text-3xl sm:text-5xl md:text-6xl mb-2',
+              'font-serif text-4xl sm:text-6xl md:text-7xl font-light text-[#f5eedf]'
+            )}
 
             {badgePosition === 'below-title' && renderBadge()}
 
@@ -203,14 +234,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           /* LAYOUT VARIANT: SIDE BY SIDE PANORAMA */
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center max-w-6xl mx-auto">
             <div className={`lg:col-span-6 space-y-5 ${textAlignClass === 'text-right' ? 'text-right' : 'text-left'}`}>
-              <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-light text-[#f5eedf] tracking-tight leading-tight">
-                {titlePrefix && (
-                  <span className="block font-serif italic text-[#c2a26d] font-normal text-2xl sm:text-3xl mb-1">
-                    {titlePrefix}
-                  </span>
-                )}
-                {brandData.brandName}
-              </h1>
+              {renderHeroTitle(
+                'font-serif italic text-[#c2a26d] font-normal text-2xl sm:text-3xl mb-1',
+                'font-serif text-4xl sm:text-5xl md:text-6xl font-light text-[#f5eedf]'
+              )}
 
               {badgePosition === 'below-title' && renderBadge()}
 
@@ -283,14 +310,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <>
             {/* Title & Taglines */}
             <div className={`${textAlignClass} max-w-4xl mx-auto space-y-4`}>
-              <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl font-light text-[#f5eedf] tracking-tight leading-tight">
-                {titlePrefix && (
-                  <span className="block font-serif italic text-[#c2a26d] font-normal text-3xl sm:text-5xl md:text-6xl mb-1">
-                    {titlePrefix}
-                  </span>
-                )}
-                {brandData.brandName}
-              </h1>
+              {renderHeroTitle(
+                'font-serif italic text-[#c2a26d] font-normal text-3xl sm:text-5xl md:text-6xl mb-1',
+                'font-serif text-4xl sm:text-6xl md:text-7xl font-light text-[#f5eedf]'
+              )}
 
               {badgePosition === 'below-title' && renderBadge()}
 

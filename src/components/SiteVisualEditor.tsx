@@ -293,12 +293,42 @@ export const SiteVisualEditor: React.FC<Props> = ({
         setReplacementText(textFromElement(text));
 
         const style = window.getComputedStyle(text);
+        const heroLine = text.getAttribute('data-vce-hero-line');
+        const heroRole = text.getAttribute('data-vce-role');
+
+        // Valeurs de départ correspondant au visuel demandé :
+        // ligne 1 = élégante, dorée et italique ;
+        // ligne 2 = serif claire, plus grande et très lisible.
+        const defaultHeroStyle =
+          heroLine === '1' || heroRole === 'hero-line-1'
+            ? {
+                fontFamily: 'Cormorant Garamond',
+                fontSize: '60px',
+                color: '#C2A26D',
+              }
+            : heroLine === '2' || heroRole === 'hero-line-2'
+              ? {
+                  fontFamily: 'Playfair Display',
+                  fontSize: '72px',
+                  color: '#F5EEDF',
+                }
+              : null;
+
         setFontFamily(
-          style.fontFamily.split(',')[0].replace(/^['"]|['"]$/g, '') ||
+          defaultHeroStyle?.fontFamily ||
+            style.fontFamily.split(',')[0].replace(/^['"]|['"]$/g, '') ||
             'Playfair Display'
         );
-        setFontSize(style.fontSize || '48px');
-        setColor(style.color || '#F5EEDF');
+        setFontSize(
+          defaultHeroStyle?.fontSize ||
+            style.fontSize ||
+            '48px'
+        );
+        setColor(
+          defaultHeroStyle?.color ||
+            style.color ||
+            '#F5EEDF'
+        );
       }
     };
 
@@ -708,6 +738,54 @@ export const SiteVisualEditor: React.FC<Props> = ({
                     />
                   </div>
                 </label>
+
+                {selected.element.getAttribute('data-vce-hero-line') && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        selectTextStyle(
+                          selected.element.getAttribute('data-vce-hero-line') === '1'
+                            ? {
+                                fontFamily: 'Cormorant Garamond',
+                                fontSize: '60px',
+                                color: '#C2A26D',
+                              }
+                            : {
+                                fontFamily: 'Playfair Display',
+                                fontSize: '72px',
+                                color: '#F5EEDF',
+                              }
+                        )
+                      }
+                      className="rounded-lg border border-[#405044] bg-[#1c261e] px-2 py-2 text-xs text-[#d4af37] hover:bg-[#263329]"
+                    >
+                      Réinitialiser le style de la ligne
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        selectTextStyle({
+                          fontFamily:
+                            selected.element.getAttribute('data-vce-hero-line') === '1'
+                              ? 'Great Vibes'
+                              : 'Cormorant Garamond',
+                          fontSize:
+                            selected.element.getAttribute('data-vce-hero-line') === '1'
+                              ? '58px'
+                              : '72px',
+                          color:
+                            selected.element.getAttribute('data-vce-hero-line') === '1'
+                              ? '#C2A26D'
+                              : '#F5EEDF',
+                        })
+                      }
+                      className="rounded-lg border border-[#d4af37]/50 bg-[#0b100c] px-2 py-2 text-xs text-white hover:bg-[#1c261e]"
+                    >
+                      Style élégant
+                    </button>
+                  </div>
+                )}
 
                 <div
                   className="rounded-lg border border-[#334236] bg-[#0b100c] p-4 text-center"
