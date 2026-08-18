@@ -489,8 +489,8 @@ export const publishedSiteContent = {
       ],
       "collectionTabLabel": "Les Articles",
       "navOrder": [
-        "comparatif",
         "collection",
+        "comparatif",
         "origines",
         "lookbook",
         "contact"
