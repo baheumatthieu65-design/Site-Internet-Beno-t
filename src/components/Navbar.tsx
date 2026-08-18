@@ -7,6 +7,7 @@ interface NavbarProps {
   brandData: BrandConfig;
   isAdminLoggedIn: boolean;
   onOpenLogin: () => void;
+  onLogout: () => void;
   onOpenCustomizer: (tab?: 'brand' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
   onOpenInquiry: (jacketId?: string) => void;
   activeSection: string;
@@ -22,6 +23,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   brandData,
   isAdminLoggedIn,
   onOpenLogin,
+  onLogout,
   onOpenCustomizer,
   onOpenInquiry,
   activeSection,

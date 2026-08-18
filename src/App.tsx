@@ -519,15 +519,6 @@ export default function App() {
   // ===========================================================================
 
   const handleLogout = async () => {
-    // Nettoyage immédiat de la session locale : fermer l'admin même si
-    // l'utilisateur quitte/revient sur le site dans le même onglet.
-    try {
-      localStorage.removeItem('admin_logged_in');
-      localStorage.removeItem('admin_username');
-      sessionStorage.clear();
-    } catch {
-      // stockage indisponible : le serveur reste la source d'autorité
-    }
     try {
       await logoutAdminServer();
     } catch (error) {
@@ -542,7 +533,6 @@ export default function App() {
     setIsOrdersOpen(false);
     setIsProductsOpen(false);
     setIsAdminBarVisible(false);
-    setIsAdminLoginOpen(false);
   };
 
   // ===========================================================================
@@ -1281,6 +1271,7 @@ export default function App() {
         onOpenLogin={() =>
           setIsAdminLoginOpen(true)
         }
+        onLogout={handleLogout}
         onOpenCustomizer={
           handleOpenEditor
         }
