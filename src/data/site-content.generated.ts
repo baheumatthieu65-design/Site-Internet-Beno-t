@@ -440,7 +440,7 @@ export const publishedSiteContent = {
         }
       },
       "cardStyle": "atelier-relief",
-      "heroLayout": "side-by-side",
+      "heroLayout": "split-cards",
       "showcaseLayout": "split-interactive",
       "sectionOrder": [
         "hero",
