@@ -57,6 +57,10 @@ const FONT_URL =
 const esc = (value: string) =>
   value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 
+function cloneEditorConfig(config: SiteEditorConfig): SiteEditorConfig {
+  return JSON.parse(JSON.stringify(config)) as SiteEditorConfig;
+}
+
 function selectorFor(el: Element): string {
   const explicit = el.getAttribute('data-vce-selector');
   if (explicit) return `[data-vce-selector="${esc(explicit)}"]`;
@@ -141,6 +145,8 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
     kind: 'text' | 'media';
     originalText: string;
     originalUrl: string;
+    originalStyle: string;
+    originalConfig: SiteEditorConfig;
   } | null>(null);
 
   const [text, setText] = useState('');
@@ -199,6 +205,8 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
           kind: 'media',
           originalText: '',
           originalUrl: url,
+          originalStyle: (media as HTMLElement).getAttribute('style') || '',
+          originalConfig: cloneEditorConfig(config),
         });
         setImageUrl(url);
         setSelecting(false);
@@ -213,6 +221,8 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
           kind: 'text',
           originalText: readableText(element),
           originalUrl: '',
+          originalStyle: (element as HTMLElement).getAttribute('style') || '',
+          originalConfig: cloneEditorConfig(config),
         });
         setText(readableText(element));
         setFont(style.fontFamily.split(',')[0].replace(/["']/g, '') || 'Playfair Display');
@@ -355,6 +365,43 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
     } finally {
       setLibraryLoading(false);
     }
+  };
+
+  const cancelChanges = () => {
+    if (!selected) return;
+
+    const el = selected.element as HTMLElement;
+
+    // Restore text/content.
+    if (selected.kind === 'text') {
+      el.textContent = selected.originalText;
+    }
+
+    // Restore the original image/video URL.
+    if (selected.kind === 'media') {
+      if (el instanceof HTMLImageElement) {
+        el.src = selected.originalUrl;
+      } else if (el instanceof HTMLVideoElement) {
+        el.src = selected.originalUrl;
+        el.load();
+      }
+    }
+
+    // Restore every inline style exactly as it was before editing.
+    if (selected.originalStyle) {
+      el.setAttribute('style', selected.originalStyle);
+    } else {
+      el.removeAttribute('style');
+    }
+
+    // Restore the editor configuration in memory.
+    onChange(cloneEditorConfig(selected.originalConfig));
+
+    setText(selected.originalText);
+    setImageUrl(selected.originalUrl);
+    setMessage('Modifications annulées.');
+    setError('');
+    setSelected(null);
   };
 
   const save = async () => {
@@ -546,10 +593,13 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setSelected(null)}
-                  className="flex-1 rounded-lg border border-[#455248] px-3 py-2 text-sm"
+                  disabled={saving}
+                  onClick={cancelChanges}
+                  className="flex-1 rounded-lg border border-[#7a4a4a] bg-[#2a1d1d] px-3 py-2 text-sm text-[#f1caca] disabled:opacity-50"
                 >
-                  Désélectionner
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <X size={16} /> Annuler
+                  </span>
                 </button>
                 <button
                   type="button"
@@ -558,7 +608,9 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
                   className="flex-1 rounded-lg bg-[#d4af37] px-3 py-2 text-sm font-semibold text-black disabled:opacity-50"
                 >
                   {saving ? <Loader2 className="mx-auto animate-spin" size={17} /> : (
-                    <span className="inline-flex items-center gap-2"><Save size={16} /> Enregistrer et publier</span>
+                    <span className="inline-flex items-center justify-center gap-2">
+                      <Save size={16} /> Enregistrer
+                    </span>
                   )}
                 </button>
               </div>
