@@ -403,7 +403,7 @@ export const publishedSiteContent = {
       }
     ],
     "theme": {
-      "buttonStyle": "sapin-cimes",
+      "buttonStyle": "cuir-naturel",
       "buttonRadius": "rounded-full",
       "buttonSize": "standard",
       "buttonBackgroundImageUrl": "",
