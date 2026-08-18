@@ -441,7 +441,7 @@ export const publishedSiteContent = {
       },
       "cardStyle": "atelier-relief",
       "heroLayout": "side-by-side",
-      "showcaseLayout": "lookbook-focus",
+      "showcaseLayout": "split-interactive",
       "sectionOrder": [
         "hero",
         "collection",
