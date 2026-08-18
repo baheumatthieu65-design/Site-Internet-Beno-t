@@ -120,12 +120,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="nav-admin-login-btn"
             type="button"
-            onClick={onOpenLogin}
-            aria-label={isAdminLoggedIn ? 'Administration' : 'Connexion administrateur'}
-            title={isAdminLoggedIn ? 'Administration' : 'Connexion administrateur'}
-            className="flex items-center justify-center w-7 h-7 rounded-full border border-[#b89f74]/35 bg-black/20 text-[#a3b1a5] hover:text-[#d4af37] hover:border-[#d4af37]/60 transition-all"
+            onClick={isAdminLoggedIn ? onLogout : onOpenLogin}
+            aria-label={isAdminLoggedIn ? 'Se déconnecter de l’administration' : 'Connexion administrateur'}
+            title={isAdminLoggedIn ? 'Se déconnecter' : 'Connexion administrateur'}
+            className={`flex items-center justify-center w-7 h-7 rounded-full border bg-black/20 transition-all ${
+              isAdminLoggedIn
+                ? 'border-red-300/40 text-red-200 hover:text-white hover:border-red-300/80 hover:bg-red-950/30'
+                : 'border-[#b89f74]/35 text-[#a3b1a5] hover:text-[#d4af37] hover:border-[#d4af37]/60'
+            }`}
           >
-            <span className="text-[10px] leading-none">●</span>
+            <span className="text-sm leading-none">{isAdminLoggedIn ? '×' : '•'}</span>
           </button>
 
           <button
