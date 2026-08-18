@@ -221,38 +221,8 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
       }
     };
 
-    const clear = () => {
-      document.querySelectorAll('[data-vce-hover-outline="true"]').forEach((el) => {
-        const node = el as HTMLElement;
-        node.style.outline = '';
-        node.style.outlineOffset = '';
-        node.removeAttribute('data-vce-hover-outline');
-      });
-    };
-
-    const originalOver = (event: MouseEvent) => {
-      clear();
-      const target = event.target as Element | null;
-      if (!target || target.closest('[data-vce-panel="true"], #admin-top-bar, [data-vce-ignore="true"]')) return;
-      const media = target.closest('img, video');
-      const element = media || target.closest(
-        '[data-vce-editable="true"], [data-vce-role], [data-vce-hero-line], h1, h2, h3, h4, h5, h6, p, blockquote, li, span, a, button, label',
-      );
-      if (element) {
-        const node = element as HTMLElement;
-        node.style.outline = '2px solid rgba(212,175,55,.9)';
-        node.style.outlineOffset = '2px';
-        node.setAttribute('data-vce-hover-outline', 'true');
-      }
-    };
-
     document.addEventListener('click', click, true);
-    document.addEventListener('mousemove', originalOver, true);
-    return () => {
-      document.removeEventListener('click', click, true);
-      document.removeEventListener('mousemove', originalOver, true);
-      clear();
-    };
+    return () => document.removeEventListener('click', click, true);
   }, [selecting]);
 
   const blockIndex = useMemo(
@@ -442,7 +412,7 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
           >
             <span className="inline-flex items-center gap-2">
               <Type size={16} />
-              {selecting ? 'Clique sur n’importe quel texte, bouton, logo ou image' : 'Sélectionner un élément'}
+              {selecting ? 'Clique maintenant sur un texte, bouton, logo ou image' : 'Sélectionner un élément'}
             </span>
           </button>
 
