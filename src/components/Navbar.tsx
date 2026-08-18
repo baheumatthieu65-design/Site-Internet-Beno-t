@@ -88,10 +88,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             <img
               src={brandData.logoUrl}
               alt={brandData.brandName}
-              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover border border-[#b89f74]/50 group-hover:border-[#d4af37] transition-all shadow-md"
+              className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border border-[#b89f74]/50 group-hover:border-[#d4af37] transition-all shadow-md"
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-[#3b473e] flex items-center justify-center text-[#e2d5c3] font-serif font-bold">MP</div>
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#3b473e] flex items-center justify-center text-[#e2d5c3] font-serif font-bold">MP</div>
           )}
           <div>
             <span className="block font-serif text-lg sm:text-xl tracking-widest text-[#f3ece0] font-semibold group-hover:text-[#d4af37] transition-colors">{brandData.brandName}</span>
@@ -99,7 +99,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </button>
 
-        <nav id="desktop-nav" className="hidden md:flex items-center space-x-8">
+        <nav id="desktop-nav" className="hidden md:flex items-center gap-6 lg:gap-7">
           {navLinks.map((link) => (
             <button
               key={link.id}
@@ -129,6 +129,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
 
           <button
+            id="nav-order-btn"
+            onClick={() => onOpenInquiry()}
+            className={`ml-3 flex items-center space-x-2 px-5 py-2 text-xs tracking-widest uppercase font-semibold ${primaryBtnClass}`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>{orderText}</span>
+          </button>
+
+          <button
             id="nav-admin-login-btn"
             type="button"
             onClick={isAdminLoggedIn ? onLogout : onOpenLogin}
@@ -141,15 +150,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <span className="text-sm leading-none">{isAdminLoggedIn ? '×' : '•'}</span>
-          </button>
-
-          <button
-            id="nav-order-btn"
-            onClick={() => onOpenInquiry()}
-            className={`flex items-center space-x-2 px-5 py-2 text-xs tracking-widest uppercase font-semibold ${primaryBtnClass}`}
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>{orderText}</span>
           </button>
 
           <button
