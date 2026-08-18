@@ -403,11 +403,22 @@ export const publishedSiteContent = {
       }
     ],
     "theme": {
-      "buttonStyle": "gold-laiton",
+      "buttonStyle": "sapin-cimes",
       "buttonRadius": "rounded-full",
       "buttonSize": "standard",
       "buttonBackgroundImageUrl": "",
       "buttonBackgroundOverlay": 28,
+      "buttonOverrides": {
+        "navbar-order": {
+          "buttonStyle": "gold-laiton"
+        },
+        "hero-discover": {
+          "buttonSize": "standard",
+          "buttonStyle": "cuir-naturel",
+          "backgroundOverlay": 26,
+          "buttonRadius": "rounded-none"
+        }
+      },
       "cardStyle": "atelier-relief",
       "heroLayout": "split-cards",
       "showcaseLayout": "split-interactive",
