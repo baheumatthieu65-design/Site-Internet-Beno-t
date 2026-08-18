@@ -618,6 +618,20 @@ export const publishedSiteContent = {
         "selector": "div:nth-of-type(2) \u003e section:nth-of-type(1) \u003e div:nth-of-type(3) \u003e div:nth-of-type(3) \u003e div:nth-of-type(1) \u003e div:nth-of-type(1) \u003e img:nth-of-type(1)",
         "kind": "media",
         "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787063558934-20260605_205859.jpg"
+      },
+      {
+        "id": "element-1787063804869",
+        "type": "text",
+        "section": "hero",
+        "x": 50,
+        "y": 50,
+        "visible": true,
+        "selector": "[data-vce-hero-line=\"2\"]",
+        "kind": "text",
+        "text": "MAISON MAILH",
+        "fontFamily": "ui-serif",
+        "fontSize": "72px",
+        "color": "rgb(245, 238, 223)"
       }
     ]
   }
