@@ -106,7 +106,7 @@ export const ButtonManager: React.FC<Props> = ({ theme, onChange }) => {
 
       {/* Aperçu repris de l'ancien bloc "Aperçu en Direct de vos Choix Graphiques".
           Il n'y a désormais qu'un seul aperçu dans cet onglet. */}
-      <div className="p-5 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
+      <div className="sticky top-2 z-30 p-3 sm:p-4 rounded-xl bg-[#151b17]/95 backdrop-blur-md border border-[#3c4c3f] shadow-xl space-y-2">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center space-x-2 text-[#d4af37] text-xs uppercase font-serif tracking-widest font-semibold">
             <span>✦</span>
@@ -117,31 +117,30 @@ export const ButtonManager: React.FC<Props> = ({ theme, onChange }) => {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center pt-1">
-          <div className="space-y-3">
-            <span className="text-xs text-[#a3b1a5] block uppercase tracking-wider">Boutons en action :</span>
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-center">
+          <div className="space-y-2">
+            <span className="text-[10px] text-[#a3b1a5] block uppercase tracking-wider">Boutons en action :</span>
             <div className="flex flex-wrap gap-3">
               <button
                 type="button"
                 style={previewPrimaryStyle}
-                className={previewPrimaryClass}
+                className={`${previewPrimaryClass} !px-5 !py-2 !text-xs`}
               >
                 {selected.length === 1 ? (BUTTONS.find(b => b.id === selectedId)?.label || theme.orderButtonText || 'Commander') : `${selected.length} boutons`}
               </button>
               <button
                 type="button"
                 style={previewSecondaryStyle}
-                className={previewSecondaryClass}
+                className={`${previewSecondaryClass} !px-5 !py-2 !text-xs`}
               >
                 {theme.discoverButtonText || 'Découvrir'}
               </button>
             </div>
           </div>
 
-          <div className={`p-4 rounded-2xl ${previewCard.card} space-y-2`}>
-            <span className="text-[10px] uppercase tracking-widest text-[#d4af37]">Modèle de Carte Actif</span>
-            <h4 className="font-serif text-base text-[#f3ece0]">Carte Présentation Produit</h4>
-            <p className="text-xs text-[#a3b1a5]">Rendu visuel des encadrements, reliefs et liserés.</p>
+          <div className={`hidden md:block p-3 rounded-xl ${previewCard.card} space-y-1 min-w-[250px]`}>
+            <span className="text-[9px] uppercase tracking-widest text-[#d4af37]">Modèle de carte actif</span>
+            <h4 className="font-serif text-sm text-[#f3ece0]">Carte Présentation Produit</h4>
           </div>
         </div>
       </div>
@@ -172,31 +171,50 @@ export const ButtonManager: React.FC<Props> = ({ theme, onChange }) => {
           <p className="text-[10px] text-[#758278] mt-1">Une modification est appliquée à tous les éléments cochés.</p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {buttonModelPresets.map(p => (
-            <button key={p.id} type="button" onClick={() => updateSelected({ buttonStyle: p.id as ButtonStyleId })}
-              className={`rounded-lg border px-2 py-2 text-[10px] ${model === p.id ? 'border-[#d4af37] text-[#d4af37] bg-[#202b23]' : 'border-[#455248] text-[#aeb9ae]'}`}>
-              {p.name}
-            </button>
-          ))}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <h5 className="text-xs font-semibold uppercase tracking-wider text-[#d8e0d6]">Modèles graphiques</h5>
+            <span className="text-[10px] text-[#758278]">Cliquez sur un rendu pour l’appliquer</span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
+            {buttonModelPresets.map(p => {
+              const active = model === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => updateSelected({ buttonStyle: p.id as ButtonStyleId })}
+                  className={`text-left rounded-xl border p-2.5 transition-all ${active ? 'border-[#d4af37] bg-[#202b23] shadow-lg shadow-[#d4af37]/10' : 'border-[#354037] bg-[#111612] hover:border-[#536258]'}`}
+                >
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="px-2 py-0.5 rounded-full text-[9px] uppercase font-bold tracking-wider bg-black/40 text-[#d4af37] border border-[#d4af37]/40 truncate">{p.badge}</span>
+                    {active && <span className="text-[10px] text-[#d4af37]">✓</span>}
+                  </div>
+                  <div className="text-[10px] font-medium text-[#cfd8cf] truncate mb-2">{p.name}</div>
+                  <div className={`w-full py-2 text-[9px] uppercase tracking-wider text-center ${p.primaryClass} ${current.buttonRadius || 'rounded-full'}`}>Exemple : Commander</div>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {buttonSizePresets.map(p => (
-            <button key={p.id} type="button" onClick={() => updateSelected({ buttonSize: p.id as ButtonSizeId })}
-              className={`rounded-lg border px-2 py-2 text-[10px] ${size === p.id ? 'border-[#d4af37] text-[#d4af37] bg-[#202b23]' : 'border-[#455248] text-[#aeb9ae]'}`}>
-              {p.name}
-            </button>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-          {radiusPresets.map(r => (
-            <button key={r.id} type="button" onClick={() => updateSelected({ buttonRadius: r.id as ButtonRadiusId })}
-              className={`rounded-lg border px-2 py-2 text-[10px] ${current.buttonRadius === r.id ? 'border-[#d4af37] text-[#d4af37] bg-[#202b23]' : 'border-[#455248] text-[#aeb9ae]'}`}>
-              {r.name}
-            </button>
-          ))}
+        <div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {buttonSizePresets.map(p => (
+              <button key={p.id} type="button" onClick={() => updateSelected({ buttonSize: p.id as ButtonSizeId })}
+                className={`rounded-lg border px-2 py-2 text-[10px] ${size === p.id ? 'border-[#d4af37] text-[#d4af37] bg-[#202b23]' : 'border-[#455248] text-[#aeb9ae]'}`}>
+                {p.name}
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mt-2">
+            {radiusPresets.map(r => (
+              <button key={r.id} type="button" onClick={() => updateSelected({ buttonRadius: r.id as ButtonRadiusId })}
+                className={`rounded-lg border px-2 py-2 text-[10px] ${current.buttonRadius === r.id ? 'border-[#d4af37] text-[#d4af37] bg-[#202b23]' : 'border-[#455248] text-[#aeb9ae]'}`}>
+                {r.name}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="rounded-xl border border-dashed border-[#536258] p-3 space-y-3">

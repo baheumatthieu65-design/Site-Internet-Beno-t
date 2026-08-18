@@ -41,7 +41,6 @@ import {
   Eye,
   EyeOff,
   Sparkles,
-  Check,
   Mail,
   GitBranch,
   Terminal,
@@ -67,7 +66,6 @@ import {
   Scale
 } from 'lucide-react';
 import {
-  buttonModelPresets,
   cardModelPresets,
   radiusPresets,
   sectionMeta,
@@ -915,60 +913,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                 onChange={updateTheme}
               />
 
-              {/* 1. BUTTON STYLE SELECTION */}
-              <div className="space-y-4">
-                <h4 className="font-serif text-lg text-[#f3ece0] font-semibold flex items-center space-x-2">
-                  <span>Modèle Global par Défaut</span>
-                  <span className="text-xs text-[#d4af37] font-normal font-sans">({buttonModelPresets.length} variantes)</span>
-                </h4>
-                <p className="text-xs text-[#a3b1a5]">
-                  Choisissez le modèle par défaut. Pour personnaliser un bouton indépendamment, utilisez le gestionnaire ci-dessus : les overrides individuels restent prioritaires.
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {buttonModelPresets.map((preset) => {
-                    const isSelected = currentTheme.buttonStyle === preset.id;
-                    return (
-                      <div
-                        key={preset.id}
-                        onClick={() => updateTheme({ buttonStyle: preset.id })}
-                        className={`p-4 rounded-2xl cursor-pointer border-2 transition-all space-y-3 relative ${
-                          isSelected
-                            ? 'bg-[#212c23] border-[#d4af37] shadow-xl shadow-[#d4af37]/10'
-                            : 'bg-[#181f19] border-[#2f3d32] hover:border-[#526a57]'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider bg-black/40 text-[#d4af37] border border-[#d4af37]/40">
-                            {preset.badge}
-                          </span>
-                          {isSelected && (
-                            <span className="flex items-center space-x-1 text-xs text-[#d4af37] font-bold">
-                              <Check className="w-4 h-4" />
-                              <span>Actif</span>
-                            </span>
-                          )}
-                        </div>
-
-                        <div>
-                          <h5 className="font-serif text-base text-[#f3ece0] font-semibold">{preset.name}</h5>
-                          <p className="text-xs text-[#a3b1a5] mt-1 leading-relaxed">{preset.description}</p>
-                        </div>
-
-                        <div className="pt-2">
-                          <button
-                            type="button"
-                            className={`w-full py-2 text-xs uppercase tracking-wider ${currentTheme.buttonRadius || 'rounded-full'} ${preset.primaryClass}`}
-                          >
-                            Exemple : {currentTheme.orderButtonText || 'Commander'}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
+              {/* 1. BUTTON STYLE SELECTION — géré désormais par ButtonManager */}
               {/* 2. BUTTON RADIUS */}
               <div className="space-y-4 pt-4 border-t border-[#2a362c]">
                 <h4 className="font-serif text-lg text-[#f3ece0] font-semibold">
