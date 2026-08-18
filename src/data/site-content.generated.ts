@@ -410,7 +410,7 @@ export const publishedSiteContent = {
       "buttonBackgroundOverlay": 28,
       "buttonOverrides": {
         "navbar-order": {
-          "buttonStyle": "minimal-couture",
+          "buttonStyle": "sapin-cimes",
           "buttonSize": "compact",
           "buttonRadius": "rounded-full"
         },
@@ -433,7 +433,7 @@ export const publishedSiteContent = {
           "buttonStyle": "gold-laiton"
         },
         "footer-workshop": {
-          "buttonStyle": "gold-laiton"
+          "buttonStyle": "sapin-cimes"
         }
       },
       "cardStyle": "atelier-relief",
