@@ -1,5 +1,4 @@
-import React from 'react';
-import { ButtonStyleId, ButtonRadiusId, ButtonSizeId, CardStyleId, ThemeConfig, SectionId } from '../types.js';
+import { ButtonStyleId, ButtonRadiusId, CardStyleId, ThemeConfig, SectionId } from '../types.js';
 
 export interface ButtonModelPreset {
   id: ButtonStyleId;
@@ -32,14 +31,12 @@ export interface RadiusPreset {
 export const defaultThemeConfig: ThemeConfig = {
   buttonStyle: 'gold-laiton',
   buttonRadius: 'rounded-full',
-  buttonSize: 'standard',
-  buttonBackgroundImageUrl: '',
-  buttonBackgroundOverlay: 28,
   cardStyle: 'atelier-relief',
   heroLayout: 'split-cards',
   showcaseLayout: 'split-interactive',
   sectionOrder: ['hero', 'collection', 'comparatif', 'origines', 'lookbook', 'contact'],
   hiddenSections: [],
+  navOrder: ['collection', 'comparatif', 'origines', 'lookbook', 'contact'],
   textAlign: 'center',
   buttonAlign: 'center',
   heroBadgePosition: 'top',
@@ -166,20 +163,6 @@ export const radiusPresets: RadiusPreset[] = [
   { id: 'rounded-none', name: 'Angles Droits Architecturaux', cssClass: 'rounded-none', radiusLabel: '0px' },
 ];
 
-export interface ButtonSizePreset {
-  id: ButtonSizeId;
-  name: string;
-  description: string;
-  cssClass: string;
-}
-
-export const buttonSizePresets: ButtonSizePreset[] = [
-  { id: 'compact', name: 'Compact', description: 'Plus fin et discret', cssClass: '!px-4 !py-2 !text-[11px]' },
-  { id: 'standard', name: 'Standard', description: 'Équilibre actuel', cssClass: '!px-5 !py-2.5 !text-xs' },
-  { id: 'large', name: 'Grand', description: 'Plus présent', cssClass: '!px-6 !py-3 !text-sm' },
-  { id: 'xl', name: 'XL', description: 'Très visible / premium', cssClass: '!px-8 !py-4 !text-sm' },
-];
-
 export const sectionMeta: { [key in SectionId]: { name: string; icon: string; desc: string } } = {
   hero: { name: 'Accueil & Duo de Présentation', icon: '🏔️', desc: 'Bannière principale, slogan, photo de fond et cartes des 2 vestes' },
   collection: { name: 'Showcase Interactif (Les 2 Vestes)', icon: '🧥', desc: 'Sélecteur, photos haute résolution, nuancier de couleurs et points d’intérêt' },
@@ -197,14 +180,8 @@ export function getButtonClasses(
   const currentTheme = theme || defaultThemeConfig;
   const stylePreset = buttonModelPresets.find((b) => b.id === currentTheme.buttonStyle) || buttonModelPresets[0];
   const radius = currentTheme.buttonRadius || 'rounded-full';
-  const sizePreset =
-    buttonSizePresets.find((s) => s.id === currentTheme.buttonSize) ||
-    buttonSizePresets.find((s) => s.id === 'standard')!;
 
-  let base = `${radius} ${sizePreset.cssClass} transition-all duration-200 cursor-pointer `;
-  if (currentTheme.buttonBackgroundImageUrl) {
-    base += 'bg-cover bg-center bg-no-repeat ';
-  }
+  let base = `${radius} transition-all duration-200 cursor-pointer `;
   if (variant === 'primary') {
     return `${base} ${stylePreset.primaryClass}`;
   } else if (variant === 'secondary') {
@@ -212,20 +189,6 @@ export function getButtonClasses(
   } else {
     return `${base} ${stylePreset.outlineClass}`;
   }
-}
-
-export function getButtonInlineStyle(theme?: ThemeConfig): React.CSSProperties {
-  const currentTheme = theme || defaultThemeConfig;
-  if (!currentTheme.buttonBackgroundImageUrl) return {};
-
-  const overlay = Math.max(0, Math.min(100, currentTheme.buttonBackgroundOverlay ?? 28)) / 100;
-  const image = `url(${JSON.stringify(currentTheme.buttonBackgroundImageUrl)})`;
-  return {
-    backgroundImage: `linear-gradient(rgba(0,0,0,${overlay}), rgba(0,0,0,${overlay})), ${image}`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-  };
 }
 
 export function getCardClasses(theme?: ThemeConfig): { card: string; inner: string; border: string } {

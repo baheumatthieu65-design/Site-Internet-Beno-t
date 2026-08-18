@@ -13,12 +13,6 @@ export type ButtonRadiusId =
   | 'rounded-md'
   | 'rounded-none';
 
-export type ButtonSizeId =
-  | 'compact'
-  | 'standard'
-  | 'large'
-  | 'xl';
-
 export type CardStyleId =
   | 'atelier-relief'
   | 'epure-noir'
@@ -34,6 +28,13 @@ export type ShowcaseLayoutId =
   | 'split-interactive'
   | 'magazine-editorial'
   | 'lookbook-focus';
+
+export type NavigationId =
+  | 'collection'
+  | 'comparatif'
+  | 'origines'
+  | 'lookbook'
+  | 'contact';
 
 export type SectionId =
   | 'hero'
@@ -255,14 +256,6 @@ export interface ThemeConfig {
 
   buttonRadius: ButtonRadiusId;
 
-  buttonSize?: ButtonSizeId;
-
-  /** Image utilisée comme fond des boutons d'action. */
-  buttonBackgroundImageUrl?: string;
-
-  /** Intensité de l'assombrissement posé sur l'image pour garder le texte lisible. */
-  buttonBackgroundOverlay?: number;
-
   cardStyle: CardStyleId;
 
   heroLayout: HeroLayoutId;
@@ -272,6 +265,9 @@ export interface ThemeConfig {
   sectionOrder: SectionId[];
 
   hiddenSections: SectionId[];
+
+  /** Ordre des onglets de navigation publique. Les IDs restent stables. */
+  navOrder?: NavigationId[];
 
   accentColorHex?: string;
 

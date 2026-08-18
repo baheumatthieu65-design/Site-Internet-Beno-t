@@ -9,6 +9,7 @@ import {
   HeroLayoutId,
   ShowcaseLayoutId,
   SectionId,
+  NavigationId,
   ThemeConfig,
   ComparisonCriterion,
   ProductBlockId,
@@ -61,6 +62,7 @@ import {
   MapPin,
   Ruler,
   SlidersHorizontal,
+  GripVertical,
   MousePointer,
   Scale
 } from 'lucide-react';
@@ -68,11 +70,9 @@ import {
   buttonModelPresets,
   cardModelPresets,
   radiusPresets,
-  buttonSizePresets,
   sectionMeta,
   defaultThemeConfig,
   getButtonClasses,
-  getButtonInlineStyle,
   getCardClasses,
 } from '../utils/themeStyles';
 import { getStoredCredentials, saveAdminCredentials, resetPasswordServer, maskEmail, AdminCredentials } from '../utils/auth';
@@ -143,6 +143,9 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     if (!copy.theme) {
       copy.theme = { ...defaultThemeConfig };
     }
+    if (!Array.isArray(copy.theme.navOrder)) {
+      copy.theme.navOrder = ['collection', 'comparatif', 'origines', 'lookbook', 'contact'];
+    }
     if (!copy.ordersEmail) {
       copy.ordersEmail = 'contact@maisondespyrenees.fr';
     }
@@ -178,6 +181,8 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   const [confirmPassword, setConfirmPassword] = useState('');
   const [securityMessage, setSecurityMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [draggedNavId, setDraggedNavId] = useState<NavigationId | null>(null);
+  const [dragOverNavId, setDragOverNavId] = useState<NavigationId | null>(null);
 
   // Custom Size and Hotspot state
   const [customSizeInput, setCustomSizeInput] = useState('');
@@ -185,9 +190,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'Taille unique', 'Sur-mesure', '34', '36', '38', '40', '42', '44', '46', 'Enfant'
   ]);
   const [activeEditingHotspotId, setActiveEditingHotspotId] = useState<string | null>(null);
-  const [uploadingButtonImage, setUploadingButtonImage] = useState(false);
-  const [buttonImageLibrary, setButtonImageLibrary] = useState<Array<{ url: string; pathname?: string; size?: number; uploadedAt?: string }>>([]);
-  const [buttonLibraryLoading, setButtonLibraryLoading] = useState(false);
 
   useEffect(() => {
     const creds = getStoredCredentials();
@@ -594,6 +596,35 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   };
 
   // ==========================================
+  // NAVIGATION REORDERING
+  // ==========================================
+  const defaultNavOrder: NavigationId[] = ['collection', 'comparatif', 'origines', 'lookbook', 'contact'];
+
+  const navLabelMap: Record<NavigationId, string> = {
+    collection: currentTheme.collectionTabLabel || 'Les 2 Vestes',
+    comparatif: currentTheme.comparatifTabLabel || 'Tableau Comparatif',
+    origines: currentTheme.originesTabLabel || 'L’Esprit Pyrénées',
+    lookbook: currentTheme.lookbookTabLabel || 'Lookbook',
+    contact: currentTheme.contactTabLabel || 'Contact & Atelier',
+  };
+
+  const navOrder = (currentTheme.navOrder?.length
+    ? currentTheme.navOrder
+    : defaultNavOrder
+  ) as NavigationId[];
+
+  const moveNavItem = (sourceId: NavigationId, targetId: NavigationId) => {
+    if (sourceId === targetId) return;
+    const next = [...navOrder];
+    const sourceIndex = next.indexOf(sourceId);
+    const targetIndex = next.indexOf(targetId);
+    if (sourceIndex === -1 || targetIndex === -1) return;
+    const [moved] = next.splice(sourceIndex, 1);
+    next.splice(targetIndex, 0, moved);
+    updateTheme({ navOrder: next });
+  };
+
+  // ==========================================
   // SECTION & BLOCKS REORDERING HANDLERS
   // ==========================================
   const handleMoveSection = (sectionId: SectionId, direction: 'up' | 'down') => {
@@ -645,51 +676,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
       currentOrder[index + 1] = currentOrder[index];
       currentOrder[index] = temp;
       updateTheme({ productBlocksOrder: currentOrder });
-    }
-  };
-
-  const loadButtonImageLibrary = async () => {
-    setButtonLibraryLoading(true);
-    try {
-      const response = await fetch('/api/site-media', {
-        credentials: 'include',
-        headers: { Accept: 'application/json' },
-      });
-      const data = await response.json().catch(() => null);
-      if (!response.ok || !data?.success) {
-        throw new Error(data?.error || `Bibliothèque : HTTP ${response.status}`);
-      }
-      setButtonImageLibrary(Array.isArray(data.items) ? data.items : []);
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'Bibliothèque d’images indisponible.');
-    } finally {
-      setButtonLibraryLoading(false);
-    }
-  };
-
-  const uploadButtonBackgroundImage = async (file: File) => {
-    setUploadingButtonImage(true);
-    try {
-      const form = new FormData();
-      form.append('file', file);
-      const response = await fetch('/api/site-media', {
-        method: 'POST',
-        credentials: 'include',
-        body: form,
-      });
-      const data = await response.json().catch(() => null);
-      if (!response.ok || !data?.success || !data?.url) {
-        throw new Error(data?.error || `Upload image : HTTP ${response.status}`);
-      }
-      updateTheme({ buttonBackgroundImageUrl: String(data.url) });
-      setButtonImageLibrary((items) => [
-        { url: String(data.url), pathname: String(data.url) },
-        ...items,
-      ]);
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'Upload impossible.');
-    } finally {
-      setUploadingButtonImage(false);
     }
   };
 
@@ -778,7 +764,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
 
   const currentJacket = formData.jackets[selectedJacketIndex] || formData.jackets[0];
   const previewBtnClasses = getButtonClasses(currentTheme, 'primary');
-  const previewBtnStyle = getButtonInlineStyle(currentTheme);
   const previewSecBtnClasses = getButtonClasses(currentTheme, 'secondary');
   const previewCard = getCardClasses(currentTheme);
 
@@ -940,10 +925,10 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                   <div className="space-y-3">
                     <span className="text-xs text-[#a3b1a5] block uppercase tracking-wider">Boutons en Action :</span>
                     <div className="flex flex-wrap gap-3">
-                      <button style={previewBtnStyle} className={`px-6 py-3 text-xs uppercase tracking-widest ${previewBtnClasses}`}>
+                      <button className={`px-6 py-3 text-xs uppercase tracking-widest ${previewBtnClasses}`}>
                         {currentTheme.orderButtonText || 'Commander'}
                       </button>
-                      <button style={previewBtnStyle} className={`px-5 py-3 text-xs uppercase tracking-widest ${previewSecBtnClasses}`}>
+                      <button className={`px-5 py-3 text-xs uppercase tracking-widest ${previewSecBtnClasses}`}>
                         {currentTheme.discoverButtonText || 'Découvrir'}
                       </button>
                     </div>
@@ -1000,7 +985,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                         <div className="pt-2">
                           <button
                             type="button"
-                            style={previewBtnStyle}
                             className={`w-full py-2 text-xs uppercase tracking-wider ${currentTheme.buttonRadius || 'rounded-full'} ${preset.primaryClass}`}
                           >
                             Exemple : {currentTheme.orderButtonText || 'Commander'}
@@ -1042,164 +1026,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                 </div>
               </div>
 
-              {/* 3. BUTTON SIZE & IMAGE BACKGROUND */}
-              <div className="space-y-6 pt-4 border-t border-[#2a362c]">
-                <div>
-                  <h4 className="font-serif text-lg text-[#f3ece0] font-semibold">
-                    Taille des Boutons
-                  </h4>
-                  <p className="text-xs text-[#a3b1a5] mt-1">
-                    Modifie la taille des boutons d’action sans changer leur forme.
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-                    {buttonSizePresets.map((size) => {
-                      const isSelected = (currentTheme.buttonSize || 'standard') === size.id;
-                      return (
-                        <button
-                          key={size.id}
-                          type="button"
-                          onClick={() => updateTheme({ buttonSize: size.id })}
-                          className={`p-3 rounded-2xl border-2 text-left transition-all cursor-pointer ${
-                            isSelected
-                              ? 'bg-[#212c23] border-[#d4af37] text-[#d4af37]'
-                              : 'bg-[#181f19] border-[#2f3d32] text-[#a3b1a5] hover:border-[#526a57]'
-                          }`}
-                        >
-                          <div className="text-xs font-bold font-serif">{size.name}</div>
-                          <div className="text-[10px] text-[#7d8c7f] mt-1">{size.description}</div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-[#2a362c] space-y-4">
-                  <div>
-                    <h4 className="font-serif text-lg text-[#f3ece0] font-semibold">
-                      Image en fond des boutons
-                    </h4>
-                    <p className="text-xs text-[#a3b1a5] mt-1">
-                      L’image remplace le fond graphique du bouton tout en conservant le texte par-dessus.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-4">
-                    <div className="space-y-3">
-                      <label className="block text-xs uppercase tracking-widest text-[#a3b1a5]">
-                        URL de l’image
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={currentTheme.buttonBackgroundImageUrl || ''}
-                          onChange={(e) => updateTheme({ buttonBackgroundImageUrl: e.target.value })}
-                          placeholder="https://... ou /assets/mon-bouton.jpg"
-                          className="flex-1 bg-[#121613] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                        />
-                        {currentTheme.buttonBackgroundImageUrl && (
-                          <button
-                            type="button"
-                            onClick={() => updateTheme({ buttonBackgroundImageUrl: '' })}
-                            className="px-3 rounded-xl border border-red-800/50 text-red-300 hover:bg-red-950/30 text-xs"
-                          >
-                            Effacer
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        <label className="text-[11px] px-3 py-2 rounded-lg bg-[#202922] hover:bg-[#2e3b30] text-[#d4af37] border border-[#313e33] cursor-pointer">
-                          <input
-                            type="file"
-                            accept="image/png,image/jpeg,image/webp,image/gif"
-                            className="hidden"
-                            disabled={uploadingButtonImage}
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) void uploadButtonBackgroundImage(file);
-                              e.currentTarget.value = '';
-                            }}
-                          />
-                          {uploadingButtonImage ? 'Import en cours…' : 'Importer une image'}
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => void loadButtonImageLibrary()}
-                          className="text-[11px] px-3 py-2 rounded-lg bg-[#202922] hover:bg-[#2e3b30] text-[#a3b1a5] hover:text-[#d4af37] border border-[#313e33] cursor-pointer"
-                        >
-                          {buttonLibraryLoading ? 'Chargement…' : 'Ouvrir la bibliothèque'}
-                        </button>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        {samplePresetImages.map((preset, pIdx) => (
-                          <button
-                            key={pIdx}
-                            type="button"
-                            onClick={() => updateTheme({ buttonBackgroundImageUrl: preset.url })}
-                            className="text-[11px] px-2.5 py-1.5 rounded-lg bg-[#202922] hover:bg-[#2e3b30] text-[#a3b1a5] hover:text-[#d4af37] border border-[#313e33] cursor-pointer"
-                          >
-                            {preset.label}
-                          </button>
-                        ))}
-                      </div>
-
-                      {buttonImageLibrary.length > 0 && (
-                        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2 pt-2">
-                          {buttonImageLibrary.map((item, index) => (
-                            <button
-                              key={`${item.url}-${index}`}
-                              type="button"
-                              onClick={() => updateTheme({ buttonBackgroundImageUrl: item.url })}
-                              className={`overflow-hidden rounded-xl border-2 transition-all ${
-                                currentTheme.buttonBackgroundImageUrl === item.url
-                                  ? 'border-[#d4af37] ring-1 ring-[#d4af37]/40'
-                                  : 'border-[#334236] hover:border-[#718273]'
-                              }`}
-                              title="Utiliser cette image comme fond de bouton"
-                            >
-                              <img src={item.url} alt="Fond de bouton" className="w-full h-16 object-cover" />
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
-                      <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] pt-2">
-                        Lisibilité du texte
-                      </label>
-                      <input
-                        type="range"
-                        min="0"
-                        max="80"
-                        value={currentTheme.buttonBackgroundOverlay ?? 28}
-                        onChange={(e) => updateTheme({ buttonBackgroundOverlay: Number(e.target.value) })}
-                        className="w-full accent-[#d4af37]"
-                      />
-                      <div className="text-[10px] text-[#7d8c7f]">
-                        Voile sombre : {currentTheme.buttonBackgroundOverlay ?? 28}%
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-[#3c4c3f] bg-[#121613] p-3 flex items-center justify-center min-h-[150px]">
-                      {currentTheme.buttonBackgroundImageUrl ? (
-                        <button
-                          type="button"
-                          style={previewBtnStyle}
-                          className={`w-full text-xs uppercase tracking-widest font-semibold ${previewBtnClasses}`}
-                        >
-                          {currentTheme.orderButtonText || 'Commander'}
-                        </button>
-                      ) : (
-                        <div className="text-center text-xs text-[#7d8c7f]">
-                          Aucune image de fond
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 4. CARD STYLES */}
+              {/* 3. CARD STYLES */}
               <div className="space-y-4 pt-4 border-t border-[#2a362c]">
                 <h4 className="font-serif text-lg text-[#f3ece0] font-semibold">
                   Style & Relief des Cartes Produits
@@ -2127,6 +1954,72 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           {/* ========================================================= */}
           {activeTab === 'labels' && (
             <div className="space-y-8 animate-fadeIn">
+              {/* SECTION: TAB NAVIGATION ORDER */}
+              <div className="p-5 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <div className="flex items-center space-x-2 text-[#d4af37]">
+                      <Move className="w-5 h-5" />
+                      <h4 className="font-serif text-base font-bold text-[#f3ece0]">Ordre des onglets de navigation</h4>
+                    </div>
+                    <p className="text-xs text-[#a3b1a5] mt-1">Glisse les onglets pour changer leur ordre dans la Navbar. Le bloc correspondant reste le même.</p>
+                  </div>
+                  <span className="text-[10px] uppercase tracking-wider text-[#87968a]">Glisser-déposer</span>
+                </div>
+
+                <div className="space-y-2">
+                  {navOrder.map((navId, idx) => {
+                    const isHidden = (currentTheme.hiddenSections || []).includes(navId as SectionId);
+                    const isDragTarget = dragOverNavId === navId && draggedNavId !== navId;
+                    return (
+                      <div
+                        key={navId}
+                        draggable
+                        onDragStart={(e) => {
+                          setDraggedNavId(navId);
+                          e.dataTransfer.effectAllowed = 'move';
+                          e.dataTransfer.setData('text/plain', navId);
+                        }}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.dataTransfer.dropEffect = 'move';
+                          setDragOverNavId(navId);
+                        }}
+                        onDragLeave={() => setDragOverNavId((current) => current === navId ? null : current)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          const sourceId = (e.dataTransfer.getData('text/plain') || draggedNavId) as NavigationId | null;
+                          if (sourceId) moveNavItem(sourceId, navId);
+                          setDraggedNavId(null);
+                          setDragOverNavId(null);
+                        }}
+                        onDragEnd={() => {
+                          setDraggedNavId(null);
+                          setDragOverNavId(null);
+                        }}
+                        className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-grab active:cursor-grabbing ${
+                          isDragTarget
+                            ? 'border-[#d4af37] bg-[#283528] translate-y-[-1px]'
+                            : isHidden
+                              ? 'border-[#28322a] bg-[#151916] opacity-60'
+                              : 'border-[#364539] bg-[#1c241e] hover:border-[#536653]'
+                        }`}
+                      >
+                        <GripVertical className="w-5 h-5 shrink-0 text-[#87968a]" />
+                        <span className="w-7 h-7 shrink-0 flex items-center justify-center rounded-lg bg-[#253127] text-xs text-[#d4af37]">{idx + 1}</span>
+                        <div className="min-w-0 flex-1">
+                          <div className="font-serif font-bold text-sm text-[#f3ece0] truncate">{navLabelMap[navId]}</div>
+                          <div className="text-[10px] text-[#87968a] mt-0.5">Bloc : #{navId}{isHidden ? ' • Masqué' : ''}</div>
+                        </div>
+                        {isHidden && (
+                          <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-red-950/60 text-red-300 border border-red-800/40">Masqué</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* SECTION: TAB NAVIGATION TITLES */}
               <div className="p-5 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
                 <div className="flex items-center space-x-2 text-[#d4af37]">
