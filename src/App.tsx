@@ -943,6 +943,7 @@ export default function App() {
               selectedJacketId
             }
             theme={theme}
+            editorBlocks={siteEditorConfig.blocks}
             isAdminLoggedIn={
               isAdminLoggedIn
             }

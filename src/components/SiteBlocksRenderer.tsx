@@ -9,8 +9,9 @@ const apply=(blocks:EditorBlock[])=>{
   const h=el as HTMLElement;
   if(b.kind==='text'){if(b.text!=null)h.textContent=b.text;if(b.fontFamily)h.style.fontFamily=b.fontFamily;if(b.fontSize)h.style.fontSize=b.fontSize;if(b.color)h.style.color=b.color}
   if(b.kind==='media'&&b.url){
-   // The selector identifies one exact media element. Never touch the gallery
-   // container or any sibling thumbnail/main image.
+   // React owns the product gallery. Never write `src` directly here:
+   // doing so can desynchronise the main image from the thumbnails.
+   if (el.hasAttribute('data-vce-reactive-gallery')) continue;
    if(el instanceof HTMLImageElement)el.src=b.url;
    if(el instanceof HTMLVideoElement){el.src=b.url;el.load()}
   }
@@ -18,6 +19,6 @@ const apply=(blocks:EditorBlock[])=>{
 };
 
 export const SiteBlocksRenderer:React.FC<{config:SiteEditorConfig}>=({config})=>{
- useEffect(()=>{apply(config.blocks||[]);const t=window.setInterval(()=>apply(config.blocks||[]),750);return()=>window.clearInterval(t)},[config.blocks]);
+ useEffect(()=>{apply(config.blocks||[])},[config.blocks]);
  return null;
 };
