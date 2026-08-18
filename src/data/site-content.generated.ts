@@ -304,6 +304,102 @@ export const publishedSiteContent = {
             "category": "fabric"
           }
         ]
+      },
+      {
+        "id": "veste-modele-0901",
+        "name": "Veste Modèle 4",
+        "subTitle": "Création Artisanale Pyrénéenne",
+        "category": "Haute Montagne",
+        "price": 890,
+        "currency": "€",
+        "heroImage": "/src/assets/images/veste-cimes.png",
+        "gallery": [
+          "/src/assets/images/veste-cimes.png",
+          "/src/assets/images/manteau-pastorale.png",
+          "/src/assets/images/hero-montagne.png"
+        ],
+        "description": "Pièce authentique confectionnée dans notre atelier avec les plus nobles laines des vallées pyrénéennes.",
+        "longDescription": "Chaque pièce est coupée à la main et assemblée avec une attention méticuleuse portée aux finitions, boutons en corne et doublure respirante.",
+        "tagline": "L’alliance de la chaleur brute et du raffinement intemporel.",
+        "fabrics": [
+          "100% Drap de Laine Vierge des Pyrénées",
+          "Doublure Cupro Respirante",
+          "Boutons en Corne Véritable"
+        ],
+        "colors": [
+          {
+            "name": "Kaki Haute Forêt",
+            "hex": "#445138"
+          },
+          {
+            "name": "Anthracite Minéral",
+            "hex": "#26292b"
+          },
+          {
+            "name": "Bronze Pyrénéen",
+            "hex": "#635336"
+          }
+        ],
+        "sizes": [
+          "XS",
+          "S",
+          "M",
+          "L",
+          "XL",
+          "XXL",
+          "Sur Mesure"
+        ],
+        "features": [
+          {
+            "iconName": "Feather",
+            "title": "Chaleur Naturelle",
+            "desc": "Protection thermique optimale jusqu’à -15°C."
+          },
+          {
+            "iconName": "CloudRain",
+            "title": "Déperlance Naturelle",
+            "desc": "La lanoline préserve l’imperméabilité des fibres."
+          },
+          {
+            "iconName": "Shield",
+            "title": "Confection Garantie à Vie",
+            "desc": "Réparation et entretien assurés par notre atelier."
+          }
+        ],
+        "specs": {
+          "weight": "1 250 g",
+          "waterResistance": "Déperlant naturel",
+          "warmthRating": "Idéal -10°C à +12°C",
+          "fitType": "Coupe Droite Ajustée",
+          "origin": "Atelier de Cauterets (Hautes-Pyrénées, France)",
+          "care": "Nettoyage à sec uniquement"
+        },
+        "hotspots": [
+          {
+            "id": "h1",
+            "title": "Col Montant Doublé",
+            "description": "Empêche les infiltrations d’air glacé en altitude.",
+            "x": 50,
+            "y": 18,
+            "category": "cut"
+          },
+          {
+            "id": "h2",
+            "title": "Poches Poitrines Passepoilées",
+            "description": "Taillées pour accueillir gants et carnet d’alpiniste.",
+            "x": 42,
+            "y": 38,
+            "category": "utility"
+          },
+          {
+            "id": "h3",
+            "title": "Drap de Laine Brut Feutré",
+            "description": "Tissage dense résistant aux ronces et à l’usure des cimes.",
+            "x": 60,
+            "y": 65,
+            "category": "fabric"
+          }
+        ]
       }
     ],
     "theme": {
