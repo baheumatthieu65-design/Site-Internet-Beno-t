@@ -50,36 +50,43 @@ type CustomizerTab =
   | 'security'
   | 'github';
 
+const fetchSiteConfigWithTimeout = async () => {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 4000);
+
+  try {
+    return await fetch('/api/site-config', {
+      method: 'GET',
+      credentials: 'include',
+      cache: 'no-store',
+      signal: controller.signal,
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+  } finally {
+    window.clearTimeout(timeout);
+  }
+};
+
 export default function App() {
   // ===========================================================================
   // BRAND DATA
   // ===========================================================================
 
   const [brandData, setBrandData] = useState<BrandConfig>(() => {
+    /*
+     * PREMIER RENDU SANS FLASH
+     *
+     * La version publiée dans GitHub/Vercel est la source de vérité
+     * au premier rendu.
+     *
+     * IMPORTANT :
+     * On ne recharge plus ici l'ancien localStorage par-dessus la
+     * version publiée. C'était ce qui pouvait afficher brièvement
+     * l'ancien texte avant le chargement de la nouvelle configuration.
+     */
     const publishedData = getInitialBrandData(initialBrandData);
-
-    try {
-      const saved = localStorage.getItem('pyrenees_brand_config');
-
-      if (saved) {
-        const parsed = JSON.parse(saved) as BrandConfig;
-
-        return {
-          ...publishedData,
-          ...parsed,
-          theme: {
-            ...defaultThemeConfig,
-            ...(publishedData.theme || {}),
-            ...(parsed.theme || {}),
-          },
-        };
-      }
-    } catch (error) {
-      console.error(
-        'Erreur lors de la lecture de pyrenees_brand_config:',
-        error
-      );
-    }
 
     return {
       ...publishedData,
@@ -141,6 +148,7 @@ export default function App() {
         blocks: [],
       })
     );
+
 
 
 
@@ -454,43 +462,52 @@ export default function App() {
       }
 
       try {
-        const response = await fetch('/api/site-config', {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            Accept: 'application/json',
-          },
-        });
+        const response = await fetchSiteConfigWithTimeout();
 
         if (response.ok) {
           const data = await response.json();
 
           if (data?.config?.brandData) {
-            setBrandData((current) => ({
-              ...current,
+            const serverBrandData: BrandConfig = {
               ...data.config.brandData,
               theme: {
                 ...defaultThemeConfig,
                 ...(data.config.brandData.theme || {}),
               },
-            }));
+            };
+
+            setBrandData(serverBrandData);
+
+            setSelectedJacketId(
+              serverBrandData.jackets?.[0]?.id || ''
+            );
           }
 
           if (data?.config?.editorConfig) {
             setSiteEditorConfig((current) => ({
               ...current,
               ...data.config.editorConfig,
-              blocks: Array.isArray(data.config.editorConfig.blocks)
+              blocks: Array.isArray(
+                data.config.editorConfig.blocks
+              )
                 ? data.config.editorConfig.blocks
                 : current.blocks,
             }));
           }
+        } else {
+          console.warn(
+            `Configuration serveur indisponible: HTTP ${response.status}.`
+          );
         }
       } catch (error) {
         console.warn(
-          'Configuration visuelle serveur indisponible. Conservation de la configuration locale.',
+          'Configuration visuelle serveur indisponible. Le site utilise la version publiée du bundle.',
           error
         );
+      } finally {
+        // La configuration serveur est facultative pour l'affichage.
+        // Le site conserve toujours la version publiée/localisée du bundle
+        // si l'API n'est pas disponible.
       }
 
       await fetchServerProducts();
