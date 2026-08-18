@@ -403,7 +403,7 @@ export const publishedSiteContent = {
       }
     ],
     "theme": {
-      "buttonStyle": "brut-montagne",
+      "buttonStyle": "pill-terroir",
       "buttonRadius": "rounded-full",
       "buttonSize": "standard",
       "buttonBackgroundImageUrl": "",
