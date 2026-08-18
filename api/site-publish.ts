@@ -1,10 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-function getAdminSecret(req: VercelRequest) {
-  const cookie = req.headers.cookie || '';
-  const match = cookie.match(/(?:^|;\s*)admin_session=([^;]+)/);
-  return match ? decodeURIComponent(match[1]) : '';
-}
+import { parseCookies, verifySessionToken } from './_helpers.js';
 
 function safeJson(value: unknown) {
   return JSON.stringify(value, null, 2)
@@ -31,12 +26,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
-  // The same admin cookie used by the existing admin API is required.
-  // If your project uses a different cookie name, change ADMIN_SESSION_COOKIE.
-  const configuredSecret = process.env.ADMIN_SECRET || '';
-  const session = getAdminSecret(req);
+  // Publication réservée à une vraie session administrateur signée.
+  // On utilise exactement le même mécanisme que /api/site-config.
+  const session = verifySessionToken(
+    parseCookies(req.headers.cookie).admin_session
+  );
 
-  if (configuredSecret && session !== configuredSecret) {
+  if (!session.valid) {
     return res.status(401).json({ success: false, error: 'Non autorisé' });
   }
 
@@ -83,39 +79,77 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   };
 
   try {
-    let sha: string | undefined;
-
-    const existing = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, {
-      headers,
-    });
-
-    if (existing.ok) {
-      const data = await existing.json();
-      sha = data.sha;
-    } else if (existing.status !== 404) {
-      const text = await existing.text();
-      return res.status(502).json({
-        success: false,
-        error: `Lecture GitHub impossible (${existing.status}): ${text.slice(0, 300)}`,
-      });
-    }
-
     const content = generatedFile(config);
     const encoded = Buffer.from(content, 'utf8').toString('base64');
 
-    const payload: Record<string, unknown> = {
-      message: 'chore(site-editor): publish visual site changes',
-      content: encoded,
-      branch,
+    const readCurrent = async () => {
+      const existing = await fetch(
+        `${apiUrl}?ref=${encodeURIComponent(branch)}`,
+        { headers }
+      );
+
+      if (existing.ok) {
+        return await existing.json();
+      }
+
+      if (existing.status === 404) return null;
+
+      const text = await existing.text();
+      throw new Error(
+        `Lecture GitHub impossible (${existing.status}): ${text.slice(0, 300)}`
+      );
     };
 
-    if (sha) payload.sha = sha;
+    const updateOnce = async (sha?: string) => {
+      const payload: Record<string, unknown> = {
+        message: 'chore(site-editor): publish visual site changes',
+        content: encoded,
+        branch,
+      };
 
-    const update = await fetch(apiUrl, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify(payload),
-    });
+      if (sha) payload.sha = sha;
+
+      return fetch(apiUrl, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(payload),
+      });
+    };
+
+    let existingData = await readCurrent();
+
+    // Ne crée pas un commit si le contenu est déjà exactement celui demandé.
+    // Cela évite une rafale de commits identiques depuis l'espace admin.
+    if (existingData?.content) {
+      try {
+        const currentContent = Buffer.from(
+          String(existingData.content).replace(/\s+/g, ''),
+          'base64'
+        ).toString('utf8');
+
+        if (currentContent === content) {
+          return res.status(200).json({
+            success: true,
+            commitSha: null,
+            unchanged: true,
+            path: filePath,
+            branch,
+          });
+        }
+      } catch {
+        // Si GitHub renvoie un contenu inattendu, on poursuit avec la mise à jour.
+      }
+    }
+
+    let update = await updateOnce(existingData?.sha);
+
+    // Une autre publication peut avoir changé le SHA entre la lecture et l'écriture.
+    // On relit une seule fois et on réessaie avec le dernier SHA plutôt que de
+    // perdre silencieusement la dernière modification.
+    if (update.status === 409) {
+      existingData = await readCurrent();
+      update = await updateOnce(existingData?.sha);
+    }
 
     const result = await update.json().catch(() => ({}));
 

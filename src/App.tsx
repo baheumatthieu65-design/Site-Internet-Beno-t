@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { initialBrandData } from './data/brandData';
 import {
@@ -123,6 +123,12 @@ export default function App() {
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [isAdminBarVisible, setIsAdminBarVisible] = useState(false);
+
+  // Toutes les publications administrateur passent par une file unique.
+  // Une action rapide ne peut donc plus écraser une action plus récente
+  // avec une requête réseau terminée dans le mauvais ordre.
+  const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
+
   const [siteEditorConfig, setSiteEditorConfig] =
     useState<SiteEditorConfig>(() =>
       getInitialEditorConfig<SiteEditorConfig>({
@@ -215,11 +221,11 @@ export default function App() {
   // SAVE VISUAL EDITOR CONFIGURATION TO UPSTASH
   // ===========================================================================
 
-  const saveSiteConfig = async (
+  const saveSiteConfig = (
     nextBrandData: BrandConfig = brandData,
     nextEditorConfig: SiteEditorConfig = siteEditorConfig
   ) => {
-    try {
+    const operation = saveQueueRef.current.then(async () => {
       const normalizedBrandData: BrandConfig = {
         ...nextBrandData,
         theme: {
@@ -228,94 +234,101 @@ export default function App() {
         },
       };
 
-      // 1) Sauvegarde dynamique immédiate dans Upstash.
-      const response = await fetch('/api/site-config', {
-        method: 'PUT',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          config: {
-            brandData: normalizedBrandData,
-            editorConfig: nextEditorConfig,
-          },
-        }),
-      });
-
-      if (!response.ok) {
-        const errorBody = await response.json().catch(() => null);
-        throw new Error(
-          errorBody?.error ||
-            `Sauvegarde Upstash: HTTP ${response.status}`
-        );
-      }
-
-      // 2) Publication dans GitHub.
-      // Le serveur Vercel possède le GITHUB_TOKEN : le token ne passe
-      // jamais dans le navigateur.
-      const publishResponse = await fetch('/api/site-publish', {
-        method: 'PUT',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          config: {
-            brandData: normalizedBrandData,
-            editorConfig: nextEditorConfig,
-          },
-        }),
-      });
-
-      if (!publishResponse.ok) {
-        const publishBody = await publishResponse.json().catch(() => null);
-        throw new Error(
-          publishBody?.error ||
-            `Publication GitHub: HTTP ${publishResponse.status}`
-        );
-      }
-
-      const publishData = await publishResponse.json().catch(() => null);
-
-      // Garder l'état React et localStorage synchronisés avec la version publiée.
-      setBrandData(normalizedBrandData);
-      setSiteEditorConfig(nextEditorConfig);
-
       try {
-        localStorage.setItem(
-          'pyrenees_brand_config',
-          JSON.stringify(normalizedBrandData)
-        );
+        // 1) GitHub est la source publiée du bundle Vercel.
+        // On publie d'abord le code, puis on synchronise le cache dynamique.
+        // Ainsi, une sauvegarde Upstash réussie ne peut plus laisser une
+        // configuration temporaire différente du code réellement publié.
+        const publishResponse = await fetch('/api/site-publish', {
+          method: 'PUT',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            config: {
+              brandData: normalizedBrandData,
+              editorConfig: nextEditorConfig,
+            },
+          }),
+        });
+
+        if (!publishResponse.ok) {
+          const publishBody = await publishResponse.json().catch(() => null);
+          throw new Error(
+            publishBody?.error ||
+              `Publication GitHub: HTTP ${publishResponse.status}`
+          );
+        }
+
+        const publishData = await publishResponse.json().catch(() => null);
+
+        // 2) Une fois le commit accepté, synchroniser Upstash.
+        const response = await fetch('/api/site-config', {
+          method: 'PUT',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            config: {
+              brandData: normalizedBrandData,
+              editorConfig: nextEditorConfig,
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          const errorBody = await response.json().catch(() => null);
+          throw new Error(
+            errorBody?.error ||
+              `Synchronisation Upstash: HTTP ${response.status}`
+          );
+        }
+
+        // Garder l'état React et localStorage synchronisés avec la version
+        // qui vient réellement d'être acceptée par GitHub.
+        setBrandData(normalizedBrandData);
+        setSiteEditorConfig(nextEditorConfig);
+
+        try {
+          localStorage.setItem(
+            'pyrenees_brand_config',
+            JSON.stringify(normalizedBrandData)
+          );
+        } catch (error) {
+          console.warn(
+            'Impossible de synchroniser la configuration locale:',
+            error
+          );
+        }
+
+        return {
+          success: true,
+          commitSha: publishData?.commitSha || null,
+        };
       } catch (error) {
-        console.warn(
-          'Impossible de synchroniser la configuration locale:',
+        console.error(
+          'Impossible de sauvegarder/publicer la configuration du site:',
           error
         );
+
+        return {
+          success: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Erreur inconnue pendant la publication.',
+        };
       }
+    });
 
-      return {
-        success: true,
-        commitSha: publishData?.commitSha || null,
-      };
-    } catch (error) {
-      console.error(
-        'Impossible de sauvegarder/publicer la configuration du site:',
-        error
-      );
-
-      return {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Erreur inconnue pendant la publication.',
-      };
-    }
+    // Toujours laisser la file continuer, même si une publication échoue.
+    saveQueueRef.current = operation.then(() => undefined, () => undefined);
+    return operation;
   };
-
 
   // ===========================================================================
   // RESET BRAND DATA
@@ -510,10 +523,8 @@ export default function App() {
     setIsAdminLoggedIn(true);
     setAdminUsername(user || 'admin');
 
-    // Connexion sans ouvrir automatiquement l'administration.
     setIsAdminLoginOpen(false);
     setIsCustomizerOpen(false);
-    setIsAdminBarVisible(false);
   };
 
   // ===========================================================================
