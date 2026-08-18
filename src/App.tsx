@@ -126,7 +126,7 @@ export default function App() {
   const [siteEditorConfig, setSiteEditorConfig] =
     useState<SiteEditorConfig>(() =>
       getInitialEditorConfig<SiteEditorConfig>({
-        adminBarPosition: 'top',
+        adminBarPosition: 'bottom',
         blocks: [],
       })
     );
@@ -1213,37 +1213,39 @@ export default function App() {
         </div>
       )}
 
-      {isAdminLoggedIn && isAdminBarVisible && (
-        <AdminBar
-          username={adminUsername}
-          theme={theme}
-          isDragReorderMode={
-            isDragReorderMode
-          }
-          onToggleDragReorderMode={() =>
-            setIsDragReorderMode(
-              (current) => !current
-            )
-          }
-          onQuickChangeButtonStyle={
-            handleQuickChangeButtonStyle
-          }
-          onOpenEditor={
-            handleOpenEditor
-          }
-          onOpenOrders={
-            handleOpenOrders
-          }
-          onOpenProducts={() =>
-            setIsProductsOpen(true)
-          }
-          onOpenSecurity={
-            handleOpenSecurity
-          }
-          onLogout={
-            handleLogout
-          }
-        />
+      {isAdminLoggedIn && (
+        <div className={isAdminBarVisible ? '' : 'hidden'}>
+          <AdminBar
+            username={adminUsername}
+            theme={theme}
+            isDragReorderMode={
+              isDragReorderMode
+            }
+            onToggleDragReorderMode={() =>
+              setIsDragReorderMode(
+                (current) => !current
+              )
+            }
+            onQuickChangeButtonStyle={
+              handleQuickChangeButtonStyle
+            }
+            onOpenEditor={
+              handleOpenEditor
+            }
+            onOpenOrders={
+              handleOpenOrders
+            }
+            onOpenProducts={() =>
+              setIsProductsOpen(true)
+            }
+            onOpenSecurity={
+              handleOpenSecurity
+            }
+            onLogout={
+              handleLogout
+            }
+          />
+        </div>
       )}
 
       <SiteBlocksRenderer config={siteEditorConfig} />
