@@ -8,7 +8,14 @@ import {
   ButtonTargetId,
   ThemeConfig,
 } from '../types';
-import { buttonModelPresets, buttonSizePresets, radiusPresets } from '../utils/themeStyles';
+import {
+  buttonModelPresets,
+  buttonSizePresets,
+  radiusPresets,
+  getButtonClasses,
+  getButtonInlineStyle,
+  getCardClasses,
+} from '../utils/themeStyles';
 
 type ButtonEntry = {
   id: ButtonTargetId;
@@ -59,16 +66,29 @@ export const ButtonManager: React.FC<Props> = ({ theme, onChange }) => {
 
   const selectAll = () => setSelected(selected.length === BUTTONS.length ? [] : BUTTONS.map(b => b.id));
 
-  const previewStyle = {
-    borderRadius:
-      radiusPresets.find(r => r.id === (current.buttonRadius || theme.buttonRadius))?.cssClass === 'rounded-full'
-        ? '9999px' : '12px',
-  } as React.CSSProperties;
-
   const image = current.backgroundImageUrl;
   const overlay = current.backgroundOverlay ?? 28;
   const model = current.buttonStyle || theme.buttonStyle;
   const size = current.buttonSize || theme.buttonSize || 'standard';
+
+  // Le rendu d'aperçu reprend exactement le moteur de rendu des vrais boutons.
+  // On fusionne l'override du bouton sélectionné avec le thème global afin que
+  // le changement de modèle (Or, Cuir, Sapin, etc.) soit immédiatement visible.
+  const previewTheme: ThemeConfig = {
+    ...theme,
+    buttonStyle: current.buttonStyle || theme.buttonStyle,
+    buttonRadius: current.buttonRadius || theme.buttonRadius,
+    buttonSize: current.buttonSize || theme.buttonSize,
+    buttonBackgroundImageUrl: current.backgroundImageUrl || theme.buttonBackgroundImageUrl,
+    buttonBackgroundOverlay: current.backgroundOverlay ?? theme.buttonBackgroundOverlay,
+    buttonOverrides: undefined,
+  };
+
+  const previewPrimaryClass = getButtonClasses(previewTheme, 'primary');
+  const previewSecondaryClass = getButtonClasses(previewTheme, 'secondary');
+  const previewPrimaryStyle = getButtonInlineStyle(previewTheme);
+  const previewSecondaryStyle = getButtonInlineStyle(previewTheme);
+  const previewCard = getCardClasses(theme);
 
   return (
     <section className="rounded-2xl border border-[#3b473e] bg-[#151a17] p-4 sm:p-5 space-y-5">
@@ -84,23 +104,45 @@ export const ButtonManager: React.FC<Props> = ({ theme, onChange }) => {
         </span>
       </div>
 
-      <div className="sticky top-0 z-10 rounded-xl border border-[#455248] bg-[#101410]/95 backdrop-blur p-3">
-        <div className="text-[10px] uppercase tracking-[0.14em] text-[#87968a] mb-2">Aperçu permanent</div>
-        <div className="h-20 rounded-lg border border-[#354037] bg-[#111612] flex items-center justify-center">
-          <button
-            type="button"
-            style={{
-              ...previewStyle,
-              ...(image ? {
-                backgroundImage: `linear-gradient(rgba(0,0,0,${overlay / 100}), rgba(0,0,0,${overlay / 100})), url(${JSON.stringify(image)})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              } : {}),
-            }}
-            className="px-6 py-3 text-xs uppercase tracking-widest font-semibold bg-[#d4af37] text-[#121613] border border-[#f0dfbe]/40"
-          >
-            {selected.length === 1 ? BUTTONS.find(b => b.id === selectedId)?.label : `${selected.length} boutons`}
-          </button>
+      {/* Aperçu repris de l'ancien bloc "Aperçu en Direct de vos Choix Graphiques".
+          Il n'y a désormais qu'un seul aperçu dans cet onglet. */}
+      <div className="p-5 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center space-x-2 text-[#d4af37] text-xs uppercase font-serif tracking-widest font-semibold">
+            <span>✦</span>
+            <span>Aperçu en Direct de vos Choix Graphiques</span>
+          </div>
+          <span className="text-[11px] text-[#a3b1a5] text-right">
+            Modèle sélectionné : <strong>{model}</strong> • Arrondi : <strong>{current.buttonRadius || theme.buttonRadius}</strong>
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center pt-1">
+          <div className="space-y-3">
+            <span className="text-xs text-[#a3b1a5] block uppercase tracking-wider">Boutons en action :</span>
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                style={previewPrimaryStyle}
+                className={previewPrimaryClass}
+              >
+                {selected.length === 1 ? (BUTTONS.find(b => b.id === selectedId)?.label || theme.orderButtonText || 'Commander') : `${selected.length} boutons`}
+              </button>
+              <button
+                type="button"
+                style={previewSecondaryStyle}
+                className={previewSecondaryClass}
+              >
+                {theme.discoverButtonText || 'Découvrir'}
+              </button>
+            </div>
+          </div>
+
+          <div className={`p-4 rounded-2xl ${previewCard.card} space-y-2`}>
+            <span className="text-[10px] uppercase tracking-widest text-[#d4af37]">Modèle de Carte Actif</span>
+            <h4 className="font-serif text-base text-[#f3ece0]">Carte Présentation Produit</h4>
+            <p className="text-xs text-[#a3b1a5]">Rendu visuel des encadrements, reliefs et liserés.</p>
+          </div>
         </div>
       </div>
 

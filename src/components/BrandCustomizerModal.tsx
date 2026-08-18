@@ -910,39 +910,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           {/* ========================================================= */}
           {activeTab === 'theme' && (
             <div className="space-y-8 animate-fadeIn">
-              {/* Interactive Live Swatch Box */}
-              <div className="p-6 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2 text-[#d4af37] text-xs uppercase font-serif tracking-widest font-semibold">
-                    <Sparkles className="w-4 h-4" />
-                    <span>Aperçu en Direct de vos Choix Graphiques</span>
-                  </div>
-                  <span className="text-[11px] text-[#a3b1a5]">
-                    Modèle sélectionné : <strong>{currentTheme.buttonStyle}</strong> • Arrondi : <strong>{currentTheme.buttonRadius}</strong>
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center pt-2">
-                  <div className="space-y-3">
-                    <span className="text-xs text-[#a3b1a5] block uppercase tracking-wider">Boutons en Action :</span>
-                    <div className="flex flex-wrap gap-3">
-                      <button className={`px-6 py-3 text-xs uppercase tracking-widest ${previewBtnClasses}`}>
-                        {currentTheme.orderButtonText || 'Commander'}
-                      </button>
-                      <button className={`px-5 py-3 text-xs uppercase tracking-widest ${previewSecBtnClasses}`}>
-                        {currentTheme.discoverButtonText || 'Découvrir'}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className={`p-4 rounded-2xl ${previewCard.card} space-y-2`}>
-                    <span className="text-[10px] uppercase tracking-widest text-[#d4af37]">Modèle de Carte Actif</span>
-                    <h4 className="font-serif text-base text-[#f3ece0]">Carte Présentation Produit</h4>
-                    <p className="text-xs text-[#a3b1a5]">Rendu visuel des encadrements, reliefs et liserés.</p>
-                  </div>
-                </div>
-              </div>
-
               <ButtonManager
                 theme={currentTheme}
                 onChange={updateTheme}
@@ -951,11 +918,11 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
               {/* 1. BUTTON STYLE SELECTION */}
               <div className="space-y-4">
                 <h4 className="font-serif text-lg text-[#f3ece0] font-semibold flex items-center space-x-2">
-                  <span>Modèles & Matières des Boutons</span>
-                  <span className="text-xs text-[#d4af37] font-normal font-sans">({buttonModelPresets.length} variantes d'exception)</span>
+                  <span>Modèle Global par Défaut</span>
+                  <span className="text-xs text-[#d4af37] font-normal font-sans">({buttonModelPresets.length} variantes)</span>
                 </h4>
                 <p className="text-xs text-[#a3b1a5]">
-                  Sélectionnez l'ambiance matérielle appliquée instantanément à tous les boutons d'action du site :
+                  Choisissez le modèle par défaut. Pour personnaliser un bouton indépendamment, utilisez le gestionnaire ci-dessus : les overrides individuels restent prioritaires.
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
