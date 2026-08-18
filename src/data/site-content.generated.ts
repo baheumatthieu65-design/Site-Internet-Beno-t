@@ -607,6 +607,17 @@ export const publishedSiteContent = {
         "fontFamily": "ui-serif",
         "fontSize": "48px",
         "color": "rgb(243, 236, 224)"
+      },
+      {
+        "id": "element-1787063560263",
+        "type": "image",
+        "section": "hero",
+        "x": 50,
+        "y": 50,
+        "visible": true,
+        "selector": "div:nth-of-type(2) \u003e section:nth-of-type(1) \u003e div:nth-of-type(3) \u003e div:nth-of-type(3) \u003e div:nth-of-type(1) \u003e div:nth-of-type(1) \u003e img:nth-of-type(1)",
+        "kind": "media",
+        "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787063558934-20260605_205859.jpg"
       }
     ]
   }
