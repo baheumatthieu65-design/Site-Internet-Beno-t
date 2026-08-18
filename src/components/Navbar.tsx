@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrandConfig } from '../types';
-import { Sliders, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { getButtonClasses } from '../utils/themeStyles';
 
 interface NavbarProps {
@@ -117,18 +117,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
-          {isAdminLoggedIn && (
-            <button
-              id="open-customizer-btn"
-              onClick={() => onOpenCustomizer('theme')}
-              className="flex items-center space-x-1.5 px-3 py-1.5 text-xs tracking-wider uppercase rounded-full bg-[#2a372e] text-[#f3ece0] border border-[#d4af37]/70 hover:bg-[#34463a] transition-all shadow-sm ring-1 ring-[#d4af37]/40 cursor-pointer"
-              title="Panneau d'Administration"
-            >
-              <Sliders className="w-3.5 h-3.5 text-[#d4af37]" />
-              <span className="hidden sm:inline font-medium">Personnaliser</span>
-            </button>
-          )}
-
           <button
             id="nav-order-btn"
             onClick={() => onOpenInquiry()}
@@ -162,7 +150,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           {isAdminLoggedIn && (
             <div className="pt-2 flex flex-col space-y-2">
               <button onClick={openOrders} className="w-full text-center py-2.5 rounded-xl bg-[#28362b] text-[#d4af37] text-xs uppercase tracking-wider border border-[#d4af37]/70 font-semibold">Commandes</button>
-              <button onClick={() => { setMobileMenuOpen(false); onOpenCustomizer('theme'); }} className="w-full text-center py-2.5 rounded-xl bg-[#28362b] text-[#f3ece0] text-xs uppercase tracking-wider border border-[#d4af37]/70 font-semibold">⚙️ Personnaliser</button>
             </div>
           )}
         </div>

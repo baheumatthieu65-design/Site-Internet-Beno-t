@@ -39,6 +39,7 @@ interface Props {
   config: SiteEditorConfig;
   onChange: (config: SiteEditorConfig) => void;
   onSave: (nextConfig?: SiteEditorConfig) => Promise<void> | void;
+  onOpenCustomizer?: () => void;
 }
 
 const FONT_OPTIONS = [
@@ -136,7 +137,12 @@ function applyBar(position: AdminBarPosition) {
   if (position === 'right') Object.assign(bar.style, { top: '50%', right: '0', width: 'min(92vw, 420px)', transform: 'translateY(-50%)' });
 }
 
-export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) => {
+export const SiteVisualEditor: React.FC<Props> = ({
+  config,
+  onChange,
+  onSave,
+  onOpenCustomizer,
+}) => {
   const [open, setOpen] = useState(false);
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<{
@@ -172,7 +178,7 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
   }, []);
 
   useEffect(() => {
-    if (open) applyBar(config.adminBarPosition || 'top');
+    if (open) applyBar(config.adminBarPosition || 'bottom');
   }, [open, config.adminBarPosition]);
 
   useEffect(() => {
@@ -441,13 +447,26 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
         className="fixed right-4 bottom-4 z-[1100] w-[min(94vw,440px)] max-h-[88vh] overflow-auto rounded-2xl border border-[#536258] bg-[#111613]/98 text-[#f5eedf] shadow-2xl backdrop-blur"
       >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#344139] bg-[#111613] px-4 py-3">
-          <div>
-            <div className="text-sm font-semibold">Éditeur du site</div>
-            <div className="text-[10px] uppercase tracking-[.18em] text-[#87968a]">
-              Cliquez un élément de la page
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="min-w-0">
+              <div className="text-sm font-semibold">Éditeur du site</div>
+              <div className="text-[10px] uppercase tracking-[.18em] text-[#87968a]">
+                Cliquez un élément de la page
+              </div>
             </div>
+
+            {onOpenCustomizer && (
+              <button
+                type="button"
+                onClick={onOpenCustomizer}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#d4af37]/70 bg-[#263129] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#d4af37] hover:bg-[#334236]"
+              >
+                <Settings2 size={13} />
+                Personnaliser
+              </button>
+            )}
           </div>
-          <button type="button" onClick={() => setOpen(false)} className="p-2">
+          <button type="button" onClick={() => setOpen(false)} className="p-2 shrink-0">
             <X size={18} />
           </button>
         </div>
@@ -631,7 +650,12 @@ export const SiteVisualEditor: React.FC<Props> = ({ config, onChange, onSave }) 
                   }}
                   className={`rounded-lg px-2 py-2 text-xs ${config.adminBarPosition === position ? 'bg-[#d4af37] text-black' : 'bg-[#263129]'}`}
                 >
-                  {position}
+                  {{
+                    top: 'Haut',
+                    bottom: 'Bas',
+                    left: 'Gauche',
+                    right: 'Droite',
+                  }[position]}
                 </button>
               ))}
             </div>

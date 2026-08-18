@@ -125,7 +125,7 @@ export default function App() {
   const [siteEditorConfig, setSiteEditorConfig] =
     useState<SiteEditorConfig>(() =>
       getInitialEditorConfig<SiteEditorConfig>({
-        adminBarPosition: 'top',
+        adminBarPosition: 'bottom',
         blocks: [],
       })
     );
@@ -1255,6 +1255,7 @@ export default function App() {
           onSave={async (nextConfig) => {
             await handleSaveVisualEditor(nextConfig);
           }}
+          onOpenCustomizer={() => handleOpenEditor('theme')}
         />
       )}
 
