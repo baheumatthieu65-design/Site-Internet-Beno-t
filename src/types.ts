@@ -20,6 +20,13 @@ export type ButtonSizeId =
   | 'large'
   | 'xl';
 
+export type ButtonTextSizeId =
+  | 'small'
+  | 'standard'
+  | 'large'
+  | 'xl'
+  | 'xxl';
+
 export type ButtonTargetId =
   | 'navbar-order'
   | 'hero-order'
@@ -33,6 +40,8 @@ export interface ButtonOverride {
   buttonStyle?: ButtonStyleId;
   buttonRadius?: ButtonRadiusId;
   buttonSize?: ButtonSizeId;
+  buttonTextSize?: ButtonTextSizeId;
+  buttonTextColor?: string;
   backgroundImageUrl?: string;
   backgroundOverlay?: number;
 }

@@ -3,6 +3,7 @@ import {
   ButtonStyleId,
   ButtonRadiusId,
   ButtonSizeId,
+  ButtonTextSizeId,
   ButtonTargetId,
   CardStyleId,
   ThemeConfig,
@@ -180,13 +181,28 @@ export interface ButtonSizePreset {
   name: string;
   description: string;
   cssClass: string;
+  defaultTextClass: string;
+}
+
+export interface ButtonTextSizePreset {
+  id: ButtonTextSizeId;
+  name: string;
+  cssClass: string;
 }
 
 export const buttonSizePresets: ButtonSizePreset[] = [
-  { id: 'compact', name: 'Compact', description: 'Plus fin et discret', cssClass: '!px-4 !py-2 !text-[11px]' },
-  { id: 'standard', name: 'Standard', description: 'Équilibre actuel', cssClass: '!px-5 !py-2.5 !text-xs' },
-  { id: 'large', name: 'Grand', description: 'Plus présent', cssClass: '!px-6 !py-3 !text-sm' },
-  { id: 'xl', name: 'XL', description: 'Très visible / premium', cssClass: '!px-8 !py-4 !text-sm' },
+  { id: 'compact', name: 'Compact', description: 'Plus fin et discret', cssClass: '!px-4 !py-2', defaultTextClass: '!text-[11px]' },
+  { id: 'standard', name: 'Standard', description: 'Équilibre actuel', cssClass: '!px-5 !py-2.5', defaultTextClass: '!text-xs' },
+  { id: 'large', name: 'Grand', description: 'Plus présent', cssClass: '!px-6 !py-3', defaultTextClass: '!text-sm' },
+  { id: 'xl', name: 'XL', description: 'Très visible / premium', cssClass: '!px-8 !py-4', defaultTextClass: '!text-sm' },
+];
+
+export const buttonTextSizePresets: ButtonTextSizePreset[] = [
+  { id: 'small', name: 'Petit', cssClass: '!text-[11px]' },
+  { id: 'standard', name: 'Standard', cssClass: '!text-xs' },
+  { id: 'large', name: 'Grand', cssClass: '!text-sm' },
+  { id: 'xl', name: 'XL', cssClass: '!text-base' },
+  { id: 'xxl', name: 'XXL', cssClass: '!text-lg' },
 ];
 
 export const sectionMeta: { [key in SectionId]: { name: string; icon: string; desc: string } } = {
@@ -214,8 +230,12 @@ export function getButtonClasses(
   const sizePreset =
     buttonSizePresets.find((s) => s.id === sizeId) ||
     buttonSizePresets.find((s) => s.id === 'standard')!;
+  const textSizeId = override?.buttonTextSize;
+  const textSizePreset = textSizeId
+    ? buttonTextSizePresets.find((s) => s.id === textSizeId)
+    : undefined;
 
-  let base = `${radius} ${sizePreset.cssClass} transition-all duration-200 cursor-pointer `;
+  let base = `${radius} ${sizePreset.cssClass} ${textSizePreset?.cssClass || sizePreset.defaultTextClass} transition-all duration-200 cursor-pointer `;
   const imageUrl = override?.backgroundImageUrl || currentTheme.buttonBackgroundImageUrl;
   if (imageUrl) {
     base += 'bg-cover bg-center bg-no-repeat ';
@@ -233,7 +253,8 @@ export function getButtonInlineStyle(
   const currentTheme = theme || defaultThemeConfig;
   const override = buttonId ? currentTheme.buttonOverrides?.[buttonId] : undefined;
   const imageUrl = override?.backgroundImageUrl || currentTheme.buttonBackgroundImageUrl;
-  if (!imageUrl) return {};
+  const textStyle = override?.buttonTextColor ? { color: override.buttonTextColor } : {};
+  if (!imageUrl) return textStyle;
 
   const overlay = Math.max(
     0,
@@ -241,6 +262,7 @@ export function getButtonInlineStyle(
   ) / 100;
 
   return {
+    ...(override?.buttonTextColor ? { color: override.buttonTextColor } : {}),
     backgroundImage: `linear-gradient(rgba(0,0,0,${overlay}), rgba(0,0,0,${overlay})), url(${JSON.stringify(imageUrl)})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',

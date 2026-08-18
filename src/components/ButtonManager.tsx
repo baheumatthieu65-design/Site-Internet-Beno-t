@@ -4,6 +4,7 @@ import {
   ButtonOverride,
   ButtonRadiusId,
   ButtonSizeId,
+  ButtonTextSizeId,
   ButtonStyleId,
   ButtonTargetId,
   ThemeConfig,
@@ -11,6 +12,7 @@ import {
 import {
   buttonModelPresets,
   buttonSizePresets,
+  buttonTextSizePresets,
   radiusPresets,
   getButtonClasses,
   getButtonInlineStyle,
@@ -70,6 +72,8 @@ export const ButtonManager: React.FC<Props> = ({ theme, onChange }) => {
   const overlay = current.backgroundOverlay ?? 28;
   const model = current.buttonStyle || theme.buttonStyle;
   const size = current.buttonSize || theme.buttonSize || 'standard';
+  const textSize = current.buttonTextSize || 'standard';
+  const textColor = current.buttonTextColor || '';
 
   // Le rendu d'aperçu reprend exactement le moteur de rendu des vrais boutons.
   // On fusionne l'override du bouton sélectionné avec le thème global afin que
@@ -81,13 +85,13 @@ export const ButtonManager: React.FC<Props> = ({ theme, onChange }) => {
     buttonSize: current.buttonSize || theme.buttonSize,
     buttonBackgroundImageUrl: current.backgroundImageUrl || theme.buttonBackgroundImageUrl,
     buttonBackgroundOverlay: current.backgroundOverlay ?? theme.buttonBackgroundOverlay,
-    buttonOverrides: undefined,
+    buttonOverrides: { 'navbar-order': current },
   };
 
-  const previewPrimaryClass = getButtonClasses(previewTheme, 'primary');
-  const previewSecondaryClass = getButtonClasses(previewTheme, 'secondary');
-  const previewPrimaryStyle = getButtonInlineStyle(previewTheme);
-  const previewSecondaryStyle = getButtonInlineStyle(previewTheme);
+  const previewPrimaryClass = getButtonClasses(previewTheme, 'primary', 'navbar-order');
+  const previewSecondaryClass = getButtonClasses(previewTheme, 'secondary', 'navbar-order');
+  const previewPrimaryStyle = getButtonInlineStyle(previewTheme, 'navbar-order');
+  const previewSecondaryStyle = getButtonInlineStyle(previewTheme, 'navbar-order');
   const previewCard = getCardClasses(theme);
 
   return (
@@ -215,6 +219,41 @@ export const ButtonManager: React.FC<Props> = ({ theme, onChange }) => {
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 rounded-xl border border-[#354037] bg-[#111612] p-3">
+          <div>
+            <div className="text-[10px] uppercase tracking-wider text-[#87968a] mb-2">Taille du texte</div>
+            <div className="grid grid-cols-5 gap-2">
+              {buttonTextSizePresets.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => updateSelected({ buttonTextSize: p.id as ButtonTextSizeId })}
+                  className={`rounded-lg border px-2 py-2 text-[10px] ${textSize === p.id ? 'border-[#d4af37] text-[#d4af37] bg-[#202b23]' : 'border-[#455248] text-[#aeb9ae]'}`}
+                >
+                  {p.name}
+                </button>
+              ))}
+            </div>
+          </div>
+          <label className="flex items-end gap-2 min-w-[190px]">
+            <span className="text-[10px] uppercase tracking-wider text-[#87968a] pb-2">Couleur du texte</span>
+            <input
+              type="color"
+              value={textColor || '#f3ece0'}
+              onChange={(e) => updateSelected({ buttonTextColor: e.target.value })}
+              className="h-10 w-14 rounded-lg border border-[#455248] bg-[#182019] p-1 cursor-pointer"
+              title="Choisir la couleur du texte"
+            />
+            <button
+              type="button"
+              onClick={() => updateSelected({ buttonTextColor: '' })}
+              className="h-10 rounded-lg border border-[#455248] px-3 text-[10px] uppercase tracking-wider text-[#aeb9ae] hover:border-[#d4af37] hover:text-[#d4af37]"
+            >
+              Auto
+            </button>
+          </label>
         </div>
 
         <div className="rounded-xl border border-dashed border-[#536258] p-3 space-y-3">
