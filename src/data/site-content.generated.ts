@@ -698,6 +698,20 @@ export const publishedSiteContent = {
         "selector": "[data-vce-role=\"jacket-veste-modele-9583-gallery-0\"]",
         "kind": "media",
         "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787063825877-20260605_205836.jpg"
+      },
+      {
+        "id": "element-1787074437287",
+        "type": "text",
+        "section": "hero",
+        "x": 50,
+        "y": 50,
+        "visible": true,
+        "selector": "button:nth-of-type(1) \u003e div:nth-of-type(1) \u003e span:nth-of-type(2)",
+        "kind": "text",
+        "text": "Édition Limitée des Pyrénées",
+        "fontFamily": "-apple-system",
+        "fontSize": "10px",
+        "color": "#d2b16f"
       }
     ]
   }
