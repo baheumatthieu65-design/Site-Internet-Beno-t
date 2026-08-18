@@ -50,25 +50,6 @@ type CustomizerTab =
   | 'security'
   | 'github';
 
-const fetchSiteConfigWithTimeout = async () => {
-  const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), 4000);
-
-  try {
-    return await fetch('/api/site-config', {
-      method: 'GET',
-      credentials: 'include',
-      cache: 'no-store',
-      signal: controller.signal,
-      headers: {
-        Accept: 'application/json',
-      },
-    });
-  } finally {
-    window.clearTimeout(timeout);
-  }
-};
-
 export default function App() {
   // ===========================================================================
   // BRAND DATA
@@ -461,54 +442,19 @@ export default function App() {
         setIsAdminLoggedIn(false);
       }
 
-      try {
-        const response = await fetchSiteConfigWithTimeout();
-
-        if (response.ok) {
-          const data = await response.json();
-
-          if (data?.config?.brandData) {
-            const serverBrandData: BrandConfig = {
-              ...data.config.brandData,
-              theme: {
-                ...defaultThemeConfig,
-                ...(data.config.brandData.theme || {}),
-              },
-            };
-
-            setBrandData(serverBrandData);
-
-            setSelectedJacketId(
-              serverBrandData.jackets?.[0]?.id || ''
-            );
-          }
-
-          if (data?.config?.editorConfig) {
-            setSiteEditorConfig((current) => ({
-              ...current,
-              ...data.config.editorConfig,
-              blocks: Array.isArray(
-                data.config.editorConfig.blocks
-              )
-                ? data.config.editorConfig.blocks
-                : current.blocks,
-            }));
-          }
-        } else {
-          console.warn(
-            `Configuration serveur indisponible: HTTP ${response.status}.`
-          );
-        }
-      } catch (error) {
-        console.warn(
-          'Configuration visuelle serveur indisponible. Le site utilise la version publiée du bundle.',
-          error
-        );
-      } finally {
-        // La configuration serveur est facultative pour l'affichage.
-        // Le site conserve toujours la version publiée/localisée du bundle
-        // si l'API n'est pas disponible.
-      }
+      /*
+       * PAS DE SECOND RENDU AU DÉMARRAGE
+       *
+       * La version publique est déjà embarquée dans le bundle Vercel via
+       * src/data/site-content.generated.ts.
+       *
+       * On ne fait donc plus de GET /api/site-config au démarrage public.
+       * L'ancien appel faisait un setBrandData() après le premier rendu,
+       * ce qui provoquait le flash de l'ancienne version.
+       *
+       * Upstash reste utilisé par l'éditeur pour sauvegarder.
+       * La publication GitHub/Vercel reste la source de vérité publique.
+       */
 
       await fetchServerProducts();
     };
