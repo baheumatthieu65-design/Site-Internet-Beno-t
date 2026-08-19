@@ -533,12 +533,12 @@ export const publishedSiteContent = {
     "logos": {
       "boutique": {
         "imageUrl": "/assets/pyrenees_brand_logo_1785338626936-BaITKbpK.jpg",
-        "text": "MAISON DES PYRÉNÉES",
+        "text": "MAISON MAILHA",
         "secondaryText": "ÉDITION LIMITÉE DES PYRÉNÉES",
         "fontFamily": "serif",
         "textColor": "#f3ece0",
-        "textSize": "24px",
-        "imageSize": 58,
+        "textSize": "17px",
+        "imageSize": 52,
         "gap": 12,
         "showText": true
       },
