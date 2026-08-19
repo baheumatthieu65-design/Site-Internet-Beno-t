@@ -668,6 +668,19 @@ export default function App() {
       );
     }
 
+    // V3.1 : le serveur est la source de vérité au moment du logout.
+    // Cela évite de réinjecter un ancien snapshot React après une sauvegarde
+    // pourtant bien persistée. Un simple refresh montrait déjà la bonne valeur :
+    // on reproduit donc ici exactement le même chemin de lecture.
+    try {
+      await fetchPublishedSiteConfig();
+    } catch (error) {
+      console.warn(
+        'Impossible de relire la configuration publiée avant le logout:',
+        error
+      );
+    }
+
     try {
       await logoutAdminServer();
     } catch (error) {
@@ -677,18 +690,9 @@ export default function App() {
       );
     }
 
-    // V2.4 : sortir de l'admin doit conserver exactement le snapshot
-    // visible pendant la session. Une modification non enregistrée est donc
-    // abandonnée ; une modification enregistrée a déjà remplacé ce snapshot.
-    const sessionSnapshot = adminSessionSnapshotRef.current;
-    if (sessionSnapshot) {
-      setBrandData(sessionSnapshot.brandData);
-      siteEditorConfigRef.current = sessionSnapshot.editorConfig;
-      setSiteEditorConfig(sessionSnapshot.editorConfig);
-      setSelectedJacketId(
-        sessionSnapshot.brandData.jackets?.[0]?.id || ''
-      );
-    }
+    // Toute modification non enregistrée est ainsi abandonnée par la relecture
+    // serveur ; toute modification enregistrée reste immédiatement visible.
+    adminSessionSnapshotRef.current = null;
 
     setIsAdminLoggedIn(false);
     setIsCustomizerOpen(false);
