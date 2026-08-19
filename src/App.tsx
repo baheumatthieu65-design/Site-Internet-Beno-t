@@ -588,15 +588,22 @@ export default function App() {
   // ===========================================================================
 
   const handleLogout = async () => {
-    // V2.2 : ne jamais quitter l'admin pendant qu'une sauvegarde est encore
-    // en cours. Sinon le refresh peut récupérer la version précédente.
+    // V2.3 :
+    // NE PAS recharger /api/site-config au logout.
+    //
+    // Sans modification, l'admin et l'observateur partagent déjà le même
+    // brandData en mémoire. Relire le serveur ici pouvait remplacer ce snapshot
+    // par une autre version et provoquer le bug :
+    // observateur X -> admin X -> logout -> serveur Y.
+    //
+    // On attend uniquement une éventuelle sauvegarde déjà lancée. Ainsi :
+    // - sans sauvegarde : on conserve exactement ce qui était affiché ;
+    // - après sauvegarde : la file est terminée avant de quitter.
     try {
       await saveQueueRef.current;
-      await fetchPublishedSiteConfig();
-      await fetchServerProducts();
     } catch (error) {
       console.warn(
-        'Impossible de resynchroniser la configuration publiée avant le logout:',
+        'Impossible de finaliser la sauvegarde avant le logout:',
         error
       );
     }
