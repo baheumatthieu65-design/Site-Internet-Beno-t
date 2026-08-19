@@ -447,8 +447,8 @@ export const publishedSiteContent = {
       "showcaseLayout": "split-interactive",
       "sectionOrder": [
         "hero",
-        "collection",
         "comparatif",
+        "collection",
         "lookbook",
         "origines",
         "contact"
