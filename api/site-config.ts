@@ -24,60 +24,28 @@ function json(
     .json(data);
 }
 
-function unwrapStoredValue(value: any) {
-  // Nouveau format : { config, revision }
-  if (
-    value &&
-    typeof value === 'object' &&
-    value.config &&
-    typeof value.config === 'object'
-  ) {
-    return {
-      config: value.config,
-      revision: Number(value.revision || 0),
-    };
-  }
-
-  // Ancien format : la configuration était stockée directement.
-  // On la conserve lisible pour ne rien casser.
-  return {
-    config: value && typeof value === 'object' ? value : null,
-    revision: 0,
-  };
-}
-
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
   const redis = getRedisClient();
 
+  // La configuration publiée est la source active du site.
+  // Cette réponse ne doit jamais être mise en cache.
   if (req.method === 'GET') {
     if (!redis) {
       return json(res, 200, {
         success: true,
         config: null,
-        revision: 0,
       });
     }
 
-    try {
-      const stored = await redis.get(KEY);
-      const { config, revision } = unwrapStoredValue(stored);
+    const config = await redis.get(KEY);
 
-      return json(res, 200, {
-        success: true,
-        config,
-        revision,
-      });
-    } catch (error) {
-      console.error('site-config GET:', error);
-
-      return json(res, 500, {
-        success: false,
-        error: 'Impossible de lire la configuration publiée.',
-      });
-    }
+    return json(res, 200, {
+      success: true,
+      config: config ?? null,
+    });
   }
 
   if (req.method !== 'PUT') {
@@ -117,16 +85,18 @@ export default async function handler(
     });
   }
 
-  const revision = Number(body.revision || Date.now());
+  const config = {
+    ...body.config,
+    publishedAt:
+      typeof body.config.publishedAt === 'string'
+        ? body.config.publishedAt
+        : new Date().toISOString(),
+  };
 
-  await redis.set(KEY, {
-    config: body.config,
-    revision: Number.isFinite(revision) ? revision : Date.now(),
-  });
+  await redis.set(KEY, config);
 
   return json(res, 200, {
     success: true,
-    config: body.config,
-    revision,
+    config,
   });
 }

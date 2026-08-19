@@ -40,7 +40,6 @@ import { defaultThemeConfig } from './utils/themeStyles';
 import {
   getInitialBrandData,
   getInitialEditorConfig,
-  getInitialPublishedRevision,
 } from './lib/publishedSite';
 
 type CustomizerTab =
@@ -240,19 +239,40 @@ export default function App() {
       };
 
       try {
-        /*
-         * UNE SEULE publication.
-         *
-         * /api/site-publish écrit maintenant GitHub ET Upstash dans la
-         * même opération serveur et attribue une révision à la configuration.
-         *
-         * On ne fait surtout plus :
-         *   1. PUT GitHub
-         *   2. PUT Upstash séparé
-         *
-         * C'était une source de désynchronisation lorsque plusieurs
-         * publications se croisaient.
-         */
+        // Upstash est la source active UNIQUE du contenu publié.
+        // IMPORTANT : on l'écrit AVANT GitHub.
+        //
+        // Si GitHub déclenche un nouveau build Vercel pendant cette opération,
+        // le visiteur récupère toujours la même configuration serveur que
+        // l'administrateur. L'ancien ordre (GitHub puis Upstash) créait une
+        // fenêtre où le nouveau bundle pouvait être écrasé par l'ancienne
+        // configuration Upstash.
+        const config = {
+          brandData: normalizedBrandData,
+          editorConfig: nextEditorConfig,
+          publishedAt: new Date().toISOString(),
+        };
+
+        const response = await fetch('/api/site-config', {
+          method: 'PUT',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({ config }),
+        });
+
+        if (!response.ok) {
+          const errorBody = await response.json().catch(() => null);
+          throw new Error(
+            errorBody?.error ||
+              `Synchronisation Upstash: HTTP ${response.status}`
+          );
+        }
+
+        // Ensuite seulement, mettre le même snapshot dans GitHub.
+        // Le build Vercel devient le fallback durable du snapshot serveur.
         const publishResponse = await fetch('/api/site-publish', {
           method: 'PUT',
           credentials: 'include',
@@ -260,26 +280,21 @@ export default function App() {
             'Content-Type': 'application/json',
             Accept: 'application/json',
           },
-          body: JSON.stringify({
-            config: {
-              brandData: normalizedBrandData,
-              editorConfig: nextEditorConfig,
-            },
-          }),
+          body: JSON.stringify({ config }),
         });
 
-        const publishData = await publishResponse
-          .json()
-          .catch(() => null);
-
         if (!publishResponse.ok) {
+          const publishBody = await publishResponse.json().catch(() => null);
           throw new Error(
-            publishData?.error ||
-              `Publication : HTTP ${publishResponse.status}`
+            publishBody?.error ||
+              `Publication GitHub: HTTP ${publishResponse.status}`
           );
         }
 
-        // Le rendu local devient exactement celui qui vient d'être publié.
+        const publishData = await publishResponse.json().catch(() => null);
+
+        // L'état React est synchronisé avec le snapshot qui vient d'être
+        // accepté par Upstash et envoyé à GitHub.
         setBrandData(normalizedBrandData);
         setSiteEditorConfig(nextEditorConfig);
 
@@ -298,12 +313,10 @@ export default function App() {
         return {
           success: true,
           commitSha: publishData?.commitSha || null,
-          revision: Number(publishData?.revision || 0),
-          warning: publishData?.warning || null,
         };
       } catch (error) {
         console.error(
-          'Impossible de publier la configuration du site:',
+          'Impossible de sauvegarder/publicer la configuration du site:',
           error
         );
 
@@ -318,13 +331,10 @@ export default function App() {
     });
 
     // Toujours laisser la file continuer, même si une publication échoue.
-    saveQueueRef.current = operation.then(
-      () => undefined,
-      () => undefined
-    );
-
+    saveQueueRef.current = operation.then(() => undefined, () => undefined);
     return operation;
   };
+
   // ===========================================================================
   // RESET BRAND DATA
   // ===========================================================================
@@ -360,14 +370,14 @@ export default function App() {
 
   const fetchPublishedSiteConfig = async () => {
     try {
-      const embeddedRevision = getInitialPublishedRevision();
-
+      // Upstash est la source active du contenu.
+      // Le timestamp + no-store évitent de récupérer une ancienne réponse
+      // depuis le navigateur ou une couche de cache.
       const response = await fetch(
         `/api/site-config?ts=${Date.now()}`,
         {
           method: 'GET',
           cache: 'no-store',
-          credentials: 'include',
           headers: {
             Accept: 'application/json',
             'Cache-Control': 'no-cache',
@@ -384,26 +394,8 @@ export default function App() {
 
       const data = await response.json();
       const config = data?.config;
-      const serverRevision = Number(data?.revision || 0);
 
       if (!config || typeof config !== 'object') {
-        return;
-      }
-
-      /*
-       * RÈGLE DE COHÉRENCE :
-       *
-       * Le bundle Vercel contient sa propre révision.
-       * Une vieille valeur Upstash ne doit jamais pouvoir écraser cette
-       * version avec des textes/images provenant d'une ancienne publication.
-       *
-       * On accepte Upstash uniquement si sa révision est STRICTEMENT
-       * plus récente que le bundle embarqué.
-       */
-      if (
-        !Number.isFinite(serverRevision) ||
-        serverRevision <= embeddedRevision
-      ) {
         return;
       }
 
