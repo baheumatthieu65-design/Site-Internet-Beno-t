@@ -149,6 +149,15 @@ export default function App() {
       })
     );
 
+  // V2.9 : le dernier état de l'éditeur est conservé synchroniquement.
+  // Ainsi, cliquer immédiatement sur « Enregistrer » après une modification
+  // ne peut pas sauvegarder l'ancien render de React.
+  const siteEditorConfigRef = useRef<SiteEditorConfig>(siteEditorConfig);
+
+  useEffect(() => {
+    siteEditorConfigRef.current = siteEditorConfig;
+  }, [siteEditorConfig]);
+
   // Le contenu publié serveur est la source commune aux visiteurs et à l'admin.
   // On ne révèle l'application qu'après la première synchronisation (ou fallback).
   const [publishedConfigReady, setPublishedConfigReady] = useState(false);
@@ -428,6 +437,7 @@ export default function App() {
       }
 
       if (config.editorConfig && typeof config.editorConfig === 'object') {
+        siteEditorConfigRef.current = config.editorConfig as SiteEditorConfig;
         setSiteEditorConfig(config.editorConfig as SiteEditorConfig);
       }
 
@@ -673,6 +683,7 @@ export default function App() {
     const sessionSnapshot = adminSessionSnapshotRef.current;
     if (sessionSnapshot) {
       setBrandData(sessionSnapshot.brandData);
+      siteEditorConfigRef.current = sessionSnapshot.editorConfig;
       setSiteEditorConfig(sessionSnapshot.editorConfig);
       setSelectedJacketId(
         sessionSnapshot.brandData.jackets?.[0]?.id || ''
@@ -691,11 +702,18 @@ export default function App() {
   // ===========================================================================
 
   const handleSaveVisualEditor = async (
-    nextEditorConfig: SiteEditorConfig = siteEditorConfig
+    nextEditorConfig?: SiteEditorConfig
   ) => {
+    const configToSave =
+      nextEditorConfig || siteEditorConfigRef.current;
+
+    // Mettre immédiatement l'état + la ref à jour avant le réseau.
+    siteEditorConfigRef.current = configToSave;
+    setSiteEditorConfig(configToSave);
+
     const result = await saveSiteConfig(
       brandData,
-      nextEditorConfig
+      configToSave
     );
 
     if (result.success) {
@@ -1382,7 +1400,10 @@ export default function App() {
         <SiteVisualEditor
           brandData={brandData}
           config={siteEditorConfig}
-          onChange={setSiteEditorConfig}
+          onChange={(nextConfig) => {
+            siteEditorConfigRef.current = nextConfig;
+            setSiteEditorConfig(nextConfig);
+          }}
           onSave={async (nextConfig) => {
             await handleSaveVisualEditor(nextConfig);
           }}
