@@ -6,26 +6,51 @@ type Props = {
   onChange: (next: any) => void;
 };
 
-const fallbackSections = [
-  ["hero", "Accueil & Bannière"],
-  ["collection", "Les 2 Vestes"],
-  ["comparatif", "Tableau Comparatif"],
-  ["origines", "L’Esprit Pyrénées"],
+const fallbackSections: [string, string][] = [
+  ["hero", "Hero / Accueil"],
+  ["collection", "Collection / Articles"],
+  ["comparatif", "Tableau comparatif"],
+  ["origines", "L’esprit Pyrénées"],
   ["lookbook", "Lookbook"],
   ["contact", "Contact & Atelier"],
+  ["gite-hero", "Gîte — Accueil"],
+  ["gite-presentation", "Gîte — Présentation"],
+  ["gite-gallery", "Gîte — Galerie photos"],
+  ["gite-video", "Gîte — Vidéo"],
+  ["gite-amenities", "Gîte — Équipements"],
+  ["gite-location", "Gîte — Localisation / Accès"],
+  ["gite-surroundings", "Gîte — Aux alentours"],
+  ["gite-booking", "Gîte — Séjourner / Airbnb / Booking"],
+  ["gite-contact", "Gîte — Contact"],
 ];
 
 const makeId = () => `floating-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+const readImageFile = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(reader.error ?? new Error("Lecture de l'image impossible"));
+    reader.readAsDataURL(file);
+  });
 
 export const FloatingMediaManager: React.FC<Props> = ({ config, onChange }) => {
   const items: FloatingMediaItem[] = config?.floatingImages ?? [];
   const rawBlocks = Array.isArray(config?.blocks) ? config.blocks : [];
-  const fromBlocks = rawBlocks
-    .map((b:any) => b.section)
-    .filter(Boolean)
-    .filter((v:any,i:number,a:any[]) => a.indexOf(v) === i)
-    .map((id:string) => [id, id] as [string,string]);
-  const sections: [string,string][] = fromBlocks.length ? fromBlocks : fallbackSections as [string,string][];
+  const fromBlocks: [string,string][] = rawBlocks
+    .map((b:any) => {
+      const id = b.section ?? b.id ?? b.key;
+      const label = b.label ?? b.title ?? id;
+      return id ? [String(id), String(label)] as [string,string] : null;
+    })
+    .filter(Boolean) as [string,string][];
+
+  const seen = new Set<string>();
+  const sections: [string,string][] = [...fromBlocks, ...fallbackSections]
+    .filter(([id]) => {
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
 
   const update = (id:string, patch:Partial<FloatingMediaItem>) =>
     onChange({...config, floatingImages: items.map(i => i.id === id ? {...i, ...patch} : i)});
@@ -63,6 +88,41 @@ export const FloatingMediaManager: React.FC<Props> = ({ config, onChange }) => {
 
           <input value={item.url} onChange={e=>update(item.id,{url:e.target.value})}
             placeholder="URL de l'image..." className="w-full rounded-lg border border-[#3b473e] bg-[#101511] px-3 py-2 text-sm"/>
+          <div className="flex items-center gap-2">
+            <label className="flex-1 cursor-pointer rounded-lg border border-[#d4af37]/50 bg-[#151b17] px-3 py-2 text-center text-xs font-semibold uppercase tracking-wider text-[#d4af37] hover:bg-[#d4af37]/10">
+              Choisir une image sur mon PC
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+                className="sr-only"
+                onChange={async e => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  try {
+                    const dataUrl = await readImageFile(file);
+                    update(item.id, { url: dataUrl });
+                  } catch {
+                    window.alert("Impossible de lire cette image.");
+                  }
+                  e.currentTarget.value = "";
+                }}
+              />
+            </label>
+            {item.url && (
+              <button
+                type="button"
+                onClick={() => update(item.id, { url: "" })}
+                className="rounded-lg border border-[#6b3939] px-3 py-2 text-xs text-red-300 hover:bg-red-950/20"
+              >
+                Effacer
+              </button>
+            )}
+          </div>
+          {item.url && (
+            <div className="overflow-hidden rounded-lg border border-[#3b473e] bg-[#0d110e] p-2">
+              <img src={item.url} alt="" className="mx-auto max-h-28 max-w-full object-contain" />
+            </div>
+          )}
 
           <label className="block text-xs text-[#9eaaa0]">
             Module
