@@ -572,6 +572,15 @@ export default function App() {
   // ===========================================================================
 
   const handleLogout = async () => {
+    // Avant de quitter l'admin, recharger le snapshot publié côté serveur.
+    // Ainsi l'observateur récupère exactement la version Y qui vient d'être enregistrée.
+    try {
+      await fetchPublishedSiteConfig();
+      await fetchServerProducts();
+    } catch (error) {
+      console.warn('Impossible de resynchroniser la vue publique avant le logout:', error);
+    }
+
     try {
       await logoutAdminServer();
     } catch (error) {
