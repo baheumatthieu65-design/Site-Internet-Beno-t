@@ -447,8 +447,8 @@ export const publishedSiteContent = {
       "showcaseLayout": "split-interactive",
       "sectionOrder": [
         "hero",
-        "comparatif",
         "collection",
+        "comparatif",
         "lookbook",
         "origines",
         "contact"
@@ -529,6 +529,28 @@ export const publishedSiteContent = {
         "lookbook",
         "contact"
       ]
+    },
+    "logos": {
+      "boutique": {
+        "imageUrl": "/assets/pyrenees_brand_logo_1785338626936-BaITKbpK.jpg",
+        "text": "MAISON DES PYRÉNÉES",
+        "fontFamily": "serif",
+        "textColor": "#f3ece0",
+        "textSize": "12px",
+        "imageSize": 30,
+        "gap": 12,
+        "showText": true
+      },
+      "gite": {
+        "imageUrl": "/assets/pyrenees_brand_logo_1785338626936-BaITKbpK.jpg",
+        "text": "GÎTE DES PYRÉNÉES",
+        "fontFamily": "sans",
+        "textColor": "#f3ece0",
+        "textSize": "21px",
+        "imageSize": 58,
+        "gap": 12,
+        "showText": true
+      }
     }
   },
   "editorConfig": {
