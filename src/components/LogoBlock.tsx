@@ -4,6 +4,7 @@ import { BrandConfig } from '../types';
 export interface LogoBlockConfig {
   imageUrl: string;
   text: string;
+  secondaryText: string;
   fontFamily: 'serif' | 'sans' | 'display';
   textColor: string;
   textSize: string;
@@ -17,7 +18,8 @@ export type LogoKind = 'boutique' | 'gite';
 const DEFAULT_LOGOS: Record<LogoKind, LogoBlockConfig> = {
   boutique: {
     imageUrl: '',
-    text: 'MAISON DES PYRÉNÉES',
+    text: 'MAISON DES\nPYRÉNÉES',
+    secondaryText: 'ÉDITION LIMITÉE DES PYRÉNÉES',
     fontFamily: 'serif',
     textColor: '#f3ece0',
     textSize: '24px',
@@ -27,7 +29,8 @@ const DEFAULT_LOGOS: Record<LogoKind, LogoBlockConfig> = {
   },
   gite: {
     imageUrl: '',
-    text: 'GÎTE DES PYRÉNÉES',
+    text: 'GÎTE DES\nPYRÉNÉES',
+    secondaryText: '',
     fontFamily: 'sans',
     textColor: '#f3ece0',
     textSize: '21px',
@@ -92,11 +95,16 @@ export const LogoBlock: React.FC<LogoBlockProps> = ({ brandData, kind, onClick, 
             color: logo.textColor,
             fontSize: textSize,
             fontFamily: logo.fontFamily === 'sans' ? 'inherit' : 'Georgia, serif',
-            lineHeight: 1.08,
+            lineHeight: 1.05,
           }}
-          className="font-semibold tracking-[.08em] whitespace-nowrap"
+          className="font-semibold tracking-[.06em] min-w-0 max-w-[260px]"
         >
-          {logo.text}
+          <span className="block whitespace-pre-line">{logo.text}</span>
+          {logo.secondaryText && (
+            <span className="block mt-1 text-[.48em] sm:text-[.42em] font-normal tracking-[.12em] uppercase opacity-80 whitespace-pre-line">
+              {logo.secondaryText}
+            </span>
+          )}
         </span>
       )}
     </div>
