@@ -673,7 +673,7 @@ export const publishedSiteContent = {
         "visible": true,
         "selector": "[data-vce-hero-line=\"2\"]",
         "kind": "text",
-        "text": "MAISON DES PYdd",
+        "text": "MAISON DES PYd",
         "fontFamily": "ui-serif",
         "fontSize": "72px",
         "color": "rgb(245, 238, 223)"
@@ -754,5 +754,5 @@ export const publishedSiteContent = {
       }
     ]
   },
-  "publishedAt": 1787163642643
+  "publishedAt": 1787164321696
 } as const;
