@@ -537,7 +537,7 @@ export const publishedSiteContent = {
         "secondaryText": "ÉDITION LIMITÉE DES PYRÉNÉES",
         "fontFamily": "serif",
         "textColor": "#f3ece0",
-        "textSize": "17px",
+        "textSize": "20px",
         "imageSize": 52,
         "gap": 12,
         "showText": true
@@ -548,7 +548,7 @@ export const publishedSiteContent = {
         "secondaryText": "Hebergement au coeur des Pyrénées",
         "fontFamily": "sans",
         "textColor": "#f3ece0",
-        "textSize": "21px",
+        "textSize": "20px",
         "imageSize": 58,
         "gap": 12,
         "showText": true
