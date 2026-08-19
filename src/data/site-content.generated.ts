@@ -521,14 +521,16 @@ export const publishedSiteContent = {
           "key": "care"
         }
       ],
-      "collectionTabLabel": "Les Art",
+      "collectionTabLabel": "Les Articles",
       "navOrder": [
         "collection",
         "comparatif",
         "origines",
         "lookbook",
         "contact"
-      ]
+      ],
+      "comparatifTabLabel": "Tableau Comparatif des Articles",
+      "lookbookTabLabel": "Bibliothèque"
     },
     "logos": {
       "boutique": {
@@ -778,5 +780,5 @@ export const publishedSiteContent = {
       }
     ]
   },
-  "publishedAt": 1787176804609
+  "publishedAt": 1787176862031
 } as const;
