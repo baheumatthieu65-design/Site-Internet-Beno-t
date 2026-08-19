@@ -753,5 +753,6 @@ export const publishedSiteContent = {
         "visible": true
       }
     ]
-  }
+  },
+  "publishedAt": "2026-08-19T18:03:00.082Z"
 } as const;
