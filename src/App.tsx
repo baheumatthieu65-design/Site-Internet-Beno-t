@@ -40,7 +40,6 @@ import { defaultThemeConfig } from './utils/themeStyles';
 import {
   getInitialBrandData,
   getInitialEditorConfig,
-  hasBootstrappedPublishedConfig,
 } from './lib/publishedSite';
 
 type CustomizerTab =
@@ -141,6 +140,10 @@ export default function App() {
       })
     );
 
+  // Le contenu publié serveur est la source commune aux visiteurs et à l'admin.
+  // On ne révèle l'application qu'après la première synchronisation (ou fallback).
+  const [publishedConfigReady, setPublishedConfigReady] = useState(false);
+
 
 
 
@@ -195,6 +198,7 @@ export default function App() {
 
     setBrandData(normalizedData);
 
+
     // Publication serveur + GitHub pour éviter que les changements
     // du Customizer ou du réordonnancement reviennent en arrière.
     void saveSiteConfig(normalizedData, siteEditorConfig).then((result) => {
@@ -227,60 +231,49 @@ export default function App() {
         },
       };
 
-      try {
-        const configPayload = {
-          brandData: normalizedBrandData,
-          editorConfig: nextEditorConfig,
-          publishedAt: Date.now(),
-        };
+      // Un snapshot et une révision uniques pour les deux stockages.
+      const publishedAt = Date.now();
+      const config = {
+        brandData: normalizedBrandData,
+        editorConfig: nextEditorConfig,
+        publishedAt,
+      };
 
-        /*
-         * SOURCE DE VÉRITÉ RUNTIME
-         *
-         * Upstash est écrit EN PREMIER. Le visiteur peut donc toujours
-         * récupérer la nouvelle configuration immédiatement, même pendant
-         * le build Vercel du nouveau bundle.
-         *
-         * GitHub/Vercel devient ensuite le fallback durable. On ne fait
-         * surtout pas l'inverse : sinon Vercel peut publier le nouveau bundle
-         * avant qu'Upstash ait reçu la même configuration.
-         */
+      try {
+        // 1) Upstash est la source runtime. On l'écrit EN PREMIER afin que
+        // visiteurs et admin voient le même snapshot dès l'enregistrement.
         const response = await fetch('/api/site-config', {
           method: 'PUT',
           credentials: 'include',
+          cache: 'no-store',
           headers: {
             'Content-Type': 'application/json',
             Accept: 'application/json',
+            'Cache-Control': 'no-cache',
           },
-          body: JSON.stringify({
-            config: configPayload,
-          }),
+          body: JSON.stringify({ config }),
         });
 
         if (!response.ok) {
           const errorBody = await response.json().catch(() => null);
           throw new Error(
             errorBody?.error ||
-              `Synchronisation Upstash: HTTP ${response.status}`
+              `Synchronisation configuration: HTTP ${response.status}`
           );
         }
 
-        /*
-         * Une fois la source runtime validée, on met exactement le même
-         * snapshot dans GitHub. Si GitHub échoue, la configuration reste
-         * quand même active côté site : le prochain chargement la récupérera
-         * depuis /api/site-config.
-         */
+        // 2) Même snapshot vers GitHub pour que le prochain bundle Vercel
+        // contienne exactement la même configuration de secours.
         const publishResponse = await fetch('/api/site-publish', {
           method: 'PUT',
           credentials: 'include',
+          cache: 'no-store',
           headers: {
             'Content-Type': 'application/json',
             Accept: 'application/json',
+            'Cache-Control': 'no-cache',
           },
-          body: JSON.stringify({
-            config: configPayload,
-          }),
+          body: JSON.stringify({ config }),
         });
 
         if (!publishResponse.ok) {
@@ -291,15 +284,14 @@ export default function App() {
           );
         }
 
-        const publishData = await publishResponse.json().catch(() => null);
-
-        // Garder l'état React synchronisé avec le snapshot publié.
+        // L'état local suit exactement le snapshot qui vient d'être publié.
         setBrandData(normalizedBrandData);
         setSiteEditorConfig(nextEditorConfig);
+        setPublishedConfigReady(true);
 
         return {
           success: true,
-          commitSha: publishData?.commitSha || null,
+          commitSha: (await publishResponse.json().catch(() => null))?.commitSha || null,
         };
       } catch (error) {
         console.error(
@@ -317,7 +309,6 @@ export default function App() {
       }
     });
 
-    // Toujours laisser la file continuer, même si une publication échoue.
     saveQueueRef.current = operation.then(() => undefined, () => undefined);
     return operation;
   };
@@ -339,6 +330,15 @@ export default function App() {
 
     setSelectedJacketId(resetData.jackets?.[0]?.id || '');
 
+    try {
+      localStorage.removeItem('pyrenees_brand_config');
+    } catch (error) {
+      console.error(
+        'Impossible de supprimer la configuration locale:',
+        error
+      );
+    }
+
     void saveSiteConfig(resetData, siteEditorConfig);
   };
 
@@ -346,45 +346,32 @@ export default function App() {
   // LOAD PUBLISHED SITE CONFIG FROM SERVER
   // ===========================================================================
 
-  const fetchPublishedSiteConfig = async () => {
+  const fetchPublishedSiteConfig = async (): Promise<boolean> => {
     try {
-      // Upstash est la source active du contenu.
-      // Le timestamp + no-store évitent de récupérer une ancienne réponse
-      // depuis le navigateur ou une couche de cache.
-      const response = await fetch(
-        `/api/site-config?ts=${Date.now()}`,
-        {
-          method: 'GET',
-          cache: 'no-store',
-          headers: {
-            Accept: 'application/json',
-            'Cache-Control': 'no-cache',
-          },
-        }
-      );
+      const response = await fetch(`/api/site-config?ts=${Date.now()}`, {
+        method: 'GET',
+        cache: 'no-store',
+        headers: {
+          Accept: 'application/json',
+          'Cache-Control': 'no-cache, no-store, max-age=0',
+        },
+      });
 
       if (!response.ok) {
-        console.warn(
-          `Impossible de charger la configuration publiée. HTTP ${response.status}. Conservation de la version embarquée.`
-        );
-        return;
+        console.warn(`Configuration publiée indisponible. HTTP ${response.status}. Fallback bundle utilisé.`);
+        return false;
       }
 
       const data = await response.json();
       const config = data?.config;
 
       if (!config || typeof config !== 'object') {
-        return;
+        return false;
       }
 
-      if (
-        config.brandData &&
-        typeof config.brandData === 'object'
-      ) {
+      if (config.brandData && typeof config.brandData === 'object') {
         setBrandData((previous) => {
-          const serverBrandData =
-            config.brandData as Partial<BrandConfig>;
-
+          const serverBrandData = config.brandData as Partial<BrandConfig>;
           return {
             ...previous,
             ...serverBrandData,
@@ -400,34 +387,21 @@ export default function App() {
           const jackets = Array.isArray(config.brandData.jackets)
             ? config.brandData.jackets
             : [];
-
-          if (
-            currentId &&
-            jackets.some(
-              (product: { id?: string }) =>
-                product.id === currentId
-            )
-          ) {
+          if (currentId && jackets.some((product: { id?: string }) => product.id === currentId)) {
             return currentId;
           }
-
           return jackets[0]?.id || currentId;
         });
       }
 
-      if (
-        config.editorConfig &&
-        typeof config.editorConfig === 'object'
-      ) {
-        setSiteEditorConfig(
-          config.editorConfig as SiteEditorConfig
-        );
+      if (config.editorConfig && typeof config.editorConfig === 'object') {
+        setSiteEditorConfig(config.editorConfig as SiteEditorConfig);
       }
+
+      return true;
     } catch (error) {
-      console.warn(
-        'Impossible de récupérer la configuration publiée. Utilisation de la version embarquée.',
-        error
-      );
+      console.warn('Impossible de récupérer la configuration publiée. Fallback bundle utilisé.', error);
+      return false;
     }
   };
 
@@ -517,27 +491,23 @@ export default function App() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        const isAuthenticated =
-          await verifyAdminSessionServer();
+        const loaded = await fetchPublishedSiteConfig();
+        await fetchServerProducts();
+        setPublishedConfigReady(true);
+        window.dispatchEvent(new CustomEvent('site-bootstrap-ready', { detail: { published: loaded } }));
+      } catch (error) {
+        console.warn('Initialisation du site:', error);
+        setPublishedConfigReady(true);
+        window.dispatchEvent(new CustomEvent('site-bootstrap-ready'));
+      }
 
+      try {
+        const isAuthenticated = await verifyAdminSessionServer();
         setIsAdminLoggedIn(isAuthenticated);
       } catch (error) {
-        console.warn(
-          'Impossible de vérifier la session administrateur:',
-          error
-        );
-
+        console.warn('Impossible de vérifier la session administrateur:', error);
         setIsAdminLoggedIn(false);
       }
-
-      // main.tsx a déjà chargé la configuration publiée avant le premier
-      // rendu. On ne la recharge pas immédiatement : cela supprimerait
-      // le second changement d'état qui provoquait les flashs/rollbacks.
-      if (!hasBootstrappedPublishedConfig()) {
-        await fetchPublishedSiteConfig();
-      }
-
-      await fetchServerProducts();
     };
 
     void initializeApp();
@@ -587,11 +557,14 @@ export default function App() {
   // ===========================================================================
 
   const handleLoginSuccess = (user: string) => {
-    setIsAdminLoggedIn(true);
     setAdminUsername(user || 'admin');
-
-    setIsAdminLoginOpen(false);
-    setIsCustomizerOpen(false);
+    // Relecture forcée après connexion : l'espace admin ne doit jamais
+    // conserver un snapshot différent de celui présenté au visiteur.
+    void fetchPublishedSiteConfig().finally(() => {
+      setIsAdminLoggedIn(true);
+      setIsAdminLoginOpen(false);
+      setIsCustomizerOpen(false);
+    });
   };
 
   // ===========================================================================

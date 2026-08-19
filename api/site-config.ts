@@ -85,10 +85,15 @@ export default async function handler(
     });
   }
 
-  await redis.set(KEY, body.config);
+  const config = {
+    ...body.config,
+    publishedAt: Number(body.config.publishedAt) || Date.now(),
+  };
+
+  await redis.set(KEY, config);
 
   return json(res, 200, {
     success: true,
-    config: body.config,
+    config,
   });
 }
