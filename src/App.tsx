@@ -40,7 +40,6 @@ import { defaultThemeConfig } from './utils/themeStyles';
 import {
   getInitialBrandData,
   getInitialEditorConfig,
-  getBootstrapConfig,
 } from './lib/publishedSite';
 
 type CustomizerTab =
@@ -71,11 +70,7 @@ export default function App() {
      * version publiée. C'était ce qui pouvait afficher brièvement
      * l'ancien texte avant le chargement de la nouvelle configuration.
      */
-    const bootstrap = getBootstrapConfig();
-    const publishedData = getInitialBrandData(
-      initialBrandData,
-      bootstrap?.brandData || null,
-    );
+    const publishedData = getInitialBrandData(initialBrandData);
 
     return {
       ...publishedData,
@@ -83,11 +78,6 @@ export default function App() {
         ...defaultThemeConfig,
         ...(publishedData.theme || {}),
       },
-      ...(getBootstrapConfig()?.products?.length
-        ? {
-            jackets: getBootstrapConfig()!.products as BrandConfig['jackets'],
-          }
-        : {}),
     };
   });
 
@@ -144,13 +134,10 @@ export default function App() {
 
   const [siteEditorConfig, setSiteEditorConfig] =
     useState<SiteEditorConfig>(() =>
-      getInitialEditorConfig<SiteEditorConfig>(
-        {
-          adminBarPosition: 'bottom',
-          blocks: [],
-        },
-        getBootstrapConfig()?.editorConfig,
-      )
+      getInitialEditorConfig<SiteEditorConfig>({
+        adminBarPosition: 'bottom',
+        blocks: [],
+      })
     );
 
 
@@ -252,10 +239,40 @@ export default function App() {
       };
 
       try {
-        // 1) GitHub est la source publiée du bundle Vercel.
-        // On publie d'abord le code, puis on synchronise le cache dynamique.
-        // Ainsi, une sauvegarde Upstash réussie ne peut plus laisser une
-        // configuration temporaire différente du code réellement publié.
+        // Upstash est la source active UNIQUE du contenu publié.
+        // IMPORTANT : on l'écrit AVANT GitHub.
+        //
+        // Si GitHub déclenche un nouveau build Vercel pendant cette opération,
+        // le visiteur récupère toujours la même configuration serveur que
+        // l'administrateur. L'ancien ordre (GitHub puis Upstash) créait une
+        // fenêtre où le nouveau bundle pouvait être écrasé par l'ancienne
+        // configuration Upstash.
+        const config = {
+          brandData: normalizedBrandData,
+          editorConfig: nextEditorConfig,
+          publishedAt: new Date().toISOString(),
+        };
+
+        const response = await fetch('/api/site-config', {
+          method: 'PUT',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({ config }),
+        });
+
+        if (!response.ok) {
+          const errorBody = await response.json().catch(() => null);
+          throw new Error(
+            errorBody?.error ||
+              `Synchronisation Upstash: HTTP ${response.status}`
+          );
+        }
+
+        // Ensuite seulement, mettre le même snapshot dans GitHub.
+        // Le build Vercel devient le fallback durable du snapshot serveur.
         const publishResponse = await fetch('/api/site-publish', {
           method: 'PUT',
           credentials: 'include',
@@ -263,12 +280,7 @@ export default function App() {
             'Content-Type': 'application/json',
             Accept: 'application/json',
           },
-          body: JSON.stringify({
-            config: {
-              brandData: normalizedBrandData,
-              editorConfig: nextEditorConfig,
-            },
-          }),
+          body: JSON.stringify({ config }),
         });
 
         if (!publishResponse.ok) {
@@ -281,32 +293,8 @@ export default function App() {
 
         const publishData = await publishResponse.json().catch(() => null);
 
-        // 2) Une fois le commit accepté, synchroniser Upstash.
-        const response = await fetch('/api/site-config', {
-          method: 'PUT',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          body: JSON.stringify({
-            config: {
-              brandData: normalizedBrandData,
-              editorConfig: nextEditorConfig,
-            },
-          }),
-        });
-
-        if (!response.ok) {
-          const errorBody = await response.json().catch(() => null);
-          throw new Error(
-            errorBody?.error ||
-              `Synchronisation Upstash: HTTP ${response.status}`
-          );
-        }
-
-        // Garder l'état React et localStorage synchronisés avec la version
-        // qui vient réellement d'être acceptée par GitHub.
+        // L'état React est synchronisé avec le snapshot qui vient d'être
+        // accepté par Upstash et envoyé à GitHub.
         setBrandData(normalizedBrandData);
         setSiteEditorConfig(nextEditorConfig);
 
@@ -377,6 +365,174 @@ export default function App() {
   };
 
   // ===========================================================================
+  // LOAD PUBLISHED SITE CONFIG FROM SERVER
+  // ===========================================================================
+
+  const fetchPublishedSiteConfig = async () => {
+    try {
+      // Upstash est la source active du contenu.
+      // Le timestamp + no-store évitent de récupérer une ancienne réponse
+      // depuis le navigateur ou une couche de cache.
+      const response = await fetch(
+        `/api/site-config?ts=${Date.now()}`,
+        {
+          method: 'GET',
+          cache: 'no-store',
+          headers: {
+            Accept: 'application/json',
+            'Cache-Control': 'no-cache',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        console.warn(
+          `Impossible de charger la configuration publiée. HTTP ${response.status}. Conservation de la version embarquée.`
+        );
+        return;
+      }
+
+      const data = await response.json();
+      const config = data?.config;
+
+      if (!config || typeof config !== 'object') {
+        return;
+      }
+
+      if (
+        config.brandData &&
+        typeof config.brandData === 'object'
+      ) {
+        setBrandData((previous) => {
+          const serverBrandData =
+            config.brandData as Partial<BrandConfig>;
+
+          return {
+            ...previous,
+            ...serverBrandData,
+            theme: {
+              ...defaultThemeConfig,
+              ...(previous.theme || {}),
+              ...(serverBrandData.theme || {}),
+            },
+          };
+        });
+
+        setSelectedJacketId((currentId) => {
+          const jackets = Array.isArray(config.brandData.jackets)
+            ? config.brandData.jackets
+            : [];
+
+          if (
+            currentId &&
+            jackets.some(
+              (product: { id?: string }) =>
+                product.id === currentId
+            )
+          ) {
+            return currentId;
+          }
+
+          return jackets[0]?.id || currentId;
+        });
+      }
+
+      if (
+        config.editorConfig &&
+        typeof config.editorConfig === 'object'
+      ) {
+        setSiteEditorConfig(
+          config.editorConfig as SiteEditorConfig
+        );
+      }
+    } catch (error) {
+      console.warn(
+        'Impossible de récupérer la configuration publiée. Utilisation de la version embarquée.',
+        error
+      );
+    }
+  };
+
+  // ===========================================================================
+  // LOAD PRODUCTS FROM SERVER
+  // ===========================================================================
+
+  const fetchServerProducts = async () => {
+    try {
+      const response = await fetch('/api/products', {
+        method: 'GET',
+        cache: 'no-store',
+        headers: {
+          Accept: 'application/json',
+          'Cache-Control': 'no-cache',
+        },
+      });
+
+      if (!response.ok) {
+        console.warn(
+          `Impossible de charger les produits serveur. HTTP ${response.status}. Conservation des produits locaux.`
+        );
+
+        return;
+      }
+
+      const data = await response.json();
+
+      if (
+        !data ||
+        data.success !== true ||
+        !Array.isArray(data.products)
+      ) {
+        console.warn(
+          'Réponse produits serveur invalide. Conservation des produits locaux.'
+        );
+
+        return;
+      }
+
+      const products = data.products;
+
+      // IMPORTANT :
+      // Si l'API retourne un tableau vide, on conserve
+      // les produits présents dans initialBrandData.
+      //
+      // Cela évite que le site devienne vide/blanc lorsque
+      // Redis n'est pas encore initialisé.
+      if (products.length === 0) {
+        console.warn(
+          'API produits vide : conservation des produits locaux.'
+        );
+
+        return;
+      }
+
+      setBrandData((previous) => ({
+        ...previous,
+        jackets: products,
+      }));
+
+      setSelectedJacketId((currentId) => {
+        if (
+          currentId &&
+          products.some(
+            (product: { id?: string }) =>
+              product.id === currentId
+          )
+        ) {
+          return currentId;
+        }
+
+        return products[0]?.id || '';
+      });
+    } catch (error) {
+      console.warn(
+        'Impossible de récupérer les produits depuis le serveur. Utilisation des données locales.',
+        error
+      );
+    }
+  };
+
+  // ===========================================================================
   // INITIALIZATION
   // ===========================================================================
 
@@ -396,10 +552,11 @@ export default function App() {
         setIsAdminLoggedIn(false);
       }
 
-      // Configuration et produits déjà chargés avant le montage de React
-      // dans src/main.tsx. Ne pas les réappliquer après le rendu : cela
-      // supprimerait le flash/rollback visuel.
-
+      // La version embarquée sert de fallback instantané.
+      // La configuration serveur est ensuite chargée et devient la
+      // source active pour les visiteurs comme pour l'administrateur.
+      await fetchPublishedSiteConfig();
+      await fetchServerProducts();
     };
 
     void initializeApp();
