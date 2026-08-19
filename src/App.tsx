@@ -28,9 +28,7 @@ import {
 import { SiteBlocksRenderer } from './components/SiteBlocksRenderer';
 import GitePage from './components/GitePage';
 import { LogoEditorModal } from './components/LogoEditorModal';
-import { FloatingMediaLayer } from './components/FloatingMediaLayer';
 import './styles/gite-v48.css';
-import './styles/floating-media.css';
 
 import {
   verifyAdminSessionServer,
@@ -139,7 +137,6 @@ export default function App() {
       getInitialEditorConfig<SiteEditorConfig>({
         adminBarPosition: 'bottom',
         blocks: [],
-        floatingImages: [],
       })
     );
 
@@ -367,6 +364,95 @@ export default function App() {
   };
 
   // ===========================================================================
+  // LOAD PUBLISHED SITE CONFIG FROM SERVER
+  // ===========================================================================
+
+  const fetchPublishedSiteConfig = async () => {
+    try {
+      // Upstash est la source active du contenu.
+      // Le timestamp + no-store évitent de récupérer une ancienne réponse
+      // depuis le navigateur ou une couche de cache.
+      const response = await fetch(
+        `/api/site-config?ts=${Date.now()}`,
+        {
+          method: 'GET',
+          cache: 'no-store',
+          headers: {
+            Accept: 'application/json',
+            'Cache-Control': 'no-cache',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        console.warn(
+          `Impossible de charger la configuration publiée. HTTP ${response.status}. Conservation de la version embarquée.`
+        );
+        return;
+      }
+
+      const data = await response.json();
+      const config = data?.config;
+
+      if (!config || typeof config !== 'object') {
+        return;
+      }
+
+      if (
+        config.brandData &&
+        typeof config.brandData === 'object'
+      ) {
+        setBrandData((previous) => {
+          const serverBrandData =
+            config.brandData as Partial<BrandConfig>;
+
+          return {
+            ...previous,
+            ...serverBrandData,
+            theme: {
+              ...defaultThemeConfig,
+              ...(previous.theme || {}),
+              ...(serverBrandData.theme || {}),
+            },
+          };
+        });
+
+        setSelectedJacketId((currentId) => {
+          const jackets = Array.isArray(config.brandData.jackets)
+            ? config.brandData.jackets
+            : [];
+
+          if (
+            currentId &&
+            jackets.some(
+              (product: { id?: string }) =>
+                product.id === currentId
+            )
+          ) {
+            return currentId;
+          }
+
+          return jackets[0]?.id || currentId;
+        });
+      }
+
+      if (
+        config.editorConfig &&
+        typeof config.editorConfig === 'object'
+      ) {
+        setSiteEditorConfig(
+          config.editorConfig as SiteEditorConfig
+        );
+      }
+    } catch (error) {
+      console.warn(
+        'Impossible de récupérer la configuration publiée. Utilisation de la version embarquée.',
+        error
+      );
+    }
+  };
+
+  // ===========================================================================
   // LOAD PRODUCTS FROM SERVER
   // ===========================================================================
 
@@ -374,8 +460,10 @@ export default function App() {
     try {
       const response = await fetch('/api/products', {
         method: 'GET',
+        cache: 'no-store',
         headers: {
           Accept: 'application/json',
+          'Cache-Control': 'no-cache',
         },
       });
 
@@ -463,20 +551,10 @@ export default function App() {
         setIsAdminLoggedIn(false);
       }
 
-      /*
-       * PAS DE SECOND RENDU AU DÉMARRAGE
-       *
-       * La version publique est déjà embarquée dans le bundle Vercel via
-       * src/data/site-content.generated.ts.
-       *
-       * On ne fait donc plus de GET /api/site-config au démarrage public.
-       * L'ancien appel faisait un setBrandData() après le premier rendu,
-       * ce qui provoquait le flash de l'ancienne version.
-       *
-       * Upstash reste utilisé par l'éditeur pour sauvegarder.
-       * La publication GitHub/Vercel reste la source de vérité publique.
-       */
-
+      // La version embarquée sert de fallback instantané.
+      // La configuration serveur est ensuite chargée et devient la
+      // source active pour les visiteurs comme pour l'administrateur.
+      await fetchPublishedSiteConfig();
       await fetchServerProducts();
     };
 
@@ -1080,8 +1158,7 @@ export default function App() {
       !isDragReorderMode
     ) {
       return (
-        <div key={sectionId} className="relative floating-module-anchor">
-          <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
+        <div key={sectionId}>
           {content}
         </div>
       );
@@ -1213,10 +1290,7 @@ export default function App() {
           </div>
         </div>
 
-        <div className="relative floating-module-anchor">
-          <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
-          {content}
-        </div>
+        {content}
       </div>
     );
   };
