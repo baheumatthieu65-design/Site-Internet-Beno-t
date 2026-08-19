@@ -132,6 +132,15 @@ export default function App() {
   // avec une requête réseau terminée dans le mauvais ordre.
   const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
 
+  // V2.4 : snapshot exact de l'état affiché au moment où l'admin entre.
+  // Ce snapshot est remplacé uniquement après une sauvegarde réussie.
+  // Il permet de sortir de l'admin sans qu'une requête asynchrone tardive
+  // ou un rendu admin puisse faire apparaître une autre version.
+  const adminSessionSnapshotRef = useRef<{
+    brandData: BrandConfig;
+    editorConfig: SiteEditorConfig;
+  } | null>(null);
+
   const [siteEditorConfig, setSiteEditorConfig] =
     useState<SiteEditorConfig>(() =>
       getInitialEditorConfig<SiteEditorConfig>({
@@ -287,6 +296,16 @@ export default function App() {
         // L'état local suit exactement le snapshot qui vient d'être publié.
         setBrandData(normalizedBrandData);
         setSiteEditorConfig(nextEditorConfig);
+
+        // Une sauvegarde réussie devient le nouvel état de référence
+        // pour la session admin en cours.
+        if (isAdminLoggedIn) {
+          adminSessionSnapshotRef.current = {
+            brandData: normalizedBrandData,
+            editorConfig: nextEditorConfig,
+          };
+        }
+
         setPublishedConfigReady(true);
 
         return {
@@ -584,6 +603,23 @@ export default function App() {
   };
 
   // ===========================================================================
+  // ADMIN SESSION SNAPSHOT
+  // ===========================================================================
+
+  useEffect(() => {
+    if (isAdminLoggedIn && !adminSessionSnapshotRef.current) {
+      adminSessionSnapshotRef.current = {
+        brandData,
+        editorConfig: siteEditorConfig,
+      };
+    }
+
+    if (!isAdminLoggedIn) {
+      adminSessionSnapshotRef.current = null;
+    }
+  }, [isAdminLoggedIn]);
+
+  // ===========================================================================
   // ADMIN LOGOUT
   // ===========================================================================
 
@@ -614,6 +650,18 @@ export default function App() {
       console.warn(
         'Erreur lors de la déconnexion administrateur:',
         error
+      );
+    }
+
+    // V2.4 : sortir de l'admin doit conserver exactement le snapshot
+    // visible pendant la session. Une modification non enregistrée est donc
+    // abandonnée ; une modification enregistrée a déjà remplacé ce snapshot.
+    const sessionSnapshot = adminSessionSnapshotRef.current;
+    if (sessionSnapshot) {
+      setBrandData(sessionSnapshot.brandData);
+      setSiteEditorConfig(sessionSnapshot.editorConfig);
+      setSelectedJacketId(
+        sessionSnapshot.brandData.jackets?.[0]?.id || ''
       );
     }
 
