@@ -24,3 +24,15 @@ export function getInitialEditorConfig<T>(fallback: T): T {
     ? published
     : fallback) as T;
 }
+
+/**
+ * Version embarquée dans le bundle Vercel.
+ * Les anciens bundles ne possèdent pas encore cette valeur et utilisent 0.
+ */
+export function getInitialPublishedRevision(): number {
+  const value = Number(
+    (publishedSiteContent as any)?.publishedRevision ?? 0
+  );
+
+  return Number.isFinite(value) ? value : 0;
+}
