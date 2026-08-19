@@ -1,8 +1,28 @@
 import type { BrandConfig } from '../types';
 import { publishedSiteContent } from '../data/site-content.generated';
 
-export function getInitialBrandData(defaultBrandData: BrandConfig): BrandConfig {
-  const published = publishedSiteContent?.brandData;
+export interface PublishedRuntimeConfig {
+  brandData?: Partial<BrandConfig>;
+  editorConfig?: unknown;
+  products?: unknown[];
+}
+
+declare global {
+  interface Window {
+    __PYRENEES_BOOTSTRAP_CONFIG__?: PublishedRuntimeConfig;
+  }
+}
+
+export function getBootstrapConfig(): PublishedRuntimeConfig | null {
+  if (typeof window === 'undefined') return null;
+  return window.__PYRENEES_BOOTSTRAP_CONFIG__ || null;
+}
+
+export function getInitialBrandData(
+  defaultBrandData: BrandConfig,
+  runtimeBrandData?: Partial<BrandConfig> | null,
+): BrandConfig {
+  const published = runtimeBrandData || publishedSiteContent?.brandData;
 
   if (!published || typeof published !== 'object') {
     return defaultBrandData;
@@ -18,21 +38,15 @@ export function getInitialBrandData(defaultBrandData: BrandConfig): BrandConfig 
   };
 }
 
-export function getInitialEditorConfig<T>(fallback: T): T {
-  const published = publishedSiteContent?.editorConfig;
+export function getInitialEditorConfig<T>(
+  fallback: T,
+  runtimeEditorConfig?: unknown,
+): T {
+  const published =
+    runtimeEditorConfig && typeof runtimeEditorConfig === 'object'
+      ? runtimeEditorConfig
+      : publishedSiteContent?.editorConfig;
   return (published && typeof published === 'object'
     ? published
     : fallback) as T;
-}
-
-/**
- * Version embarquée dans le bundle Vercel.
- * Les anciens bundles ne possèdent pas encore cette valeur et utilisent 0.
- */
-export function getInitialPublishedRevision(): number {
-  const value = Number(
-    (publishedSiteContent as any)?.publishedRevision ?? 0
-  );
-
-  return Number.isFinite(value) ? value : 0;
 }
