@@ -443,7 +443,7 @@ export const publishedSiteContent = {
         }
       },
       "cardStyle": "atelier-relief",
-      "heroLayout": "centered-minimal",
+      "heroLayout": "side-by-side",
       "showcaseLayout": "split-interactive",
       "sectionOrder": [
         "hero",
