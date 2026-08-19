@@ -544,7 +544,7 @@ export const publishedSiteContent = {
       },
       "gite": {
         "imageUrl": "/assets/pyrenees_brand_logo_1785338626936-BaITKbpK.jpg",
-        "text": "GÎTE DES\nPYRÉNÉES",
+        "text": "GÎTE DES\nPYR",
         "secondaryText": "Test",
         "fontFamily": "sans",
         "textColor": "#f3ece0",
@@ -778,5 +778,5 @@ export const publishedSiteContent = {
       }
     ]
   },
-  "publishedAt": 1787176082614
+  "publishedAt": 1787176181944
 } as const;
