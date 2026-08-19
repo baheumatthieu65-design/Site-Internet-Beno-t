@@ -305,6 +305,231 @@ export const FloatingMediaManager: React.FC<Props> = ({ config, onChange }) => {
                   : "Modifications enregistrées"}
               </button>
             </div>
+
+            {/* Éditeur des images flottantes : volontairement dans le panneau
+                réductible pour que tout le module puisse être masqué d'un clic. */}
+            {items.length > 0 && (
+              <div className="mt-4 space-y-3 border-t border-[#2f3a32] pt-4">
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-[#9eaaa0]">
+                  Images flottantes installées — modifier
+                </div>
+                {items.map((item) => {
+                  const module = modules.find((entry) => entry.id === item.section);
+
+                  return (
+                    <div
+                      id={`floating-item-${item.id}`}
+                      key={item.id}
+                      className="space-y-3 rounded-xl border border-[#3b473e] bg-[#151b17] p-3"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <strong className="text-sm text-[#e8e1d5]">
+                            Image flottante
+                          </strong>
+                          <div className="truncate text-[10px] text-[#87968a]">
+                            {module?.label ?? item.section}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => remove(item.id)}
+                          className="shrink-0 text-xs text-red-300"
+                        >
+                          Supprimer
+                        </button>
+                      </div>
+
+                      <input
+                        value={item.url}
+                        onChange={(event) =>
+                          update(item.id, { url: event.target.value })
+                        }
+                        placeholder="URL de l'image..."
+                        className="w-full rounded-lg border border-[#3b473e] bg-[#101511] px-3 py-2 text-sm"
+                      />
+
+                      <div className="flex items-center gap-2">
+                        <label className="flex-1 cursor-pointer rounded-lg border border-[#d4af37]/50 bg-[#151b17] px-3 py-2 text-center text-xs font-semibold uppercase tracking-wider text-[#d4af37]">
+                          Choisir une image sur mon PC
+                          <input
+                            type="file"
+                            accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+                            className="sr-only"
+                            onChange={async (event) => {
+                              const file = event.target.files?.[0];
+                              if (!file) return;
+                              try {
+                                update(item.id, { url: await readImageFile(file) });
+                              } catch {
+                                window.alert("Impossible de lire cette image.");
+                              }
+                              event.currentTarget.value = "";
+                            }}
+                          />
+                        </label>
+
+                        {item.url && (
+                          <button
+                            type="button"
+                            onClick={() => update(item.id, { url: "" })}
+                            className="rounded-lg border border-[#6b3939] px-3 py-2 text-xs text-red-300"
+                          >
+                            Effacer
+                          </button>
+                        )}
+                      </div>
+
+                      {item.url && (
+                        <div className="overflow-hidden rounded-lg border border-[#3b473e] bg-[#0d110e] p-2">
+                          <img
+                            src={item.url}
+                            alt=""
+                            className="mx-auto max-h-28 max-w-full object-contain"
+                          />
+                        </div>
+                      )}
+
+                      <input
+                        value={item.alt ?? ""}
+                        onChange={(event) =>
+                          update(item.id, { alt: event.target.value })
+                        }
+                        placeholder="Texte alternatif..."
+                        className="w-full rounded-lg border border-[#3b473e] bg-[#101511] px-3 py-2 text-sm"
+                      />
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <label className="text-xs text-[#9eaaa0]">
+                          Taille : {item.size}px
+                          <input
+                            type="range"
+                            min="40"
+                            max="600"
+                            value={item.size}
+                            onChange={(event) =>
+                              update(item.id, { size: +event.target.value })
+                            }
+                            className="w-full"
+                          />
+                        </label>
+
+                        <label className="text-xs text-[#9eaaa0]">
+                          Opacité : {item.opacity}%
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={item.opacity}
+                            onChange={(event) =>
+                              update(item.id, { opacity: +event.target.value })
+                            }
+                            className="w-full"
+                          />
+                        </label>
+
+                        <label className="text-xs text-[#9eaaa0]">
+                          Position X : {item.x}%
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={item.x}
+                            onChange={(event) =>
+                              update(item.id, { x: +event.target.value })
+                            }
+                            className="w-full"
+                          />
+                        </label>
+
+                        <label className="text-xs text-[#9eaaa0]">
+                          Position Y : {item.y}%
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={item.y}
+                            onChange={(event) =>
+                              update(item.id, { y: +event.target.value })
+                            }
+                            className="w-full"
+                          />
+                        </label>
+
+                        <label className="text-xs text-[#9eaaa0]">
+                          Rotation : {item.rotate}°
+                          <input
+                            type="range"
+                            min="-45"
+                            max="45"
+                            value={item.rotate}
+                            onChange={(event) =>
+                              update(item.id, { rotate: +event.target.value })
+                            }
+                            className="w-full"
+                          />
+                        </label>
+                      </div>
+
+                      <select
+                        value={item.animation}
+                        onChange={(event) =>
+                          update(item.id, {
+                            animation: event.target.value as FloatingMediaItem["animation"],
+                          })
+                        }
+                        className="w-full rounded-lg border border-[#3b473e] bg-[#101511] px-3 py-2 text-sm text-[#e8e1d5]"
+                      >
+                        <option value="none">Aucune animation</option>
+                        <option value="float">Flottement doux</option>
+                        <option value="sway">Balancement doux</option>
+                      </select>
+
+                      <div className="flex flex-wrap gap-4 text-xs text-[#c4ceb8]">
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={item.visible}
+                            onChange={(event) =>
+                              update(item.id, { visible: event.target.checked })
+                            }
+                          />
+                          Visible
+                        </label>
+
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={item.mobile}
+                            onChange={(event) =>
+                              update(item.id, { mobile: event.target.checked })
+                            }
+                          />
+                          Mobile
+                        </label>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="mt-4 flex justify-end border-t border-[#2f3a32] pt-3">
+              <button
+                type="button"
+                onClick={saveChanges}
+                disabled={!hasUnsavedChanges}
+                className={`rounded-lg px-4 py-2 text-xs font-semibold uppercase tracking-wider ${
+                  hasUnsavedChanges
+                    ? "bg-[#d4af37] text-[#111612]"
+                    : "border border-[#334138] text-[#66736a]"
+                }`}
+              >
+                {hasUnsavedChanges
+                  ? "Enregistrer les modifications"
+                  : "Modifications enregistrées"}
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -315,208 +540,7 @@ export const FloatingMediaManager: React.FC<Props> = ({ config, onChange }) => {
         </div>
       )}
 
-      <div className="space-y-3">
-        {items.map((item) => {
-          const module = modules.find((entry) => entry.id === item.section);
 
-          return (
-            <div
-              id={`floating-item-${item.id}`}
-              key={item.id}
-              className="space-y-3 rounded-xl border border-[#3b473e] bg-[#151b17] p-3"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <strong className="text-sm text-[#e8e1d5]">
-                    Image flottante
-                  </strong>
-                  <div className="truncate text-[10px] text-[#87968a]">
-                    {module?.label ?? item.section}
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => remove(item.id)}
-                  className="shrink-0 text-xs text-red-300"
-                >
-                  Supprimer
-                </button>
-              </div>
-
-              <input
-                value={item.url}
-                onChange={(event) =>
-                  update(item.id, { url: event.target.value })
-                }
-                placeholder="URL de l'image..."
-                className="w-full rounded-lg border border-[#3b473e] bg-[#101511] px-3 py-2 text-sm"
-              />
-
-              <div className="flex items-center gap-2">
-                <label className="flex-1 cursor-pointer rounded-lg border border-[#d4af37]/50 bg-[#151b17] px-3 py-2 text-center text-xs font-semibold uppercase tracking-wider text-[#d4af37]">
-                  Choisir une image sur mon PC
-                  <input
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
-                    className="sr-only"
-                    onChange={async (event) => {
-                      const file = event.target.files?.[0];
-                      if (!file) return;
-                      try {
-                        update(item.id, { url: await readImageFile(file) });
-                      } catch {
-                        window.alert("Impossible de lire cette image.");
-                      }
-                      event.currentTarget.value = "";
-                    }}
-                  />
-                </label>
-
-                {item.url && (
-                  <button
-                    type="button"
-                    onClick={() => update(item.id, { url: "" })}
-                    className="rounded-lg border border-[#6b3939] px-3 py-2 text-xs text-red-300"
-                  >
-                    Effacer
-                  </button>
-                )}
-              </div>
-
-              {item.url && (
-                <div className="overflow-hidden rounded-lg border border-[#3b473e] bg-[#0d110e] p-2">
-                  <img
-                    src={item.url}
-                    alt=""
-                    className="mx-auto max-h-28 max-w-full object-contain"
-                  />
-                </div>
-              )}
-
-              <input
-                value={item.alt ?? ""}
-                onChange={(event) =>
-                  update(item.id, { alt: event.target.value })
-                }
-                placeholder="Texte alternatif..."
-                className="w-full rounded-lg border border-[#3b473e] bg-[#101511] px-3 py-2 text-sm"
-              />
-
-              <div className="grid grid-cols-2 gap-3">
-                <label className="text-xs text-[#9eaaa0]">
-                  Taille : {item.size}px
-                  <input
-                    type="range"
-                    min="40"
-                    max="600"
-                    value={item.size}
-                    onChange={(event) =>
-                      update(item.id, { size: +event.target.value })
-                    }
-                    className="w-full"
-                  />
-                </label>
-
-                <label className="text-xs text-[#9eaaa0]">
-                  Opacité : {item.opacity}%
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={item.opacity}
-                    onChange={(event) =>
-                      update(item.id, { opacity: +event.target.value })
-                    }
-                    className="w-full"
-                  />
-                </label>
-
-                <label className="text-xs text-[#9eaaa0]">
-                  Position X : {item.x}%
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={item.x}
-                    onChange={(event) =>
-                      update(item.id, { x: +event.target.value })
-                    }
-                    className="w-full"
-                  />
-                </label>
-
-                <label className="text-xs text-[#9eaaa0]">
-                  Position Y : {item.y}%
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={item.y}
-                    onChange={(event) =>
-                      update(item.id, { y: +event.target.value })
-                    }
-                    className="w-full"
-                  />
-                </label>
-
-                <label className="text-xs text-[#9eaaa0]">
-                  Rotation : {item.rotate}°
-                  <input
-                    type="range"
-                    min="-45"
-                    max="45"
-                    value={item.rotate}
-                    onChange={(event) =>
-                      update(item.id, { rotate: +event.target.value })
-                    }
-                    className="w-full"
-                  />
-                </label>
-              </div>
-
-              <select
-                value={item.animation}
-                onChange={(event) =>
-                  update(item.id, {
-                    animation: event.target
-                      .value as FloatingMediaItem["animation"],
-                  })
-                }
-                className="w-full rounded-lg border border-[#3b473e] bg-[#101511] px-3 py-2 text-sm text-[#e8e1d5]"
-              >
-                <option value="none">Aucune animation</option>
-                <option value="float">Flottement doux</option>
-                <option value="sway">Balancement doux</option>
-              </select>
-
-              <div className="flex flex-wrap gap-4 text-xs text-[#c4ceb8]">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={item.visible}
-                    onChange={(event) =>
-                      update(item.id, { visible: event.target.checked })
-                    }
-                  />
-                  Visible
-                </label>
-
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={item.mobile}
-                    onChange={(event) =>
-                      update(item.id, { mobile: event.target.checked })
-                    }
-                  />
-                  Mobile
-                </label>
-              </div>
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 };
