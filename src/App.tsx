@@ -271,34 +271,13 @@ export default function App() {
           );
         }
 
-        // 2) Même snapshot vers GitHub pour que le prochain bundle Vercel
-        // contienne exactement la même configuration de secours.
-        const publishResponse = await fetch('/api/site-publish', {
-          method: 'PUT',
-          credentials: 'include',
-          cache: 'no-store',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-            'Cache-Control': 'no-cache',
-          },
-          body: JSON.stringify({ config }),
-        });
-
-        if (!publishResponse.ok) {
-          const publishBody = await publishResponse.json().catch(() => null);
-          throw new Error(
-            publishBody?.error ||
-              `Publication GitHub: HTTP ${publishResponse.status}`
-          );
-        }
-
-        // L'état local suit exactement le snapshot qui vient d'être publié.
+        // Le runtime est la source active : dès qu'Upstash a confirmé l'écriture,
+        // la nouvelle version est considérée comme enregistrée.
+        // GitHub est le fallback de déploiement et ne doit plus pouvoir annuler
+        // une sauvegarde runtime réussie s'il est lent ou momentanément indisponible.
         setBrandData(normalizedBrandData);
         setSiteEditorConfig(nextEditorConfig);
 
-        // Une sauvegarde réussie devient le nouvel état de référence
-        // pour la session admin en cours.
         if (isAdminLoggedIn) {
           adminSessionSnapshotRef.current = {
             brandData: normalizedBrandData,
@@ -308,9 +287,44 @@ export default function App() {
 
         setPublishedConfigReady(true);
 
+        let commitSha: string | null = null;
+        let githubWarning: string | null = null;
+
+        try {
+          const publishResponse = await fetch('/api/site-publish', {
+            method: 'PUT',
+            credentials: 'include',
+            cache: 'no-store',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+              'Cache-Control': 'no-cache',
+            },
+            body: JSON.stringify({ config }),
+          });
+
+          const publishBody = await publishResponse.json().catch(() => null);
+
+          if (!publishResponse.ok) {
+            githubWarning =
+              publishBody?.error ||
+              `Publication GitHub: HTTP ${publishResponse.status}`;
+            console.warn('Publication GitHub différée/échouée:', githubWarning);
+          } else {
+            commitSha = publishBody?.commitSha || null;
+          }
+        } catch (githubError) {
+          githubWarning =
+            githubError instanceof Error
+              ? githubError.message
+              : 'Publication GitHub indisponible.';
+          console.warn('Publication GitHub différée/échouée:', githubWarning);
+        }
+
         return {
           success: true,
-          commitSha: (await publishResponse.json().catch(() => null))?.commitSha || null,
+          commitSha,
+          warning: githubWarning,
         };
       } catch (error) {
         console.error(
@@ -687,9 +701,11 @@ export default function App() {
     if (result.success) {
       setSiteEditorConfig(nextEditorConfig);
       setReorderToast(
-        result.commitSha
-          ? '✓ Enregistré + publié sur GitHub. Vercel va redéployer le site.'
-          : '✓ Configuration enregistrée.'
+        result.warning
+          ? `✓ Enregistré sur le site. GitHub : ${result.warning}`
+          : result.commitSha
+            ? '✓ Enregistré + publié sur GitHub. Vercel va redéployer le site.'
+            : '✓ Configuration enregistrée.'
       );
 
       window.setTimeout(() => {
