@@ -704,10 +704,12 @@ export default function App() {
   const handleSaveVisualEditor = async (
     nextEditorConfig?: SiteEditorConfig
   ) => {
+    // Même chemin de persistance que le panneau Paramétrage :
+    // /api/site-config est appelé avec le snapshot complet brandData +
+    // editorConfig. La seule différence est la partie du snapshot modifiée.
     const configToSave =
-      nextEditorConfig || siteEditorConfigRef.current;
+      nextEditorConfig ?? siteEditorConfigRef.current;
 
-    // Mettre immédiatement l'état + la ref à jour avant le réseau.
     siteEditorConfigRef.current = configToSave;
     setSiteEditorConfig(configToSave);
 
@@ -717,7 +719,11 @@ export default function App() {
     );
 
     if (result.success) {
-      setSiteEditorConfig(nextEditorConfig);
+      // IMPORTANT : ne jamais remettre nextEditorConfig ici s'il est undefined.
+      // Le dernier snapshot sauvegardé reste celui affiché et celui publié.
+      siteEditorConfigRef.current = configToSave;
+      setSiteEditorConfig(configToSave);
+
       setReorderToast(
         result.warning
           ? `✓ Enregistré sur le site. GitHub : ${result.warning}`
@@ -1394,7 +1400,7 @@ export default function App() {
         </div>
       )}
 
-      <SiteBlocksRenderer config={siteEditorConfig} enabled={isAdminLoggedIn && isCustomizerOpen} />
+      <SiteBlocksRenderer config={siteEditorConfig} enabled={publishedConfigReady} />
 
       {isAdminLoggedIn && (
         <SiteVisualEditor
