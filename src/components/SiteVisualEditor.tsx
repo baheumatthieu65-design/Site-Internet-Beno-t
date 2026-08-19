@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, Image as ImageIcon, Loader2, Move, Save, Settings2, Type, X } from 'lucide-react';
 import type { BrandConfig, SectionId } from '../types';
+import { FloatingMediaManager } from './FloatingMediaManager';
 
 export type AdminBarPosition = 'top' | 'bottom' | 'left' | 'right';
 

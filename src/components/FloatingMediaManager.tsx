@@ -1,50 +1,78 @@
-import React, { useState } from "react";
-import type { SiteEditorConfig } from "./SiteVisualEditor";
-import type { FloatingMedia } from "./FloatingMediaLayer";
-import { Image as ImageIcon, Plus, Trash2 } from "lucide-react";
+import React from "react";
+import type { FloatingMediaItem } from "../data/floatingMedia";
 
-const sections = [
-  ["hero","Accueil"],["collection","Les 2 vestes"],["comparatif","Tableau comparatif"],
-  ["origines","L'esprit Pyrénées"],["lookbook","Lookbook"],["contact","Contact & Atelier"]
-];
+type Props = { config: any; onChange: (next: any) => void };
 
-export const FloatingMediaManager: React.FC<{config:SiteEditorConfig;onChange:(c:SiteEditorConfig)=>void}> = ({config,onChange}) => {
-  const [url,setUrl]=useState("");
-  const items = config.floatingImages || [];
+const makeId = () => `floating-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+
+export const FloatingMediaManager: React.FC<Props> = ({ config, onChange }) => {
+  const items: FloatingMediaItem[] = config?.floatingImages ?? [];
+  const modules = config?.editableBlocks ?? config?.blocks ?? [];
+  const moduleOptions = Array.isArray(modules) && modules.length
+    ? modules.map((m:any) => ({ id: m.id ?? m.key, label: m.label ?? m.title ?? m.id ?? m.key }))
+    : [
+      {id:"hero",label:"Hero"},{id:"collection",label:"Collection"},{id:"comparatif",label:"Comparatif"},
+      {id:"origines",label:"Origines"},{id:"lookbook",label:"Lookbook"},{id:"contact",label:"Contact & Atelier"}
+    ];
+
+  const update = (id:string, patch:Partial<FloatingMediaItem>) =>
+    onChange({...config, floatingImages: items.map(i => i.id === id ? {...i, ...patch} : i)});
+
   const add = () => {
-    if(!url.trim()) return;
-    const next: FloatingMedia = {
-      id:`floating-${Date.now()}`, section:"hero", url:url.trim(), x:50, y:50,
-      size:180, rotate:0, opacity:100, animation:"float", mobile:true, visible:true
-    };
-    onChange({...config,floatingImages:[...items,next]});
-    setUrl("");
+    const moduleId = moduleOptions[0]?.id ?? "hero";
+    onChange({...config, floatingImages:[...items,{
+      id:makeId(), moduleId, src:"", alt:"", x:90, y:50, size:160, rotate:0,
+      animation:"float", mobileVisible:true
+    }]});
   };
-  const update=(id:string,patch:Partial<FloatingMedia>)=>onChange({...config,floatingImages:items.map(i=>i.id===id?{...i,...patch}:i)});
-  const remove=(id:string)=>onChange({...config,floatingImages:items.filter(i=>i.id!==id)});
-  return <div className="rounded-xl border border-[#39483e] p-3 space-y-3" data-vce-ignore="true">
-    <div className="flex items-center gap-2 text-sm font-semibold"><ImageIcon size={16}/> Images décoratives flottantes</div>
-    <div className="flex gap-2">
-      <input value={url} onChange={e=>setUrl(e.target.value)} placeholder="URL de l'image…" className="min-w-0 flex-1 rounded-lg bg-[#1b231e] border border-[#455248] px-3 py-2 text-sm"/>
-      <button type="button" onClick={add} className="rounded-lg bg-[#d4af37] px-3 text-black"><Plus size={17}/></button>
-    </div>
-    {items.map(i=><div key={i.id} className="rounded-lg border border-[#455248] p-3 space-y-2">
-      <div className="flex items-center justify-between gap-2"><span className="truncate text-xs">{i.url}</span><button type="button" onClick={()=>remove(i.id)}><Trash2 size={15}/></button></div>
-      <select value={i.section} onChange={e=>update(i.id,{section:e.target.value})} className="w-full rounded bg-[#1b231e] border border-[#455248] p-2 text-xs">{sections.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
-      <div className="grid grid-cols-3 gap-2 text-xs">
-        <label>X<input type="number" value={i.x} onChange={e=>update(i.id,{x:+e.target.value})} className="w-full rounded bg-[#1b231e] p-2"/></label>
-        <label>Y<input type="number" value={i.y} onChange={e=>update(i.id,{y:+e.target.value})} className="w-full rounded bg-[#1b231e] p-2"/></label>
-        <label>Taille<input type="number" value={i.size} onChange={e=>update(i.id,{size:+e.target.value})} className="w-full rounded bg-[#1b231e] p-2"/></label>
+
+  const remove = (id:string) =>
+    onChange({...config, floatingImages:items.filter(i=>i.id!==id)});
+
+  return <div className="space-y-3">
+    <button type="button" onClick={add}
+      className="w-full rounded-lg border border-[#d4af37]/60 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[#d4af37] hover:bg-[#d4af37]/10">
+      + Ajouter une image flottante
+    </button>
+    {items.map(item => <div key={item.id} className="rounded-xl border border-[#3b473e] p-3 space-y-3">
+      <div className="flex items-center justify-between gap-2">
+        <strong className="text-sm text-[#e8e1d5]">Image flottante</strong>
+        <button type="button" onClick={()=>remove(item.id)} className="text-xs text-red-300">Supprimer</button>
       </div>
-      <div className="grid grid-cols-3 gap-2 text-xs">
-        <label>Rotation<input type="number" value={i.rotate} onChange={e=>update(i.id,{rotate:+e.target.value})} className="w-full rounded bg-[#1b231e] p-2"/></label>
-        <label>Opacité<input type="number" min="0" max="100" value={i.opacity} onChange={e=>update(i.id,{opacity:+e.target.value})} className="w-full rounded bg-[#1b231e] p-2"/></label>
-        <label>Animation<select value={i.animation} onChange={e=>update(i.id,{animation:e.target.value as FloatingMedia["animation"]})} className="w-full rounded bg-[#1b231e] p-2"><option value="none">Aucune</option><option value="float">Flottement</option><option value="sway">Oscillation</option></select></label>
+      <input value={item.src} onChange={e=>update(item.id,{src:e.target.value})}
+        placeholder="URL de l'image..." className="w-full rounded-lg border border-[#3b473e] bg-[#151b17] px-3 py-2 text-sm"/>
+      <input value={item.alt ?? ""} onChange={e=>update(item.id,{alt:e.target.value})}
+        placeholder="Texte alternatif..." className="w-full rounded-lg border border-[#3b473e] bg-[#151b17] px-3 py-2 text-sm"/>
+      <select value={item.moduleId} onChange={e=>update(item.id,{moduleId:e.target.value})}
+        className="w-full rounded-lg border border-[#3b473e] bg-[#151b17] px-3 py-2 text-sm">
+        {moduleOptions.map(m=><option key={m.id} value={m.id}>{m.label}</option>)}
+      </select>
+      <div className="grid grid-cols-2 gap-2">
+        <label className="text-xs text-[#9eaaa0]">Taille
+          <input type="range" min="40" max="500" value={item.size} onChange={e=>update(item.id,{size:+e.target.value})} className="w-full"/>
+        </label>
+        <label className="text-xs text-[#9eaaa0]">Rotation
+          <input type="range" min="-45" max="45" value={item.rotate} onChange={e=>update(item.id,{rotate:+e.target.value})} className="w-full"/>
+        </label>
+        <label className="text-xs text-[#9eaaa0]">Position X
+          <input type="range" min="0" max="100" value={item.x} onChange={e=>update(item.id,{x:+e.target.value})} className="w-full"/>
+        </label>
+        <label className="text-xs text-[#9eaaa0]">Position Y
+          <input type="range" min="0" max="100" value={item.y} onChange={e=>update(item.id,{y:+e.target.value})} className="w-full"/>
+        </label>
       </div>
-      <div className="flex gap-4 text-xs">
-        <label><input type="checkbox" checked={i.visible} onChange={e=>update(i.id,{visible:e.target.checked})}/> Visible</label>
-        <label><input type="checkbox" checked={i.mobile} onChange={e=>update(i.id,{mobile:e.target.checked})}/> Mobile</label>
-      </div>
+      <select value={item.animation} onChange={e=>update(item.id,{animation:e.target.value as FloatingMediaItem["animation"]})}
+        className="w-full rounded-lg border border-[#3b473e] bg-[#151b17] px-3 py-2 text-sm">
+        <option value="none">Aucune animation</option>
+        <option value="float">Flottement doux</option>
+        <option value="sway">Balancement</option>
+      </select>
+      <label className="flex items-center gap-2 text-xs text-[#c4ceb8]">
+        <input type="checkbox" checked={item.mobileVisible} onChange={e=>update(item.id,{mobileVisible:e.target.checked})}/>
+        Afficher sur mobile
+      </label>
     </div>)}
   </div>;
 };
+
+export default FloatingMediaManager;
