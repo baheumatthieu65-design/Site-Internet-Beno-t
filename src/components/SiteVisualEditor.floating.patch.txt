@@ -1,0 +1,11 @@
+À appliquer dans src/components/SiteVisualEditor.tsx:
+1. Importer FloatingMediaManager:
+import { FloatingMediaManager } from './FloatingMediaManager';
+
+2. Dans SiteEditorConfig ajouter:
+floatingImages?: import('./FloatingMediaLayer').FloatingMedia[];
+
+3. Juste avant {adminToolbar && (...)} dans le rendu, ajouter:
+<FloatingMediaManager config={config} onChange={onChange} />
+
+4. Le gestionnaire utilise la configuration persistée de l'éditeur et sera sauvegardé par le bouton Enregistrer.
