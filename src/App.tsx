@@ -28,7 +28,9 @@ import {
 import { SiteBlocksRenderer } from './components/SiteBlocksRenderer';
 import GitePage from './components/GitePage';
 import { LogoEditorModal } from './components/LogoEditorModal';
+import { FloatingMediaLayer } from './components/FloatingMediaLayer';
 import './styles/gite-v48.css';
+import './styles/floating-media.css';
 
 import {
   verifyAdminSessionServer,
@@ -137,6 +139,7 @@ export default function App() {
       getInitialEditorConfig<SiteEditorConfig>({
         adminBarPosition: 'bottom',
         blocks: [],
+        floatingImages: [],
       })
     );
 
@@ -1077,7 +1080,8 @@ export default function App() {
       !isDragReorderMode
     ) {
       return (
-        <div key={sectionId}>
+        <div key={sectionId} className="relative floating-module-anchor">
+          <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
           {content}
         </div>
       );
@@ -1209,7 +1213,10 @@ export default function App() {
           </div>
         </div>
 
-        {content}
+        <div className="relative floating-module-anchor">
+          <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
+          {content}
+        </div>
       </div>
     );
   };

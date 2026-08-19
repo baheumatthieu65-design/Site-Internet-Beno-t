@@ -34,6 +34,7 @@ export interface SiteEditorConfig {
     positionY?: number;
   };
   blocks: EditorBlock[];
+  floatingImages?: import('../data/floatingMedia').FloatingMediaItem[];
 }
 
 interface Props {
@@ -689,6 +690,17 @@ export const SiteVisualEditor: React.FC<Props> = ({
               {adminToolbar}
             </div>
           )}
+
+          <div data-floating-editor-section="true" className="border-t border-[#344139] pt-4">
+            <div className="mb-2">
+              <div className="text-sm font-semibold text-[#e8e1d5]">Images flottantes</div>
+              <div className="text-[11px] text-[#87968a]">Ajoutez une image et ancrez-la directement à un module de la page.</div>
+            </div>
+            <FloatingMediaManager
+              config={config}
+              onChange={onChange}
+            />
+          </div>
 
           {message && <div className="rounded-lg bg-[#203428] px-3 py-2 text-xs text-[#cfe0d2]"><Check size={14} className="inline mr-1" />{message}</div>}
           {error && <div className="rounded-lg bg-[#3a2222] px-3 py-2 text-xs text-[#f2caca]">{error}</div>}
