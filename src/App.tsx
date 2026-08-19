@@ -240,32 +240,19 @@ export default function App() {
       };
 
       try {
-        // V2.1 : le runtime et le fallback GitHub reçoivent exactement
-        // le même snapshot en parallèle pour réduire le temps d'enregistrement.
-        const [response, publishResponse] = await Promise.all([
-          fetch('/api/site-config', {
-            method: 'PUT',
-            credentials: 'include',
-            cache: 'no-store',
-            headers: {
-              'Content-Type': 'application/json',
-              Accept: 'application/json',
-              'Cache-Control': 'no-cache',
-            },
-            body: JSON.stringify({ config }),
-          }),
-          fetch('/api/site-publish', {
-            method: 'PUT',
-            credentials: 'include',
-            cache: 'no-store',
-            headers: {
-              'Content-Type': 'application/json',
-              Accept: 'application/json',
-              'Cache-Control': 'no-cache',
-            },
-            body: JSON.stringify({ config }),
-          }),
-        ]);
+        // 1) Upstash est la source runtime. On l'écrit EN PREMIER afin que
+        // visiteurs et admin voient le même snapshot dès l'enregistrement.
+        const response = await fetch('/api/site-config', {
+          method: 'PUT',
+          credentials: 'include',
+          cache: 'no-store',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'Cache-Control': 'no-cache',
+          },
+          body: JSON.stringify({ config }),
+        });
 
         if (!response.ok) {
           const errorBody = await response.json().catch(() => null);
@@ -274,6 +261,20 @@ export default function App() {
               `Synchronisation configuration: HTTP ${response.status}`
           );
         }
+
+        // 2) Même snapshot vers GitHub pour que le prochain bundle Vercel
+        // contienne exactement la même configuration de secours.
+        const publishResponse = await fetch('/api/site-publish', {
+          method: 'PUT',
+          credentials: 'include',
+          cache: 'no-store',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'Cache-Control': 'no-cache',
+          },
+          body: JSON.stringify({ config }),
+        });
 
         if (!publishResponse.ok) {
           const publishBody = await publishResponse.json().catch(() => null);
@@ -405,15 +406,108 @@ export default function App() {
   };
 
   // ===========================================================================
+  // LOAD PRODUCTS FROM SERVER
+  // ===========================================================================
+
+  const fetchServerProducts = async () => {
+    try {
+      const response = await fetch('/api/products', {
+        method: 'GET',
+        cache: 'no-store',
+        headers: {
+          Accept: 'application/json',
+          'Cache-Control': 'no-cache',
+        },
+      });
+
+      if (!response.ok) {
+        console.warn(
+          `Impossible de charger les produits serveur. HTTP ${response.status}. Conservation des produits locaux.`
+        );
+
+        return;
+      }
+
+      const data = await response.json();
+
+      if (
+        !data ||
+        data.success !== true ||
+        !Array.isArray(data.products)
+      ) {
+        console.warn(
+          'Réponse produits serveur invalide. Conservation des produits locaux.'
+        );
+
+        return;
+      }
+
+      const products = data.products;
+
+      // IMPORTANT :
+      // Si l'API retourne un tableau vide, on conserve
+      // les produits présents dans initialBrandData.
+      //
+      // Cela évite que le site devienne vide/blanc lorsque
+      // Redis n'est pas encore initialisé.
+      if (products.length === 0) {
+        console.warn(
+          'API produits vide : conservation des produits locaux.'
+        );
+
+        return;
+      }
+
+      setBrandData((previous) => ({
+        ...previous,
+        jackets: products,
+      }));
+
+      setSelectedJacketId((currentId) => {
+        if (
+          currentId &&
+          products.some(
+            (product: { id?: string }) =>
+              product.id === currentId
+          )
+        ) {
+          return currentId;
+        }
+
+        return products[0]?.id || '';
+      });
+    } catch (error) {
+      console.warn(
+        'Impossible de récupérer les produits depuis le serveur. Utilisation des données locales.',
+        error
+      );
+    }
+  };
+
+  // ===========================================================================
   // INITIALIZATION
   // ===========================================================================
 
   useEffect(() => {
     const initializeApp = async () => {
+      // V2.2 : les trois lectures indépendantes démarrent ensemble.
+      // On conserve exactement les mêmes fonctions de chargement qu'avant.
+      const publishedPromise = fetchPublishedSiteConfig();
+      const productsPromise = fetchServerProducts();
+      const authPromise = verifyAdminSessionServer();
+
       try {
-        const loaded = await fetchPublishedSiteConfig();
+        const [loaded] = await Promise.all([
+          publishedPromise,
+          productsPromise,
+        ]);
+
         setPublishedConfigReady(true);
-        window.dispatchEvent(new CustomEvent('site-bootstrap-ready', { detail: { published: loaded } }));
+        window.dispatchEvent(
+          new CustomEvent('site-bootstrap-ready', {
+            detail: { published: loaded },
+          })
+        );
       } catch (error) {
         console.warn('Initialisation du site:', error);
         setPublishedConfigReady(true);
@@ -421,10 +515,13 @@ export default function App() {
       }
 
       try {
-        const isAuthenticated = await verifyAdminSessionServer();
+        const isAuthenticated = await authPromise;
         setIsAdminLoggedIn(isAuthenticated);
       } catch (error) {
-        console.warn('Impossible de vérifier la session administrateur:', error);
+        console.warn(
+          'Impossible de vérifier la session administrateur:',
+          error
+        );
         setIsAdminLoggedIn(false);
       }
     };
@@ -491,14 +588,15 @@ export default function App() {
   // ===========================================================================
 
   const handleLogout = async () => {
-    // V2.1 : attendre une publication encore en cours avant de relire le serveur.
-    // Sinon un clic rapide sur Déconnexion peut relire l'ancienne version X.
+    // V2.2 : ne jamais quitter l'admin pendant qu'une sauvegarde est encore
+    // en cours. Sinon le refresh peut récupérer la version précédente.
     try {
       await saveQueueRef.current;
       await fetchPublishedSiteConfig();
+      await fetchServerProducts();
     } catch (error) {
       console.warn(
-        'Impossible de finaliser la publication avant le logout:',
+        'Impossible de resynchroniser la configuration publiée avant le logout:',
         error
       );
     }
