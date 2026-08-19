@@ -3,9 +3,6 @@ import {
   BrandConfig,
   JacketModel,
   Hotspot,
-  ButtonStyleId,
-  ButtonRadiusId,
-  CardStyleId,
   HeroLayoutId,
   ShowcaseLayoutId,
   SectionId,
@@ -66,8 +63,6 @@ import {
   Scale
 } from 'lucide-react';
 import {
-  cardModelPresets,
-  radiusPresets,
   sectionMeta,
   defaultThemeConfig,
   getButtonClasses,
@@ -914,64 +909,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
               />
 
               {/* 1. BUTTON STYLE SELECTION — géré désormais par ButtonManager */}
-              {/* 2. BUTTON RADIUS */}
-              <div className="space-y-4 pt-4 border-t border-[#2a362c]">
-                <h4 className="font-serif text-lg text-[#f3ece0] font-semibold">
-                  Forme & Arrondi des Boutons
-                </h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-                  {radiusPresets.map((r) => {
-                    const isSelected = currentTheme.buttonRadius === r.id;
-                    return (
-                      <button
-                        key={r.id}
-                        type="button"
-                        onClick={() => updateTheme({ buttonRadius: r.id })}
-                        className={`p-3 rounded-2xl border-2 text-center transition-all cursor-pointer ${
-                          isSelected
-                            ? 'bg-[#212c23] border-[#d4af37] text-[#d4af37]'
-                            : 'bg-[#181f19] border-[#2f3d32] text-[#a3b1a5] hover:border-[#526a57]'
-                        }`}
-                      >
-                        <div className="text-xs font-bold font-serif">{r.name}</div>
-                        <div className="text-[10px] text-[#7d8c7f] mt-0.5">{r.radiusLabel}</div>
-                        <div className={`mt-2 py-1 bg-[#253227] text-[10px] border border-[#435747] ${r.cssClass}`}>
-                          Bouton
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* 3. CARD STYLES */}
-              <div className="space-y-4 pt-4 border-t border-[#2a362c]">
-                <h4 className="font-serif text-lg text-[#f3ece0] font-semibold">
-                  Style & Relief des Cartes Produits
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {cardModelPresets.map((c) => {
-                    const isSelected = currentTheme.cardStyle === c.id;
-                    return (
-                      <div
-                        key={c.id}
-                        onClick={() => updateTheme({ cardStyle: c.id })}
-                        className={`p-4 rounded-2xl cursor-pointer border-2 transition-all space-y-2 ${
-                          isSelected
-                            ? 'bg-[#212c23] border-[#d4af37] shadow-xl'
-                            : 'bg-[#181f19] border-[#2f3d32] hover:border-[#526a57]'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-serif font-bold text-sm text-[#f3ece0]">{c.name}</span>
-                          <span className="text-[10px] px-2 py-0.5 rounded bg-black/40 text-[#d4af37]">{c.badge}</span>
-                        </div>
-                        <p className="text-xs text-[#a3b1a5]">{c.description}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
             </div>
           )}
 
