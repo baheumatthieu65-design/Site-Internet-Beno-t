@@ -12,6 +12,7 @@ interface NavbarProps {
   onOpenCustomizer: (tab?: 'brand' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
   onOpenInquiry: (jacketId?: string) => void;
   activeSection: string;
+  onOpenGite?: () => void;
 }
 
 declare global {
@@ -28,6 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenCustomizer,
   onOpenInquiry,
   activeSection,
+  onOpenGite,
 }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -69,6 +71,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   const openOrders = () => {
     if (!isAdminLoggedIn) return;
     window.__pyreneesOpenAdminOrders?.();
+  };
+
+  const openGite = () => {
+    setMobileMenuOpen(false);
+    onOpenGite?.();
   };
 
   return (
@@ -116,6 +123,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               {link.label}
             </button>
           ))}
+
+          <button
+            id="nav-link-gite"
+            type="button"
+            onClick={openGite}
+            className="text-sm uppercase tracking-widest font-medium transition-all py-1 border-b-2 border-transparent text-[#c4ceb8] hover:text-[#f3ece0] hover:border-[#b89f74]/50 cursor-pointer"
+          >
+            Gîte
+          </button>
         </nav>
 
         <div className="flex items-center space-x-2">
@@ -139,7 +155,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span>{orderText}</span>
           </button>
 
-          {/* Bouton admin : mouton hors connexion, croix une fois connecté. */}
           <button
             id="nav-admin-login-btn"
             type="button"
@@ -156,12 +171,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="text-[22px] leading-none font-light">×</span>
             ) : (
               <>
-                <img
-                  src={adminSheep}
-                  alt=""
-                  aria-hidden="true"
-                  className="w-9 h-9 object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]"
-                />
+                <img src={adminSheep} alt="" aria-hidden="true" className="w-9 h-9 object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]" />
                 <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#d4af37] border border-[#111612]" />
               </>
             )}
@@ -173,11 +183,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="md:hidden p-2 text-[#c4ceb8] hover:text-white"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              {mobileMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
+              {mobileMenuOpen ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
             </svg>
           </button>
         </div>
@@ -190,6 +196,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               {link.label}
             </button>
           ))}
+          <button onClick={openGite} className="block w-full text-left py-2 text-sm uppercase tracking-widest text-[#e2d5c3] hover:text-[#d4af37] border-b border-[#2a332d]">
+            Gîte
+          </button>
           {isAdminLoggedIn && (
             <div className="pt-2 flex flex-col space-y-2">
               <button onClick={openOrders} className="w-full text-center py-2.5 rounded-xl bg-[#28362b] text-[#d4af37] text-xs uppercase tracking-wider border border-[#d4af37]/70 font-semibold">
