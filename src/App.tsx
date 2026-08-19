@@ -40,6 +40,7 @@ import { defaultThemeConfig } from './utils/themeStyles';
 import {
   getInitialBrandData,
   getInitialEditorConfig,
+  hasBootstrappedPublishedConfig,
 } from './lib/publishedSite';
 
 type CustomizerTab =
@@ -194,18 +195,6 @@ export default function App() {
 
     setBrandData(normalizedData);
 
-    try {
-      localStorage.setItem(
-        'pyrenees_brand_config',
-        JSON.stringify(normalizedData)
-      );
-    } catch (error) {
-      console.error(
-        'Impossible de sauvegarder la configuration locale:',
-        error
-      );
-    }
-
     // Publication serveur + GitHub pour éviter que les changements
     // du Customizer ou du réordonnancement reviennent en arrière.
     void saveSiteConfig(normalizedData, siteEditorConfig).then((result) => {
@@ -239,20 +228,23 @@ export default function App() {
       };
 
       try {
-        // Upstash est la source active UNIQUE du contenu publié.
-        // IMPORTANT : on l'écrit AVANT GitHub.
-        //
-        // Si GitHub déclenche un nouveau build Vercel pendant cette opération,
-        // le visiteur récupère toujours la même configuration serveur que
-        // l'administrateur. L'ancien ordre (GitHub puis Upstash) créait une
-        // fenêtre où le nouveau bundle pouvait être écrasé par l'ancienne
-        // configuration Upstash.
-        const config = {
+        const configPayload = {
           brandData: normalizedBrandData,
           editorConfig: nextEditorConfig,
-          publishedAt: new Date().toISOString(),
+          publishedAt: Date.now(),
         };
 
+        /*
+         * SOURCE DE VÉRITÉ RUNTIME
+         *
+         * Upstash est écrit EN PREMIER. Le visiteur peut donc toujours
+         * récupérer la nouvelle configuration immédiatement, même pendant
+         * le build Vercel du nouveau bundle.
+         *
+         * GitHub/Vercel devient ensuite le fallback durable. On ne fait
+         * surtout pas l'inverse : sinon Vercel peut publier le nouveau bundle
+         * avant qu'Upstash ait reçu la même configuration.
+         */
         const response = await fetch('/api/site-config', {
           method: 'PUT',
           credentials: 'include',
@@ -260,7 +252,9 @@ export default function App() {
             'Content-Type': 'application/json',
             Accept: 'application/json',
           },
-          body: JSON.stringify({ config }),
+          body: JSON.stringify({
+            config: configPayload,
+          }),
         });
 
         if (!response.ok) {
@@ -271,8 +265,12 @@ export default function App() {
           );
         }
 
-        // Ensuite seulement, mettre le même snapshot dans GitHub.
-        // Le build Vercel devient le fallback durable du snapshot serveur.
+        /*
+         * Une fois la source runtime validée, on met exactement le même
+         * snapshot dans GitHub. Si GitHub échoue, la configuration reste
+         * quand même active côté site : le prochain chargement la récupérera
+         * depuis /api/site-config.
+         */
         const publishResponse = await fetch('/api/site-publish', {
           method: 'PUT',
           credentials: 'include',
@@ -280,7 +278,9 @@ export default function App() {
             'Content-Type': 'application/json',
             Accept: 'application/json',
           },
-          body: JSON.stringify({ config }),
+          body: JSON.stringify({
+            config: configPayload,
+          }),
         });
 
         if (!publishResponse.ok) {
@@ -293,22 +293,9 @@ export default function App() {
 
         const publishData = await publishResponse.json().catch(() => null);
 
-        // L'état React est synchronisé avec le snapshot qui vient d'être
-        // accepté par Upstash et envoyé à GitHub.
+        // Garder l'état React synchronisé avec le snapshot publié.
         setBrandData(normalizedBrandData);
         setSiteEditorConfig(nextEditorConfig);
-
-        try {
-          localStorage.setItem(
-            'pyrenees_brand_config',
-            JSON.stringify(normalizedBrandData)
-          );
-        } catch (error) {
-          console.warn(
-            'Impossible de synchroniser la configuration locale:',
-            error
-          );
-        }
 
         return {
           success: true,
@@ -351,15 +338,6 @@ export default function App() {
     setBrandData(resetData);
 
     setSelectedJacketId(resetData.jackets?.[0]?.id || '');
-
-    try {
-      localStorage.removeItem('pyrenees_brand_config');
-    } catch (error) {
-      console.error(
-        'Impossible de supprimer la configuration locale:',
-        error
-      );
-    }
 
     void saveSiteConfig(resetData, siteEditorConfig);
   };
@@ -552,10 +530,13 @@ export default function App() {
         setIsAdminLoggedIn(false);
       }
 
-      // La version embarquée sert de fallback instantané.
-      // La configuration serveur est ensuite chargée et devient la
-      // source active pour les visiteurs comme pour l'administrateur.
-      await fetchPublishedSiteConfig();
+      // main.tsx a déjà chargé la configuration publiée avant le premier
+      // rendu. On ne la recharge pas immédiatement : cela supprimerait
+      // le second changement d'état qui provoquait les flashs/rollbacks.
+      if (!hasBootstrappedPublishedConfig()) {
+        await fetchPublishedSiteConfig();
+      }
+
       await fetchServerProducts();
     };
 

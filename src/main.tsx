@@ -2,7 +2,12 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
-import type { PublishedRuntimeConfig } from './lib/publishedSite';
+
+type PublishedConfig = {
+  brandData?: unknown;
+  editorConfig?: unknown;
+  publishedAt?: number;
+};
 
 const rootElement = document.getElementById('root');
 
@@ -10,15 +15,21 @@ if (!rootElement) {
   throw new Error('Root React introuvable.');
 }
 
-async function fetchJson(url: string, timeoutMs = 4000) {
+declare global {
+  interface Window {
+    __PYRENEES_PUBLISHED_CONFIG__?: PublishedConfig | null;
+  }
+}
+
+async function loadPublishedConfigBeforeReact(): Promise<void> {
   const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+  const timeout = window.setTimeout(() => controller.abort(), 1800);
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch(`/api/site-config?boot=${Date.now()}`, {
       method: 'GET',
       cache: 'no-store',
-      credentials: 'include',
+      credentials: 'same-origin',
       headers: {
         Accept: 'application/json',
         'Cache-Control': 'no-cache',
@@ -26,40 +37,29 @@ async function fetchJson(url: string, timeoutMs = 4000) {
       signal: controller.signal,
     });
 
-    if (!response.ok) return null;
-    return await response.json();
-  } catch (error) {
-    console.warn(`Bootstrap impossible pour ${url}; utilisation du fallback embarqué.`, error);
-    return null;
+    if (response.ok) {
+      const data = await response.json().catch(() => null);
+      const config = data?.config;
+
+      if (config && typeof config === 'object') {
+        window.__PYRENEES_PUBLISHED_CONFIG__ = config;
+      } else {
+        window.__PYRENEES_PUBLISHED_CONFIG__ = {};
+      }
+    } else {
+      window.__PYRENEES_PUBLISHED_CONFIG__ = {};
+    }
+  } catch {
+    // Le serveur doit rester utilisable même si l'API est indisponible.
+    // Après le timeout, App démarre avec site-content.generated.ts.
+    window.__PYRENEES_PUBLISHED_CONFIG__ = {};
   } finally {
     window.clearTimeout(timeout);
   }
 }
 
 async function bootstrap() {
-  // React ne monte qu'après le chargement de la configuration publiée.
-  // Le visiteur ne voit donc jamais le bundle ancien avant son remplacement.
-  const [configResult, productsResult] = await Promise.all([
-    fetchJson(`/api/site-config?ts=${Date.now()}`),
-    fetchJson(`/api/products?ts=${Date.now()}`),
-  ]);
-
-  const runtimeConfig: PublishedRuntimeConfig = {};
-
-  if (configResult?.config && typeof configResult.config === 'object') {
-    runtimeConfig.brandData = configResult.config.brandData;
-    runtimeConfig.editorConfig = configResult.config.editorConfig;
-  }
-
-  if (
-    productsResult?.success === true &&
-    Array.isArray(productsResult.products) &&
-    productsResult.products.length > 0
-  ) {
-    runtimeConfig.products = productsResult.products;
-  }
-
-  window.__PYRENEES_BOOTSTRAP_CONFIG__ = runtimeConfig;
+  await loadPublishedConfigBeforeReact();
 
   createRoot(rootElement).render(
     <StrictMode>
@@ -67,6 +67,9 @@ async function bootstrap() {
     </StrictMode>,
   );
 
+  // index.html masque #root pendant le bootstrap. On ne le révèle
+  // qu'après le premier rendu React, afin d'éviter le flash du bundle
+  // avant l'arrivée de la configuration serveur.
   requestAnimationFrame(() => {
     document.documentElement.classList.remove('site-booting');
     document.documentElement.classList.add('site-ready');

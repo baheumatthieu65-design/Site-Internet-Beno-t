@@ -85,18 +85,10 @@ export default async function handler(
     });
   }
 
-  const config = {
-    ...body.config,
-    publishedAt:
-      typeof body.config.publishedAt === 'string'
-        ? body.config.publishedAt
-        : new Date().toISOString(),
-  };
-
-  await redis.set(KEY, config);
+  await redis.set(KEY, body.config);
 
   return json(res, 200, {
     success: true,
-    config,
+    config: body.config,
   });
 }

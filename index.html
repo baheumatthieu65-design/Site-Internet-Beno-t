@@ -7,10 +7,11 @@
 
     <style>
       /*
-       * V22 — NO LOADING SCREEN
+       * V63+ — BOOTSTRAP WITHOUT CONTENT FLASH
        *
-       * Le navigateur garde #root invisible pendant le tout premier montage
-       * React, mais aucun spinner/texte n'est affiché.
+       * Le navigateur garde #root invisible pendant le bootstrap de la
+       * configuration publiée. Aucun ancien contenu ne doit être affiché
+       * avant que App ait reçu son snapshot serveur ou le fallback généré.
        */
       html,
       body {
