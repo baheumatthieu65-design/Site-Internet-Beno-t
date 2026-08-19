@@ -546,8 +546,8 @@ export const publishedSiteContent = {
         "text": "GÎTE DES PYRÉNÉES",
         "fontFamily": "sans",
         "textColor": "#f3ece0",
-        "textSize": "21px",
-        "imageSize": 58,
+        "textSize": "12px",
+        "imageSize": 30,
         "gap": 12,
         "showText": true
       }
