@@ -63,6 +63,16 @@ const newItem = (section: string): FloatingMediaItem => ({
 export const FloatingMediaManager: React.FC<Props> = ({ config, onChange }) => {
   const items: FloatingMediaItem[] = config?.floatingImages ?? [];
   const [draftModule, setDraftModule] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(true);
+  const [savedSnapshot, setSavedSnapshot] = useState(JSON.stringify(items));
+
+  const hasUnsavedChanges = JSON.stringify(items) !== savedSnapshot;
+
+  const saveChanges = () => {
+    setSavedSnapshot(JSON.stringify(items));
+    // onChange is already called for every edit; this button marks the current
+    // configuration as the user's explicit saved state for the editor UI.
+  };
 
   const configuredBlocks = Array.isArray(config?.blocks) ? config.blocks : [];
 
@@ -169,15 +179,35 @@ export const FloatingMediaManager: React.FC<Props> = ({ config, onChange }) => {
 
   return (
     <div className="space-y-4" data-floating-manager="true">
-      <div className="rounded-xl border border-[#3b473e] bg-[#111612] p-3">
-        <div className="mb-3">
-          <div className="text-xs font-semibold uppercase tracking-widest text-[#d4af37]">
-            Choisir le module
+      <div className="rounded-xl border border-[#3b473e] bg-[#111612] overflow-hidden">
+        <div className="flex items-center gap-3 p-3">
+          <div className="min-w-0 flex-1">
+            <div className="text-xs font-semibold uppercase tracking-widest text-[#d4af37]">
+              Images flottantes
+            </div>
+            <div className="mt-1 text-[11px] text-[#87968a]">
+              {items.length ? `${items.length} image${items.length > 1 ? "s" : ""} installée${items.length > 1 ? "s" : ""}` : "Aucune image installée"}
+              {hasUnsavedChanges ? " • modifications en cours" : ""}
+            </div>
           </div>
-          <div className="mt-1 text-[11px] text-[#87968a]">
-            Ajoutez une image flottante sur le module voulu. Une fois installée, elle reste modifiable ou supprimable.
-          </div>
+          <button
+            type="button"
+            onClick={() => setExpanded(v => !v)}
+            className="shrink-0 rounded-lg border border-[#455248] px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[#c4ceb8] hover:border-[#d4af37]/60 hover:text-[#d4af37]"
+          >
+            {expanded ? "Réduire" : "Développer"}
+          </button>
         </div>
+
+        {expanded && <div className="border-t border-[#2f3a32] p-3">
+          <div className="mb-3">
+            <div className="text-xs font-semibold uppercase tracking-widest text-[#d4af37]">
+              Choisir le module
+            </div>
+            <div className="mt-1 text-[11px] text-[#87968a]">
+              Ajoutez une image flottante sur le module voulu. Une fois installée, elle reste modifiable ou supprimable.
+            </div>
+          </div>
 
         <div className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-[#aeb9b0]">
           Boutique
@@ -200,7 +230,7 @@ export const FloatingMediaManager: React.FC<Props> = ({ config, onChange }) => {
         {items.map(item => {
           const module = dynamicModules.find(m => m.id === item.section);
           return (
-            <div key={item.id} className="rounded-xl border border-[#3b473e] bg-[#151b17] p-3 space-y-3">
+            <div id={`floating-item-${item.id}`} key={item.id} className="rounded-xl border border-[#3b473e] bg-[#151b17] p-3 space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
                   <strong className="text-sm text-[#e8e1d5]">Image flottante</strong>
