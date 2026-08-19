@@ -46,11 +46,15 @@ export const Navbar: React.FC<NavbarProps> = ({ brandData, isAdminLoggedIn, onOp
   const openOrders = () => { if (isAdminLoggedIn) window.__pyreneesOpenAdminOrders?.(); };
   const openGite = () => { setMobileMenuOpen(false); onOpenGite?.(); };
 
+  // L'univers actif est toujours placé à droite du duo de logos :
+  // Boutique active => Gîte / Boutique
+  // Gîte active    => Boutique / Gîte (la page Gîte utilise GiteNavigation).
+  // Ici la navbar principale représente l'univers Boutique, donc Boutique est à droite.
   const logoPair = (
     <div className="flex items-center gap-3 sm:gap-5 min-w-0">
-      <LogoBlock brandData={brandData} kind="boutique" compact onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
-      <span className="hidden sm:block h-10 w-[2px] bg-[#d4af37]/80 rotate-[15deg]" aria-hidden="true" />
       <LogoBlock brandData={brandData} kind="gite" compact onClick={openGite} />
+      <span className="hidden sm:block h-10 w-[2px] bg-[#d4af37]/80 rotate-[15deg]" aria-hidden="true" />
+      <LogoBlock brandData={brandData} kind="boutique" compact onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
     </div>
   );
 
