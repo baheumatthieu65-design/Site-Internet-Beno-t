@@ -521,7 +521,7 @@ export const publishedSiteContent = {
           "key": "care"
         }
       ],
-      "collectionTabLabel": "Les Articles",
+      "collectionTabLabel": "Les Art",
       "navOrder": [
         "collection",
         "comparatif",
@@ -778,5 +778,5 @@ export const publishedSiteContent = {
       }
     ]
   },
-  "publishedAt": 1787176181944
+  "publishedAt": 1787176207399
 } as const;
