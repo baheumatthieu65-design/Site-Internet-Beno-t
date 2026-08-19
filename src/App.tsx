@@ -26,6 +26,8 @@ import {
   SiteEditorConfig,
 } from './components/SiteVisualEditor';
 import { SiteBlocksRenderer } from './components/SiteBlocksRenderer';
+import GitePage from './components/GitePage';
+import './styles/gite-v46.css';
 
 import {
   verifyAdminSessionServer,
@@ -51,6 +53,7 @@ type CustomizerTab =
   | 'github';
 
 export default function App() {
+  if (window.location.pathname === '/gite') return <GitePage />;
   // ===========================================================================
   // BRAND DATA
   // ===========================================================================
