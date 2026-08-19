@@ -697,7 +697,7 @@ export const publishedSiteContent = {
         "visible": true,
         "selector": "[data-vce-hero-line=\"2\"]",
         "kind": "text",
-        "text": "MAISON DES PYR",
+        "text": "MAISON MAILHA",
         "fontFamily": "ui-serif",
         "fontSize": "72px",
         "color": "rgb(245, 238, 223)"
@@ -778,5 +778,5 @@ export const publishedSiteContent = {
       }
     ]
   },
-  "publishedAt": 1787176207399
+  "publishedAt": 1787176389875
 } as const;
