@@ -1360,7 +1360,7 @@ export default function App() {
         </div>
       )}
 
-      <SiteBlocksRenderer config={siteEditorConfig} />
+      <SiteBlocksRenderer config={siteEditorConfig} enabled={isAdminLoggedIn && isCustomizerOpen} />
 
       {isAdminLoggedIn && (
         <SiteVisualEditor
