@@ -27,6 +27,7 @@ import {
 } from './components/SiteVisualEditor';
 import { SiteBlocksRenderer } from './components/SiteBlocksRenderer';
 import GitePage from './components/GitePage';
+import { LogoEditorModal } from './components/LogoEditorModal';
 import './styles/gite-v48.css';
 
 import {
@@ -124,6 +125,7 @@ export default function App() {
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
+  const [isLogoEditorOpen, setIsLogoEditorOpen] = useState(false);
 
   // Toutes les publications administrateur passent par une file unique.
   // Une action rapide ne peut donc plus écraser une action plus récente
@@ -1262,6 +1264,7 @@ export default function App() {
               onOpenEditor={handleOpenEditor}
               onOpenOrders={handleOpenOrders}
               onOpenProducts={() => setIsProductsOpen(true)}
+              onOpenLogoEditor={() => setIsLogoEditorOpen(true)}
               onOpenSecurity={handleOpenSecurity}
               onLogout={handleLogout}
             />
@@ -1289,6 +1292,7 @@ export default function App() {
 
       {isGitePageOpen && (
         <GitePage
+          brandData={brandData}
           onBackToVitrine={handleBackToVitrine}
           onAdmin={() => handleOpenEditor('theme')}
         />
@@ -1355,6 +1359,13 @@ export default function App() {
         onRefreshProducts={
           fetchServerProducts
         }
+      />
+
+      <LogoEditorModal
+        isOpen={isLogoEditorOpen}
+        brandData={brandData}
+        onClose={() => setIsLogoEditorOpen(false)}
+        onSave={handleSaveBrandData}
       />
 
       <BrandCustomizerModal

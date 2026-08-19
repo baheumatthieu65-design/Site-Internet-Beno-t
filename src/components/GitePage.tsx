@@ -1,8 +1,9 @@
 import React from "react";
 import {giteConfig as c} from "../data/giteConfig";
 import {GiteNavigation} from "./GiteNavigation";
-export const GitePage:React.FC<{onBackToVitrine:()=>void;onAdmin:()=>void}>=({onBackToVitrine,onAdmin})=><main className="gite-page">
-<GiteNavigation onBackToVitrine={onBackToVitrine} onAdmin={onAdmin}/>
+import { BrandConfig } from "../types";
+export const GitePage:React.FC<{brandData: BrandConfig; onBackToVitrine:()=>void;onAdmin:()=>void}>=({brandData,onBackToVitrine,onAdmin})=><main className="gite-page">
+<GiteNavigation brandData={brandData} onBackToVitrine={onBackToVitrine} onAdmin={onAdmin}/>
 <section id="gite-hero" className="gite-hero"><img src={c.heroImage} alt={c.name}/><div className="gite-hero-overlay"><p>{c.location}</p><h1>{c.name}</h1><p>{c.tagline}</p></div></section>
 <section id="gite-experience" className="gite-section"><p className="gite-eyebrow">L'expérience</p><h2>{c.intro.title}</h2><p>{c.intro.text}</p></section>
 <section id="gite-gallery" className="gite-section"><p className="gite-eyebrow">Le gîte en images</p><div className="gite-gallery">{c.gallery.map(i=><img key={i.src} src={i.src} alt={i.alt}/>)}</div></section>
