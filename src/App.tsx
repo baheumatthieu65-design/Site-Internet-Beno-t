@@ -27,7 +27,8 @@ import {
 } from './components/SiteVisualEditor';
 import { SiteBlocksRenderer } from './components/SiteBlocksRenderer';
 import GitePage from './components/GitePage';
-import './styles/gite-v46.css';
+import { LogoEditorModal } from './components/LogoEditorModal';
+import './styles/gite-v48.css';
 
 import {
   verifyAdminSessionServer,
@@ -53,7 +54,6 @@ type CustomizerTab =
   | 'github';
 
 export default function App() {
-  if (window.location.pathname === '/gite') return <GitePage />;
   // ===========================================================================
   // BRAND DATA
   // ===========================================================================
@@ -125,6 +125,7 @@ export default function App() {
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
+  const [isLogoEditorOpen, setIsLogoEditorOpen] = useState(false);
 
   // Toutes les publications administrateur passent par une file unique.
   // Une action rapide ne peut donc plus écraser une action plus récente
@@ -146,6 +147,7 @@ export default function App() {
     useState<CustomizerTab>('theme');
 
   const [activeSection, setActiveSection] = useState('collection');
+  const [isGitePageOpen, setIsGitePageOpen] = useState(false);
 
   // ===========================================================================
   // SECTION DRAG / REORDER
@@ -1212,6 +1214,16 @@ export default function App() {
     );
   };
 
+  const handleOpenGite = () => {
+    setIsGitePageOpen(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBackToVitrine = () => {
+    setIsGitePageOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // ===========================================================================
   // RENDER APP
   // ===========================================================================
@@ -1252,6 +1264,7 @@ export default function App() {
               onOpenEditor={handleOpenEditor}
               onOpenOrders={handleOpenOrders}
               onOpenProducts={() => setIsProductsOpen(true)}
+              onOpenLogoEditor={() => setIsLogoEditorOpen(true)}
               onOpenSecurity={handleOpenSecurity}
               onLogout={handleLogout}
             />
@@ -1259,38 +1272,31 @@ export default function App() {
         />
       )}
 
-      <Navbar
-        brandData={brandData}
-        isAdminLoggedIn={
-          isAdminLoggedIn
-        }
-        onOpenLogin={() =>
-          setIsAdminLoginOpen(true)
-        }
-        onLogout={handleLogout}
-        onOpenCustomizer={
-          handleOpenEditor
-        }
-        onOpenInquiry={
-          handleOpenInquiry
-        }
-        activeSection={
-          activeSection
-        }
-      />
+      {!isGitePageOpen && (
+        <>
+          <Navbar
+            brandData={brandData}
+            isAdminLoggedIn={isAdminLoggedIn}
+            onOpenLogin={() => setIsAdminLoginOpen(true)}
+            onLogout={handleLogout}
+            onOpenCustomizer={handleOpenEditor}
+            onOpenInquiry={handleOpenInquiry}
+            activeSection={activeSection}
+            onOpenGite={handleOpenGite}
+          />
+          <main>
+            {sectionOrder.map((sectionId, index) => renderSection(sectionId, index))}
+          </main>
+        </>
+      )}
 
-      <main>
-        {sectionOrder.map(
-          (
-            sectionId,
-            index
-          ) =>
-            renderSection(
-              sectionId,
-              index
-            )
-        )}
-      </main>
+      {isGitePageOpen && (
+        <GitePage
+          brandData={brandData}
+          onBackToVitrine={handleBackToVitrine}
+          onAdmin={() => handleOpenEditor('theme')}
+        />
+      )}
 
       <InquiryModal
         isOpen={isInquiryOpen}
@@ -1353,6 +1359,13 @@ export default function App() {
         onRefreshProducts={
           fetchServerProducts
         }
+      />
+
+      <LogoEditorModal
+        isOpen={isLogoEditorOpen}
+        brandData={brandData}
+        onClose={() => setIsLogoEditorOpen(false)}
+        onSave={handleSaveBrandData}
       />
 
       <BrandCustomizerModal
