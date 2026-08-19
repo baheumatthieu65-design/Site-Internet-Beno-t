@@ -538,7 +538,7 @@ export const publishedSiteContent = {
         "textColor": "#f3ece0",
         "textSize": "12px",
         "imageSize": 30,
-        "gap": 12,
+        "gap": 10,
         "showText": true
       },
       "gite": {
@@ -548,7 +548,7 @@ export const publishedSiteContent = {
         "textColor": "#f3ece0",
         "textSize": "12px",
         "imageSize": 30,
-        "gap": 12,
+        "gap": 10,
         "showText": true
       }
     }
