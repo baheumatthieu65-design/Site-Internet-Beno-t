@@ -673,7 +673,7 @@ export const publishedSiteContent = {
         "visible": true,
         "selector": "[data-vce-hero-line=\"2\"]",
         "kind": "text",
-        "text": "MAISON MAILHA",
+        "text": "MAISON DES PYdd",
         "fontFamily": "ui-serif",
         "fontSize": "72px",
         "color": "rgb(245, 238, 223)"
@@ -754,5 +754,5 @@ export const publishedSiteContent = {
       }
     ]
   },
-  "publishedAt": "2026-08-19T18:03:00.082Z"
+  "publishedAt": 1787163642643
 } as const;
