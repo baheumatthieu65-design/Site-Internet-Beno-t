@@ -525,8 +525,8 @@ export const publishedSiteContent = {
       "navOrder": [
         "collection",
         "comparatif",
-        "origines",
         "lookbook",
+        "origines",
         "contact"
       ],
       "comparatifTabLabel": "Tableau Comparatif des Articles",
@@ -780,5 +780,5 @@ export const publishedSiteContent = {
       }
     ]
   },
-  "publishedAt": 1787176862031
+  "publishedAt": 1787176888371
 } as const;
