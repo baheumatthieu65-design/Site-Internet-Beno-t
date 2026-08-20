@@ -268,8 +268,8 @@ export const publishedSiteContent = {
       "showcaseLayout": "split-interactive",
       "sectionOrder": [
         "hero",
-        "comparatif",
         "collection",
+        "comparatif",
         "lookbook",
         "origines",
         "contact"
@@ -864,5 +864,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787248534218
+  "publishedAt": 1787248538138
 } as const;
