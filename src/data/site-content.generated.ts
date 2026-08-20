@@ -699,7 +699,7 @@ export const publishedSiteContent = {
         "visible": true,
         "selector": "[data-vce-hero-line=\"2\"]",
         "kind": "text",
-        "text": "MAISON Mailhag",
+        "text": "MAISON Mailha",
         "fontFamily": "ui-serif",
         "fontSize": "72px",
         "color": "rgb(245, 238, 223)"
@@ -780,5 +780,5 @@ export const publishedSiteContent = {
       }
     ]
   },
-  "publishedAt": 1787176952736
+  "publishedAt": 1787207746289
 } as const;
