@@ -20,7 +20,7 @@ export const initialBrandData: BrandConfig = {
   accentColor: '#4A5D4E', // Alpine Evergreen / Sage Warm Green
   foundingYear: '2025',
   designerLocation: 'Vallée de Lourdios & Pic du Midi',
-  heroBgImage: pyreneesHeroImg,
+  heroBgImage: '',
   storyTitle: 'Aux origines de la Maison',
   storyText1: 'Pensée entre pâturages verdoyants et sommets acérés, notre maison fait le pari d’un luxe brut et authentique. Chaque veste est façonnée pour affronter les brumes pyrénéennes tout en offrant une silhouette d’une distinction rare.',
   storyText2: 'Nous avons sélectionné des laines de bergers pyrénéens et des toiles techniques imperméables d’exception pour façonner ces deux pièces signatures : La Veste des Cimes et Le Manteau Pastorale.',

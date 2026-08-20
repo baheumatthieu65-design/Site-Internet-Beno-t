@@ -46,6 +46,12 @@ export interface ButtonOverride {
   backgroundOverlay?: number;
 }
 
+export type SiteThemePresetId =
+  | 'pyrenees-noir'
+  | 'foret-profonde'
+  | 'ardoise-luxe'
+  | 'ivoire-atelier';
+
 export type CardStyleId =
   | 'atelier-relief'
   | 'epure-noir'
@@ -88,6 +94,18 @@ export type AdminBarPosition =
   | 'bottom'
   | 'left'
   | 'right';
+
+export interface BackgroundMedia {
+  type: MediaType;
+  url: string;
+  poster?: string;
+  overlay?: number;
+  positionX?: number;
+  positionY?: number;
+  objectFit?: 'cover' | 'contain';
+}
+
+export type MediaType = 'image' | 'gif' | 'video';
 
 export interface BackgroundMedia {
   type: MediaType;
@@ -182,6 +200,9 @@ export interface JacketModel {
   name: string;
   subTitle: string;
   category: string;
+
+  /** Ligne éditoriale affichée au-dessus du nom dans le Showcase. */
+  showcaseEyebrow?: string;
 
   /**
    * Prix officiel du produit.
@@ -313,6 +334,10 @@ export interface ThemeConfig {
   navOrder?: NavigationId[];
 
   accentColorHex?: string;
+  siteThemePreset?: SiteThemePresetId;
+  siteBackgroundColor?: string;
+  navBackgroundColor?: string;
+  navBackgroundOpacity?: number;
 
   /* Positionnement & alignement */
 
@@ -339,6 +364,7 @@ export interface ThemeConfig {
   lookbookImageFrameHeight?: number;
   /** Images de fond choisies par module principal. */
   sectionBackgroundImages?: Partial<Record<SectionId, string>>;
+  sectionBackgroundMedia?: Partial<Record<SectionId, BackgroundMedia>>;
   /** Largeur d'affichage de chaque module principal, en pourcentage. */
   sectionWidthPercent?: Partial<Record<SectionId, number>>;
   /** Opacité des images de fond de chaque module principal, en pourcentage. */

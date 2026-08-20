@@ -9,7 +9,6 @@ import {
   NavigationId,
   ThemeConfig,
   ComparisonCriterion,
-  ProductBlockId,
   TextAlignId,
   ButtonAlignId,
   ContainerWidthId,
@@ -67,11 +66,12 @@ import {
   defaultThemeConfig,
   getButtonClasses,
   getCardClasses,
+  siteThemePresets,
 } from '../utils/themeStyles';
 import { ButtonManager } from './ButtonManager';
 import { AdminProductModal } from './AdminProductModal';
 import { getStoredCredentials, saveAdminCredentials, resetPasswordServer, maskEmail, AdminCredentials } from '../utils/auth';
-import { prepareImageForUpload } from '../utils/mediaUpload';
+import { prepareImageForUpload, uploadBackgroundVideo } from '../utils/mediaUpload';
 import { defaultGiteConfig } from '../data/giteConfig';
 import { GiteCustomizerPanel } from './GiteCustomizerPanel';
 
@@ -86,39 +86,6 @@ interface BrandCustomizerModalProps {
   onRefreshProducts: () => void;
   initialTab?: 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite';
 }
-
-const productBlockMeta: Record<ProductBlockId, { name: string; icon: string; desc: string }> = {
-  'title-price': {
-    name: 'Titre, Sous-titre & Prix',
-    icon: '🏷️',
-    desc: 'Nom de la pièce d’exception, catégorie, prix et mentions de confection.',
-  },
-  'description': {
-    name: 'Description & Récit Terroir',
-    icon: '📜',
-    desc: 'Présentation de la coupe, inspiration montagnarde et détails poétiques.',
-  },
-  'colors': {
-    name: 'Sélecteur de Nuances & Couleurs',
-    icon: '🎨',
-    desc: 'Pastilles de teintes minérales et lainières avec prévisualisation.',
-  },
-  'sizes': {
-    name: 'Guide & Sélection des Tailles',
-    icon: '📏',
-    desc: 'Boutons de tailles (XS à XXL) et informations de prise de mesure.',
-  },
-  'specs': {
-    name: 'Spécifications & Matières',
-    icon: '⚙️',
-    desc: 'Poids, imperméabilité, indice de chaleur, origine et conseils d’entretien.',
-  },
-  'cta': {
-    name: 'Bouton d’Action & Commande',
-    icon: '🛒',
-    desc: 'Bouton principal de réservation et commande sur mesure atelier.',
-  },
-};
 
 const samplePresetImages = [
   { label: 'Veste Cimes (Kaki / Bronze)', url: '/src/assets/images/veste-cimes.png' },
@@ -753,24 +720,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     updateTheme({ lookbookProductIds: next });
   };
 
-  // Product Page Blocks Reorder
-  const handleMoveProductBlock = (blockId: ProductBlockId, direction: 'up' | 'down') => {
-    const currentOrder = [...(currentTheme.productBlocksOrder || defaultThemeConfig.productBlocksOrder || [])];
-    const index = currentOrder.indexOf(blockId);
-    if (index === -1) return;
-
-    if (direction === 'up' && index > 0) {
-      const temp = currentOrder[index - 1];
-      currentOrder[index - 1] = currentOrder[index];
-      currentOrder[index] = temp;
-      updateTheme({ productBlocksOrder: currentOrder });
-    } else if (direction === 'down' && index < currentOrder.length - 1) {
-      const temp = currentOrder[index + 1];
-      currentOrder[index + 1] = currentOrder[index];
-      currentOrder[index] = temp;
-      updateTheme({ productBlocksOrder: currentOrder });
-    }
-  };
 
   // Save & Security Handlers
   const handleSave = (e?: React.FormEvent) => {
@@ -901,6 +850,10 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           ...(currentTheme.sectionBackgroundImages || {}),
           [sectionId]: String(data.url),
         },
+        sectionBackgroundMedia: {
+          ...(currentTheme.sectionBackgroundMedia || {}),
+          [sectionId]: { type: 'image', url: String(data.url), overlay: 0, objectFit: 'cover', positionX: 50, positionY: 50 },
+        },
       });
     } catch (error) {
       console.error(error);
@@ -910,10 +863,29 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     }
   };
 
+  const handleSectionBackgroundVideoUpload = async (sectionId: SectionId, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    setUploadingSectionBackground(sectionId);
+    try {
+      const url = await uploadBackgroundVideo(file);
+      updateTheme({
+        sectionBackgroundImages: { ...(currentTheme.sectionBackgroundImages || {}), [sectionId]: '' },
+        sectionBackgroundMedia: { ...(currentTheme.sectionBackgroundMedia || {}), [sectionId]: { type: 'video', url, overlay: 0, objectFit: 'cover', positionX: 50, positionY: 50 } },
+      });
+    } catch (error) {
+      console.error(error);
+      alert(error instanceof Error ? error.message : 'Impossible d’importer cette vidéo de fond.');
+    } finally { setUploadingSectionBackground(null); }
+  };
+
   const clearSectionBackground = (sectionId: SectionId) => {
     const next = { ...(currentTheme.sectionBackgroundImages || {}) };
     delete next[sectionId];
-    updateTheme({ sectionBackgroundImages: next });
+    const media = { ...(currentTheme.sectionBackgroundMedia || {}) };
+    delete media[sectionId];
+    updateTheme({ sectionBackgroundImages: next, sectionBackgroundMedia: media });
   };
 
   const currentJacket = formData.jackets[selectedJacketIndex] || formData.jackets[0];
@@ -1076,6 +1048,31 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           {/* ========================================================= */}
           {activeTab === 'theme' && (
             <div className="space-y-8 animate-fadeIn">
+              <div className="p-5 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
+                <div>
+                  <h4 className="font-serif text-base text-[#f3ece0] font-semibold flex items-center gap-2"><Palette className="w-5 h-5 text-[#d4af37]" />Ambiance générale du site</h4>
+                  <p className="text-xs text-[#a3b1a5] mt-1">Le thème ne réinitialise pas l’opacité de la navigation.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {siteThemePresets.map((preset) => (
+                    <button key={preset.id} type="button" onClick={() => updateTheme({ siteThemePreset: preset.id, siteBackgroundColor: preset.siteBackgroundColor, navBackgroundColor: preset.navBackgroundColor })} className={`text-left p-3 rounded-xl border transition-all ${(currentTheme.siteThemePreset || 'pyrenees-noir') === preset.id ? 'border-[#d4af37] bg-[#222d24]' : 'border-[#344437] bg-[#151b16] hover:border-[#607162]'}`}>
+                      <div className="h-10 rounded-lg mb-2 border border-white/10" style={{ background: preset.previewBg }} />
+                      <div className="text-xs font-bold text-[#f3ece0]">{preset.name}</div>
+                      <div className="text-[10px] text-[#9eb0a0] mt-0.5">{preset.description}</div>
+                    </button>
+                  ))}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-[#2a362c]">
+                  <label className="text-xs text-[#a3b1a5]"><span className="block mb-2 uppercase tracking-widest">Couleur de fond du site</span><div className="flex items-center gap-2"><input type="color" value={currentTheme.siteBackgroundColor || '#121613'} onChange={(e) => updateTheme({ siteBackgroundColor: e.target.value, siteThemePreset: undefined })} className="w-12 h-10 rounded-lg bg-transparent cursor-pointer" /><input value={currentTheme.siteBackgroundColor || '#121613'} onChange={(e) => updateTheme({ siteBackgroundColor: e.target.value, siteThemePreset: undefined })} className="flex-1 bg-[#121613] border border-[#2e3b30] rounded-lg px-3 py-2 text-white" /></div></label>
+                  <label className="text-xs text-[#a3b1a5]"><span className="block mb-2 uppercase tracking-widest">Couleur de la barre de navigation</span><div className="flex items-center gap-2"><input type="color" value={currentTheme.navBackgroundColor || '#1a1e1b'} onChange={(e) => updateTheme({ navBackgroundColor: e.target.value, siteThemePreset: undefined })} className="w-12 h-10 rounded-lg bg-transparent cursor-pointer" /><input value={currentTheme.navBackgroundColor || '#1a1e1b'} onChange={(e) => updateTheme({ navBackgroundColor: e.target.value, siteThemePreset: undefined })} className="flex-1 bg-[#121613] border border-[#2e3b30] rounded-lg px-3 py-2 text-white" /></div></label>
+                </div>
+                <label className="block pt-3 border-t border-[#2a362c] text-xs text-[#a3b1a5]">
+                  <div className="flex items-center justify-between mb-2"><span className="uppercase tracking-widest">Opacité du fond de la barre de navigation</span><strong className="text-[#d4af37]">{currentTheme.navBackgroundOpacity ?? 0}%</strong></div>
+                  <input type="range" min="0" max="100" step="5" value={currentTheme.navBackgroundOpacity ?? 0} onChange={(e) => updateTheme({ navBackgroundOpacity: Number(e.target.value) })} className="w-full accent-[#d4af37]" />
+                  <div className="flex justify-between text-[9px] text-[#708272] mt-1"><span>0% transparent</span><span>50%</span><span>100% opaque</span></div>
+                </label>
+              </div>
+
               <ButtonManager
                 theme={currentTheme}
                 onChange={updateTheme}
@@ -1212,186 +1209,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                 </div>
               </div>
 
-              {/* 2. PRODUCT PAGE BLOCKS ORDERING (User Requested) */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-serif text-base text-[#f3ece0] font-semibold flex items-center space-x-2">
-                      <Sliders className="w-4 h-4 text-[#d4af37]" />
-                      <span>Ordre des Objets & Champs de la Fiche Produit (Showcase)</span>
-                    </h4>
-                    <p className="text-xs text-[#a3b1a5] mt-0.5">
-                      Déplacez les éléments avec les flèches ↑ et ↓ pour réorganiser la présentation de chaque veste :
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  {(currentTheme.productBlocksOrder || defaultThemeConfig.productBlocksOrder || []).map((blockId, idx, arr) => {
-                    const meta = productBlockMeta[blockId] || { name: blockId, icon: '📦', desc: '' };
-                    return (
-                      <div
-                        key={blockId}
-                        className="p-3 rounded-xl bg-[#1a221c] border border-[#344437] flex items-center justify-between transition-all"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <span className="text-xl">{meta.icon}</span>
-                          <div>
-                            <span className="text-xs font-serif font-bold text-[#f3ece0]">
-                              {idx + 1}. {meta.name}
-                            </span>
-                            <p className="text-[11px] text-[#a3b1a5]">{meta.desc}</p>
-                            <div className="mt-2 flex items-center gap-2">
-                              <div
-                                className="w-24 h-12 rounded-lg overflow-hidden border border-[#465447] bg-[#101510] shrink-0"
-                                style={currentTheme.sectionBackgroundImages?.[secId] ? {
-                                  backgroundImage: `url(${JSON.stringify(currentTheme.sectionBackgroundImages[secId])})`,
-                                  backgroundSize: 'cover',
-                                  backgroundPosition: 'center',
-                                  opacity: getSectionBackgroundOpacity(secId) / 100,
-                                } : undefined}
-                              >
-                                {!currentTheme.sectionBackgroundImages?.[secId] && <div className="w-full h-full flex items-center justify-center text-[9px] text-[#607162]">Aperçu du bloc</div>}
-                              </div>
-                              {currentTheme.sectionBackgroundImages?.[secId] && <span className="text-[9px] text-[#7f9382]">Fond importé</span>}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center space-x-1.5">
-                          <button
-                            type="button"
-                            disabled={idx === 0}
-                            onClick={() => handleMoveProductBlock(blockId, 'up')}
-                            className="p-1.5 rounded-lg bg-[#253127] hover:bg-[#324235] text-[#d4af37] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                            title="Monter"
-                          >
-                            <ArrowUp className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            disabled={idx === arr.length - 1}
-                            onClick={() => handleMoveProductBlock(blockId, 'down')}
-                            className="p-1.5 rounded-lg bg-[#253127] hover:bg-[#324235] text-[#d4af37] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                            title="Descendre"
-                          >
-                            <ArrowDown className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* 3. HERO & SHOWCASE FORMATS */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[#2a362c]">
-                {/* Hero Variant */}
-                <div className="space-y-3">
-                  <h4 className="font-serif text-sm text-[#f3ece0] font-semibold">Format Accueil (Hero)</h4>
-                  <div className="space-y-2">
-                    {[
-                      { id: 'split-cards' as HeroLayoutId, name: 'Duo Cartes Présentation', desc: 'Cartes interactives sous le texte majestueux.' },
-                      { id: 'centered-minimal' as HeroLayoutId, name: 'Centré Majestueux & Boutons', desc: 'Slogan épuré et grand bouton d’action.' },
-                      { id: 'side-by-side' as HeroLayoutId, name: 'Panorama Asymétrique 2 Colonnes', desc: 'Texte à gauche et modèles à droite façon magazine.' },
-                    ].map((h) => (
-                      <div
-                        key={h.id}
-                        onClick={() => updateTheme({ heroLayout: h.id })}
-                        className={`p-3 rounded-xl cursor-pointer border transition-all ${
-                          (currentTheme.heroLayout || 'split-cards') === h.id
-                            ? 'bg-[#212c23] border-[#d4af37]'
-                            : 'bg-[#181f19] border-[#2f3d32] hover:border-[#4d6352]'
-                        }`}
-                      >
-                        <div className="font-serif font-bold text-xs text-[#f3ece0]">{h.name}</div>
-                        <div className="text-[11px] text-[#a3b1a5] mt-0.5">{h.desc}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Showcase Variant */}
-                <div className="space-y-3">
-                  <h4 className="font-serif text-sm text-[#f3ece0] font-semibold">Format Showcase (Présentation Vestes)</h4>
-                  <div className="space-y-2">
-                    {[
-                      { id: 'split-interactive' as ShowcaseLayoutId, name: 'Atelier Interactif Split', desc: 'Points cliquables et panneau de personnalisation en direct.' },
-                      { id: 'magazine-editorial' as ShowcaseLayoutId, name: 'Éditorial Grand Angle', desc: 'Immersion photo avec 3 colonnes équilibrées.' },
-                      { id: 'lookbook-focus' as ShowcaseLayoutId, name: 'Focus Galerie Multi-Angles', desc: 'Mosaïque de prises de vue haute résolution.' },
-                    ].map((s) => (
-                      <div
-                        key={s.id}
-                        onClick={() => updateTheme({ showcaseLayout: s.id })}
-                        className={`p-3 rounded-xl cursor-pointer border transition-all ${
-                          (currentTheme.showcaseLayout || 'split-interactive') === s.id
-                            ? 'bg-[#212c23] border-[#d4af37]'
-                            : 'bg-[#181f19] border-[#2f3d32] hover:border-[#4d6352]'
-                        }`}
-                      >
-                        <div className="font-serif font-bold text-xs text-[#f3ece0]">{s.name}</div>
-                        <div className="text-[11px] text-[#a3b1a5] mt-0.5">{s.desc}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* 4. TAILLE DES CADRES — SHOWCASE & LOOKBOOK */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[#2a362c]">
-                <div className="p-4 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
-                  <div>
-                    <h4 className="font-serif text-sm text-[#f3ece0] font-semibold">Cadre visuel du Showcase</h4>
-                    <p className="text-[11px] text-[#a3b1a5] mt-1">Le cadre est réduit par défaut à 60 %. L'image remplit le cadre sans être artificiellement rétrécie.</p>
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between text-[10px] text-[#a3b1a5] mb-1">
-                      <span>Largeur du cadre</span><strong className="text-[#d4af37]">{currentTheme.showcaseImageFrameWidth ?? 60}%</strong>
-                    </div>
-                    <input type="range" min="40" max="100" step="5" value={currentTheme.showcaseImageFrameWidth ?? 60} onChange={(e) => updateTheme({ showcaseImageFrameWidth: Number(e.target.value) })} className="w-full accent-[#d4af37]" />
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between text-[10px] text-[#a3b1a5] mb-1">
-                      <span>Hauteur du cadre</span><strong className="text-[#d4af37]">{currentTheme.showcaseImageFrameHeight ?? 320}px</strong>
-                    </div>
-                    <input type="range" min="220" max="520" step="20" value={currentTheme.showcaseImageFrameHeight ?? 320} onChange={(e) => updateTheme({ showcaseImageFrameHeight: Number(e.target.value) })} className="w-full accent-[#d4af37]" />
-                    <div className="flex gap-2 mt-2">
-                      {[280, 320, 380].map((height) => (
-                        <button key={height} type="button" onClick={() => updateTheme({ showcaseImageFrameHeight: height })} className={`px-2.5 py-1 rounded-lg text-[10px] border ${Number(currentTheme.showcaseImageFrameHeight ?? 320) === height ? 'border-[#d4af37] bg-[#d4af37] text-[#121613]' : 'border-[#38483b] text-[#a3b1a5]'}`}>
-                          {height}px
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
-                  <div>
-                    <h4 className="font-serif text-sm text-[#f3ece0] font-semibold">Cadre visuel Galerie & Lookbook</h4>
-                    <p className="text-[11px] text-[#a3b1a5] mt-1">Le cadre/miniature passe à 60 % par défaut. L'image reste intacte à l'intérieur.</p>
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between text-[10px] text-[#a3b1a5] mb-1">
-                      <span>Largeur du cadre</span><strong className="text-[#d4af37]">{currentTheme.lookbookImageFrameWidth ?? 60}%</strong>
-                    </div>
-                    <input type="range" min="40" max="100" step="5" value={currentTheme.lookbookImageFrameWidth ?? 60} onChange={(e) => updateTheme({ lookbookImageFrameWidth: Number(e.target.value) })} className="w-full accent-[#d4af37]" />
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between text-[10px] text-[#a3b1a5] mb-1">
-                      <span>Hauteur du cadre</span><strong className="text-[#d4af37]">{currentTheme.lookbookImageFrameHeight ?? 220}px</strong>
-                    </div>
-                    <input type="range" min="160" max="420" step="20" value={currentTheme.lookbookImageFrameHeight ?? 220} onChange={(e) => updateTheme({ lookbookImageFrameHeight: Number(e.target.value) })} className="w-full accent-[#d4af37]" />
-                    <div className="flex gap-2 mt-2">
-                      {[180, 220, 280].map((height) => (
-                        <button key={height} type="button" onClick={() => updateTheme({ lookbookImageFrameHeight: height })} className={`px-2.5 py-1 rounded-lg text-[10px] border ${Number(currentTheme.lookbookImageFrameHeight ?? 220) === height ? 'border-[#d4af37] bg-[#d4af37] text-[#121613]' : 'border-[#38483b] text-[#a3b1a5]'}`}>
-                          {height}px
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {/* 5. SECTION REORDERING & VISIBILITY */}
               <div className="space-y-4 pt-4 border-t border-[#2a362c]">
                 <h4 className="font-serif text-base text-[#f3ece0] font-semibold flex items-center justify-between">
@@ -1427,18 +1244,16 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                             </div>
                             <p className="text-[11px] text-[#a3b1a5]">{meta.desc}</p>
                             <div className="mt-2 flex items-center gap-2">
-                              <div
-                                className="w-24 h-12 rounded-lg overflow-hidden border border-[#465447] bg-[#101510] shrink-0"
-                                style={currentTheme.sectionBackgroundImages?.[secId] ? {
-                                  backgroundImage: `url(${JSON.stringify(currentTheme.sectionBackgroundImages[secId])})`,
-                                  backgroundSize: 'cover',
-                                  backgroundPosition: 'center',
-                                  opacity: getSectionBackgroundOpacity(secId) / 100,
-                                } : undefined}
-                              >
-                                {!currentTheme.sectionBackgroundImages?.[secId] && <div className="w-full h-full flex items-center justify-center text-[9px] text-[#607162]">Aperçu du bloc</div>}
+                              <div className="relative w-24 h-12 rounded-lg overflow-hidden border border-[#465447] bg-[#101510] shrink-0">
+                                {currentTheme.sectionBackgroundMedia?.[secId]?.type === 'video' ? (
+                                  <video src={currentTheme.sectionBackgroundMedia[secId]?.url} muted autoPlay loop playsInline className="absolute inset-0 w-full h-full object-cover" style={{ opacity: getSectionBackgroundOpacity(secId) / 100 }} />
+                                ) : currentTheme.sectionBackgroundImages?.[secId] ? (
+                                  <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${JSON.stringify(currentTheme.sectionBackgroundImages[secId])})`, opacity: getSectionBackgroundOpacity(secId) / 100 }} />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-[9px] text-[#607162]">Aperçu du bloc</div>
+                                )}
                               </div>
-                              {currentTheme.sectionBackgroundImages?.[secId] && <span className="text-[9px] text-[#7f9382]">Fond importé</span>}
+                              {(currentTheme.sectionBackgroundImages?.[secId] || currentTheme.sectionBackgroundMedia?.[secId]) && <span className="text-[9px] text-[#7f9382]">{currentTheme.sectionBackgroundMedia?.[secId]?.type === 'video' ? 'Vidéo de fond' : 'Fond importé'}</span>}
                             </div>
                           </div>
                         </div>
@@ -1494,15 +1309,15 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                           <label className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-[#536456] bg-[#182019] hover:border-[#d4af37] text-[10px] uppercase tracking-wider text-[#c4ceb8] cursor-pointer">
                             <Upload className="w-3.5 h-3.5 text-[#d4af37]" />
                             <span>{uploadingSectionBackground === secId ? 'Import en cours…' : 'Image de fond depuis le PC'}</span>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(event) => handleSectionBackgroundUpload(secId, event)}
-                            />
+                            <input type="file" accept="image/*" className="hidden" onChange={(event) => handleSectionBackgroundUpload(secId, event)} />
+                          </label>
+                          <label className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-[#536456] bg-[#182019] hover:border-[#d4af37] text-[10px] uppercase tracking-wider text-[#c4ceb8] cursor-pointer">
+                            <Upload className="w-3.5 h-3.5 text-[#d4af37]" />
+                            <span>Vidéo de fond (10 s)</span>
+                            <input type="file" accept="video/mp4,video/webm" className="hidden" onChange={(event) => handleSectionBackgroundVideoUpload(secId, event)} />
                           </label>
 
-                          {currentTheme.sectionBackgroundImages?.[secId] && (
+                          {(currentTheme.sectionBackgroundImages?.[secId] || currentTheme.sectionBackgroundMedia?.[secId]) && (
                             <>
                               <span className="text-[10px] text-[#7f9382]">Fond personnalisé</span>
                               <button
@@ -1516,7 +1331,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                             </>
                           )}
 
-                          {currentTheme.sectionBackgroundImages?.[secId] && (
+                          {(currentTheme.sectionBackgroundImages?.[secId] || currentTheme.sectionBackgroundMedia?.[secId]) && (
                             <label className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#536456] bg-[#182019] text-[10px] text-[#c4ceb8] min-w-[220px]">
                               <span className="whitespace-nowrap">Opacité du fond</span>
                               <input

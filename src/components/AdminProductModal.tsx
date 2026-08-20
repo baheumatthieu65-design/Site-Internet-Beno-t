@@ -589,6 +589,17 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                 </div>
 
                 <div>
+                  <label className="block text-[#a3b1a5] font-semibold mb-1">Ligne éditoriale du Showcase</label>
+                  <input
+                    type="text"
+                    value={editingProduct.showcaseEyebrow || ''}
+                    onChange={(e) => setEditingProduct({ ...editingProduct, showcaseEyebrow: e.target.value })}
+                    placeholder="ex: Haute Montagne & Élégance"
+                    className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                  />
+                </div>
+
+                <div>
                   <label className="block text-[#a3b1a5] font-semibold mb-1">Prix *</label>
                   <div className="flex items-center space-x-2">
                     <input
@@ -631,17 +642,6 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                   </div>
                 </div>
 
-                <div className="md:col-span-2">
-                  <label className="block text-[#a3b1a5] font-semibold mb-1">Ligne éditoriale du Showcase</label>
-                  <input
-                    type="text"
-                    value={editingProduct.showcaseEyebrow || ''}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, showcaseEyebrow: e.target.value })}
-                    placeholder="ex: Haute Montagne & Élégance"
-                    className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                  />
-                  <p className="text-[10px] text-[#7d8c7f] mt-1">Cette ligne s'affiche au-dessus du nom. Le nom affiché dessous reprend automatiquement le nom de l'article.</p>
-                </div>
                 <div>
                   <label className="block text-[#a3b1a5] font-semibold mb-1">Catégorie</label>
                   <input

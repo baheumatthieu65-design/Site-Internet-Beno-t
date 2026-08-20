@@ -1403,6 +1403,9 @@ export default function App() {
             onReorderProductBlocks={
               handleReorderProductBlocks
             }
+            sectionBackgroundImage={theme?.sectionBackgroundImages?.collection || ''}
+            sectionBackgroundOpacity={theme?.sectionBackgroundOpacity?.collection ?? 100}
+            sectionBackgroundMedia={theme?.sectionBackgroundMedia?.collection}
           />
         );
         break;
@@ -1497,22 +1500,23 @@ export default function App() {
     // NORMAL VISITOR MODE
     // =========================================================================
 
-    const sectionBackgroundImage =
-      theme?.sectionBackgroundImages?.[sectionId] || '';
+    const sectionBackgroundMedia = theme?.sectionBackgroundMedia?.[sectionId];
+    const sectionBackgroundImage = sectionBackgroundMedia?.type === 'image'
+      ? sectionBackgroundMedia.url
+      : (theme?.sectionBackgroundImages?.[sectionId] || '');
 
     const sectionBackgroundOpacity = Math.min(100, Math.max(0, Number(
       theme?.sectionBackgroundOpacity?.[sectionId] ?? (sectionId === 'hero' ? 20 : 28)
     )));
 
-    const sectionBackgroundOverlay = sectionBackgroundImage ? (
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 z-10 pointer-events-none bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url(${JSON.stringify(sectionBackgroundImage)})`,
-          opacity: sectionBackgroundOpacity / 100,
-        }}
-      />
+    const sectionBackgroundOverlay = (sectionBackgroundMedia?.url || sectionBackgroundImage) ? (
+      <div aria-hidden="true" className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
+        {sectionBackgroundMedia?.type === 'video' ? (
+          <video src={sectionBackgroundMedia.url} poster={sectionBackgroundMedia.poster} autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" style={{ opacity: sectionBackgroundOpacity / 100, objectPosition: `${sectionBackgroundMedia.positionX ?? 50}% ${sectionBackgroundMedia.positionY ?? 50}%` }} />
+        ) : sectionBackgroundImage ? (
+          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${JSON.stringify(sectionBackgroundImage)})`, opacity: sectionBackgroundOpacity / 100 }} />
+        ) : null}
+      </div>
     ) : null;
 
     if (
@@ -1761,7 +1765,7 @@ export default function App() {
               onOpenGite={handleOpenGite}
             />
           </div>
-          <main className="site-content-scale">
+          <main className="site-content-scale" style={{ backgroundColor: theme?.siteBackgroundColor || '#121613' }}>
             {sectionOrder.map((sectionId, index) => renderSection(sectionId, index))}
           </main>
         </>

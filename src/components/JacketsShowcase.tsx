@@ -44,6 +44,7 @@ interface JacketsShowcaseProps {
   onReorderProductBlocks?: (newOrder: ProductBlockId[]) => void;
   sectionBackgroundImage?: string;
   sectionBackgroundOpacity?: number;
+  sectionBackgroundMedia?: { type: 'image' | 'gif' | 'video'; url: string; poster?: string; positionX?: number; positionY?: number };
 }
 
 export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
@@ -58,6 +59,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   onReorderProductBlocks,
   sectionBackgroundImage,
   sectionBackgroundOpacity = 100,
+  sectionBackgroundMedia,
 }) => {
   const visibleJackets = Array.isArray(jackets)
     ? jackets.filter((j) => isAdminLoggedIn || j.isAvailable !== false)
@@ -399,7 +401,15 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
 
   return (
     <section id="collection" className={`py-20 ${sectionBackgroundImage ? 'bg-transparent' : 'bg-[#151a16]'} text-[#e2d5c3] relative overflow-hidden group/showcase`}>
-
+      {(sectionBackgroundMedia?.url || sectionBackgroundImage) && (
+        <div aria-hidden="true" className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+          {sectionBackgroundMedia?.type === 'video' ? (
+            <video src={sectionBackgroundMedia.url} poster={sectionBackgroundMedia.poster} muted autoPlay loop playsInline className="absolute inset-0 w-full h-full object-cover" style={{ opacity: Math.min(100, Math.max(0, sectionBackgroundOpacity)) / 100, objectPosition: `${sectionBackgroundMedia.positionX ?? 50}% ${sectionBackgroundMedia.positionY ?? 50}%` }} />
+          ) : sectionBackgroundImage ? (
+            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${JSON.stringify(sectionBackgroundImage)})`, opacity: Math.min(100, Math.max(0, sectionBackgroundOpacity)) / 100 }} />
+          ) : null}
+        </div>
+      )}
       {/* Decorative mountain graphic accent */}
       <div className="absolute top-0 right-0 -mt-12 -mr-12 opacity-5 pointer-events-none">
         <svg className="w-96 h-96 text-[#d4af37]" fill="currentColor" viewBox="0 0 24 24">
@@ -526,7 +536,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
               <div>
                 <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#354238] pb-4">
                   <div className="min-w-0">
-                    <span className="text-[10px] uppercase tracking-[0.2em] text-[#d4af37]">{activeJacket.showcaseEyebrow || activeJacket.category || 'Haute Montagne & Élégance'}</span>
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-[#d4af37]">{activeJacket.showcaseEyebrow || activeJacket.category}</span>
                     <h3 className="font-serif text-2xl sm:text-4xl text-[#f3ece0] font-normal mt-1">{activeJacket.name}</h3>
                     <p className="text-xs text-[#a8b5a9] mt-1 line-clamp-2">{activeJacket.subTitle || activeJacket.tagline}</p>
                   </div>
@@ -739,7 +749,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
             aria-modal="true"
             aria-label={`Vue agrandie de ${activeJacket.name}`}
             onClick={() => setIsImageLightboxOpen(false)}
-            className="showcase-lightbox fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn cursor-zoom-out"
+            className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn cursor-zoom-out"
           >
             <div
               className="relative w-full max-w-6xl max-h-[92vh] rounded-2xl overflow-hidden border border-[#d4af37] bg-[#111612] shadow-2xl"
