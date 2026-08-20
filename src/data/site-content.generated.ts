@@ -221,7 +221,16 @@ export const publishedSiteContent = {
           "origin": "Atelier Pyrénées, France",
           "care": "Lavage délicat à la main ou nettoyage à sec"
         },
-        "hotspots": [],
+        "hotspots": [
+          {
+            "id": "hotspot-1787252504808",
+            "title": "Nouveau point tet",
+            "description": "sdssdsds",
+            "x": 47,
+            "y": 35,
+            "category": "fabric"
+          }
+        ],
         "id": "produit-1787242939553-ezbmjg",
         "availabilityStatus": "on-sale",
         "customSpecs": {}
@@ -756,5 +765,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787252403138
+  "publishedAt": 1787252529090
 } as const;
