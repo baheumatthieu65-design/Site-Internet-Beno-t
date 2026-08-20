@@ -3,7 +3,7 @@
 
 export const publishedSiteContent = {
   "brandData": {
-    "brandName": "MAISON Mailhag 4",
+    "brandName": "MAISON Mailhag",
     "tagline": "Élégance Champêtre \u0026 Artisanat des Cimes 5",
     "subtitle": "Conçues au cœur de la chaîne pyrénéenne, deux vestes d’exception mariant matières nobles et coupe haute couture 4.",
     "logoUrl": "/assets/pyrenees_brand_logo_1785338626936-BaITKbpK.jpg",
@@ -717,7 +717,7 @@ export const publishedSiteContent = {
         "visible": true,
         "selector": "[data-vce-hero-line=\"2\"]",
         "kind": "text",
-        "text": "MAISON Mailhag 4",
+        "text": "MAISON Mailhag",
         "fontFamily": "ui-serif",
         "fontSize": "72px",
         "color": "rgb(245, 238, 223)",
@@ -1022,5 +1022,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787218086247
+  "publishedAt": 1787218091785
 } as const;
