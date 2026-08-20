@@ -221,6 +221,40 @@ export default function App() {
     let next = base;
     let changed = false;
 
+    // V5.2 — les blocs de l'éditeur qui correspondent à des données
+    // canoniques ne doivent plus être retrouvés en comparant des chaînes.
+    // L'ancien système faisait :
+    //   "ancienne valeur" -> "nouvelle valeur"
+    // ce qui échouait lorsque brandData contenait encore l'ancienne version
+    // alors que le bloc publié contenait déjà la nouvelle.
+    //
+    // On utilise donc l'ID stable du bloc comme binding canonique.
+    const applyCanonicalBinding = (block: EditorBlock) => {
+      if (block.kind !== 'text' || typeof block.text !== 'string') return;
+
+      const cleanText = block.text.replace(/^["“«]|["”»]$/g, '').trim();
+
+      const bindings: Record<string, (value: string) => Partial<BrandConfig>> = {
+        'element-1787065743054': (value) => ({ brandName: value }),
+        'element-1787208612214': (value) => ({ tagline: value }),
+        'element-1787210359401': (value) => ({ subtitle: value }),
+      };
+
+      const binding = bindings[block.id];
+      if (!binding) return;
+
+      const patch = binding(cleanText);
+      next = {
+        ...next,
+        ...patch,
+      };
+      changed = true;
+    };
+
+    for (const block of editorConfig.blocks || []) {
+      applyCanonicalBinding(block);
+    }
+
     const replaceFirstValue = (
       value: unknown,
       oldValue: string,
@@ -810,35 +844,17 @@ export default function App() {
   // ===========================================================================
 
   const handleLogout = async () => {
-    // V2.3 :
-    // NE PAS recharger /api/site-config au logout.
+    // V5.2 : ne jamais recharger /api/site-config au logout.
     //
-    // Sans modification, l'admin et l'observateur partagent déjà le même
-    // brandData en mémoire. Relire le serveur ici pouvait remplacer ce snapshot
-    // par une autre version et provoquer le bug :
-    // observateur X -> admin X -> logout -> serveur Y.
-    //
-    // On attend uniquement une éventuelle sauvegarde déjà lancée. Ainsi :
-    // - sans sauvegarde : on conserve exactement ce qui était affiché ;
-    // - après sauvegarde : la file est terminée avant de quitter.
+    // La sauvegarde a déjà persisté le snapshot complet. Refaire une lecture
+    // serveur ici pouvait réintroduire un brandData ancien alors que
+    // editorConfig contenait la nouvelle valeur. L'observateur doit continuer
+    // exactement avec le même état que celui validé dans l'admin.
     try {
       await saveQueueRef.current;
     } catch (error) {
       console.warn(
         'Impossible de finaliser la sauvegarde avant le logout:',
-        error
-      );
-    }
-
-    // V3.1 : le serveur est la source de vérité au moment du logout.
-    // Cela évite de réinjecter un ancien snapshot React après une sauvegarde
-    // pourtant bien persistée. Un simple refresh montrait déjà la bonne valeur :
-    // on reproduit donc ici exactement le même chemin de lecture.
-    try {
-      await fetchPublishedSiteConfig();
-    } catch (error) {
-      console.warn(
-        'Impossible de relire la configuration publiée avant le logout:',
         error
       );
     }
@@ -852,8 +868,6 @@ export default function App() {
       );
     }
 
-    // Toute modification non enregistrée est ainsi abandonnée par la relecture
-    // serveur ; toute modification enregistrée reste immédiatement visible.
     adminSessionSnapshotRef.current = null;
 
     setIsAdminLoggedIn(false);

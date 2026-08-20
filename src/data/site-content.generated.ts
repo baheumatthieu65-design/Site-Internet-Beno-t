@@ -5,7 +5,7 @@ export const publishedSiteContent = {
   "brandData": {
     "brandName": "MAISON Mailhag 4",
     "tagline": "Élégance Champêtre \u0026 Artisanat des Cimes",
-    "subtitle": "Conçues au cœur de la chaîne pyrénéenne, deux vestes d’exception mariant matières nobles et coupe haute couture.",
+    "subtitle": "Conçues au cœur de la chaîne pyrénéenne, deux vestes d’exception mariant matières nobles et coupe haute couture 4.",
     "logoUrl": "/assets/pyrenees_brand_logo_1785338626936-BaITKbpK.jpg",
     "accentColor": "#4A5D4E",
     "foundingYear": "2025",
@@ -483,7 +483,7 @@ export const publishedSiteContent = {
       "inquiryButtonText": "Commander sur Mesure",
       "workshopButtonText": "Prendre Rendez-vous à l'Atelier",
       "heroBadgeText": "Édition Limitée des Pyrénées",
-      "heroTitlePrefix": "Thème Champêtre \u0026 Élégance",
+      "heroTitlePrefix": "Thème Champêtre \u0026 Élégance 4",
       "comparisonCriteria": [
         {
           "id": "crit_category",
@@ -534,9 +534,9 @@ export const publishedSiteContent = {
     },
     "logos": {
       "boutique": {
-        "imageUrl": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787217832954-0c3aadb9-e6ef-4cbd-88d1-410cca3af30f.png",
+        "imageUrl": "/assets/pyrenees_brand_logo_1785338626936-BaITKbpK.jpg",
         "text": "MAISON MAILHA",
-        "secondaryText": "ÉDITION LIMITÉE DES PYRÉNÉES 4",
+        "secondaryText": "ÉDITION LIMITÉE DES PYRÉNÉES",
         "fontFamily": "serif",
         "textColor": "#f3ece0",
         "textSize": "21px",
@@ -575,7 +575,7 @@ export const publishedSiteContent = {
         "visible": true
       }
     ],
-    "schemaVersion": 5,
+    "schemaVersion": 4,
     "blocks": [
       {
         "id": "block-1787003030958",
@@ -588,7 +588,7 @@ export const publishedSiteContent = {
         "kind": "text"
       },
       {
-        "id": "element-bgfo10",
+        "id": "text-1787036452137",
         "type": "text",
         "section": "hero",
         "x": 50,
@@ -602,7 +602,7 @@ export const publishedSiteContent = {
         "color": "#f3ece0"
       },
       {
-        "id": "element-2j3eoa",
+        "id": "text-1787036499582",
         "type": "text",
         "section": "hero",
         "x": 50,
@@ -616,7 +616,7 @@ export const publishedSiteContent = {
         "color": "#f0f0f0"
       },
       {
-        "id": "element-7hx1tr",
+        "id": "text-1787036514158",
         "type": "heading",
         "section": "hero",
         "x": 50,
@@ -630,7 +630,7 @@ export const publishedSiteContent = {
         "color": "#a98334"
       },
       {
-        "id": "element-1yp1kl6",
+        "id": "element-1787042777033",
         "type": "text",
         "section": "hero",
         "x": 50,
@@ -644,7 +644,7 @@ export const publishedSiteContent = {
         "color": "rgb(245, 238, 223)"
       },
       {
-        "id": "element-y3kce5",
+        "id": "element-1787042788677",
         "type": "text",
         "section": "hero",
         "x": 50,
@@ -658,7 +658,7 @@ export const publishedSiteContent = {
         "color": "rgb(243, 236, 224)"
       },
       {
-        "id": "element-7bccga",
+        "id": "element-1787044598082",
         "type": "image",
         "section": "hero",
         "x": 50,
@@ -670,7 +670,7 @@ export const publishedSiteContent = {
         "url": "https://site-internet-beno-t.vercel.app/assets/pyrenees_jacket_1_1785338603269-DB14hVWQ.jpg"
       },
       {
-        "id": "element-1pm4g7c",
+        "id": "element-1787061362899",
         "type": "text",
         "section": "hero",
         "x": 50,
@@ -684,7 +684,7 @@ export const publishedSiteContent = {
         "color": "rgb(243, 236, 224)"
       },
       {
-        "id": "element-1f5ergz",
+        "id": "element-1787061434525",
         "type": "text",
         "section": "hero",
         "x": 50,
@@ -698,7 +698,7 @@ export const publishedSiteContent = {
         "color": "rgb(243, 236, 224)"
       },
       {
-        "id": "element-1l9gpen",
+        "id": "element-1787063560263",
         "type": "image",
         "section": "hero",
         "x": 50,
@@ -709,7 +709,7 @@ export const publishedSiteContent = {
         "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787063558934-20260605_205859.jpg"
       },
       {
-        "id": "element-115krkx",
+        "id": "element-1787065743054",
         "type": "text",
         "section": "hero",
         "x": 50,
@@ -720,16 +720,10 @@ export const publishedSiteContent = {
         "text": "MAISON Mailhag 4",
         "fontFamily": "ui-serif",
         "fontSize": "72px",
-        "color": "rgb(245, 238, 223)",
-        "locator": {
-          "tag": "span",
-          "text": "MAISON Mailhag 4",
-          "sectionId": "hero",
-          "occurrence": 0
-        }
+        "color": "rgb(245, 238, 223)"
       },
       {
-        "id": "element-1vd5k7f",
+        "id": "element-1787065824389",
         "type": "image",
         "section": "hero",
         "x": 50,
@@ -740,7 +734,7 @@ export const publishedSiteContent = {
         "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787063825877-20260605_205836.jpg"
       },
       {
-        "id": "element-ramuve",
+        "id": "element-1787067832814",
         "type": "image",
         "section": "hero",
         "x": 50,
@@ -751,7 +745,7 @@ export const publishedSiteContent = {
         "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787063825877-20260605_205836.jpg"
       },
       {
-        "id": "element-12mgdm6",
+        "id": "element-1787068153660",
         "type": "image",
         "section": "hero",
         "x": 50,
@@ -762,7 +756,7 @@ export const publishedSiteContent = {
         "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787063825877-20260605_205836.jpg"
       },
       {
-        "id": "element-8l43pq",
+        "id": "element-1787068774203",
         "type": "image",
         "section": "hero",
         "x": 50,
@@ -773,7 +767,7 @@ export const publishedSiteContent = {
         "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787063825877-20260605_205836.jpg"
       },
       {
-        "id": "element-1dd70g4",
+        "id": "element-1787074437287",
         "type": "text",
         "section": "hero",
         "x": 50,
@@ -787,26 +781,21 @@ export const publishedSiteContent = {
         "color": "#d2b16f"
       },
       {
-        "id": "element-1oie024",
+        "id": "element-1787208612214",
         "type": "text",
         "section": "hero",
         "x": 50,
         "y": 50,
         "visible": true,
+        "selector": "section:nth-of-type(1) \u003e div:nth-of-type(3) \u003e div:nth-of-type(2) \u003e p:nth-of-type(1)",
         "kind": "text",
-        "text": "\"Élégance Champêtre \u0026 Artisanat des Cimes 5\"",
+        "text": "\"Élégance Champêtre \u0026 Artisanat des Cimes 4\"",
         "fontFamily": "ui-serif",
         "fontSize": "24px",
-        "color": "rgb(208, 197, 180)",
-        "locator": {
-          "tag": "p",
-          "text": "\"Élégance Champêtre \u0026 Artisanat des Cimes 4\"",
-          "sectionId": "hero",
-          "occurrence": 0
-        }
+        "color": "rgb(208, 197, 180)"
       },
       {
-        "id": "element-1h7tod6",
+        "id": "element-1787210359401",
         "type": "text",
         "section": "hero",
         "x": 50,
@@ -820,7 +809,7 @@ export const publishedSiteContent = {
         "color": "rgb(163, 176, 162)"
       },
       {
-        "id": "element-1ju1s8k",
+        "id": "element-1787211492954",
         "type": "text",
         "section": "hero",
         "x": 50,
@@ -828,16 +817,10 @@ export const publishedSiteContent = {
         "visible": true,
         "selector": "[data-vce-hero-line=\"1\"]",
         "kind": "text",
-        "text": "Thème Champêtre \u0026 Élégance",
+        "text": "Thème Champêtre \u0026 Élégance 4",
         "fontFamily": "ui-serif",
         "fontSize": "60px",
-        "color": "rgb(194, 162, 109)",
-        "locator": {
-          "tag": "span",
-          "text": "Thème Champêtre \u0026 Élégance 4",
-          "sectionId": "hero",
-          "occurrence": 0
-        }
+        "color": "rgb(194, 162, 109)"
       }
     ],
     "editorElements": {
@@ -849,144 +832,144 @@ export const publishedSiteContent = {
         "selector": null,
         "locator": "data-vce-id"
       },
-      "element-bgfo10": {
-        "id": "element-bgfo10",
+      "text-1787036452137": {
+        "id": "text-1787036452137",
         "type": "text",
         "kind": "text",
         "section": "hero",
         "selector": "div \u003e div.min-h-screen.bg-\\[\\#121613\\] \u003e div.fixed.z-\\[25\\]:nth-of-type(2) \u003e div.px-3.py-2",
         "locator": "data-vce-id"
       },
-      "element-2j3eoa": {
-        "id": "element-2j3eoa",
+      "text-1787036499582": {
+        "id": "text-1787036499582",
         "type": "text",
         "kind": "text",
         "section": "hero",
         "selector": "div \u003e div.min-h-screen.bg-\\[\\#121613\\] \u003e main \u003e div.relative.transition-all:nth-of-type(1) \u003e section.relative.min-h-screen \u003e div.relative.z-10:nth-of-type(3) \u003e div.flex.justify-center:nth-of-type(1) \u003e div.inline-flex.items-center \u003e span.text-\\[\\#e2d5c3\\]:nth-of-type(3)",
         "locator": "data-vce-id"
       },
-      "element-7hx1tr": {
-        "id": "element-7hx1tr",
+      "text-1787036514158": {
+        "id": "text-1787036514158",
         "type": "heading",
         "kind": "text",
         "section": "hero",
         "selector": "div \u003e div.min-h-screen.bg-\\[\\#121613\\] \u003e main \u003e div.relative.transition-all:nth-of-type(1) \u003e section.relative.min-h-screen \u003e div.relative.z-10:nth-of-type(3) \u003e div.text-center.max-w-4xl:nth-of-type(2) \u003e h1.font-serif.text-4xl",
         "locator": "data-vce-id"
       },
-      "element-1yp1kl6": {
-        "id": "element-1yp1kl6",
+      "element-1787042777033": {
+        "id": "element-1787042777033",
         "type": "text",
         "kind": "text",
         "section": "hero",
         "selector": "[data-vce-role=\"hero-line-2\"]",
         "locator": "data-vce-id"
       },
-      "element-y3kce5": {
-        "id": "element-y3kce5",
+      "element-1787042788677": {
+        "id": "element-1787042788677",
         "type": "text",
         "kind": "text",
         "section": "hero",
         "selector": "div:nth-of-type(1) \u003e h3:nth-of-type(1)",
         "locator": "data-vce-id"
       },
-      "element-7bccga": {
-        "id": "element-7bccga",
+      "element-1787044598082": {
+        "id": "element-1787044598082",
         "type": "image",
         "kind": "media",
         "section": "hero",
         "selector": "section:nth-of-type(1) \u003e div:nth-of-type(3) \u003e div:nth-of-type(3) \u003e div:nth-of-type(1) \u003e div:nth-of-type(1) \u003e img:nth-of-type(1)",
         "locator": "data-vce-id"
       },
-      "element-1pm4g7c": {
-        "id": "element-1pm4g7c",
+      "element-1787061362899": {
+        "id": "element-1787061362899",
         "type": "text",
         "kind": "text",
         "section": "hero",
         "selector": "div:nth-of-type(1) \u003e div:nth-of-type(3) \u003e div:nth-of-type(1) \u003e div:nth-of-type(1) \u003e div:nth-of-type(1) \u003e span:nth-of-type(1)",
         "locator": "data-vce-id"
       },
-      "element-1f5ergz": {
-        "id": "element-1f5ergz",
+      "element-1787061434525": {
+        "id": "element-1787061434525",
         "type": "text",
         "kind": "text",
         "section": "hero",
         "selector": "div:nth-of-type(3) \u003e section:nth-of-type(1) \u003e div:nth-of-type(2) \u003e div:nth-of-type(1) \u003e h2:nth-of-type(1)",
         "locator": "data-vce-id"
       },
-      "element-1l9gpen": {
-        "id": "element-1l9gpen",
+      "element-1787063560263": {
+        "id": "element-1787063560263",
         "type": "image",
         "kind": "media",
         "section": "hero",
         "selector": "div:nth-of-type(2) \u003e section:nth-of-type(1) \u003e div:nth-of-type(3) \u003e div:nth-of-type(3) \u003e div:nth-of-type(1) \u003e div:nth-of-type(1) \u003e img:nth-of-type(1)",
         "locator": "data-vce-id"
       },
-      "element-115krkx": {
-        "id": "element-115krkx",
+      "element-1787065743054": {
+        "id": "element-1787065743054",
         "type": "text",
         "kind": "text",
         "section": "hero",
         "selector": "[data-vce-hero-line=\"2\"]",
         "locator": "data-vce-id"
       },
-      "element-1vd5k7f": {
-        "id": "element-1vd5k7f",
+      "element-1787065824389": {
+        "id": "element-1787065824389",
         "type": "image",
         "kind": "media",
         "section": "hero",
         "selector": "button:nth-of-type(3) \u003e img:nth-of-type(1)",
         "locator": "data-vce-id"
       },
-      "element-ramuve": {
-        "id": "element-ramuve",
+      "element-1787067832814": {
+        "id": "element-1787067832814",
         "type": "image",
         "kind": "media",
         "section": "hero",
         "selector": "[data-vce-role=\"jacket-veste-des-cimes-gallery-2\"]",
         "locator": "data-vce-id"
       },
-      "element-12mgdm6": {
-        "id": "element-12mgdm6",
+      "element-1787068153660": {
+        "id": "element-1787068153660",
         "type": "image",
         "kind": "media",
         "section": "hero",
         "selector": "div:nth-of-type(3) \u003e div:nth-of-type(3) \u003e div:nth-of-type(1) \u003e img:nth-of-type(1)",
         "locator": "data-vce-id"
       },
-      "element-8l43pq": {
-        "id": "element-8l43pq",
+      "element-1787068774203": {
+        "id": "element-1787068774203",
         "type": "image",
         "kind": "media",
         "section": "hero",
         "selector": "[data-vce-role=\"jacket-veste-modele-9583-gallery-0\"]",
         "locator": "data-vce-id"
       },
-      "element-1dd70g4": {
-        "id": "element-1dd70g4",
+      "element-1787074437287": {
+        "id": "element-1787074437287",
         "type": "text",
         "kind": "text",
         "section": "hero",
         "selector": "button:nth-of-type(1) \u003e div:nth-of-type(1) \u003e span:nth-of-type(2)",
         "locator": "data-vce-id"
       },
-      "element-1oie024": {
-        "id": "element-1oie024",
+      "element-1787208612214": {
+        "id": "element-1787208612214",
         "type": "text",
         "kind": "text",
         "section": "hero",
-        "selector": null,
+        "selector": "section:nth-of-type(1) \u003e div:nth-of-type(3) \u003e div:nth-of-type(2) \u003e p:nth-of-type(1)",
         "locator": "data-vce-id"
       },
-      "element-1h7tod6": {
-        "id": "element-1h7tod6",
+      "element-1787210359401": {
+        "id": "element-1787210359401",
         "type": "text",
         "kind": "text",
         "section": "hero",
         "selector": "div:nth-of-type(2) \u003e p:nth-of-type(2)",
         "locator": "data-vce-id"
       },
-      "element-1ju1s8k": {
-        "id": "element-1ju1s8k",
+      "element-1787211492954": {
+        "id": "element-1787211492954",
         "type": "text",
         "kind": "text",
         "section": "hero",
@@ -995,5 +978,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787217930174
+  "publishedAt": 1787211582188
 } as const;
