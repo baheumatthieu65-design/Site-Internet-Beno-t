@@ -1,4 +1,5 @@
 import React from 'react';
+import { FloatingMediaLayer } from './FloatingMediaLayer';
 import { BrandConfig } from '../types';
 import { Mountain, ArrowDown, Sparkles, Shield, Compass, ChevronRight, Edit3, Layers, Plus } from 'lucide-react';
 import {
@@ -17,6 +18,7 @@ interface HeroSectionProps {
   onOpenEditorSection?: (tab: 'brand' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
   onSelectJacket: (jacketId: string) => void;
   onOpenInquiry: (jacketId?: string) => void;
+  floatingImages?: import('../data/floatingMedia').FloatingMediaItem[];
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
@@ -25,6 +27,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   onOpenEditorSection,
   onSelectJacket,
   onOpenInquiry,
+  floatingImages = [],
 }) => {
   const jackets = brandData.jackets && brandData.jackets.length > 0 ? brandData.jackets : [];
   const theme = brandData.theme;
@@ -151,6 +154,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         <div className="absolute inset-0 bg-gradient-to-t from-[#121613] via-[#121613]/70 to-black/60" />
         <div className="absolute inset-0 bg-radial-vignette opacity-80" />
       </div>
+
+      {/* Images flottantes publiées sur l'accueil.
+          Elles sont rendues dans le même repère que le Hero afin que les
+          positions X/Y enregistrées dans l'éditeur correspondent à la page. */}
+      <FloatingMediaLayer sectionId="hero" items={floatingImages} />
 
       {/* Admin Quick Edit Trigger */}
       {isAdminLoggedIn && onOpenEditorSection && (

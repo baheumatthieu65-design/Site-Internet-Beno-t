@@ -29,6 +29,7 @@ import { SiteBlocksRenderer } from './components/SiteBlocksRenderer';
 import GitePage from './components/GitePage';
 import { LogoEditorModal } from './components/LogoEditorModal';
 import './styles/gite-v48.css';
+import './styles/floating-media.css';
 
 import {
   verifyAdminSessionServer,
@@ -1307,6 +1308,7 @@ export default function App() {
             onOpenInquiry={
               handleOpenInquiry
             }
+            floatingImages={siteEditorConfig.floatingImages}
           />
         );
         break;
