@@ -1,29 +1,38 @@
 import React, { useEffect } from 'react';
 import type { EditorBlock, SiteEditorConfig } from './SiteVisualEditor';
+import { publishedSiteContent } from '../data/site-content.generated';
 
 /**
- * V4.0
- * ---------------------------------------------------------------------------
- * L'éditeur visuel est désormais traité comme une couche de publication
- * indépendante du DOM React.
+ * V4.1 — publication bridge resilient to React/admin DOM differences.
  *
- * Chaque bloc possède déjà un ID stable (element-...). Cet ID devient le
- * premier locator. Le selector n'est plus qu'un locator de secours.
+ * A visual-editor block can outlive the DOM that created its selector. The
+ * admin panel changes wrappers and therefore old nth-of-type selectors are
+ * not a reliable public locator. This renderer resolves in this order:
+ *   1. stable data-vce-id
+ *   2. published selector
+ *   3. semantic hero selectors / role selectors
+ *   4. the ORIGINAL published text or media URL
  *
- * Important : l'effet est volontairement exécuté à CHAQUE rendu du parent.
- * Ainsi un logout, une reconnexion, un changement d'état React ou un rerender
- * de section ne peut pas réinjecter silencieusement la valeur de BrandConfig
- * par-dessus la valeur publiée de l'éditeur.
+ * The last step is important for existing V4 blocks that were created before
+ * sourceText/sourceUrl existed.
  */
 
 function normalizeText(value: string): string {
   return value.replace(/\s+/g, ' ').trim();
 }
 
-function findByStableId(id: string): Element | null {
+function cssEscape(value: string): string {
+  try {
+    return CSS.escape(value);
+  } catch {
+    return value.replace(/[^a-zA-Z0-9_-]/g, '\\$&');
+  }
+}
+
+function findByStableId(id?: string): Element | null {
   if (!id) return null;
   try {
-    return document.querySelector(`[data-vce-id="${CSS.escape(id)}"]`);
+    return document.querySelector(`[data-vce-id="${cssEscape(id)}"]`);
   } catch {
     return null;
   }
@@ -36,86 +45,148 @@ function findBySelector(selector?: string): Element | null {
     const direct = document.querySelector(selector);
     if (direct) return direct;
   } catch {
-    // Fallbacks below.
+    // Continue with tolerant matching.
   }
 
-  // Les anciens selectors ont parfois été créés avec les wrappers admin.
-  // On retire progressivement les premiers segments jusqu'à obtenir un
-  // chemin unique dans le DOM public.
   const parts = selector
     .split('>')
     .map((part) => part.trim())
     .filter(Boolean);
 
-  for (let start = 1; start < parts.length; start += 1) {
+  for (let start = 0; start < parts.length; start += 1) {
     const candidate = parts.slice(start).join(' > ');
     try {
       const matches = document.querySelectorAll(candidate);
       if (matches.length === 1) return matches[0];
     } catch {
-      // Continuer.
+      // Continue.
     }
   }
 
   return null;
 }
 
-function findByText(block: EditorBlock): Element | null {
-  if (block.kind !== 'text' || typeof block.text !== 'string') return null;
+function selectorTag(selector?: string): string | null {
+  if (!selector) return null;
+  const parts = selector.split('>').map((part) => part.trim()).filter(Boolean);
+  const last = parts.at(-1) || '';
+  const match = last.match(/^([a-z][a-z0-9-]*)/i);
+  return match?.[1]?.toLowerCase() || null;
+}
 
-  const wanted = normalizeText(block.text);
-  if (!wanted) return null;
+function selectorIndex(selector?: string): number | null {
+  if (!selector) return null;
+  const parts = selector.split('>').map((part) => part.trim()).filter(Boolean);
+  const last = parts.at(-1) || '';
+  const match = last.match(/:nth-of-type\((\d+)\)/);
+  return match ? Number(match[1]) : null;
+}
 
-  const sectionCandidates = block.section
-    ? Array.from(
-        document.querySelectorAll(
-          `[data-vce-section="${CSS.escape(block.section)}"], #${CSS.escape(block.section)}`
-        )
-      )
-    : [];
+function findSemantic(block: EditorBlock): Element | null {
+  const selector = block.selector || '';
 
-  const roots: Element[] =
-    sectionCandidates.length > 0 ? sectionCandidates : [document.body];
+  // Hero title lines already have explicit semantic selectors.
+  for (const semantic of ['hero-line-1', 'hero-line-2']) {
+    if (selector.includes(`data-vce-hero-line="${semantic.slice(-1)}"`) ||
+        selector.includes(`data-vce-role=\"${semantic}\"`)) {
+      try {
+        const byRole = document.querySelector(`[data-vce-role="${semantic}"]`);
+        if (byRole) return byRole;
+      } catch {}
+    }
+  }
 
-  const tags = 'h1,h2,h3,h4,h5,h6,p,span,li,button,a,blockquote,div';
+  if (block.section === 'hero' || selector.includes('hero')) {
+    const hero = document.querySelector('#hero-section');
+    if (hero) {
+      const tag = selectorTag(selector);
+      const index = selectorIndex(selector);
+      if (tag && index) {
+        const candidates = Array.from(hero.querySelectorAll(tag));
+        if (candidates[index - 1]) return candidates[index - 1];
+      }
+    }
+  }
 
-  for (const root of roots) {
-    const candidates = Array.from(root.querySelectorAll(tags));
+  return null;
+}
 
-    // On préfère le nœud dont le texte correspond exactement et qui est le
-    // plus petit contenant possible.
-    const exact = candidates.filter(
-      (candidate) => normalizeText(candidate.textContent || '') === wanted
+function collectPublishedValues(value: unknown, strings: Set<string>, urls: Set<string>) {
+  if (typeof value === 'string') {
+    const normalized = normalizeText(value);
+    if (normalized.length >= 3) strings.add(normalized);
+    if (/^(https?:\/\/|\/|data:)/.test(value)) urls.add(value);
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    for (const item of value) collectPublishedValues(item, strings, urls);
+    return;
+  }
+
+  if (value && typeof value === 'object') {
+    for (const item of Object.values(value as Record<string, unknown>)) {
+      collectPublishedValues(item, strings, urls);
+    }
+  }
+}
+
+const publishedStrings = new Set<string>();
+const publishedUrls = new Set<string>();
+collectPublishedValues(publishedSiteContent?.brandData, publishedStrings, publishedUrls);
+
+function findByPublishedSource(block: EditorBlock): Element | null {
+  const tag = selectorTag(block.selector);
+  const hero = block.section === 'hero' ? document.querySelector('#hero-section') : null;
+  const root = hero || document.body;
+
+  if (block.kind === 'text') {
+    const candidates = Array.from(
+      root.querySelectorAll('h1,h2,h3,h4,h5,h6,p,span,li,button,a,blockquote,div')
     );
 
-    if (exact.length) {
-      exact.sort(
-        (a, b) =>
-          (a.textContent || '').length - (b.textContent || '').length
-      );
-      return exact[0];
-    }
+    const exact = candidates.filter((candidate) => {
+      const text = normalizeText(candidate.textContent || '');
+      if (!publishedStrings.has(text)) return false;
+      if (tag && candidate.tagName.toLowerCase() !== tag) return false;
+      return text !== normalizeText(block.text || '');
+    });
+
+    if (exact.length === 1) return exact[0];
+
+    // Prefer the smallest exact published text. This avoids selecting a parent
+    // div when the real editable node is a p/span/button.
+    exact.sort((a, b) =>
+      normalizeText(a.textContent || '').length -
+      normalizeText(b.textContent || '').length
+    );
+
+    if (exact.length) return exact[0];
   }
 
-  return null;
-}
-
-function findByMedia(block: EditorBlock): Element | null {
-  if (block.kind !== 'media' || !block.url) return null;
-
-  const wanted = block.url;
-
-  const media = Array.from(document.querySelectorAll('img,video'));
-  for (const element of media) {
-    const current =
-      element instanceof HTMLImageElement
+  if (block.kind === 'media') {
+    const candidates = Array.from(root.querySelectorAll('img,video'));
+    const matching = candidates.filter((element) => {
+      const current = element instanceof HTMLImageElement
         ? element.currentSrc || element.src
         : element instanceof HTMLVideoElement
           ? element.currentSrc || element.src
           : '';
+      return publishedUrls.has(current) || Array.from(publishedUrls).some((url) => current.endsWith(url));
+    });
 
-    if (current === wanted || current.endsWith(wanted)) {
-      return element;
+    if (matching.length === 1) return matching[0];
+
+    // Header logos commonly share one source URL. Use the selector's tag and
+    // position to distinguish them when possible.
+    if (matching.length > 1) {
+      const header = document.querySelector('#main-nav-header');
+      if (header) {
+        const headerImages = Array.from(header.querySelectorAll('img'));
+        const index = selectorIndex(block.selector);
+        if (index && headerImages[index - 1]) return headerImages[index - 1];
+        return matching.find((item) => header.contains(item)) || null;
+      }
     }
   }
 
@@ -123,32 +194,21 @@ function findByMedia(block: EditorBlock): Element | null {
 }
 
 function findElement(block: EditorBlock): Element | null {
-  // 1. ID stable publié.
-  const byId = findByStableId(block.id);
-  if (byId) return byId;
-
-  // 2. Selector exact / ancien selector.
-  const bySelector = findBySelector(block.selector);
-  if (bySelector) return bySelector;
-
-  // 3. Fallback sémantique.
-  const byText = findByText(block);
-  if (byText) return byText;
-
-  // 4. Fallback média.
-  return findByMedia(block);
+  return (
+    findByStableId(block.id) ||
+    findBySelector(block.selector) ||
+    findSemantic(block) ||
+    findByPublishedSource(block)
+  );
 }
 
 function applyBlock(block: EditorBlock): void {
-  const el = findElement(block);
-  if (!el) return;
+  const element = findElement(block);
+  if (!element) return;
 
-  // L'ID devient canonique dès qu'on a retrouvé l'élément.
-  if (block.id) {
-    el.setAttribute('data-vce-id', block.id);
-  }
+  if (block.id) element.setAttribute('data-vce-id', block.id);
 
-  const html = el as HTMLElement;
+  const html = element as HTMLElement;
 
   if (!block.visible) {
     html.style.display = 'none';
@@ -158,7 +218,6 @@ function applyBlock(block: EditorBlock): void {
   html.style.display = '';
 
   if (block.kind === 'text' && block.text != null) {
-    // textContent évite toute interprétation HTML provenant de l'éditeur.
     if (normalizeText(html.textContent || '') !== normalizeText(block.text)) {
       html.textContent = block.text;
     }
@@ -169,33 +228,22 @@ function applyBlock(block: EditorBlock): void {
   if (block.color) html.style.color = block.color;
 
   if (block.link != null) {
-    if (el instanceof HTMLAnchorElement) {
-      el.href = block.link;
-    } else {
-      el.setAttribute('data-vce-link', block.link);
-    }
+    if (element instanceof HTMLAnchorElement) element.href = block.link;
+    else element.setAttribute('data-vce-link', block.link);
   }
 
   if (block.kind === 'media' && block.url) {
-    if (el instanceof HTMLImageElement) {
-      if (el.src !== block.url) el.src = block.url;
+    if (element instanceof HTMLImageElement && element.src !== block.url) {
+      element.src = block.url;
     }
-
-    if (el instanceof HTMLVideoElement && el.src !== block.url) {
-      el.src = block.url;
-      el.load();
+    if (element instanceof HTMLVideoElement && element.src !== block.url) {
+      element.src = block.url;
+      element.load();
     }
-
-    const nestedImage = el.querySelector('img');
-    if (nestedImage instanceof HTMLImageElement && nestedImage.src !== block.url) {
-      nestedImage.src = block.url;
+    const nested = element.querySelector('img');
+    if (nested instanceof HTMLImageElement && nested.src !== block.url) {
+      nested.src = block.url;
     }
-  }
-}
-
-function applyAll(blocks: EditorBlock[]): void {
-  for (const block of blocks || []) {
-    applyBlock(block);
   }
 }
 
@@ -207,28 +255,26 @@ export const SiteBlocksRenderer: React.FC<{
     if (!enabled) return;
 
     let cancelled = false;
+    let timer = 0;
 
     const apply = () => {
-      if (!cancelled) applyAll(config.blocks || []);
+      if (cancelled) return;
+      for (const block of config.blocks || []) applyBlock(block);
     };
 
-    // Une passe immédiate après React + deux passes après layout/images.
-    const raf1 = requestAnimationFrame(apply);
-    const raf2 = requestAnimationFrame(() => {
-      const raf3 = requestAnimationFrame(apply);
-      window.setTimeout(() => {
-        apply();
-      }, 0);
+    const run = () => {
+      apply();
+      timer = window.setTimeout(apply, 80);
+    };
 
-      return () => cancelAnimationFrame(raf3);
-    });
+    const raf = requestAnimationFrame(run);
 
     return () => {
       cancelled = true;
-      cancelAnimationFrame(raf1);
-      cancelAnimationFrame(raf2);
+      cancelAnimationFrame(raf);
+      window.clearTimeout(timer);
     };
-  }); // Intentionnel : réappliquer après CHAQUE rendu App (logout inclus).
+  }, [config, enabled]);
 
   return null;
 };
