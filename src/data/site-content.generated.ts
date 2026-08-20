@@ -115,7 +115,8 @@ export const publishedSiteContent = {
             "category": "utility"
           }
         ],
-        "isAvailable": true
+        "isAvailable": true,
+        "availabilityStatus": "on-sale"
       },
       {
         "name": "N02",
@@ -166,7 +167,8 @@ export const publishedSiteContent = {
           "care": "Lavage délicat à la main ou nettoyage à sec"
         },
         "hotspots": [],
-        "id": "produit-1787241378430-715p3s"
+        "id": "produit-1787241378430-715p3s",
+        "availabilityStatus": "on-sale"
       },
       {
         "name": "n°3",
@@ -217,7 +219,8 @@ export const publishedSiteContent = {
           "care": "Lavage délicat à la main ou nettoyage à sec"
         },
         "hotspots": [],
-        "id": "produit-1787242939553-ezbmjg"
+        "id": "produit-1787242939553-ezbmjg",
+        "availabilityStatus": "on-sale"
       }
     ],
     "theme": {
@@ -280,11 +283,15 @@ export const publishedSiteContent = {
       "containerWidth": "standard",
       "showcaseImageScale": 100,
       "showcaseImageFrameWidth": 60,
-      "showcaseImageFrameHeight": 320,
+      "showcaseImageFrameHeight": 360,
       "lookbookImageScale": 100,
       "lookbookImageFrameWidth": 60,
       "lookbookImageFrameHeight": 220,
-      "sectionBackgroundImages": {},
+      "sectionBackgroundImages": {
+        "collection": ""
+      },
+      "sectionWidthPercent": {},
+      "lookbookProductIds": [],
       "productBlocksOrder": [
         "title-price",
         "colors",
@@ -857,5 +864,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787246011542
+  "publishedAt": 1787248333897
 } as const;
