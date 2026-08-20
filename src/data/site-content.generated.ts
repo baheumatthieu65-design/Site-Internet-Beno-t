@@ -293,7 +293,7 @@ export const publishedSiteContent = {
         "collection": ""
       },
       "sectionWidthPercent": {
-        "collection": 140
+        "collection": 110
       },
       "lookbookProductIds": [],
       "productBlocksOrder": [
@@ -868,5 +868,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787249285956
+  "publishedAt": 1787249298169
 } as const;
