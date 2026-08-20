@@ -30,10 +30,10 @@ export const publishedSiteContent = {
         "category": "Haute Montagne \u0026 Élégance",
         "price": 110,
         "currency": "€",
-        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787238367336-Art1.png",
+        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787255862341-Image-1.jpg",
         "gallery": [
-          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787238367336-Art1.png",
-          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787248557990-20260816_124104.jpg"
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787255862341-Image-1.jpg",
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787255871534-Image-2.jpg"
         ],
         "description": "Une veste à la stature majestueuse, tissée en drap de laine anthracite ultra-dense, conçue pour braver le vent des vallées tout en conservant une ligne affûtée.",
         "longDescription": "La Veste des Cimes incarne l’équilibre parfait entre la rigueur de la montagne et la finesse des tailleurs. Ses poches plaquées discrètes et sa doublure thermique en sergé fluide apportent aisance et protection contre le froid d’altitude.",
@@ -93,24 +93,24 @@ export const publishedSiteContent = {
         "hotspots": [
           {
             "id": "hs1-col",
-            "x": 50,
-            "y": 15,
+            "x": 51,
+            "y": 22,
             "title": "Col Officier à Revers",
             "description": "Protection thermique du cou rehaussée d’une bride en cuir pour fermer hermétiquement le col.",
             "category": "cut"
           },
           {
             "id": "hs1-boutons",
-            "x": 50,
-            "y": 28,
+            "x": 49,
+            "y": 67,
             "title": "Boutonnage en Corne Gravée",
             "description": "Chaque bouton est taillé dans la corne naturelle et gravé au laser avec le monogramme de la marque.",
             "category": "hardware"
           },
           {
             "id": "hs1-poche",
-            "x": 54,
-            "y": 75,
+            "x": 55,
+            "y": 70,
             "title": "Poches Soufflet d’Atelier",
             "description": "Grandes poches doublées en flanelle pour garder les mains au chaud lors des balades en altitude.",
             "category": "utility"
@@ -121,14 +121,14 @@ export const publishedSiteContent = {
         "customSpecs": {}
       },
       {
-        "name": "N02",
+        "name": "Veste des Cîmes Enfant",
         "subTitle": "Confection Artisanale des Pyrénées",
-        "category": "Homme \u0026 Femme",
-        "price": 490,
+        "category": "Femme \u0026 Enfant",
+        "price": 60,
         "currency": "€",
-        "heroImage": "https://images.unsplash.com/photo-1544441893-675973e31985?auto=format\u0026fit=crop\u0026q=80\u0026w=1000",
+        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787255936718-Image-3.jpg",
         "gallery": [
-          "https://images.unsplash.com/photo-1544441893-675973e31985?auto=format\u0026fit=crop\u0026q=80\u0026w=1000"
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787255936718-Image-3.jpg"
         ],
         "description": "Veste artisanale d'exception tissée dans les Pyrénées.",
         "longDescription": "Fabriquée selon des savoir-faire d'autrefois en pure laine sélectionnée.",
@@ -144,13 +144,19 @@ export const publishedSiteContent = {
           {
             "name": "Ocre Vignemale",
             "hex": "#8c6b43"
+          },
+          {
+            "name": "Vert des cîmes",
+            "hex": "#526355"
           }
         ],
         "sizes": [
-          "S",
-          "M",
-          "L",
-          "XL"
+          "8",
+          "10",
+          "12",
+          "14",
+          "XS",
+          "S"
         ],
         "isAvailable": true,
         "features": [
@@ -170,7 +176,8 @@ export const publishedSiteContent = {
         },
         "hotspots": [],
         "id": "produit-1787241378430-715p3s",
-        "availabilityStatus": "on-sale"
+        "availabilityStatus": "on-sale",
+        "customSpecs": {}
       },
       {
         "name": "n°3",
@@ -795,5 +802,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787255839866
+  "publishedAt": 1787256028903
 } as const;
