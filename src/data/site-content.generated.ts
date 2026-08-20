@@ -534,7 +534,7 @@ export const publishedSiteContent = {
     },
     "logos": {
       "boutique": {
-        "imageUrl": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787217832954-0c3aadb9-e6ef-4cbd-88d1-410cca3af30f.png",
+        "imageUrl": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787218936185-admin-sheep.png",
         "text": "MAISON MAILHA",
         "secondaryText": "ÉDITION LIMITÉE DES PYRÉNÉES 4",
         "fontFamily": "serif",
@@ -1000,5 +1000,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787218914122
+  "publishedAt": 1787218937857
 } as const;
