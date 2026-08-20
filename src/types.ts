@@ -189,6 +189,9 @@ export interface JacketModel {
   subTitle: string;
   category: string;
 
+  /** Ligne éditoriale affichée au-dessus du nom dans le Showcase. */
+  showcaseEyebrow?: string;
+
   /**
    * Prix officiel du produit.
    * Le serveur doit toujours utiliser cette valeur depuis Redis
@@ -323,6 +326,8 @@ export interface ThemeConfig {
   siteThemePreset?: SiteThemePresetId;
   siteBackgroundColor?: string;
   navBackgroundColor?: string;
+  /** Opacité de fond de la barre de navigation (0 = transparente, 100 = opaque). */
+  navBackgroundOpacity?: number;
 
   /* Positionnement & alignement */
 
@@ -347,8 +352,10 @@ export interface ThemeConfig {
   lookbookImageScale?: number;
   lookbookImageFrameWidth?: number;
   lookbookImageFrameHeight?: number;
-  /** Images de fond choisies par module principal. */
+  /** Images de fond choisies par module principal (compatibilité historique). */
   sectionBackgroundImages?: Partial<Record<SectionId, string>>;
+  /** Média de fond par module : image, GIF ou vidéo. Les vidéos sont lues en boucle, sans son. */
+  sectionBackgroundMedia?: Partial<Record<SectionId, BackgroundMedia>>;
   /** Largeur d'affichage de chaque module principal, en pourcentage. */
   sectionWidthPercent?: Partial<Record<SectionId, number>>;
   /** Opacité des images de fond de chaque module principal, en pourcentage. */

@@ -20,6 +20,7 @@ interface HeroSectionProps {
   onOpenInquiry: (jacketId?: string) => void;
   sectionBackgroundImage?: string;
   sectionBackgroundOpacity?: number;
+  sectionBackgroundMediaType?: 'image' | 'video' | 'gif';
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
@@ -30,6 +31,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   onOpenInquiry,
   sectionBackgroundImage,
   sectionBackgroundOpacity = 100,
+  sectionBackgroundMediaType,
 }) => {
   const jackets = brandData.jackets && brandData.jackets.length > 0 ? brandData.jackets : [];
   const theme = brandData.theme;
@@ -119,12 +121,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   return (
     <section
       id="hero-section"
-      className={`relative min-h-screen flex flex-col justify-between pt-28 pb-12 overflow-hidden ${sectionBackgroundImage ? 'bg-transparent' : 'bg-[#121613]'} group/hero ${contentPaddingClass}`}
+      className={`relative min-h-screen flex flex-col justify-between pt-28 pb-12 overflow-hidden ${sectionBackgroundImage || sectionBackgroundMediaType ? 'bg-transparent' : 'bg-[#121613]'} group/hero ${contentPaddingClass}`}
     >
       {/* Background media: le fond personnalisé est porté par le wrapper App. */}
-      {!sectionBackgroundImage && (
-        <div className="absolute inset-0 z-0">
-          {brandData.heroBackground?.type === 'video' ? (
+      {!sectionBackgroundImage && !sectionBackgroundMediaType && (
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          {brandData.heroBackground?.type === 'video' && (
             <video
               data-vce-id="hero-background-media"
               src={brandData.heroBackground.url}
@@ -134,16 +136,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               className="w-full h-full object-cover scale-105"
               style={{ objectPosition: `${brandData.heroBackground.positionX ?? 50}% ${brandData.heroBackground.positionY ?? 50}%` }}
             />
-          ) : (
-            <img
-              data-vce-id="hero-background-media"
-              src={brandData.heroBackground?.url || brandData.heroBgImage}
-              alt="Les Pyrénées"
-              className="w-full h-full object-cover object-center scale-105 mix-blend-luminosity"
-              style={{ objectPosition: `${brandData.heroBackground?.positionX ?? 50}% ${brandData.heroBackground?.positionY ?? 50}%`, opacity: 0.4 }}
-            />
           )}
-          {typeof brandData.heroBackground?.overlay === 'number' && <div className="absolute inset-0 bg-black" style={{ opacity: brandData.heroBackground.overlay }} />}
+          {brandData.heroBackground && typeof brandData.heroBackground.overlay === 'number' && (
+            <div className="absolute inset-0 bg-black" style={{ opacity: brandData.heroBackground.overlay }} />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-[#121613] via-[#121613]/70 to-black/60" />
           <div className="absolute inset-0 bg-radial-vignette opacity-80" />
         </div>

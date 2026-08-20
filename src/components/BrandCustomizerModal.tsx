@@ -71,7 +71,7 @@ import {
 import { ButtonManager } from './ButtonManager';
 import { AdminProductModal } from './AdminProductModal';
 import { getStoredCredentials, saveAdminCredentials, resetPasswordServer, maskEmail, AdminCredentials } from '../utils/auth';
-import { prepareImageForUpload } from '../utils/mediaUpload';
+import { prepareImageForUpload, uploadBackgroundVideo } from '../utils/mediaUpload';
 
 interface BrandCustomizerModalProps {
   isOpen: boolean;
@@ -844,6 +844,10 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           ...(currentTheme.sectionBackgroundImages || {}),
           [sectionId]: String(data.url),
         },
+        sectionBackgroundMedia: {
+          ...(currentTheme.sectionBackgroundMedia || {}),
+          [sectionId]: { type: 'image', url: String(data.url), overlay: 0, objectFit: 'cover', positionX: 50, positionY: 50 },
+        },
       });
     } catch (error) {
       console.error(error);
@@ -853,10 +857,41 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     }
   };
 
+  const handleSectionBackgroundVideoUpload = async (
+    sectionId: SectionId,
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    setUploadingSectionBackground(sectionId);
+    try {
+      const url = await uploadBackgroundVideo(file);
+      updateTheme({
+        sectionBackgroundImages: {
+          ...(currentTheme.sectionBackgroundImages || {}),
+          [sectionId]: '',
+        },
+        sectionBackgroundMedia: {
+          ...(currentTheme.sectionBackgroundMedia || {}),
+          [sectionId]: { type: 'video', url, overlay: 0, objectFit: 'cover', positionX: 50, positionY: 50 },
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      alert(error instanceof Error ? error.message : 'Impossible d’importer cette vidéo de fond.');
+    } finally {
+      setUploadingSectionBackground(null);
+    }
+  };
+
   const clearSectionBackground = (sectionId: SectionId) => {
     const next = { ...(currentTheme.sectionBackgroundImages || {}) };
     delete next[sectionId];
-    updateTheme({ sectionBackgroundImages: next });
+    const media = { ...(currentTheme.sectionBackgroundMedia || {}) };
+    delete media[sectionId];
+    updateTheme({ sectionBackgroundImages: next, sectionBackgroundMedia: media });
   };
 
   const currentJacket = formData.jackets[selectedJacketIndex] || formData.jackets[0];
@@ -1024,6 +1059,14 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                   <label className="text-xs text-[#a3b1a5]"><span className="block mb-2 uppercase tracking-widest">Couleur de fond du site</span><div className="flex items-center gap-2"><input type="color" value={currentTheme.siteBackgroundColor || '#121613'} onChange={(e) => updateTheme({ siteBackgroundColor: e.target.value, siteThemePreset: undefined })} className="w-12 h-10 rounded-lg bg-transparent cursor-pointer" /><input value={currentTheme.siteBackgroundColor || '#121613'} onChange={(e) => updateTheme({ siteBackgroundColor: e.target.value, siteThemePreset: undefined })} className="flex-1 bg-[#121613] border border-[#2e3b30] rounded-lg px-3 py-2 text-white" /></div></label>
                   <label className="text-xs text-[#a3b1a5]"><span className="block mb-2 uppercase tracking-widest">Couleur de la barre de navigation</span><div className="flex items-center gap-2"><input type="color" value={currentTheme.navBackgroundColor || '#1a1e1b'} onChange={(e) => updateTheme({ navBackgroundColor: e.target.value, siteThemePreset: undefined })} className="w-12 h-10 rounded-lg bg-transparent cursor-pointer" /><input value={currentTheme.navBackgroundColor || '#1a1e1b'} onChange={(e) => updateTheme({ navBackgroundColor: e.target.value, siteThemePreset: undefined })} className="flex-1 bg-[#121613] border border-[#2e3b30] rounded-lg px-3 py-2 text-white" /></div></label>
                 </div>
+                <label className="block pt-3 border-t border-[#2a362c] text-xs text-[#a3b1a5]">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="uppercase tracking-widest">Opacité du fond de la barre de navigation</span>
+                    <strong className="text-[#d4af37]">{currentTheme.navBackgroundOpacity ?? 0}%</strong>
+                  </div>
+                  <input type="range" min="0" max="100" step="5" value={currentTheme.navBackgroundOpacity ?? 0} onChange={(e) => updateTheme({ navBackgroundOpacity: Number(e.target.value) })} className="w-full accent-[#d4af37]" />
+                  <div className="flex justify-between text-[9px] text-[#708272] mt-1"><span>0% transparent</span><span>50%</span><span>100% opaque</span></div>
+                </label>
               </div>
 
               <ButtonManager
@@ -1298,18 +1341,16 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                             </div>
                             <p className="text-[11px] text-[#a3b1a5]">{meta.desc}</p>
                             <div className="mt-2 flex items-center gap-2">
-                              <div
-                                className="w-24 h-12 rounded-lg overflow-hidden border border-[#465447] bg-[#101510] shrink-0"
-                                style={currentTheme.sectionBackgroundImages?.[secId] ? {
-                                  backgroundImage: `url(${JSON.stringify(currentTheme.sectionBackgroundImages[secId])})`,
-                                  backgroundSize: 'cover',
-                                  backgroundPosition: 'center',
-                                  opacity: getSectionBackgroundOpacity(secId) / 100,
-                                } : undefined}
-                              >
-                                {!currentTheme.sectionBackgroundImages?.[secId] && <div className="w-full h-full flex items-center justify-center text-[9px] text-[#607162]">Aperçu du bloc</div>}
+                              <div className="w-24 h-12 rounded-lg overflow-hidden border border-[#465447] bg-[#101510] shrink-0 relative">
+                                {currentTheme.sectionBackgroundMedia?.[secId]?.type === 'video' ? (
+                                  <video src={currentTheme.sectionBackgroundMedia[secId]?.url} muted autoPlay loop playsInline className="absolute inset-0 w-full h-full object-cover" style={{ opacity: getSectionBackgroundOpacity(secId) / 100 }} />
+                                ) : currentTheme.sectionBackgroundImages?.[secId] ? (
+                                  <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${currentTheme.sectionBackgroundImages[secId]})`, opacity: getSectionBackgroundOpacity(secId) / 100 }} />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-[9px] text-[#607162]">Aperçu du bloc</div>
+                                )}
                               </div>
-                              {currentTheme.sectionBackgroundImages?.[secId] && <span className="text-[9px] text-[#7f9382]">Fond importé</span>}
+                              {(currentTheme.sectionBackgroundImages?.[secId] || currentTheme.sectionBackgroundMedia?.[secId]) && <span className="text-[9px] text-[#7f9382]">{currentTheme.sectionBackgroundMedia?.[secId]?.type === 'video' ? 'Vidéo de fond' : 'Fond importé'}</span>}
                             </div>
                           </div>
                         </div>
@@ -1373,7 +1414,13 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                             />
                           </label>
 
-                          {currentTheme.sectionBackgroundImages?.[secId] && (
+                          <label className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-[#536456] bg-[#182019] hover:border-[#d4af37] text-[10px] uppercase tracking-wider text-[#c4ceb8] cursor-pointer">
+                            <Upload className="w-3.5 h-3.5 text-[#d4af37]" />
+                            <span>{uploadingSectionBackground === secId ? 'Import en cours…' : 'Vidéo de fond 10 s'}</span>
+                            <input type="file" accept="video/mp4,video/webm" className="hidden" onChange={(event) => handleSectionBackgroundVideoUpload(secId, event)} />
+                          </label>
+
+                          {(currentTheme.sectionBackgroundImages?.[secId] || currentTheme.sectionBackgroundMedia?.[secId]) && (
                             <>
                               <span className="text-[10px] text-[#7f9382]">Fond personnalisé</span>
                               <button
@@ -1387,7 +1434,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                             </>
                           )}
 
-                          {currentTheme.sectionBackgroundImages?.[secId] && (
+                          {(currentTheme.sectionBackgroundImages?.[secId] || currentTheme.sectionBackgroundMedia?.[secId]) && (
                             <label className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#536456] bg-[#182019] text-[10px] text-[#c4ceb8] min-w-[220px]">
                               <span className="whitespace-nowrap">Opacité du fond</span>
                               <input

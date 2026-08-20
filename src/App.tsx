@@ -1456,6 +1456,7 @@ export default function App() {
             }
             sectionBackgroundImage={theme?.sectionBackgroundImages?.hero || ''}
             sectionBackgroundOpacity={theme?.sectionBackgroundOpacity?.hero ?? 100}
+            sectionBackgroundMediaType={theme?.sectionBackgroundMedia?.hero?.type}
             theme={theme}
             isAdminLoggedIn={
               isAdminLoggedIn
@@ -1500,22 +1501,42 @@ export default function App() {
     // NORMAL VISITOR MODE
     // =========================================================================
 
+    const sectionBackgroundMedia = theme?.sectionBackgroundMedia?.[sectionId];
     const sectionBackgroundImage =
-      theme?.sectionBackgroundImages?.[sectionId] || '';
+      sectionBackgroundMedia?.type === 'image'
+        ? sectionBackgroundMedia.url
+        : (theme?.sectionBackgroundImages?.[sectionId] || '');
 
     const sectionBackgroundOpacity = Math.min(100, Math.max(0, Number(
       theme?.sectionBackgroundOpacity?.[sectionId] ?? (sectionId === 'hero' ? 20 : 28)
     )));
 
-    const sectionBackgroundOverlay = sectionBackgroundImage ? (
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url(${JSON.stringify(sectionBackgroundImage)})`,
-          opacity: sectionBackgroundOpacity / 100,
-        }}
-      />
+    const sectionBackgroundOverlay = (sectionBackgroundMedia?.url || sectionBackgroundImage) ? (
+      <div aria-hidden="true" className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        {sectionBackgroundMedia?.type === 'video' ? (
+          <video
+            src={sectionBackgroundMedia.url}
+            poster={sectionBackgroundMedia.poster}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{
+              opacity: sectionBackgroundOpacity / 100,
+              objectPosition: `${sectionBackgroundMedia.positionX ?? 50}% ${sectionBackgroundMedia.positionY ?? 50}%`,
+            }}
+          />
+        ) : (
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: `url(${sectionBackgroundImage})`,
+              opacity: sectionBackgroundOpacity / 100,
+            }}
+          />
+        )}
+      </div>
     ) : null;
 
     if (
