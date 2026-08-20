@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrandConfig } from '../types';
 import { Mountain, ArrowDown, Sparkles, Shield, Compass, ChevronRight, Edit3, Layers, Plus } from 'lucide-react';
-import { getProductStatusLabel } from '../utils/productStatus';
+import { getProductAvailabilityStatus, getProductStatusLabel } from '../utils/productStatus';
 import {
   getButtonClasses,
   getButtonInlineStyle,
@@ -297,7 +297,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   className={`p-4 rounded-2xl cursor-pointer flex items-center space-x-4 ${cardStyle.card}`}
                 >
                   <div className="relative w-20 h-24 rounded-xl overflow-hidden bg-black/40 flex-shrink-0">
-                    <img src={getHeroProductImage(j)} alt={j.name} className="w-full h-full object-cover" />
+                    <img
+                      data-vce-id={`hero-product-image-${j.id}`}
+                      data-vce-product-id={j.id}
+                      src={getHeroProductImage(j)}
+                      alt={j.name}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
                     <span
                       aria-label={getProductStatusLabel(j)}
                       title={getProductStatusLabel(j)}
@@ -383,7 +390,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                       }`}
                     >
                       <img
-                        data-vce-id={`product-${j.id}-image`}
+                        data-vce-id={`hero-product-image-${j.id}`}
+                        data-vce-product-id={j.id}
                         src={getHeroProductImage(j)}
                         alt={j.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

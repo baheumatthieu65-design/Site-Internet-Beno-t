@@ -58,9 +58,13 @@ export default async function handler(
       });
     }
 
+    const requestedItems = Array.isArray(items) ? items : [];
+
+    // Une réservation atelier peut être créée sans article : le formulaire
+    // ne demande alors que les coordonnées et les demandes particulières.
     if (
-      !Array.isArray(items) ||
-      items.length === 0
+      orderType !== 'essayage' &&
+      requestedItems.length === 0
     ) {
       return res.status(400).json({
         success: false,
@@ -77,8 +81,9 @@ export default async function handler(
       await getProductsFromDB();
 
     if (
-      !Array.isArray(officialProducts) ||
-      officialProducts.length === 0
+      orderType !== 'essayage' &&
+      (!Array.isArray(officialProducts) ||
+      officialProducts.length === 0)
     ) {
       return res.status(400).json({
         success: false,
@@ -97,10 +102,10 @@ export default async function handler(
 
     for (
       let index = 0;
-      index < items.length;
+      index < requestedItems.length;
       index++
     ) {
-      const item = items[index];
+      const item = requestedItems[index];
 
       if (
         !item ||
@@ -113,9 +118,6 @@ export default async function handler(
         });
       }
 
-      // IMPORTANT :
-      // On recherche UNIQUEMENT le produit demandé.
-      // On ne tombe jamais sur le premier produit.
       const dbJacket =
         officialProducts.find(
           (product: any) =>
@@ -130,10 +132,7 @@ export default async function handler(
         });
       }
 
-      // Produit masqué = impossible à commander
-      if (
-        dbJacket.isAvailable === false
-      ) {
+      if (dbJacket.isAvailable === false) {
         return res.status(400).json({
           success: false,
           message:
@@ -145,9 +144,7 @@ export default async function handler(
         Number(dbJacket.price);
 
       if (
-        !Number.isFinite(
-          officialUnitPrice
-        ) ||
+        !Number.isFinite(officialUnitPrice) ||
         officialUnitPrice < 0
       ) {
         return res.status(500).json({
@@ -158,9 +155,7 @@ export default async function handler(
       }
 
       const quantity =
-        Math.floor(
-          Number(item.quantity)
-        );
+        Math.floor(Number(item.quantity));
 
       if (
         !Number.isFinite(quantity) ||
@@ -182,35 +177,16 @@ export default async function handler(
       const totalPrice =
         officialUnitPrice * quantity;
 
-      // ========================================================
-      // SNAPSHOT DE COMMANDE
-      // ========================================================
-
       validatedItems.push({
         id:
           item.id ||
           `line-${Date.now()}-${index}`,
-
-        jacketId:
-          dbJacket.id,
-
-        jacketName:
-          dbJacket.name,
-
-        color:
-          item.color ||
-          'Standard',
-
-        size:
-          item.size ||
-          'M',
-
+        jacketId: dbJacket.id,
+        jacketName: dbJacket.name,
+        color: item.color || 'Standard',
+        size: item.size || 'M',
         quantity,
-
-        // PRIX OFFICIEL DU SERVEUR
-        unitPrice:
-          officialUnitPrice,
-
+        unitPrice: officialUnitPrice,
         totalPrice,
       });
     }
@@ -337,12 +313,14 @@ export default async function handler(
           `Réf: ${orderRef}\n` +
           `Client: ${String(clientName).trim()} (${String(clientEmail).trim()})\n` +
           `Total: ${computedTotalOrderPrice} ${primaryCurrency}\n` +
-          `Articles: ${validatedItems
-            .map(
-              (item) =>
-                `${item.quantity}x ${item.jacketName} (${item.color}, ${item.size})`
-            )
-            .join(', ')}`,
+          `Articles: ${validatedItems.length > 0
+            ? validatedItems
+                .map(
+                  (item) =>
+                    `${item.quantity}x ${item.jacketName} (${item.color}, ${item.size})`
+                )
+                .join(', ')
+            : 'Aucun — demande de rendez-vous atelier'}`,
       },
     };
 

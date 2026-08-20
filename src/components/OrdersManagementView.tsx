@@ -6,7 +6,6 @@ import {
   getAvailableStatuses,
   addCustomStatus,
   removeCustomStatus,
-  sortOrdersByStatusPriority,
 } from '../utils/orderStorage';
 import {
   ShoppingBag,
@@ -28,7 +27,10 @@ import {
   Copy,
   ExternalLink,
   MessageSquare,
-  Sparkles
+  Sparkles,
+  RefreshCw,
+  ArrowUpDown,
+  Filter
 } from 'lucide-react';
 
 interface OrdersManagementViewProps {
@@ -43,37 +45,69 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
   const [newStatusInput, setNewStatusInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
+  const [periodMode, setPeriodMode] = useState<'all' | 'week' | 'month' | 'year'>('all');
+  const [periodValue, setPeriodValue] = useState('');
+  const [dateSort, setDateSort] = useState<'newest' | 'oldest'>('newest');
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [expandedOrderEmailId, setExpandedOrderEmailId] = useState<string | null>(null);
   const [copiedEmailId, setCopiedEmailId] = useState<string | null>(null);
   const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
-  // Load orders & statuses on mount
-  useEffect(() => {
-    refreshData();
-  }, []);
+  const getWeekInputValue = (date: Date) => {
+    const copy = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const day = copy.getUTCDay() || 7;
+    copy.setUTCDate(copy.getUTCDate() + 4 - day);
+    const yearStart = new Date(Date.UTC(copy.getUTCFullYear(), 0, 1));
+    const week = Math.ceil((((copy.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+    return `${copy.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+  };
+
+  const getMonthInputValue = (date: Date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+  const getYearInputValue = (date: Date) => String(date.getFullYear());
 
   const refreshData = async () => {
+    setIsRefreshing(true);
     const loadedStatuses = getAvailableStatuses();
     setAvailableStatuses(loadedStatuses);
 
     try {
-      const res = await fetch('/api/admin/orders');
+      const res = await fetch(`/api/admin/orders?ts=${Date.now()}`, {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
+      });
       if (res.ok) {
         const data = await res.json();
         if (data.success && Array.isArray(data.orders)) {
           setOrders(data.orders);
           saveOrders(data.orders);
+          setIsRefreshing(false);
           return;
         }
       }
     } catch (e) {
-      console.warn('Could not fetch orders from Redis server, using local cache:', e);
+      console.warn('Impossible de récupérer les commandes serveur, utilisation du cache local :', e);
     }
 
     const loadedOrders = getStoredOrders();
     setOrders(loadedOrders);
+    setIsRefreshing(false);
   };
+
+  useEffect(() => {
+    void refreshData();
+    const onOrderCreated = () => { void refreshData(); };
+    window.addEventListener('pyrenees-order-created', onOrderCreated);
+    const interval = window.setInterval(() => { void refreshData(); }, 15000);
+    return () => {
+      window.removeEventListener('pyrenees-order-created', onOrderCreated);
+      window.clearInterval(interval);
+    };
+  }, []);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -156,21 +190,47 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
     }
   };
 
-  // Filter & Sort Orders
+  const getOrderTimestamp = (order: CustomerOrder) => {
+    if (Number.isFinite(Number(order.timestamp))) return Number(order.timestamp);
+    const parsed = Date.parse(String(order.date || '').replace(' à ', ' '));
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const isOrderInPeriod = (order: CustomerOrder) => {
+    if (periodMode === 'all') return true;
+    const date = new Date(getOrderTimestamp(order));
+    if (Number.isNaN(date.getTime())) return false;
+    if (periodMode === 'year') return date.getFullYear() === Number(periodValue || new Date().getFullYear());
+    if (periodMode === 'month') return getMonthInputValue(date) === (periodValue || getMonthInputValue(new Date()));
+    return getWeekInputValue(date) === (periodValue || getWeekInputValue(new Date()));
+  };
+
   const filteredOrders = orders.filter((o) => {
+    const query = searchQuery.toLowerCase();
     const matchesSearch =
-      o.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      o.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      o.clientEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      o.items.some((i) => i.jacketName.toLowerCase().includes(searchQuery.toLowerCase()));
-
+      o.id.toLowerCase().includes(query) ||
+      o.clientName.toLowerCase().includes(query) ||
+      o.clientEmail.toLowerCase().includes(query) ||
+      o.items.some((i) => i.jacketName.toLowerCase().includes(query));
     const matchesStatus = selectedStatusFilter === 'all' || o.status === selectedStatusFilter;
-
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatus && isOrderInPeriod(o);
   });
 
-  // Sort orders with 'Commande passée' FIRST
-  const sortedOrders = sortOrdersByStatusPriority(filteredOrders, availableStatuses);
+  const sortedOrders = [...filteredOrders].sort((a, b) => {
+    const diff = getOrderTimestamp(a) - getOrderTimestamp(b);
+    return dateSort === 'newest' ? -diff : diff;
+  });
+
+  const sumByStatus = (status: string) =>
+    filteredOrders.reduce((total, order) => total + (order.status === status ? Number(order.totalPrice) || 0 : 0), 0);
+  const passedTotal = sumByStatus('Commande passée');
+  const acceptedTotal = sumByStatus('Prise en compte');
+  const cancelledTotal = sumByStatus('Commande annulée');
+  const remainingTotal = filteredOrders.reduce((total, order) => {
+    if (['Commande passée', 'Prise en compte', 'Commande annulée'].includes(order.status)) return total;
+    return total + (Number(order.totalPrice) || 0);
+  }, 0);
+  const activeTotal = filteredOrders.reduce((total, order) => total + (order.status === 'Commande annulée' ? 0 : Number(order.totalPrice) || 0), 0);
 
   // Status color badge map
   const getStatusBadgeStyle = (st: string) => {
@@ -224,6 +284,21 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
               </strong>
             </div>
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 pt-1">
+          {[
+            ['Commandes passées', passedTotal, 'text-emerald-300'],
+            ['Prises en compte', acceptedTotal, 'text-amber-300'],
+            ['Reste à traiter', remainingTotal, 'text-[#d4af37]'],
+            ['Annulées', cancelledTotal, 'text-red-300'],
+            ['Total actif', activeTotal, 'text-[#f3ece0]'],
+          ].map(([label, value, color]) => (
+            <div key={String(label)} className="rounded-xl bg-[#121613] border border-[#2e3b30] px-3 py-2">
+              <span className="text-[9px] uppercase tracking-wider text-[#8f9d91] block">{label}</span>
+              <strong className={`text-sm font-mono ${String(color)}`}>{Number(value).toLocaleString('fr-FR')} €</strong>
+            </div>
+          ))}
         </div>
 
         {/* ----------------------------------------------------------------- */}
@@ -307,20 +382,40 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
             />
           </div>
 
-          <div className="flex items-center space-x-2 w-full sm:w-auto">
-            <span className="text-xs text-[#a3b1a5] whitespace-nowrap">Filtrer par statut :</span>
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+            <span className="text-xs text-[#a3b1a5] whitespace-nowrap flex items-center gap-1"><Filter className="w-3.5 h-3.5 text-[#d4af37]" /> État :</span>
+            <select value={selectedStatusFilter} onChange={(e) => setSelectedStatusFilter(e.target.value)} className="bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 py-2 rounded-xl outline-none focus:border-[#d4af37] cursor-pointer">
+              <option value="all">Tous ({orders.length})</option>
+              {availableStatuses.map((st) => <option key={st} value={st}>{st}</option>)}
+            </select>
             <select
-              value={selectedStatusFilter}
-              onChange={(e) => setSelectedStatusFilter(e.target.value)}
+              value={periodMode}
+              onChange={(e) => {
+                const mode = e.target.value as typeof periodMode;
+                setPeriodMode(mode);
+                const now = new Date();
+                setPeriodValue(mode === 'week' ? getWeekInputValue(now) : mode === 'month' ? getMonthInputValue(now) : mode === 'year' ? getYearInputValue(now) : '');
+              }}
               className="bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 py-2 rounded-xl outline-none focus:border-[#d4af37] cursor-pointer"
             >
-              <option value="all">Tous les statuts ({orders.length})</option>
-              {availableStatuses.map((st) => (
-                <option key={st} value={st}>
-                  {st} ({orders.filter((o) => o.status === st).length})
-                </option>
-              ))}
+              <option value="all">Toutes les périodes</option>
+              <option value="week">Semaine</option>
+              <option value="month">Mois</option>
+              <option value="year">Année</option>
             </select>
+            {periodMode === 'week' && <input type="week" value={periodValue || getWeekInputValue(new Date())} onChange={(e) => setPeriodValue(e.target.value)} className="bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-2.5 py-2 rounded-xl outline-none focus:border-[#d4af37]" />}
+            {periodMode === 'month' && <input type="month" value={periodValue || getMonthInputValue(new Date())} onChange={(e) => setPeriodValue(e.target.value)} className="bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-2.5 py-2 rounded-xl outline-none focus:border-[#d4af37]" />}
+            {periodMode === 'year' && <select value={periodValue || getYearInputValue(new Date())} onChange={(e) => setPeriodValue(e.target.value)} className="bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 py-2 rounded-xl outline-none focus:border-[#d4af37]">
+              {Array.from(new Set(orders.map((o) => new Date(getOrderTimestamp(o)).getFullYear()).filter((y) => Number.isFinite(y)))).sort((a,b) => b-a).map((year) => <option key={year} value={String(year)}>{year}</option>)}
+            </select>}
+            <span className="text-xs text-[#a3b1a5] whitespace-nowrap flex items-center gap-1"><ArrowUpDown className="w-3.5 h-3.5 text-[#d4af37]" /> Date :</span>
+            <select value={dateSort} onChange={(e) => setDateSort(e.target.value as typeof dateSort)} className="bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 py-2 rounded-xl outline-none focus:border-[#d4af37]">
+              <option value="newest">Plus récentes</option>
+              <option value="oldest">Plus anciennes</option>
+            </select>
+            <button type="button" onClick={() => void refreshData()} disabled={isRefreshing} className="p-2 rounded-xl bg-[#28362b] border border-[#3b4b3e] text-[#d4af37] hover:border-[#d4af37] disabled:opacity-50" title="Actualiser les commandes">
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         </div>
       </div>
@@ -340,7 +435,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between text-xs text-[#a3b1a5] px-1">
             <span>
-              Classement automatique : <strong className="text-[#d4af37]">« Commande passée » en premier</strong>, puis par priorité d'état et date.
+              Classement par date de commande selon le filtre choisi.
             </span>
             <span>
               Affichage de <strong className="text-white">{sortedOrders.length}</strong> commande(s)

@@ -12,13 +12,14 @@ interface NavbarProps {
   onLogout: () => void;
   onOpenCustomizer: (tab?: 'brand' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
   onOpenInquiry: (jacketId?: string) => void;
+  onOpenOrders?: () => void;
   activeSection: string;
   onOpenGite?: () => void;
 }
 
 declare global { interface Window { __pyreneesOpenAdminOrders?: () => void; } }
 
-export const Navbar: React.FC<NavbarProps> = ({ brandData, isAdminLoggedIn, onOpenLogin, onLogout, onOpenCustomizer, onOpenInquiry, activeSection, onOpenGite }) => {
+export const Navbar: React.FC<NavbarProps> = ({ brandData, isAdminLoggedIn, onOpenLogin, onLogout, onOpenCustomizer, onOpenInquiry, onOpenOrders, activeSection, onOpenGite }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const theme = brandData.theme;
@@ -43,7 +44,7 @@ export const Navbar: React.FC<NavbarProps> = ({ brandData, isAdminLoggedIn, onOp
   const navOrder = theme?.navOrder?.length ? theme.navOrder : defaultNavOrder;
   const navLinks = navOrder.map(id => allNavLinks.find(link => link.id === id)).filter((link): link is (typeof allNavLinks)[number] => Boolean(link)).filter(link => !hiddenSections.includes(link.id as typeof hiddenSections[number]));
   const scrollTo = (id: string) => { setMobileMenuOpen(false); document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }); };
-  const openOrders = () => { if (isAdminLoggedIn) window.__pyreneesOpenAdminOrders?.(); };
+  const openOrders = () => { if (isAdminLoggedIn) onOpenOrders?.(); };
   const openGite = () => { setMobileMenuOpen(false); onOpenGite?.(); };
 
   // L'univers actif est toujours placé à droite du duo de logos :

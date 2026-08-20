@@ -63,6 +63,7 @@ export const defaultThemeConfig: ThemeConfig = {
   lookbookImageFrameWidth: 60,
   lookbookImageFrameHeight: 220,
   sectionBackgroundImages: {},
+  sectionBackgroundOpacity: {},
   sectionWidthPercent: {},
   lookbookProductIds: [],
   productBlocksOrder: ['title-price', 'description', 'colors', 'sizes', 'specs', 'cta'],

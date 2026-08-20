@@ -143,20 +143,22 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
     e.preventDefault();
     setIsSubmitting(true);
 
-    const itemsPayload: OrderItem[] = orderLines.map((line) => {
-      const j = getJacketForLine(line.jacketId);
-      const unitP = j ? j.price : 0;
-      return {
-        id: line.id,
-        jacketId: line.jacketId,
-        jacketName: j ? j.name : 'Veste des Pyrénées',
-        color: line.color,
-        size: line.size,
-        quantity: line.quantity || 1,
-        unitPrice: unitP,
-        totalPrice: unitP * (line.quantity || 1),
-      };
-    });
+    const itemsPayload: OrderItem[] = orderType === 'essayage'
+      ? []
+      : orderLines.map((line) => {
+          const j = getJacketForLine(line.jacketId);
+          const unitP = j ? j.price : 0;
+          return {
+            id: line.id,
+            jacketId: line.jacketId,
+            jacketName: j ? j.name : 'Veste des Pyrénées',
+            color: line.color,
+            size: line.size,
+            quantity: line.quantity || 1,
+            unitPrice: unitP,
+            totalPrice: unitP * (line.quantity || 1),
+          };
+        });
 
     try {
       const response = await fetch('/api/orders', {
@@ -169,12 +171,15 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
           clientNotes: clientNotes || '',
           orderType,
           items: itemsPayload,
-          totalPrice,
+          totalPrice: orderType === 'essayage' ? 0 : totalPrice,
           currency: primaryCurrency,
         }),
       });
 
       const data = await response.json();
+      if (!response.ok || data?.success !== true) {
+        throw new Error(data?.message || 'La commande n’a pas pu être enregistrée sur le serveur.');
+      }
       const ref = data.order?.id || `MDP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
       setOrderReference(ref);
 
@@ -187,10 +192,11 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
         clientNotes: clientNotes || '',
         orderType,
         items: itemsPayload,
-        totalPrice,
+        totalPrice: orderType === 'essayage' ? 0 : totalPrice,
         currency: primaryCurrency,
         recipientEmail: ordersEmail || 'contact@maisondespyrenees.fr',
       });
+      window.dispatchEvent(new CustomEvent('pyrenees-order-created', { detail: { orderId: ref } }));
     } catch (err) {
       console.error('Server order submission failed, falling back to local creation:', err);
       const ref = `MDP-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -203,10 +209,11 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
         clientNotes: clientNotes || '',
         orderType,
         items: itemsPayload,
-        totalPrice,
+        totalPrice: orderType === 'essayage' ? 0 : totalPrice,
         currency: primaryCurrency,
         recipientEmail: ordersEmail || 'contact@maisondespyrenees.fr',
       });
+      window.dispatchEvent(new CustomEvent('pyrenees-order-created', { detail: { orderId: ref, localOnly: true } }));
     } finally {
       setIsSubmitting(false);
       setSubmitted(true);

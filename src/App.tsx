@@ -23,6 +23,7 @@ import { Footer } from './components/Footer';
 import {
   SiteVisualEditor,
   SiteEditorConfig,
+  EditorBlock,
 } from './components/SiteVisualEditor';
 import { SiteBlocksRenderer } from './components/SiteBlocksRenderer';
 import GitePage from './components/GitePage';
@@ -45,6 +46,13 @@ import {
   getInitialEditorConfig,
   hasLocalPublishedSiteConfig,
 } from './lib/publishedSite';
+
+const sanitizeHeroEditorConfig = (config: SiteEditorConfig): SiteEditorConfig => ({
+  ...config,
+  blocks: (config.blocks || []).filter(
+    (block) => !(block.section === 'hero' && block.kind === 'media')
+  ),
+});
 
 type CustomizerTab =
   | 'brand'
@@ -147,10 +155,12 @@ export default function App() {
 
   const [siteEditorConfig, setSiteEditorConfig] =
     useState<SiteEditorConfig>(() =>
-      getInitialEditorConfig<SiteEditorConfig>({
-        adminBarPosition: 'bottom',
-        blocks: [],
-      })
+      sanitizeHeroEditorConfig(
+        getInitialEditorConfig<SiteEditorConfig>({
+          adminBarPosition: 'bottom',
+          blocks: [],
+        })
+      )
     );
 
   // V2.9 : le dernier état de l'éditeur est conservé synchroniquement.
@@ -436,6 +446,7 @@ export default function App() {
     nextEditorConfig: SiteEditorConfig = siteEditorConfig
   ) => {
     const operation = saveQueueRef.current.then(async () => {
+      const normalizedEditorConfig = sanitizeHeroEditorConfig(nextEditorConfig);
       const normalizedBrandData: BrandConfig = {
         ...nextBrandData,
         theme: {
@@ -448,7 +459,7 @@ export default function App() {
       const publishedAt = Date.now();
       const config = {
         brandData: normalizedBrandData,
-        editorConfig: nextEditorConfig,
+        editorConfig: normalizedEditorConfig,
         publishedAt,
       };
 
@@ -510,12 +521,13 @@ export default function App() {
         // GitHub est le fallback de déploiement et ne doit plus pouvoir annuler
         // une sauvegarde runtime réussie s'il est lent ou momentanément indisponible.
         setBrandData(normalizedBrandData);
-        setSiteEditorConfig(nextEditorConfig);
+        setSiteEditorConfig(normalizedEditorConfig);
+        siteEditorConfigRef.current = normalizedEditorConfig;
 
         if (isAdminLoggedIn) {
           adminSessionSnapshotRef.current = {
             brandData: normalizedBrandData,
-            editorConfig: nextEditorConfig,
+            editorConfig: normalizedEditorConfig,
           };
         }
 
@@ -674,7 +686,7 @@ export default function App() {
       }
 
       if (config.editorConfig && typeof config.editorConfig === 'object') {
-        const publishedEditorConfig = config.editorConfig as SiteEditorConfig;
+        const publishedEditorConfig = sanitizeHeroEditorConfig(config.editorConfig as SiteEditorConfig);
         siteEditorConfigRef.current = publishedEditorConfig;
         setSiteEditorConfig(publishedEditorConfig);
 
@@ -938,7 +950,6 @@ export default function App() {
     setIsAdminLoggedIn(false);
     setIsCustomizerOpen(false);
     setIsOrdersOpen(false);
-    setIsAdminBarVisible(false);
   };
 
   // ===========================================================================
@@ -951,8 +962,9 @@ export default function App() {
     // Même chemin de persistance que le panneau Paramétrage :
     // /api/site-config est appelé avec le snapshot complet brandData +
     // editorConfig. La seule différence est la partie du snapshot modifiée.
-    const configToSave =
-      nextEditorConfig ?? siteEditorConfigRef.current;
+    const configToSave = sanitizeHeroEditorConfig(
+      nextEditorConfig ?? siteEditorConfigRef.current
+    );
 
     siteEditorConfigRef.current = configToSave;
     setSiteEditorConfig(configToSave);
@@ -1487,13 +1499,17 @@ export default function App() {
     const sectionBackgroundImage =
       theme?.sectionBackgroundImages?.[sectionId] || '';
 
+    const sectionBackgroundOpacity = Math.min(100, Math.max(0, Number(
+      theme?.sectionBackgroundOpacity?.[sectionId] ?? (sectionId === 'hero' ? 20 : 28)
+    )));
+
     const sectionBackgroundOverlay = sectionBackgroundImage ? (
       <div
         aria-hidden="true"
         className="absolute inset-0 z-30 pointer-events-none bg-cover bg-center bg-no-repeat mix-blend-soft-light"
         style={{
           backgroundImage: `linear-gradient(rgba(0,0,0,0.22), rgba(0,0,0,0.22)), url(${JSON.stringify(sectionBackgroundImage)})`,
-          opacity: sectionId === 'hero' ? 0.20 : 0.28,
+          opacity: sectionBackgroundOpacity / 100,
         }}
       />
     ) : null;
@@ -1504,9 +1520,11 @@ export default function App() {
     ) {
       return (
         <div key={sectionId} className="relative overflow-visible" style={{ width: `${Math.min(150, Math.max(0, Number(theme.sectionWidthPercent?.[sectionId] ?? 100)))}%`, marginInline: 'auto' }}>
-          <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
-          {content}
           {sectionBackgroundOverlay}
+          <div className="relative z-20">{content}</div>
+          <div className="relative z-40">
+            <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
+          </div>
         </div>
       );
     }
@@ -1638,9 +1656,11 @@ export default function App() {
         </div>
 
         <div className="relative overflow-visible mx-auto" style={{ width: `${Math.min(150, Math.max(0, Number(theme.sectionWidthPercent?.[sectionId] ?? 100)))}%` }}>
-          <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
-          {content}
           {sectionBackgroundOverlay}
+          <div className="relative z-20">{content}</div>
+          <div className="relative z-40">
+            <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
+          </div>
         </div>
       </div>
     );
@@ -1692,8 +1712,9 @@ export default function App() {
           brandData={brandData}
           config={siteEditorConfig}
           onChange={(nextConfig) => {
-            siteEditorConfigRef.current = nextConfig;
-            setSiteEditorConfig(nextConfig);
+            const safeConfig = sanitizeHeroEditorConfig(nextConfig);
+            siteEditorConfigRef.current = safeConfig;
+            setSiteEditorConfig(safeConfig);
           }}
           onSave={async (nextConfig) => {
             await handleSaveVisualEditor(nextConfig);
@@ -1734,6 +1755,7 @@ export default function App() {
               onLogout={handleLogout}
               onOpenCustomizer={handleOpenEditor}
               onOpenInquiry={handleOpenInquiry}
+              onOpenOrders={handleOpenOrders}
               activeSection={activeSection}
               onOpenGite={handleOpenGite}
             />

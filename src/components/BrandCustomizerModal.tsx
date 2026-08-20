@@ -194,6 +194,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [draggedNavId, setDraggedNavId] = useState<NavigationId | null>(null);
   const [dragOverNavId, setDragOverNavId] = useState<NavigationId | null>(null);
+  const [uploadingSectionBackground, setUploadingSectionBackground] = useState<SectionId | null>(null);
 
   // Custom Size and Hotspot state
   const [customSizeInput, setCustomSizeInput] = useState('');
@@ -726,6 +727,18 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     });
   };
 
+  const getSectionBackgroundOpacity = (sectionId: SectionId) =>
+    Math.min(100, Math.max(0, Number(currentTheme.sectionBackgroundOpacity?.[sectionId] ?? (sectionId === 'hero' ? 20 : 28))));
+
+  const updateSectionBackgroundOpacity = (sectionId: SectionId, value: number) => {
+    updateTheme({
+      sectionBackgroundOpacity: {
+        ...(currentTheme.sectionBackgroundOpacity || {}),
+        [sectionId]: Math.min(100, Math.max(0, value)),
+      },
+    });
+  };
+
   const toggleLookbookProduct = (productId: string) => {
     const current = Array.isArray(currentTheme.lookbookProductIds) ? [...currentTheme.lookbookProductIds] : [];
     const next = current.includes(productId)
@@ -845,33 +858,49 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     }
   };
 
-  const handleSectionBackgroundUpload = (
+  const handleSectionBackgroundUpload = async (
     sectionId: SectionId,
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
+    event.target.value = '';
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
       alert('Veuillez sélectionner une image.');
-      event.target.value = '';
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const url = String(reader.result || '');
-      if (!url) return;
+    setUploadingSectionBackground(sectionId);
+    try {
+      // Les fonds de modules passent par le même stockage Blob que les images
+      // produits. On évite ainsi les data URLs que la publication serveur
+      // nettoie et qui pouvaient faire disparaître le fond après sauvegarde.
+      const form = new FormData();
+      form.append('file', file);
+      const response = await fetch('/api/site-media', {
+        method: 'POST',
+        credentials: 'include',
+        cache: 'no-store',
+        body: form,
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.success || !data?.url) {
+        throw new Error(data?.error || `Upload fond : HTTP ${response.status}`);
+      }
 
       updateTheme({
         sectionBackgroundImages: {
           ...(currentTheme.sectionBackgroundImages || {}),
-          [sectionId]: url,
+          [sectionId]: String(data.url),
         },
       });
-    };
-    reader.readAsDataURL(file);
-    event.target.value = '';
+    } catch (error) {
+      console.error(error);
+      alert(error instanceof Error ? error.message : 'Impossible d’importer cette image de fond.');
+    } finally {
+      setUploadingSectionBackground(null);
+    }
   };
 
   const clearSectionBackground = (sectionId: SectionId) => {
@@ -1409,7 +1438,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                           <div className="md:col-span-2 flex flex-wrap items-center gap-2">
                           <label className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-[#536456] bg-[#182019] hover:border-[#d4af37] text-[10px] uppercase tracking-wider text-[#c4ceb8] cursor-pointer">
                             <Upload className="w-3.5 h-3.5 text-[#d4af37]" />
-                            <span>Image de fond depuis le PC</span>
+                            <span>{uploadingSectionBackground === secId ? 'Import en cours…' : 'Image de fond depuis le PC'}</span>
                             <input
                               type="file"
                               accept="image/*"
@@ -1430,6 +1459,22 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                                 Retirer
                               </button>
                             </>
+                          )}
+
+                          {currentTheme.sectionBackgroundImages?.[secId] && (
+                            <label className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#536456] bg-[#182019] text-[10px] text-[#c4ceb8] min-w-[220px]">
+                              <span className="whitespace-nowrap">Opacité du fond</span>
+                              <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                step="5"
+                                value={getSectionBackgroundOpacity(secId)}
+                                onChange={(e) => updateSectionBackgroundOpacity(secId, Number(e.target.value))}
+                                className="flex-1 accent-[#d4af37]"
+                              />
+                              <strong className="text-[#d4af37] w-9 text-right">{getSectionBackgroundOpacity(secId)}%</strong>
+                            </label>
                           )}
                           </div>
                         </div>

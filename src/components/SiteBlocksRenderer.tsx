@@ -114,6 +114,12 @@ function findElement(block: EditorBlock): Element | null {
 }
 
 function applyBlock(block: EditorBlock): void {
+  // Le module Hero possède désormais ses propres IDs produits et sa propre
+  // source image (catalogue). Les anciens blocs média de l'éditeur visuel
+  // qui ciblaient les images du Hero ne doivent plus jamais pouvoir les
+  // remplacer par-dessus. Ils sont ignorés ici pour les anciennes publications.
+  if (block.section === 'hero' && block.kind === 'media') return;
+
   const element = findElement(block);
   if (!element) return;
 

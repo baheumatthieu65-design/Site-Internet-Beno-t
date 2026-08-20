@@ -341,6 +341,8 @@ export interface ThemeConfig {
   sectionBackgroundImages?: Partial<Record<SectionId, string>>;
   /** Largeur d'affichage de chaque module principal, en pourcentage. */
   sectionWidthPercent?: Partial<Record<SectionId, number>>;
+  /** Opacité des images de fond de chaque module principal, en pourcentage. */
+  sectionBackgroundOpacity?: Partial<Record<SectionId, number>>;
   /** Articles sélectionnés pour le Lookbook. Vide/absent = tous les articles. */
   lookbookProductIds?: string[];
 
