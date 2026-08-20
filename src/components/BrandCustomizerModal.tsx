@@ -1217,18 +1217,9 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                             </span>
                             <p className="text-[11px] text-[#a3b1a5]">{meta.desc}</p>
                             <div className="mt-2 flex items-center gap-2">
-                              <div
-                                className="w-24 h-12 rounded-lg overflow-hidden border border-[#465447] bg-[#101510] shrink-0"
-                                style={currentTheme.sectionBackgroundImages?.[secId] ? {
-                                  backgroundImage: `url(${JSON.stringify(currentTheme.sectionBackgroundImages[secId])})`,
-                                  backgroundSize: 'cover',
-                                  backgroundPosition: 'center',
-                                  opacity: getSectionBackgroundOpacity(secId) / 100,
-                                } : undefined}
-                              >
-                                {!currentTheme.sectionBackgroundImages?.[secId] && <div className="w-full h-full flex items-center justify-center text-[9px] text-[#607162]">Aperçu du bloc</div>}
+                              <div className="px-2 py-1 rounded-md bg-[#101510] border border-[#2f3d32] text-[9px] text-[#607162]">
+                                Champs produit
                               </div>
-                              {currentTheme.sectionBackgroundImages?.[secId] && <span className="text-[9px] text-[#7f9382]">Fond importé</span>}
                             </div>
                           </div>
                         </div>
