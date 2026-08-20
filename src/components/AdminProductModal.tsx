@@ -38,6 +38,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [imageTab, setImageTab] = useState<'primary' | 'secondary'>('primary');
 
   if (!isOpen) return null;
 
@@ -46,8 +47,56 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
     setTimeout(() => setToastMsg(null), 3000);
   };
 
+  const getSecondaryImages = (product: Partial<JacketModel>) => {
+    const gallery = Array.isArray(product.gallery) ? product.gallery : [];
+    const hero = String(product.heroImage || gallery[0] || '').trim();
+    return Array.from(new Set(gallery.map((url) => String(url || '').trim()).filter((url) => url !== hero)));
+  };
+
+  const syncProductGallery = (product: Partial<JacketModel>, heroImage?: string, secondaryImages?: string[]) => {
+    const hero = String(heroImage ?? product.heroImage ?? '').trim();
+    const secondary = (secondaryImages ?? getSecondaryImages(product))
+      .map((url) => String(url || '').trim())
+      .filter(Boolean)
+      .filter((url) => url !== hero);
+    return { ...product, heroImage: hero, gallery: Array.from(new Set([hero, ...secondary].filter(Boolean))) };
+  };
+
+  const handleHeroImageChange = (value: string) => {
+    setEditingProduct((current) => current ? syncProductGallery(current, value) : current);
+  };
+
+  const handleSecondaryImageChange = (index: number, value: string) => {
+    setEditingProduct((current) => {
+      if (!current) return current;
+      const secondary = getSecondaryImages(current);
+      secondary[index] = value;
+      return syncProductGallery(current, undefined, secondary);
+    });
+  };
+
+  const handleAddSecondaryImage = () => {
+    setEditingProduct((current) => {
+      if (!current) return current;
+      const hero = String(current.heroImage || (Array.isArray(current.gallery) ? current.gallery[0] : '') || '').trim();
+      const secondary = getSecondaryImages(current);
+      return { ...current, heroImage: hero, gallery: [hero, ...secondary, ''] };
+    });
+    setImageTab('secondary');
+  };
+
+  const handleDeleteSecondaryImage = (index: number) => {
+    setEditingProduct((current) => {
+      if (!current) return current;
+      const secondary = getSecondaryImages(current);
+      secondary.splice(index, 1);
+      return syncProductGallery(current, undefined, secondary);
+    });
+  };
+
   const handleStartCreate = () => {
     setIsCreating(true);
+    setImageTab('primary');
     setEditingProduct({
       name: '',
       subTitle: 'Confection Artisanale des Pyrénées',
@@ -55,9 +104,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       price: 490,
       currency: '€',
       heroImage: 'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&q=80&w=1000',
-      gallery: [
-        'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&q=80&w=1000',
-      ],
+      gallery: ['https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&q=80&w=1000'],
       description: 'Veste artisanale d\'exception tissée dans les Pyrénées.',
       longDescription: 'Fabriquée selon des savoir-faire d\'autrefois en pure laine sélectionnée.',
       tagline: 'L\'élégance des cimes',
@@ -85,7 +132,8 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
 
   const handleStartEdit = (p: JacketModel) => {
     setIsCreating(false);
-    setEditingProduct({ ...p });
+    setImageTab('primary');
+    setEditingProduct(syncProductGallery(p));
   };
 
   const handleToggleAvailability = async (product: JacketModel) => {
@@ -160,11 +208,12 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
 
     setLoading(true);
     try {
+      const normalizedProduct = editingProduct ? syncProductGallery(editingProduct) : editingProduct;
       const method = isCreating ? 'POST' : 'PUT';
       const res = await fetch('/api/admin/products', {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product: editingProduct }),
+        body: JSON.stringify({ product: normalizedProduct }),
       });
 
       const data = await res.json();
@@ -324,15 +373,94 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                   />
                 </div>
 
-                <div className="md:col-span-2">
-                  <label className="block text-[#a3b1a5] font-semibold mb-1">Image Principale (URL)</label>
-                  <input
-                    type="url"
-                    value={editingProduct.heroImage || ''}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, heroImage: e.target.value })}
-                    placeholder="https://..."
-                    className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                  />
+                <div className="md:col-span-2 rounded-2xl bg-[#111612] border border-[#344337] overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-[#2d3a2f]">
+                    <div>
+                      <span className="block text-[#f3ece0] font-bold">Images de l’article</span>
+                      <span className="text-[11px] text-[#a3b1a5]">L’image principale reste toujours la première image affichée sur le site.</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAddSecondaryImage}
+                      className="px-3 py-2 rounded-xl bg-[#28362b] border border-[#d4af37] text-[#d4af37] text-[11px] font-bold uppercase tracking-wider flex items-center space-x-1.5 hover:bg-[#344638]"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Ajouter une image</span>
+                    </button>
+                  </div>
+
+                  <div className="flex border-b border-[#2d3a2f]">
+                    <button
+                      type="button"
+                      onClick={() => setImageTab('primary')}
+                      className={`flex-1 px-4 py-2.5 text-xs font-bold transition-colors ${imageTab === 'primary' ? 'text-[#d4af37] bg-[#1d281f] border-b-2 border-[#d4af37]' : 'text-[#a3b1a5] hover:text-white'}`}
+                    >
+                      Image principale
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setImageTab('secondary')}
+                      className={`flex-1 px-4 py-2.5 text-xs font-bold transition-colors ${imageTab === 'secondary' ? 'text-[#d4af37] bg-[#1d281f] border-b-2 border-[#d4af37]' : 'text-[#a3b1a5] hover:text-white'}`}
+                    >
+                      Images secondaires ({getSecondaryImages(editingProduct).length})
+                    </button>
+                  </div>
+
+                  <div className="p-4">
+                    {imageTab === 'primary' ? (
+                      <div className="space-y-3">
+                        <label className="block text-[#a3b1a5] font-semibold">Image Principale (URL)</label>
+                        <input
+                          type="url"
+                          value={editingProduct.heroImage || ''}
+                          onChange={(e) => handleHeroImageChange(e.target.value)}
+                          placeholder="https://..."
+                          className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                        />
+                        {editingProduct.heroImage && (
+                          <div className="h-32 rounded-xl overflow-hidden bg-[#0b0f0c] border border-[#273429]">
+                            <img src={editingProduct.heroImage} alt={editingProduct.name || 'Image principale'} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                          </div>
+                        )}
+                        <p className="text-[10px] text-[#78857b]">Cette image est utilisée en priorité dans les cartes, le showcase et le lookbook.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {getSecondaryImages(editingProduct).length === 0 && (
+                          <div className="rounded-xl border border-dashed border-[#3b4a3c] p-5 text-center text-xs text-[#89968d]">
+                            Aucune image secondaire. Clique sur « Ajouter une image » pour créer le premier angle.
+                          </div>
+                        )}
+                        {getSecondaryImages(editingProduct).map((url, index) => (
+                          <div key={`${index}-${url}`} className="rounded-xl border border-[#344337] bg-[#151d17] p-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] uppercase tracking-wider text-[#d4af37] font-bold">Image secondaire N°{index + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteSecondaryImage(index)}
+                                className="p-1.5 rounded-lg text-red-300 border border-red-900/60 hover:bg-red-950/60"
+                                title="Supprimer cette image"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                            <input
+                              type="url"
+                              value={url}
+                              onChange={(e) => handleSecondaryImageChange(index, e.target.value)}
+                              placeholder="https://..."
+                              className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                            />
+                            {url && (
+                              <div className="h-24 rounded-lg overflow-hidden bg-[#0b0f0c] border border-[#273429]">
+                                <img src={url} alt={`Image secondaire ${index + 1}`} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="md:col-span-2">

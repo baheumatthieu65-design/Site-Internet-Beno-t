@@ -1,5 +1,24 @@
 import { getProductsFromDB } from './_helpers.js';
 
+const normalizeProductImages = (product: any) => {
+  const gallery = Array.isArray(product?.gallery) ? product.gallery : [];
+  const heroImage = String(product?.heroImage || gallery[0] || '').trim();
+  const secondaryImages = Array.from(
+    new Set(
+      gallery
+        .map((url: any) => String(url || '').trim())
+        .filter(Boolean)
+        .filter((url: string) => url !== heroImage)
+    )
+  );
+
+  return {
+    ...product,
+    heroImage,
+    gallery: Array.from(new Set([heroImage, ...secondaryImages].filter(Boolean))),
+  };
+};
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'GET') {
     return res.status(405).json({
@@ -9,7 +28,7 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const products = await getProductsFromDB();
+    const products = (await getProductsFromDB()).map(normalizeProductImages);
 
     return res.status(200).json({
       success: true,

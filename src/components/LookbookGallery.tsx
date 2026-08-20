@@ -39,37 +39,36 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
 
   // Dynamic gallery items created from all registered jackets
   const galleryItems = jackets.flatMap((j, jIdx) => {
-    const items = [
-      {
-        url: j.heroImage,
-        title: `${j.name} — Portrait & Silhouette`,
-        model: j.name,
-        jacketId: j.id,
-        location: `Atelier Pyrénéen • Création N°${jIdx + 1}`,
-      },
-    ];
+    const images = Array.from(
+      new Set(
+        [j.heroImage, ...(Array.isArray(j.gallery) ? j.gallery : [])]
+          .map((url) => String(url || '').trim())
+          .filter(Boolean)
+      )
+    );
 
-    if (j.gallery && j.gallery.length > 1) {
-      items.push({
-        url: j.gallery[1] || j.heroImage,
-        title: `${j.name} — Vue en Déplacement`,
-        model: `Silhouette Signature N°${jIdx + 1}`,
-        jacketId: j.id,
-        location: 'Massif des Pyrénées',
-      });
-    }
-
-    if (j.gallery && j.gallery.length > 2) {
-      items.push({
-        url: j.gallery[2] || j.heroImage,
-        title: `Focus Matières & Finitions — ${j.name}`,
-        model: j.fabrics[0] || 'Tissage Artisanal Noble',
-        jacketId: j.id,
-        location: 'Détail d’Atelier',
-      });
-    }
-
-    return items;
+    return images.map((url, imageIndex) => ({
+      url,
+      title:
+        imageIndex === 0
+          ? `${j.name} — Portrait & Silhouette`
+          : imageIndex === 1
+            ? `${j.name} — Vue en Déplacement`
+            : `Focus Matières & Finitions — ${j.name}`,
+      model:
+        imageIndex === 0
+          ? j.name
+          : imageIndex === 1
+            ? `Silhouette Signature N°${jIdx + 1}`
+            : j.fabrics[0] || 'Tissage Artisanal Noble',
+      jacketId: j.id,
+      location:
+        imageIndex === 0
+          ? `Atelier Pyrénéen • Création N°${jIdx + 1}`
+          : imageIndex === 1
+            ? 'Massif des Pyrénées'
+            : 'Détail d’Atelier',
+    }));
   });
 
   return (

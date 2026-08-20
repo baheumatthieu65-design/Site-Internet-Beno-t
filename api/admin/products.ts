@@ -5,6 +5,25 @@ import {
   saveProductsToDB,
 } from '../_helpers.js';
 
+const normalizeProductImages = (product: any) => {
+  const gallery = Array.isArray(product?.gallery) ? product.gallery : [];
+  const heroImage = String(product?.heroImage || gallery[0] || '').trim();
+  const secondaryImages = Array.from(
+    new Set(
+      gallery
+        .map((url: any) => String(url || '').trim())
+        .filter(Boolean)
+        .filter((url: string) => url !== heroImage)
+    )
+  );
+
+  return {
+    ...product,
+    heroImage,
+    gallery: Array.from(new Set([heroImage, ...secondaryImages].filter(Boolean))),
+  };
+};
+
 const parseBody = (body: any) => {
   if (!body) return {};
 
@@ -36,7 +55,7 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const products = await getProductsFromDB();
+    const products = (await getProductsFromDB()).map(normalizeProductImages);
 
     // ============================================================
     // GET
@@ -55,7 +74,7 @@ export default async function handler(req: any, res: any) {
 
     if (req.method === 'POST') {
       const body = parseBody(req.body);
-      const product = body.product;
+      const product = normalizeProductImages(body.product);
 
       if (!product || typeof product !== 'object') {
         return res.status(400).json({
@@ -157,7 +176,7 @@ export default async function handler(req: any, res: any) {
 
     if (req.method === 'PUT') {
       const body = parseBody(req.body);
-      const product = body.product;
+      const product = normalizeProductImages(body.product);
 
       if (!product || typeof product !== 'object' || !product.id) {
         return res.status(400).json({

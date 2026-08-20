@@ -93,6 +93,13 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   const containerWidthClass = getContainerWidthClass(theme);
   const contentPaddingClass = getContentPaddingClass(theme);
   const cardMediaPos = theme?.cardMediaPosition || 'left';
+  const galleryImages = Array.from(
+    new Set(
+      [activeJacket.heroImage, ...(Array.isArray(activeJacket.gallery) ? activeJacket.gallery : [])]
+        .map((url) => String(url || '').trim())
+        .filter(Boolean)
+    )
+  );
 
   const orderText = theme?.orderButtonText || 'Commander';
   const inquiryText = theme?.inquiryButtonText || 'Commander sur Mesure';
@@ -516,9 +523,9 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
               </div>
 
               {/* Gallery Thumbnails */}
-              {activeJacket.gallery && activeJacket.gallery.length > 1 && (
+              {galleryImages.length > 1 && (
                 <div className="flex items-center space-x-3 overflow-x-auto pb-1">
-                  {activeJacket.gallery.map((imgUrl, idx) => {
+                  {galleryImages.map((imgUrl, idx) => {
                     const isActive = activeImage === imgUrl;
                     return (
                       <button
@@ -667,7 +674,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
         {layout === 'lookbook-focus' && (
           <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {activeJacket.gallery.map((img, idx) => (
+              {galleryImages.map((img, idx) => (
                 <div
                   key={idx}
                   onClick={() => setActiveImage(img)}
