@@ -771,7 +771,7 @@ export const publishedSiteContent = {
         "visible": true,
         "selector": "section:nth-of-type(1) \u003e div:nth-of-type(3) \u003e div:nth-of-type(2) \u003e p:nth-of-type(1)",
         "kind": "text",
-        "text": "\"Élégance Champêtre \u0026 Artisanat des Cimes 2\"",
+        "text": "\"Élégance Champêtre \u0026 Artisanat des Cimes 3\"",
         "fontFamily": "ui-serif",
         "fontSize": "24px",
         "color": "rgb(208, 197, 180)"
@@ -794,5 +794,5 @@ export const publishedSiteContent = {
       }
     ]
   },
-  "publishedAt": 1787209850351
+  "publishedAt": 1787210153043
 } as const;
