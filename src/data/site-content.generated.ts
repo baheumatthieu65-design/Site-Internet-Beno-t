@@ -390,7 +390,7 @@ export const publishedSiteContent = {
     },
     "logos": {
       "boutique": {
-        "imageUrl": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787218936185-admin-sheep.png",
+        "imageUrl": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787254609604-Logo.png",
         "text": "MAISON MAILHAG",
         "secondaryText": "ÉDITION LIMITÉE DES PYRÉNÉES 4",
         "fontFamily": "serif",
@@ -768,5 +768,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787254291517
+  "publishedAt": 1787254616515
 } as const;
