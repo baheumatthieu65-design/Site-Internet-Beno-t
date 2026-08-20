@@ -24,6 +24,8 @@ const LogoEditorFields: React.FC<{
   value: LogoBlockConfig;
   onChange: (next: LogoBlockConfig) => void;
 }> = ({ kind, value, onChange }) => {
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const update = (fields: Partial<LogoBlockConfig>) => onChange({ ...value, ...fields });
   const handleFile = async (file?: File) => {
     if (!file) return;
@@ -138,8 +140,6 @@ const LogoEditorFields: React.FC<{
 export const LogoEditorModal: React.FC<Props> = ({ isOpen, brandData, onClose, onSave }) => {
   const [draft, setDraft] = useState<BrandConfig>(() => makeInitial(brandData));
   const [active, setActive] = useState<LogoKind>('boutique');
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState('');
   useEffect(() => { if (isOpen) { setDraft(makeInitial(brandData)); setActive('boutique'); } }, [isOpen, brandData]);
   if (!isOpen) return null;
 
