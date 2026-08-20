@@ -92,7 +92,7 @@ export const publishedSiteContent = {
         "hotspots": [
           {
             "id": "hs1-col",
-            "x": 48,
+            "x": 15,
             "y": 22,
             "title": "Col Officier à Revers",
             "description": "Protection thermique du cou rehaussée d’une bride en cuir pour fermer hermétiquement le col.",
@@ -286,6 +286,11 @@ export const publishedSiteContent = {
           "id": "crit_care",
           "label": "Entretien",
           "key": "care"
+        },
+        {
+          "id": "crit_1787242525693",
+          "label": "test",
+          "key": "custom_1787242525693"
         }
       ],
       "collectionTabLabel": "Les Articles",
@@ -794,5 +799,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787241479377
+  "publishedAt": 1787242542455
 } as const;
