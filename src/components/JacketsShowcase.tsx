@@ -111,9 +111,9 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   const orderText = theme?.orderButtonText || 'Commander';
   const inquiryText = theme?.inquiryButtonText || 'Commander sur Mesure';
 
-  const showcaseImageScale = Math.min(100, Math.max(30, Number(theme?.showcaseImageScale ?? 60)));
-  const showcaseFrameWidth = Math.min(100, Math.max(50, Number(theme?.showcaseImageFrameWidth ?? 100)));
-  const showcaseFrameHeight = Math.min(900, Math.max(280, Number(theme?.showcaseImageFrameHeight ?? 520)));
+  const showcaseImageScale = 100;
+  const showcaseFrameWidth = Math.min(100, Math.max(40, Number(theme?.showcaseImageFrameWidth ?? 60)));
+  const showcaseFrameHeight = Math.min(700, Math.max(220, Number(theme?.showcaseImageFrameHeight ?? 320)));
 
   const blocksOrder: ProductBlockId[] = theme?.productBlocksOrder || [
     'title-price',
@@ -493,7 +493,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                     <button
                       key={hs.id}
                       onClick={() => setActiveHotspot(isSelected ? null : hs)}
-                      style={{ left: `${50 + (hs.x - 50) * (showcaseImageScale / 100)}%`, top: `${hs.y}%` }}
+                      style={{ left: `${hs.x}%`, top: `${hs.y}%` }}
                       className="absolute z-20 transform -translate-x-1/2 -translate-y-1/2 group/pin focus:outline-none"
                       title={hs.title}
                     >
@@ -550,7 +550,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                       <button
                         key={idx}
                         onClick={() => setActiveImage(imgUrl)}
-                        className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${
+                        className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${
                           isActive
                             ? 'border-[#d4af37] ring-2 ring-[#d4af37]/40 scale-105'
                             : 'border-[#39483c] opacity-70 hover:opacity-100'

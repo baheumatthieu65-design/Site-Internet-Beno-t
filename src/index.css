@@ -1,19 +1,17 @@
 @import "tailwindcss";
 
 /*
- * Échelle visuelle de la vitrine :
- * le Hero reste à 100 %, tandis que la navigation et les sections
- * secondaires sont légèrement dézoomées pour alléger la page.
+ * Échelle de la vitrine :
+ * - barre de navigation : 90 %
+ * - tout le contenu public (Hero compris) : 80 %
+ *
+ * Les panneaux d'administration ne sont volontairement pas placés
+ * dans ces wrappers afin de conserver leur taille de travail.
  */
-#main-nav-header {
+.site-navbar-scale {
   zoom: 0.9;
 }
 
-#collection,
-#comparatif,
-#origines,
-#lookbook,
-#contact {
-  zoom: 0.9;
+.site-content-scale {
+  zoom: 0.8;
 }
-

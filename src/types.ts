@@ -324,11 +324,16 @@ export interface ThemeConfig {
   containerWidth?: ContainerWidthId;
 
   /* Échelle visuelle des médias principaux. Les valeurs sont des pourcentages. */
+  /** Taille du cadre visuel du Showcase. L'image elle-même remplit ce cadre. */
   showcaseImageScale?: number;
   showcaseImageFrameWidth?: number;
   showcaseImageFrameHeight?: number;
+  /** Taille du cadre visuel de la Galerie/Lookbook. */
   lookbookImageScale?: number;
+  lookbookImageFrameWidth?: number;
   lookbookImageFrameHeight?: number;
+  /** Images de fond choisies par module principal. */
+  sectionBackgroundImages?: Partial<Record<SectionId, string>>;
 
   /* Ordre des blocs */
 

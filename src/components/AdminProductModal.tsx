@@ -91,11 +91,11 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   };
 
   const syncProductGallery = (product: Partial<JacketModel>, heroImage?: string, secondaryImages?: string[]) => {
-    // Quand aucune nouvelle image principale n'est fournie, gallery[0] est
-    // prioritaire. Cela corrige les anciennes fiches où heroImage pointait
-    // encore vers une photo historique alors que la galerie avait été mise à jour.
+    // heroImage reste la source de vérité de l'image principale.
+    // gallery ne sert qu'à stocker la galerie secondaire autour de cette image.
+    const existingHero = String(product.heroImage || '').trim();
     const galleryPrimary = Array.isArray(product.gallery) ? String(product.gallery[0] || '').trim() : '';
-    const hero = String(heroImage !== undefined ? heroImage : (galleryPrimary || product.heroImage || '')).trim();
+    const hero = String(heroImage !== undefined ? heroImage : (existingHero || galleryPrimary || '')).trim();
     const secondary = (secondaryImages ?? getSecondaryImages({ ...product, heroImage: hero }))
       .map((url) => String(url || '').trim())
       .filter(Boolean)

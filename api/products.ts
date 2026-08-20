@@ -2,8 +2,10 @@ import { getProductsFromDB } from './_helpers.js';
 
 const normalizeProductImages = (product: any) => {
   const gallery = Array.isArray(product?.gallery) ? product.gallery : [];
+  // heroImage is authoritative; gallery[0] can be stale on older records.
+  const explicitHero = String(product?.heroImage || '').trim();
   const galleryPrimary = String(gallery[0] || '').trim();
-  const heroImage = String(galleryPrimary || product?.heroImage || '').trim();
+  const heroImage = String(explicitHero || galleryPrimary || '').trim();
   const secondaryImages = Array.from(
     new Set(
       gallery

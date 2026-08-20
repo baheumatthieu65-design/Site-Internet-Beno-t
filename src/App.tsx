@@ -737,8 +737,9 @@ export default function App() {
         const cleanGallery: string[] = Array.from(new Set(rawGallery
           .map((url: unknown) => String(url || '').trim())
           .filter(Boolean)));
-        const legacyHero = String(product?.heroImage || '').trim();
-        const primary = cleanGallery[0] || legacyHero;
+        // heroImage is authoritative. Older records may have a stale gallery[0].
+        const explicitHero = String(product?.heroImage || '').trim();
+        const primary = explicitHero || cleanGallery[0] || '';
         const gallery = primary
           ? [primary, ...cleanGallery.filter((url: string) => url !== primary)]
           : cleanGallery;
@@ -1485,14 +1486,29 @@ export default function App() {
     // NORMAL VISITOR MODE
     // =========================================================================
 
+    const sectionBackgroundImage =
+      theme?.sectionBackgroundImages?.[sectionId] || '';
+
+    const sectionBackgroundOverlay = sectionBackgroundImage ? (
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-30 pointer-events-none bg-cover bg-center bg-no-repeat mix-blend-soft-light"
+        style={{
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.22), rgba(0,0,0,0.22)), url(${JSON.stringify(sectionBackgroundImage)})`,
+          opacity: sectionId === 'hero' ? 0.20 : 0.28,
+        }}
+      />
+    ) : null;
+
     if (
       !isAdminLoggedIn ||
       !isDragReorderMode
     ) {
       return (
-        <div key={sectionId} className="relative">
+        <div key={sectionId} className="relative overflow-hidden">
           <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
           {content}
+          {sectionBackgroundOverlay}
         </div>
       );
     }
@@ -1623,9 +1639,10 @@ export default function App() {
           </div>
         </div>
 
-        <div className="relative">
+        <div className="relative overflow-hidden">
           <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
           {content}
+          {sectionBackgroundOverlay}
         </div>
       </div>
     );
@@ -1711,17 +1728,19 @@ export default function App() {
 
       {!isGitePageOpen && (
         <>
-          <Navbar
-            brandData={brandData}
-            isAdminLoggedIn={isAdminLoggedIn}
-            onOpenLogin={() => setIsAdminLoginOpen(true)}
-            onLogout={handleLogout}
-            onOpenCustomizer={handleOpenEditor}
-            onOpenInquiry={handleOpenInquiry}
-            activeSection={activeSection}
-            onOpenGite={handleOpenGite}
-          />
-          <main>
+          <div className="site-navbar-scale">
+            <Navbar
+              brandData={brandData}
+              isAdminLoggedIn={isAdminLoggedIn}
+              onOpenLogin={() => setIsAdminLoginOpen(true)}
+              onLogout={handleLogout}
+              onOpenCustomizer={handleOpenEditor}
+              onOpenInquiry={handleOpenInquiry}
+              activeSection={activeSection}
+              onOpenGite={handleOpenGite}
+            />
+          </div>
+          <main className="site-content-scale">
             {sectionOrder.map((sectionId, index) => renderSection(sectionId, index))}
           </main>
         </>

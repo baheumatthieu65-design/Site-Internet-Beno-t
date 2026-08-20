@@ -10,8 +10,10 @@ const normalizeProductImages = (product: any) => {
   // Convention canonique : si une galerie existe, son premier élément est
   // l'image principale. Cela répare les anciennes fiches où heroImage était
   // resté sur une photo historique.
+  // heroImage is authoritative; gallery[0] can be stale on older records.
+  const explicitHero = String(product?.heroImage || '').trim();
   const galleryPrimary = String(gallery[0] || '').trim();
-  const heroImage = String(galleryPrimary || product?.heroImage || '').trim();
+  const heroImage = String(explicitHero || galleryPrimary || '').trim();
   const secondaryImages = Array.from(
     new Set(
       gallery

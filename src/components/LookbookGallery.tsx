@@ -36,8 +36,9 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
   const textAlignClass = getTextAlignClass(theme);
   const containerWidthClass = getContainerWidthClass(theme);
   const contentPaddingClass = getContentPaddingClass(theme);
-  const lookbookImageScale = Math.min(100, Math.max(30, Number(theme?.lookbookImageScale ?? 60)));
-  const lookbookFrameHeight = Math.min(800, Math.max(220, Number(theme?.lookbookImageFrameHeight ?? 360)));
+  const lookbookImageScale = 100;
+  const lookbookFrameHeight = Math.min(500, Math.max(160, Number(theme?.lookbookImageFrameHeight ?? 220)));
+  const lookbookFrameWidth = Math.min(100, Math.max(40, Number(theme?.lookbookImageFrameWidth ?? 60)));
 
   // Dynamic gallery items created from all registered jackets
   const galleryItems = jackets.flatMap((j, jIdx) => {
@@ -114,7 +115,7 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
             >
               <div
                 className="w-full overflow-hidden relative flex items-center justify-center bg-[#111612]"
-                style={{ height: `${lookbookFrameHeight}px` }}
+                style={{ height: `${lookbookFrameHeight}px`, width: `${lookbookFrameWidth}%`, marginInline: "auto" }}
               >
                 <div className="relative h-full flex items-center justify-center overflow-hidden" style={{ width: `${lookbookImageScale}%` }}>
                   <img
