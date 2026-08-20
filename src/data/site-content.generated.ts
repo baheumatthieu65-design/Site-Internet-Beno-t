@@ -10,7 +10,7 @@ export const publishedSiteContent = {
     "accentColor": "#4A5D4E",
     "foundingYear": "2025",
     "designerLocation": "Vallée de Lourdios \u0026 Pic du Midi",
-    "heroBgImage": "",
+    "heroBgImage": "/assets/pyrenees_landscape_hero_1785338591988-pbnVVBN-.jpg",
     "storyTitle": "Aux origines de la Maison",
     "storyText1": "Pensée entre pâturages verdoyants et sommets acérés, notre maison fait le pari d’un luxe brut et authentique. Chaque veste est façonnée pour affronter les brumes pyrénéennes tout en offrant une silhouette d’une distinction rare.",
     "storyText2": "Nous avons sélectionné des laines de bergers pyrénéens et des toiles techniques imperméables d’exception pour façonner ces deux pièces signatures : La Veste des Cimes et Le Manteau Pastorale.",
@@ -305,13 +305,25 @@ export const publishedSiteContent = {
       "lookbookImageFrameWidth": 60,
       "lookbookImageFrameHeight": 220,
       "sectionBackgroundImages": {
-        "origines": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787258626442-4k-wallpaper-blue-skies-conifers-1526720.webp"
+        "origines": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787258626442-4k-wallpaper-blue-skies-conifers-1526720.webp",
+        "hero": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787261141539-pyrenees_landscape_hero_1785338591988.jpg"
+      },
+      "sectionBackgroundMedia": {
+        "hero": {
+          "type": "image",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787261141539-pyrenees_landscape_hero_1785338591988.jpg",
+          "overlay": 0,
+          "objectFit": "cover",
+          "positionX": 50,
+          "positionY": 50
+        }
       },
       "siteThemePreset": "pyrenees-noir",
       "siteBackgroundColor": "#121613",
       "navBackgroundColor": "#1a1e1b",
+      "navBackgroundOpacity": 0,
       "sectionBackgroundOpacity": {
-        "hero": 100,
+        "hero": 80,
         "collection": 75,
         "origines": 45
       },
@@ -842,5 +854,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787258769653
+  "publishedAt": 1787261148154
 } as const;
