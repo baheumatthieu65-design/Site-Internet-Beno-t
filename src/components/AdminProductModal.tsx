@@ -39,6 +39,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [imageTab, setImageTab] = useState<'primary' | 'secondary'>('primary');
+  const [uploadingImage, setUploadingImage] = useState<'primary' | number | null>(null);
 
   if (!isOpen) return null;
 
@@ -64,6 +65,36 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
 
   const handleHeroImageChange = (value: string) => {
     setEditingProduct((current) => current ? syncProductGallery(current, value) : current);
+  };
+
+  const uploadProductImage = async (file: File, target: 'primary' | number) => {
+    setUploadingImage(target);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+
+      const response = await fetch('/api/site-media', {
+        method: 'POST',
+        credentials: 'include',
+        cache: 'no-store',
+        body: form,
+      });
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.success || !data?.url) {
+        throw new Error(data?.error || `Upload image : HTTP ${response.status}`);
+      }
+
+      if (target === 'primary') {
+        handleHeroImageChange(String(data.url));
+      } else {
+        handleSecondaryImageChange(target, String(data.url));
+      }
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Impossible d’importer cette image.');
+    } finally {
+      setUploadingImage(null);
+    }
   };
 
   const handleSecondaryImageChange = (index: number, value: string) => {
@@ -417,6 +448,23 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                           placeholder="https://..."
                           className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
                         />
+                        <div className="flex flex-wrap gap-2">
+                          <label className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-[#d4af37] bg-[#1b241d] text-[#d4af37] text-[11px] font-bold uppercase tracking-wider cursor-pointer ${uploadingImage === 'primary' ? 'opacity-60 pointer-events-none' : 'hover:bg-[#28362b]'}`}>
+                            <ImageIcon className="w-3.5 h-3.5" />
+                            <span>{uploadingImage === 'primary' ? 'Importation…' : 'Importer depuis mon PC'}</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              disabled={uploadingImage !== null}
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                e.currentTarget.value = '';
+                                if (file) void uploadProductImage(file, 'primary');
+                              }}
+                            />
+                          </label>
+                        </div>
                         {editingProduct.heroImage && (
                           <div className="h-32 rounded-xl overflow-hidden bg-[#0b0f0c] border border-[#273429]">
                             <img src={editingProduct.heroImage} alt={editingProduct.name || 'Image principale'} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
@@ -451,6 +499,21 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                               placeholder="https://..."
                               className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
                             />
+                            <label className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-[#3b4b3e] bg-[#1b241d] text-[#d4af37] text-[11px] font-bold uppercase tracking-wider cursor-pointer ${uploadingImage === index ? 'opacity-60 pointer-events-none' : 'hover:bg-[#28362b]'}`}>
+                              <ImageIcon className="w-3.5 h-3.5" />
+                              <span>{uploadingImage === index ? 'Importation…' : 'Importer depuis mon PC'}</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                disabled={uploadingImage !== null}
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  e.currentTarget.value = '';
+                                  if (file) void uploadProductImage(file, index);
+                                }}
+                              />
+                            </label>
                             {url && (
                               <div className="h-24 rounded-lg overflow-hidden bg-[#0b0f0c] border border-[#273429]">
                                 <img src={url} alt={`Image secondaire ${index + 1}`} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
