@@ -714,6 +714,26 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     updateTheme({ hiddenSections: hidden });
   };
 
+  const getSectionWidthPercent = (sectionId: SectionId) =>
+    Math.min(100, Math.max(60, Number(currentTheme.sectionWidthPercent?.[sectionId] ?? 100)));
+
+  const updateSectionWidthPercent = (sectionId: SectionId, value: number) => {
+    updateTheme({
+      sectionWidthPercent: {
+        ...(currentTheme.sectionWidthPercent || {}),
+        [sectionId]: Math.min(100, Math.max(60, value)),
+      },
+    });
+  };
+
+  const toggleLookbookProduct = (productId: string) => {
+    const current = Array.isArray(currentTheme.lookbookProductIds) ? [...currentTheme.lookbookProductIds] : [];
+    const next = current.includes(productId)
+      ? current.filter((id) => id !== productId)
+      : [...current, productId];
+    updateTheme({ lookbookProductIds: next });
+  };
+
   // Product Page Blocks Reorder
   const handleMoveProductBlock = (blockId: ProductBlockId, direction: 'up' | 'down') => {
     const currentOrder = [...(currentTheme.productBlocksOrder || defaultThemeConfig.productBlocksOrder || [])];
@@ -1374,7 +1394,19 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                           </button>
                         </div>
 
-                        <div className="mt-3 pt-3 border-t border-[#2d392f] flex flex-wrap items-center gap-2">
+                        <div className="mt-3 pt-3 border-t border-[#2d392f] grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-center">
+                          <label className="block">
+                            <div className="flex items-center justify-between text-[10px] text-[#a3b1a5] mb-1">
+                              <span>Largeur d'affichage du module</span>
+                              <strong className="text-[#d4af37]">{getSectionWidthPercent(secId)}%</strong>
+                            </div>
+                            <input type="range" min="60" max="100" step="5" value={getSectionWidthPercent(secId)} onChange={(e) => updateSectionWidthPercent(secId, Number(e.target.value))} className="w-full accent-[#d4af37]" />
+                          </label>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-[9px] text-[#708272]">60%</span><span className="text-[9px] text-[#708272]">100%</span>
+                          </div>
+
+                          <div className="md:col-span-2 flex flex-wrap items-center gap-2">
                           <label className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-[#536456] bg-[#182019] hover:border-[#d4af37] text-[10px] uppercase tracking-wider text-[#c4ceb8] cursor-pointer">
                             <Upload className="w-3.5 h-3.5 text-[#d4af37]" />
                             <span>Image de fond depuis le PC</span>
@@ -1399,12 +1431,33 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                               </button>
                             </>
                           )}
+                          </div>
                         </div>
                       </div>
                     );
                   })}
                 </div>
               </div>
+
+            <div className="mt-6 p-5 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
+              <div>
+                <h4 className="font-serif text-base text-[#f3ece0] font-semibold">Articles affichés dans le Lookbook</h4>
+                <p className="text-[11px] text-[#a3b1a5] mt-1">Un bloc correspond maintenant à un article : image principale <strong>heroImage</strong> + texte en pied. Si aucun article n'est sélectionné, tous les articles sont affichés.</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {draftProducts.map((product) => {
+                  const selected = !currentTheme.lookbookProductIds?.length || currentTheme.lookbookProductIds.includes(product.id);
+                  return (
+                    <button key={product.id} type="button" onClick={() => toggleLookbookProduct(product.id)} className={`text-left p-3 rounded-xl border transition-all ${selected ? 'border-[#d4af37] bg-[#202a22]' : 'border-[#344437] bg-[#151b17] opacity-60'}`}>
+                      <div className="flex items-center gap-3">
+                        <img src={product.heroImage} alt={product.name} className="w-16 h-16 rounded-lg object-cover border border-[#39483c]" />
+                        <div className="min-w-0"><span className="text-xs font-serif font-bold text-[#f3ece0] block truncate">{product.name}</span><span className="text-[10px] text-[#a3b1a5]">{selected ? 'Affiché' : 'Masqué'}</span></div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
             </div>
           )}
 

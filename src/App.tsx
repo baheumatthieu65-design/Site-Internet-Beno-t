@@ -38,6 +38,7 @@ import {
 } from './utils/auth';
 
 import { defaultThemeConfig } from './utils/themeStyles';
+import { normalizeProductAvailability } from './utils/productStatus';
 import {
   cachePublishedSiteConfig,
   getInitialBrandData,
@@ -743,11 +744,11 @@ export default function App() {
         const gallery = primary
           ? [primary, ...cleanGallery.filter((url: string) => url !== primary)]
           : cleanGallery;
-        return {
+        return normalizeProductAvailability({
           ...product,
           heroImage: primary,
           gallery,
-        };
+        });
       });
 
       // IMPORTANT :
@@ -796,16 +797,15 @@ export default function App() {
 
   useEffect(() => {
     const initializeApp = async () => {
-      // V2.2 : les trois lectures indépendantes démarrent ensemble.
-      // On conserve exactement les mêmes fonctions de chargement qu'avant.
+      // V2.3 : le premier rendu public attend désormais le catalogue serveur.
+      // Sans cela, le Hero pouvait afficher brièvement les images du bundle
+      // généré alors que l'administration utilisait déjà les images du catalogue.
       const publishedPromise = fetchPublishedSiteConfig();
       const productsPromise = fetchServerProducts();
       const authPromise = verifyAdminSessionServer();
 
-      // La publication serveur ne doit pas bloquer le premier rendu.
-      // Les produits et l'authentification peuvent continuer en parallèle.
       try {
-        const loaded = await publishedPromise;
+        const [loaded] = await Promise.all([publishedPromise, productsPromise]);
         setPublishedConfigReady(true);
         window.dispatchEvent(
           new CustomEvent('site-bootstrap-ready', {
@@ -817,8 +817,6 @@ export default function App() {
         setPublishedConfigReady(true);
         window.dispatchEvent(new CustomEvent('site-bootstrap-ready'));
       }
-
-      void productsPromise;
 
       try {
         const isAuthenticated = await authPromise;
@@ -1505,7 +1503,7 @@ export default function App() {
       !isDragReorderMode
     ) {
       return (
-        <div key={sectionId} className="relative overflow-hidden">
+        <div key={sectionId} className="relative overflow-hidden" style={{ width: `${Math.min(100, Math.max(60, Number(theme.sectionWidthPercent?.[sectionId] ?? 100)))}%`, marginInline: 'auto' }}>
           <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
           {content}
           {sectionBackgroundOverlay}
@@ -1639,7 +1637,7 @@ export default function App() {
           </div>
         </div>
 
-        <div className="relative overflow-hidden">
+        <div className="relative overflow-hidden mx-auto" style={{ width: `${Math.min(100, Math.max(60, Number(theme.sectionWidthPercent?.[sectionId] ?? 100)))}%` }}>
           <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
           {content}
           {sectionBackgroundOverlay}

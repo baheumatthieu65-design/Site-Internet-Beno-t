@@ -21,6 +21,7 @@ import {
   ChevronDown,
   Move
 } from 'lucide-react';
+import { getProductAvailabilityStatus, getProductStatusLabel, isProductOrderable } from '../utils/productStatus';
 import {
   getButtonClasses,
   getButtonInlineStyle,
@@ -112,8 +113,8 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   const inquiryText = theme?.inquiryButtonText || 'Commander sur Mesure';
 
   const showcaseImageScale = 100;
-  const showcaseFrameWidth = Math.min(100, Math.max(40, Number(theme?.showcaseImageFrameWidth ?? 60)));
-  const showcaseFrameHeight = Math.min(700, Math.max(220, Number(theme?.showcaseImageFrameHeight ?? 320)));
+  const showcaseFrameWidth = Math.min(100, Math.max(40, Number(theme?.showcaseImageFrameWidth ?? 100)));
+  const showcaseFrameHeight = Math.min(520, Math.max(220, Number(theme?.showcaseImageFrameHeight ?? 360)));
 
   const blocksOrder: ProductBlockId[] = theme?.productBlocksOrder || [
     'title-price',
@@ -311,12 +312,13 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
             <div className={`flex ${buttonAlignClass}`}>
               <button
                 id={`buy-jacket-${activeJacket.id}`}
-                onClick={() => onOpenInquiry(activeJacket.id, selectedColor, selectedSize)}
+                onClick={() => isProductOrderable(activeJacket) && onOpenInquiry(activeJacket.id, selectedColor, selectedSize)}
+                disabled={!isProductOrderable(activeJacket)}
                 style={buttonInlineStyle}
-                className={`w-full py-4 px-6 text-sm uppercase tracking-widest flex items-center justify-center space-x-3 ${primaryBtnClass}`}
+                className={`w-full py-3 px-5 text-sm uppercase tracking-widest flex items-center justify-center space-x-3 ${primaryBtnClass} disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <ShoppingBag className="w-5 h-5" />
-                <span>{orderText} / Réserver ({activeJacket.price} {activeJacket.currency})</span>
+                <span>{isProductOrderable(activeJacket) ? `${orderText} / Réserver (${activeJacket.price} ${activeJacket.currency})` : getProductStatusLabel(activeJacket)}</span>
               </button>
             </div>
 
@@ -466,131 +468,114 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
 
         {/* LAYOUT 1: SPLIT INTERACTIVE (Default / Haute Montagne) */}
         {layout === 'split-interactive' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-            {/* Left Image & Hotspots */}
-            <div className={`${cardMediaPos === 'right' ? 'lg:col-span-7 lg:order-2' : 'lg:col-span-7'} space-y-6`}>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch max-w-6xl mx-auto">
+            {/* Image / hotspots */}
+            <div className={`${cardMediaPos === 'right' ? 'lg:col-span-5 lg:order-2' : 'lg:col-span-5'} space-y-3`}>
               <div
                 className="relative rounded-3xl bg-[#1d241f] border border-[#39483c] overflow-hidden shadow-2xl group flex items-center justify-center mx-auto"
-                style={{ width: `${showcaseFrameWidth}%`, height: `${showcaseFrameHeight}px`, minHeight: `${Math.min(showcaseFrameHeight, 280)}px` }}
+                style={{ width: '100%', height: `${showcaseFrameHeight}px` }}
               >
-                <div
-                  className="relative h-full flex items-center justify-center overflow-hidden"
-                  style={{ width: `${showcaseImageScale}%` }}
-                >
-                  <img
-                    data-vce-gallery-main="true"
-                    data-vce-gallery-product-id={activeJacket.id}
-                    src={activeImage}
-                    alt={activeJacket.name}
-                    className="w-full h-full object-contain object-center transition-all duration-500"
-                  />
+                <div className="relative h-full w-full flex items-center justify-center overflow-hidden">
+                  <img data-vce-gallery-main="true" data-vce-gallery-product-id={activeJacket.id} src={activeImage} alt={activeJacket.name} className="w-full h-full object-contain object-center transition-all duration-500" />
                 </div>
-
-                {/* Hotspots */}
                 {activeJacket.hotspots.map((hs) => {
                   const isSelected = activeHotspot?.id === hs.id;
                   return (
-                    <button
-                      key={hs.id}
-                      onClick={() => setActiveHotspot(isSelected ? null : hs)}
-                      style={{ left: `${hs.x}%`, top: `${hs.y}%` }}
-                      className="absolute z-20 transform -translate-x-1/2 -translate-y-1/2 group/pin focus:outline-none"
-                      title={hs.title}
-                    >
+                    <button key={hs.id} onClick={() => setActiveHotspot(isSelected ? null : hs)} style={{ left: `${hs.x}%`, top: `${hs.y}%` }} className="absolute z-20 -translate-x-1/2 -translate-y-1/2" title={hs.title}>
                       <span className="relative flex h-8 w-8 items-center justify-center">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#d4af37] opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-6 w-6 bg-[#1a201b] border-2 border-[#d4af37] text-[#d4af37] text-[10px] font-bold items-center justify-center shadow-lg group-hover/pin:scale-110 transition-transform">
-                          +
-                        </span>
+                        <span className="absolute inline-flex h-full w-full rounded-full bg-[#d4af37] opacity-40 animate-ping" />
+                        <span className="relative inline-flex rounded-full h-6 w-6 bg-[#1a201b] border-2 border-[#d4af37] text-[#d4af37] text-[10px] font-bold items-center justify-center shadow-lg">+</span>
                       </span>
                     </button>
                   );
                 })}
-
-                {/* Hotspot details overlay */}
+                <span className={`absolute top-4 left-4 z-10 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-bold border shadow-lg ${getProductAvailabilityStatus(activeJacket) === 'on-sale' ? 'bg-emerald-950/90 text-emerald-300 border-emerald-600' : getProductAvailabilityStatus(activeJacket) === 'sold-out' ? 'bg-red-950/90 text-red-300 border-red-800' : 'bg-amber-950/90 text-amber-200 border-amber-700'}`}>
+                  {getProductStatusLabel(activeJacket)}
+                </span>
                 {activeHotspot && (
-                  <div className="absolute bottom-4 left-4 right-4 sm:left-6 sm:right-6 z-30 p-4 sm:p-5 rounded-2xl bg-[#141915]/95 backdrop-blur-md border border-[#d4af37] shadow-2xl animate-fadeIn">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center space-x-2 text-[#d4af37] text-xs uppercase tracking-wider font-semibold">
-                        <Eye className="w-4 h-4" />
-                        <span>Détail d'Atelier • {activeHotspot.category}</span>
-                      </div>
-                      <button
-                        onClick={() => setActiveHotspot(null)}
-                        className="text-[#9eb0a0] hover:text-white text-xs font-bold px-2 py-0.5 rounded bg-black/40"
-                      >
-                        ✕
-                      </button>
+                  <div className="absolute bottom-3 left-3 right-3 z-30 p-3 rounded-2xl bg-[#141915]/95 backdrop-blur-md border border-[#d4af37] shadow-2xl">
+                    <div className="flex items-center justify-between text-[#d4af37] text-[10px] uppercase tracking-wider font-semibold">
+                      <span>{activeHotspot.category}</span><button onClick={() => setActiveHotspot(null)}>✕</button>
                     </div>
-                    <h4 className="font-serif text-lg text-[#f3ece0] font-semibold mt-1">
-                      {activeHotspot.title}
-                    </h4>
-                    <p className="text-xs sm:text-sm text-[#b8c5ba] mt-1 leading-relaxed">
-                      {activeHotspot.description}
-                    </p>
+                    <h4 className="font-serif text-base text-[#f3ece0] font-semibold mt-1">{activeHotspot.title}</h4>
+                    <p className="text-[11px] text-[#b8c5ba] mt-1 leading-relaxed">{activeHotspot.description}</p>
                   </div>
                 )}
-
-                <div className="absolute top-4 right-4 z-10 flex flex-col items-end space-y-2">
-                  <span className="px-3 py-1 rounded-full bg-[#121613]/90 backdrop-blur-md border border-[#3b473e] text-[#d4af37] text-xs font-serif tracking-widest uppercase">
-                    {activeJacket.category}
-                  </span>
-                  <span className="text-[10px] text-[#a3b0a2] bg-black/60 px-2 py-0.5 rounded">
-                    💡 Cliquez sur les points <span>+</span> pour inspecter
-                  </span>
-                </div>
               </div>
-
-              {/* Gallery Thumbnails */}
               {galleryImages.length > 1 && (
-                <div className="flex items-center space-x-3 overflow-x-auto pb-1">
-                  {galleryImages.map((imgUrl, idx) => {
-                    const isActive = activeImage === imgUrl;
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => setActiveImage(imgUrl)}
-                        className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${
-                          isActive
-                            ? 'border-[#d4af37] ring-2 ring-[#d4af37]/40 scale-105'
-                            : 'border-[#39483c] opacity-70 hover:opacity-100'
-                        }`}
-                      >
-                        <img
-                          data-vce-gallery-thumbnail="true"
-                          data-vce-gallery-product-id={activeJacket.id}
-                          data-vce-gallery-index={idx}
-                          src={imgUrl}
-                          alt={`Vue ${idx + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                    );
-                  })}
+                <div className="flex items-center space-x-2 overflow-x-auto pb-1">
+                  {galleryImages.map((imgUrl, idx) => (
+                    <button key={idx} onClick={() => setActiveImage(imgUrl)} className={`relative w-14 h-14 rounded-xl overflow-hidden border-2 flex-shrink-0 ${activeImage === imgUrl ? 'border-[#d4af37] ring-2 ring-[#d4af37]/30' : 'border-[#39483c] opacity-70 hover:opacity-100'}`}>
+                      <img src={imgUrl} alt={`Vue ${idx + 1}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
                 </div>
               )}
+            </div>
 
-              {/* Fabrics */}
-              <div className={`p-4 rounded-2xl ${cardStyle.card} flex flex-wrap items-center justify-between gap-3 text-xs text-[#b8c5ba]`}>
-                <span className="font-serif text-[#d4af37] font-semibold uppercase tracking-wider">
-                  Composition Noble :
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {activeJacket.fabrics.map((fabric, idx) => (
-                    <span
-                      key={idx}
-                      className="px-2.5 py-1 rounded-lg bg-[#28322a] border border-[#435346] text-[#e2d5c3]"
-                    >
-                      {fabric}
-                    </span>
+            {/* Compact horizontal information panel */}
+            <div className={`${cardMediaPos === 'right' ? 'lg:col-span-7 lg:order-1' : 'lg:col-span-7'} ${cardStyle.card} rounded-3xl p-5 sm:p-6 flex flex-col justify-between`}>
+              <div>
+                <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#354238] pb-4">
+                  <div className="min-w-0">
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-[#d4af37]">{activeJacket.category}</span>
+                    <h3 className="font-serif text-2xl sm:text-4xl text-[#f3ece0] font-normal mt-1">{activeJacket.name}</h3>
+                    <p className="text-xs text-[#a8b5a9] mt-1 line-clamp-2">{activeJacket.subTitle || activeJacket.tagline}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="font-serif text-2xl sm:text-3xl font-semibold text-[#f3ece0]">{activeJacket.price} {activeJacket.currency}</div>
+                    <span className="text-[10px] text-[#8f9f91]">TVA incluse</span>
+                  </div>
+                </div>
+
+                <p className="text-xs sm:text-sm text-[#b8c5ba] leading-relaxed py-4 max-w-3xl">{activeJacket.description}</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="rounded-2xl bg-[#182019] border border-[#354238] p-3">
+                    <span className="text-[9px] uppercase tracking-wider text-[#8f9f91]">Couleur</span>
+                    <div className="flex items-center gap-2 mt-2">
+                      {activeJacket.colors.map((color) => (
+                        <button key={color.name} onClick={() => setSelectedColor(color.name)} title={color.name} style={{ backgroundColor: color.hex }} className={`w-7 h-7 rounded-full border-2 ${selectedColor === color.name ? 'border-[#d4af37] ring-2 ring-[#d4af37]/30' : 'border-[#526355]'}`} />
+                      ))}
+                      <span className="text-[10px] text-[#c4ceb8] truncate">{selectedColor}</span>
+                    </div>
+                  </div>
+                  <div className="rounded-2xl bg-[#182019] border border-[#354238] p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] uppercase tracking-wider text-[#8f9f91]">Tailles disponibles</span>
+                      <span className="text-[9px] text-[#d4af37]">{activeJacket.sizes.length} tailles</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {activeJacket.sizes.map((size) => (
+                        <button key={size} onClick={() => setSelectedSize(size)} className={`px-3 py-1 rounded-lg text-[10px] border ${selectedSize === size ? 'bg-[#d4af37] text-[#121613] border-[#d4af37]' : 'bg-[#202a22] text-[#b8c5ba] border-[#435346]'}`}>{size}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
+                  {([
+                    ['Origine', activeJacket.specs.origin],
+                    ['Résistance', activeJacket.specs.waterResistance],
+                    ['Poids', activeJacket.specs.weight],
+                    ['Coupe', activeJacket.specs.fitType],
+                  ] as [string, string][]).map(([label, value]) => (
+                    <div key={label} className="rounded-xl bg-[#202a22] border border-[#354238] px-3 py-2">
+                      <span className="block text-[8px] uppercase tracking-wider text-[#7f9382]">{label}</span>
+                      <span className="block text-[10px] text-[#e2d5c3] truncate mt-0.5">{value}</span>
+                    </div>
                   ))}
                 </div>
               </div>
-            </div>
 
-            {/* Right Details with Configurable Product Blocks Order */}
-            <div className={`${cardMediaPos === 'right' ? 'lg:col-span-5 lg:order-1' : 'lg:col-span-5'} space-y-6`}>
-              {blocksOrder.map((blockId) => renderProductBlock(blockId))}
+              <div className="pt-4 mt-4 border-t border-[#354238] flex flex-col sm:flex-row items-center gap-3">
+                <div className="flex flex-wrap gap-1.5 flex-1">
+                  {activeJacket.fabrics.slice(0, 3).map((fabric) => <span key={fabric} className="px-2.5 py-1 rounded-lg bg-[#28322a] border border-[#435346] text-[9px] text-[#e2d5c3]">{fabric}</span>)}
+                </div>
+                <button onClick={() => isProductOrderable(activeJacket) && onOpenInquiry(activeJacket.id, selectedColor, selectedSize)} disabled={!isProductOrderable(activeJacket)} style={buttonInlineStyle} className={`shrink-0 px-7 py-3 text-[10px] uppercase tracking-widest ${primaryBtnClass} disabled:opacity-50 disabled:cursor-not-allowed`}>
+                  {isProductOrderable(activeJacket) ? `${orderText} / Réserver` : getProductStatusLabel(activeJacket)}
+                </button>
+              </div>
             </div>
           </div>
         )}

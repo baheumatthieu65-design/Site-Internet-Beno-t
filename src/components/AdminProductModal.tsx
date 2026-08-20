@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { ComparisonCriterion, JacketModel } from '../types';
+import { ComparisonCriterion, JacketModel, JacketAvailabilityStatus } from '../types';
+import { getProductAvailabilityStatus, getProductStatusLabel } from '../utils/productStatus';
 import {
   X,
   Plus,
@@ -324,6 +325,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       ],
       sizes: ['S', 'M', 'L', 'XL'],
       isAvailable: true,
+      availabilityStatus: 'on-sale',
       features: [
         { iconName: 'Shield', title: 'Coupe-Vent', desc: 'Protection thermique haute montagne' },
       ],
@@ -943,39 +945,22 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                   {(editingProduct.hotspots || []).length === 0 && <div className="text-center py-4 text-xs text-[#7d8c7f] border border-dashed border-[#374739] rounded-xl">Aucun hotspot configuré.</div>}
                 </div>
 
-                <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#273429] flex items-center justify-between">
+                <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#273429] space-y-3">
                   <div>
-                    <span className="font-bold text-[#f3ece0] block">Disponibilité à la vente</span>
-                    <span className="text-[11px] text-[#a3b1a5]">
-                      Si désactivé, le produit n'apparaîtra plus pour les clients sur le site public.
-                    </span>
+                    <span className="font-bold text-[#f3ece0] block">Statut de disponibilité</span>
+                    <span className="text-[11px] text-[#a3b1a5]">Le statut est affiché directement sur les images du Hero et du Lookbook.</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setEditingProduct({
-                        ...editingProduct,
-                        isAvailable: !(editingProduct.isAvailable ?? true),
-                      })
-                    }
-                    className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer flex items-center space-x-1.5 ${
-                      (editingProduct.isAvailable ?? true)
-                        ? 'bg-emerald-950 text-emerald-300 border border-emerald-600'
-                        : 'bg-red-950 text-red-300 border border-red-800'
-                    }`}
-                  >
-                    {(editingProduct.isAvailable ?? true) ? (
-                      <>
-                        <Eye className="w-4 h-4" />
-                        <span>Disponible</span>
-                      </>
-                    ) : (
-                      <>
-                        <EyeOff className="w-4 h-4" />
-                        <span>Désactivé</span>
-                      </>
-                    )}
-                  </button>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {([
+                      ['on-sale', 'En vente'],
+                      ['sold-out', 'Épuisé'],
+                      ['coming-soon', 'Bientôt disponible'],
+                    ] as [JacketAvailabilityStatus, string][]).map(([value, label]) => (
+                      <button key={value} type="button" onClick={() => setEditingProduct({ ...editingProduct, availabilityStatus: value, isAvailable: value === 'on-sale' })} className={`px-3 py-2.5 rounded-xl border text-xs font-bold transition-all ${getProductAvailabilityStatus(editingProduct as JacketModel) === value ? 'border-[#d4af37] bg-[#253127] text-[#d4af37]' : 'border-[#354238] bg-[#182019] text-[#a3b1a5] hover:border-[#526355]'}`}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -1007,7 +992,8 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {draftProducts.map((p) => {
-                  const isAvail = p.isAvailable !== false;
+                  const productStatus = getProductAvailabilityStatus(p);
+                  const isAvail = productStatus === 'on-sale';
                   return (
                     <div
                       key={p.id}
@@ -1030,7 +1016,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                                 : 'bg-red-950/90 text-red-300 border-red-800'
                             }`}
                           >
-                            {isAvail ? 'En Vente' : 'Indisponible'}
+                            {getProductStatusLabel(p)}
                           </span>
                         </div>
 

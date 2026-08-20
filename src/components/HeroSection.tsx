@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrandConfig } from '../types';
 import { Mountain, ArrowDown, Sparkles, Shield, Compass, ChevronRight, Edit3, Layers, Plus } from 'lucide-react';
+import { getProductStatusLabel } from '../utils/productStatus';
 import {
   getButtonClasses,
   getButtonInlineStyle,
@@ -370,6 +371,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         alt={j.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
+                      <span className={`absolute top-2 right-2 px-2 py-1 rounded-full text-[9px] uppercase tracking-wider font-bold border ${getProductStatusLabel(j) === 'En vente' ? 'bg-emerald-950/90 text-emerald-300 border-emerald-600' : getProductStatusLabel(j) === 'Épuisé' ? 'bg-red-950/90 text-red-300 border-red-800' : 'bg-amber-950/90 text-amber-200 border-amber-700'}`}>
+                        {getProductStatusLabel(j)}
+                      </span>
                       <span className="absolute top-2 left-2 bg-[#121613]/90 text-[#d4af37] text-[10px] uppercase tracking-wider px-2 py-0.5 rounded font-serif border border-[#3d4c40]">
                         N°{idx + 1}
                       </span>

@@ -175,6 +175,8 @@ export interface JacketSpecs {
   care: string;
 }
 
+export type JacketAvailabilityStatus = 'on-sale' | 'sold-out' | 'coming-soon';
+
 export interface JacketModel {
   id: string;
   name: string;
@@ -217,6 +219,9 @@ export interface JacketModel {
    * absent = considéré comme disponible pour compatibilité
    */
   isAvailable?: boolean;
+
+  /** Statut commercial affiché sur les visuels. Legacy isAvailable reste supporté. */
+  availabilityStatus?: JacketAvailabilityStatus;
 }
 
 /* =========================================================
@@ -334,6 +339,10 @@ export interface ThemeConfig {
   lookbookImageFrameHeight?: number;
   /** Images de fond choisies par module principal. */
   sectionBackgroundImages?: Partial<Record<SectionId, string>>;
+  /** Largeur d'affichage de chaque module principal, en pourcentage. */
+  sectionWidthPercent?: Partial<Record<SectionId, number>>;
+  /** Articles sélectionnés pour le Lookbook. Vide/absent = tous les articles. */
+  lookbookProductIds?: string[];
 
   /* Ordre des blocs */
 

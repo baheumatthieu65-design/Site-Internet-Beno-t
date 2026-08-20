@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { JacketModel, ThemeConfig } from '../types';
 import { Camera, Eye, Sparkles, ZoomIn, Edit3 } from 'lucide-react';
+import { getProductAvailabilityStatus, getProductStatusLabel, isProductOrderable } from '../utils/productStatus';
 import {
   getButtonClasses,
   getButtonInlineStyle,
@@ -37,42 +38,22 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
   const containerWidthClass = getContainerWidthClass(theme);
   const contentPaddingClass = getContentPaddingClass(theme);
   const lookbookImageScale = 100;
+  const selectedProductIds = Array.isArray(theme?.lookbookProductIds) ? theme.lookbookProductIds : [];
+  const lookbookJackets = (selectedProductIds.length > 0 ? jackets.filter((j) => selectedProductIds.includes(j.id)) : jackets);
   const lookbookFrameHeight = Math.min(500, Math.max(160, Number(theme?.lookbookImageFrameHeight ?? 220)));
   const lookbookFrameWidth = Math.min(100, Math.max(40, Number(theme?.lookbookImageFrameWidth ?? 60)));
 
-  // Dynamic gallery items created from all registered jackets
-  const galleryItems = jackets.flatMap((j, jIdx) => {
-    const images = Array.from(
-      new Set(
-        [j.heroImage, ...(Array.isArray(j.gallery) ? j.gallery : [])]
-          .map((url) => String(url || '').trim())
-          .filter(Boolean)
-      )
-    );
-
-    return images.map((url, imageIndex) => ({
-      url,
-      title:
-        imageIndex === 0
-          ? `${j.name} — Portrait & Silhouette`
-          : imageIndex === 1
-            ? `${j.name} — Vue en Déplacement`
-            : `Focus Matières & Finitions — ${j.name}`,
-      model:
-        imageIndex === 0
-          ? j.name
-          : imageIndex === 1
-            ? `Silhouette Signature N°${jIdx + 1}`
-            : j.fabrics[0] || 'Tissage Artisanal Noble',
-      jacketId: j.id,
-      location:
-        imageIndex === 0
-          ? `Atelier Pyrénéen • Création N°${jIdx + 1}`
-          : imageIndex === 1
-            ? 'Massif des Pyrénées'
-            : 'Détail d’Atelier',
-    }));
-  });
+  // Un bloc = un article. Le Lookbook utilise toujours heroImage comme visuel principal.
+  const galleryItems = lookbookJackets.map((j, jIdx) => ({
+    jacketId: j.id,
+    url: j.heroImage,
+    title: j.name,
+    model: j.subTitle || j.tagline,
+    location: j.category || `Création N°${jIdx + 1}`,
+    status: getProductAvailabilityStatus(j),
+    statusLabel: getProductStatusLabel(j),
+    price: `${j.price} ${j.currency}`,
+  }));
 
   return (
     <section id="lookbook" className={`${contentPaddingClass} bg-[#121613] text-[#e2d5c3] relative group/lookbook`}>
@@ -105,52 +86,39 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
           </p>
         </div>
 
-        {/* Editorial Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {galleryItems.map((item, idx) => (
-            <div
-              key={idx}
+        {/* Editorial Grid : une carte par article, image + texte en pied */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {galleryItems.map((item) => (
+            <article
+              key={item.jacketId}
+              className="group relative cursor-pointer rounded-2xl overflow-hidden bg-[#1a201b] border border-[#374739] shadow-2xl transition-all duration-500 hover:-translate-y-1 hover:border-[#d4af37]"
               onClick={() => setSelectedImage(item.url)}
-              className="group relative cursor-pointer rounded-3xl overflow-hidden bg-[#1a201b] border border-[#374739] shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:border-[#d4af37]"
             >
-              <div
-                className="w-full overflow-hidden relative flex items-center justify-center bg-[#111612]"
-                style={{ height: `${lookbookFrameHeight}px`, width: `${lookbookFrameWidth}%`, marginInline: "auto" }}
-              >
-                <div className="relative h-full flex items-center justify-center overflow-hidden" style={{ width: `${lookbookImageScale}%` }}>
-                  <img
-                    src={item.url}
-                    alt={item.title}
-                    className="w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-                </div>
+              <div className="relative w-full overflow-hidden bg-[#111612]" style={{ height: `${lookbookFrameHeight}px` }}>
+                <img src={item.url} alt={item.title} className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                <span className={`absolute top-3 right-3 z-10 px-3 py-1.5 rounded-full text-[9px] uppercase tracking-wider font-bold border shadow-lg ${item.status === 'on-sale' ? 'bg-emerald-950/90 text-emerald-300 border-emerald-600' : item.status === 'sold-out' ? 'bg-red-950/90 text-red-300 border-red-800' : 'bg-amber-950/90 text-amber-200 border-amber-700'}`}>
+                  {item.statusLabel}
+                </span>
               </div>
 
-              <div className="absolute bottom-0 left-0 right-0 p-6 space-y-2">
-                <span className="text-[10px] uppercase tracking-widest text-[#d4af37] font-semibold block">
-                  {item.location}
-                </span>
-                <h3 className="font-serif text-xl text-[#f3ece0] font-medium">
-                  {item.title}
-                </h3>
-                <div className="pt-2 flex items-center justify-between">
-                  <span className="text-xs text-[#a3b0a2]">
-                    {item.model}
-                  </span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onOpenInquiry(item.jacketId);
-                    }}
-                style={buttonInlineStyle}
-                    className={`px-3.5 py-1.5 text-[10px] uppercase tracking-wider font-bold ${primaryBtnClass}`}
-                  >
-                    {orderText}
+              <div className="p-5 bg-[#171e19]">
+                <span className="text-[9px] uppercase tracking-[0.18em] text-[#d4af37] font-semibold">{item.location}</span>
+                <div className="flex items-end justify-between gap-3 mt-1">
+                  <div className="min-w-0">
+                    <h3 className="font-serif text-2xl text-[#f3ece0] font-medium truncate">{item.title}</h3>
+                    <p className="text-[11px] text-[#a3b0a2] mt-1 line-clamp-2">{item.model}</p>
+                  </div>
+                  <span className="font-serif text-lg text-[#d4af37] shrink-0">{item.price}</span>
+                </div>
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="text-[10px] uppercase tracking-widest text-[#7f9382]">Voir la pièce</span>
+                  <button onClick={(e) => { e.stopPropagation(); if (item.status === 'on-sale') onOpenInquiry(item.jacketId); }} disabled={item.status !== 'on-sale'} style={buttonInlineStyle} className={`px-4 py-2 text-[9px] uppercase tracking-wider font-bold ${primaryBtnClass} disabled:opacity-50 disabled:cursor-not-allowed`}>
+                    {item.status === 'on-sale' ? orderText : item.statusLabel}
                   </button>
                 </div>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       </div>

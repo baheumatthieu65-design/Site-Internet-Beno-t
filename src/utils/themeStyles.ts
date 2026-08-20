@@ -63,6 +63,8 @@ export const defaultThemeConfig: ThemeConfig = {
   lookbookImageFrameWidth: 60,
   lookbookImageFrameHeight: 220,
   sectionBackgroundImages: {},
+  sectionWidthPercent: {},
+  lookbookProductIds: [],
   productBlocksOrder: ['title-price', 'description', 'colors', 'sizes', 'specs', 'cta'],
   formFieldsOrder: ['name', 'email', 'phone', 'jacket', 'color', 'size', 'requestType', 'message'],
   orderButtonText: 'Commander',
