@@ -158,6 +158,12 @@ export default function App() {
     siteEditorConfigRef.current = siteEditorConfig;
   }, [siteEditorConfig]);
 
+  useEffect(() => {
+    setBrandData((previous) =>
+      mergeVisualTextIntoBrandData(previous, siteEditorConfig)
+    );
+  }, [siteEditorConfig]);
+
   // Le contenu publié serveur est la source commune aux visiteurs et à l'admin.
   // On ne révèle l'application qu'après la première synchronisation (ou fallback).
   const [publishedConfigReady, setPublishedConfigReady] = useState(false);
@@ -200,6 +206,60 @@ export default function App() {
       : defaultThemeConfig.sectionOrder;
 
   const hiddenSections: SectionId[] = theme.hiddenSections || [];
+
+  // ===========================================================================
+  // VISUAL EDITOR -> BRAND CONFIG BRIDGE
+  // ===========================================================================
+  // Les textes canoniques modifiés dans l'éditeur visuel sont aussi écrits
+  // dans BrandConfig. Ils suivent ainsi exactement le même chemin de
+  // persistance que le panneau Paramétrage.
+  const mergeVisualTextIntoBrandData = (
+    base: BrandConfig,
+    editorConfig: SiteEditorConfig
+  ): BrandConfig => {
+    let next = base;
+    let changed = false;
+
+    for (const block of editorConfig.blocks || []) {
+      if (
+        block.kind !== 'text' ||
+        typeof block.text !== 'string' ||
+        !block.selector
+      ) {
+        continue;
+      }
+
+      const selector = block.selector;
+
+      if (
+        selector.includes('[data-vce-hero-line="2"]') ||
+        selector.includes('[data-vce-role="hero-line-2"]') ||
+        selector.includes('[data-vce-selector="brand-name"]')
+      ) {
+        next = { ...next, brandName: block.text };
+        changed = true;
+        continue;
+      }
+
+      if (
+        selector.includes('[data-vce-hero-line="1"]') ||
+        selector.includes('[data-vce-role="hero-line-1"]') ||
+        selector.includes('[data-vce-selector="hero-title-prefix"]')
+      ) {
+        next = {
+          ...next,
+          theme: {
+            ...defaultThemeConfig,
+            ...(next.theme || {}),
+            heroTitlePrefix: block.text,
+          },
+        };
+        changed = true;
+      }
+    }
+
+    return changed ? next : base;
+  };
 
   // ===========================================================================
   // SAVE BRAND DATA
@@ -437,8 +497,13 @@ export default function App() {
       }
 
       if (config.editorConfig && typeof config.editorConfig === 'object') {
-        siteEditorConfigRef.current = config.editorConfig as SiteEditorConfig;
-        setSiteEditorConfig(config.editorConfig as SiteEditorConfig);
+        const publishedEditorConfig = config.editorConfig as SiteEditorConfig;
+        siteEditorConfigRef.current = publishedEditorConfig;
+        setSiteEditorConfig(publishedEditorConfig);
+
+        setBrandData((previous) =>
+          mergeVisualTextIntoBrandData(previous, publishedEditorConfig)
+        );
       }
 
       return true;
@@ -717,8 +782,13 @@ export default function App() {
     siteEditorConfigRef.current = configToSave;
     setSiteEditorConfig(configToSave);
 
-    const result = await saveSiteConfig(
+    const brandDataWithVisualText = mergeVisualTextIntoBrandData(
       brandData,
+      configToSave
+    );
+
+    const result = await saveSiteConfig(
+      brandDataWithVisualText,
       configToSave
     );
 
