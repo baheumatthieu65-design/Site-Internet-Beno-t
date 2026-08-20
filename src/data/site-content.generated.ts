@@ -180,14 +180,14 @@ export const publishedSiteContent = {
         "customSpecs": {}
       },
       {
-        "name": "n°3",
+        "name": "Todebag",
         "subTitle": "Confection Artisanale des Pyrénées",
         "category": "Homme \u0026 Femme",
-        "price": 490,
+        "price": 50,
         "currency": "€",
-        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787252388383-20260816_124059.jpg",
+        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787256106041-Art1.png",
         "gallery": [
-          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787252388383-20260816_124059.jpg",
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787256106041-Art1.png",
           "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787242933243-Art1-2.png"
         ],
         "description": "Veste artisanale d'exception tissée dans les Pyrénées.",
@@ -207,10 +207,7 @@ export const publishedSiteContent = {
           }
         ],
         "sizes": [
-          "S",
-          "M",
-          "L",
-          "XL"
+          "Taille unique"
         ],
         "isAvailable": true,
         "features": [
@@ -233,8 +230,8 @@ export const publishedSiteContent = {
             "id": "hotspot-1787252504808",
             "title": "Nouveau point tet",
             "description": "sdssdsds",
-            "x": 47,
-            "y": 35,
+            "x": 50,
+            "y": 22,
             "category": "fabric"
           }
         ],
@@ -802,5 +799,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787256028903
+  "publishedAt": 1787256152172
 } as const;
