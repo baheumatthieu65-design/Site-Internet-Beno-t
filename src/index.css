@@ -3,7 +3,7 @@
 /*
  * Échelle de la vitrine :
  * - barre de navigation : 90 %
- * - tout le contenu public (Hero compris) : 80 %
+ * - tout le contenu public (Hero compris) : 100 %
  *
  * Les panneaux d'administration ne sont volontairement pas placés
  * dans ces wrappers afin de conserver leur taille de travail.
@@ -13,5 +13,5 @@
 }
 
 .site-content-scale {
-  zoom: 0.8;
+  zoom: 1;
 }

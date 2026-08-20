@@ -30,6 +30,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const jackets = brandData.jackets && brandData.jackets.length > 0 ? brandData.jackets : [];
   const theme = brandData.theme;
 
+  // Le Hero doit suivre exactement le visuel principal du catalogue utilisé
+  // par le Lookbook. Les fiches historiques peuvent encore avoir un heroImage
+  // décalé alors que gallery[0] contient le visuel actuellement publié.
+  // On privilégie donc la première image publiée de la galerie, puis heroImage.
+  const getHeroProductImage = (jacket: typeof jackets[number]) => {
+    const galleryPrimary = Array.isArray(jacket.gallery)
+      ? String(jacket.gallery[0] || '').trim()
+      : '';
+    return galleryPrimary || String(jacket.heroImage || '').trim();
+  };
+
   const layout = theme?.heroLayout || 'split-cards';
   const cardStyle = getCardClasses(theme);
   const primaryBtnClass = getButtonClasses(theme, 'primary', 'hero-order');
@@ -291,7 +302,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   className={`p-4 rounded-2xl cursor-pointer flex items-center space-x-4 ${cardStyle.card}`}
                 >
                   <div className="relative w-20 h-24 rounded-xl overflow-hidden bg-black/40 flex-shrink-0">
-                    <img src={j.heroImage} alt={j.name} className="w-full h-full object-cover" />
+                    <img src={getHeroProductImage(j)} alt={j.name} className="w-full h-full object-cover" />
+                    <span
+                      aria-label={getProductStatusLabel(j)}
+                      title={getProductStatusLabel(j)}
+                      className={`absolute top-2 right-2 z-10 w-3.5 h-3.5 rounded-full border-2 border-white/70 shadow-lg ${
+                        getProductStatusLabel(j) === 'En vente'
+                          ? 'bg-emerald-500'
+                          : getProductStatusLabel(j) === 'Épuisé'
+                            ? 'bg-red-500'
+                            : 'bg-amber-400'
+                      }`}
+                    />
                     <span className="absolute top-1 left-1 bg-black/80 text-[#d4af37] text-[9px] px-1.5 py-0.5 rounded font-serif">
                       N°{idx + 1}
                     </span>
@@ -367,13 +389,21 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     >
                       <img
                         data-vce-id={`product-${j.id}-image`}
-                        src={j.heroImage}
+                        src={getHeroProductImage(j)}
                         alt={j.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                      <span className={`absolute top-2 right-2 px-2 py-1 rounded-full text-[9px] uppercase tracking-wider font-bold border ${getProductStatusLabel(j) === 'En vente' ? 'bg-emerald-950/90 text-emerald-300 border-emerald-600' : getProductStatusLabel(j) === 'Épuisé' ? 'bg-red-950/90 text-red-300 border-red-800' : 'bg-amber-950/90 text-amber-200 border-amber-700'}`}>
-                        {getProductStatusLabel(j)}
-                      </span>
+                      <span
+                        aria-label={getProductStatusLabel(j)}
+                        title={getProductStatusLabel(j)}
+                        className={`absolute top-2 right-2 z-10 w-3.5 h-3.5 rounded-full border-2 border-white/70 shadow-lg ${
+                          getProductStatusLabel(j) === 'En vente'
+                            ? 'bg-emerald-500'
+                            : getProductStatusLabel(j) === 'Épuisé'
+                              ? 'bg-red-500'
+                              : 'bg-amber-400'
+                        }`}
+                      />
                       <span className="absolute top-2 left-2 bg-[#121613]/90 text-[#d4af37] text-[10px] uppercase tracking-wider px-2 py-0.5 rounded font-serif border border-[#3d4c40]">
                         N°{idx + 1}
                       </span>
