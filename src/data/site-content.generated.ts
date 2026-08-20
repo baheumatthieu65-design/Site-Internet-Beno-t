@@ -334,7 +334,7 @@ export const publishedSiteContent = {
       "inquiryButtonText": "Commander sur Mesure",
       "workshopButtonText": "Prendre Rendez-vous à l'Atelier",
       "heroBadgeText": "Édition Limitée des Pyrénées",
-      "heroTitlePrefix": "Thème Champêtre \u0026 Élégance",
+      "heroTitlePrefix": "Maison Mailhagut",
       "comparisonCriteria": [
         {
           "id": "crit_category",
@@ -603,7 +603,7 @@ export const publishedSiteContent = {
         "visible": true,
         "selector": "[data-vce-hero-line=\"1\"]",
         "kind": "text",
-        "text": "Thème Champêtre \u0026 Élégance",
+        "text": "Maison Mailhagut",
         "fontFamily": "ui-serif",
         "fontSize": "60px",
         "color": "rgb(194, 162, 109)",
@@ -768,5 +768,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787254792756
+  "publishedAt": 1787254820069
 } as const;
