@@ -693,6 +693,25 @@ export const publishedSiteContent = {
         "fontFamily": "-apple-system",
         "fontSize": "12px",
         "color": "rgb(163, 177, 165)"
+      },
+      {
+        "id": "vce-ardxk5",
+        "type": "text",
+        "section": "origines",
+        "x": 50,
+        "y": 50,
+        "visible": true,
+        "locator": {
+          "tag": "blockquote",
+          "text": "\"Élégance Champêtre \u0026 Artisanat des Cimes 5\"",
+          "sectionId": "origines",
+          "occurrence": 0
+        },
+        "kind": "text",
+        "text": "- Artisanat local -",
+        "fontFamily": "ui-serif",
+        "fontSize": "14px",
+        "color": "rgb(208, 197, 180)"
       }
     ],
     "editorElements": {
@@ -823,8 +842,16 @@ export const publishedSiteContent = {
         "section": "origines",
         "selector": null,
         "locator": "data-vce-id"
+      },
+      "vce-ardxk5": {
+        "id": "vce-ardxk5",
+        "type": "text",
+        "kind": "text",
+        "section": "origines",
+        "selector": null,
+        "locator": "data-vce-id"
       }
     }
   },
-  "publishedAt": 1787256342981
+  "publishedAt": 1787256367357
 } as const;
