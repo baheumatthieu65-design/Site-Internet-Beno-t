@@ -19,7 +19,6 @@ import { BrandCustomizerModal } from './components/BrandCustomizerModal';
 import { OrdersModal } from './components/OrdersModal';
 import { AdminLoginModal } from './components/AdminLoginModal';
 import { AdminBar } from './components/AdminBar';
-import { AdminProductModal } from './components/AdminProductModal';
 import { Footer } from './components/Footer';
 import {
   SiteVisualEditor,
@@ -128,7 +127,6 @@ export default function App() {
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
-  const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [isLogoEditorOpen, setIsLogoEditorOpen] = useState(false);
   const [isFloatingMediaOpen, setIsFloatingMediaOpen] = useState(false);
 
@@ -620,9 +618,16 @@ export default function App() {
       if (config.brandData && typeof config.brandData === 'object') {
         setBrandData((previous) => {
           const serverBrandData = config.brandData as Partial<BrandConfig>;
+          // Le catalogue produit est une source séparée (Upstash /api/products).
+          // Le snapshot visuel peut contenir un ancien tableau `jackets`; ne le
+          // remplaçons jamais ici, sinon une course entre les deux requêtes peut
+          // faire revenir le site public à 1 seul produit alors que l'admin en
+          // possède 5. Les produits serveur seront appliqués par fetchServerProducts().
+          const { jackets: _publishedJackets, ...publishedBrandWithoutCatalog } = serverBrandData;
+          void _publishedJackets;
           return {
             ...previous,
-            ...serverBrandData,
+            ...publishedBrandWithoutCatalog,
             theme: {
               ...defaultThemeConfig,
               ...(previous.theme || {}),
@@ -888,7 +893,6 @@ export default function App() {
     setIsAdminLoggedIn(false);
     setIsCustomizerOpen(false);
     setIsOrdersOpen(false);
-    setIsProductsOpen(false);
     setIsAdminBarVisible(false);
   };
 
@@ -1648,7 +1652,7 @@ export default function App() {
               onQuickChangeButtonStyle={handleQuickChangeButtonStyle}
               onOpenEditor={handleOpenEditor}
               onOpenOrders={handleOpenOrders}
-              onOpenProducts={() => setIsProductsOpen(true)}
+              onOpenProducts={() => handleOpenEditor('articles')}
               onOpenLogoEditor={() => setIsLogoEditorOpen(true)}
               onToggleFloatingMedia={() => setIsFloatingMediaOpen((current) => !current)}
               floatingMediaOpen={isFloatingMediaOpen}
@@ -1734,21 +1738,6 @@ export default function App() {
         }
       />
 
-      <AdminProductModal
-        isOpen={
-          isProductsOpen
-        }
-        onClose={() =>
-          setIsProductsOpen(false)
-        }
-        products={
-          brandData.jackets
-        }
-        onRefreshProducts={
-          fetchServerProducts
-        }
-      />
-
       <LogoEditorModal
         isOpen={isLogoEditorOpen}
         brandData={brandData}
@@ -1772,10 +1761,8 @@ export default function App() {
         onReset={
           handleResetBrandData
         }
-        onOpenCatalog={() => {
-          setIsCustomizerOpen(false);
-          setIsProductsOpen(true);
-        }}
+        products={brandData.jackets}
+        onRefreshProducts={fetchServerProducts}
         initialTab={
           customizerTab
         }

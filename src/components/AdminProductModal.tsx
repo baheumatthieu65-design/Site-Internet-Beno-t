@@ -32,6 +32,7 @@ interface AdminProductModalProps {
   onClose: () => void;
   products: JacketModel[];
   onRefreshProducts: () => void;
+  embedded?: boolean;
 }
 
 export const AdminProductModal: React.FC<AdminProductModalProps> = ({
@@ -39,6 +40,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   onClose,
   products,
   onRefreshProducts,
+  embedded = false,
 }) => {
   const [editingProduct, setEditingProduct] = useState<Partial<JacketModel> | null>(null);
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -388,7 +390,9 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   return (
     <div
       id="admin-product-modal-overlay"
-      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fadeIn"
+      className={embedded
+        ? "w-full h-full min-h-0"
+        : "fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fadeIn"}
     >
       {/* Toast Notification */}
       {toastMsg && (
@@ -400,7 +404,9 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
 
       <div
         id="admin-product-modal-box"
-        className="relative w-full max-w-6xl max-h-[92vh] bg-[#141a15] border border-[#3b4a3c] rounded-3xl shadow-2xl text-[#e2d5c3] flex flex-col overflow-hidden"
+        className={embedded
+          ? "relative w-full bg-[#141a15] border border-[#3b4a3c] rounded-2xl shadow-xl text-[#e2d5c3] flex flex-col overflow-hidden"
+          : "relative w-full max-w-6xl max-h-[92vh] bg-[#141a15] border border-[#3b4a3c] rounded-3xl shadow-2xl text-[#e2d5c3] flex flex-col overflow-hidden"}
       >
         {/* Header */}
         <div className="px-6 py-4 bg-[#1a221c] border-b border-[#2e3b30] flex items-center justify-between flex-shrink-0">
@@ -433,7 +439,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
             <button
               onClick={onClose}
               className="p-2 rounded-full text-[#9ea99f] hover:text-white hover:bg-[#253026] transition-colors cursor-pointer"
-              aria-label="Fermer"
+              aria-label={embedded ? 'Revenir au panneau principal' : 'Fermer'}
             >
               <X className="w-5 h-5" />
             </button>
@@ -946,7 +952,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
             onClick={onClose}
             className="px-4 py-2 rounded-xl bg-[#243126] text-[#f3ece0] hover:bg-[#304133] transition-colors font-semibold cursor-pointer"
           >
-            Fermer le catalogue
+            {embedded ? 'Retour au panneau' : 'Fermer le catalogue'}
           </button>
         </div>
       </div>

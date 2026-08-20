@@ -69,6 +69,7 @@ import {
   getCardClasses,
 } from '../utils/themeStyles';
 import { ButtonManager } from './ButtonManager';
+import { AdminProductModal } from './AdminProductModal';
 import { getStoredCredentials, saveAdminCredentials, resetPasswordServer, maskEmail, AdminCredentials } from '../utils/auth';
 
 interface BrandCustomizerModalProps {
@@ -78,6 +79,8 @@ interface BrandCustomizerModalProps {
   onSave: (newData: BrandConfig) => void;
   onReset: () => void;
   onOpenCatalog?: () => void;
+  products: JacketModel[];
+  onRefreshProducts: () => void;
   initialTab?: 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github';
 }
 
@@ -130,6 +133,8 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   onSave,
   onReset,
   onOpenCatalog,
+  products,
+  onRefreshProducts,
   initialTab = 'theme',
 }) => {
   if (!isOpen) return null;
@@ -1214,48 +1219,14 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           {/* TAB 3: CATALOGUE CENTRALISÉ                            */}
           {/* ========================================================= */}
           {activeTab === 'articles' && (
-            <div className="space-y-6 animate-fadeIn">
-              <div className="p-6 sm:p-8 rounded-3xl bg-[#18201a] border border-[#3b4b3e]">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-[#d4af37]/15 border border-[#d4af37]/50 flex items-center justify-center text-[#d4af37] shrink-0">
-                      <Tag className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h4 className="font-serif text-xl text-[#f3ece0] font-bold">
-                        Gestion centralisée du catalogue
-                      </h4>
-                      <p className="text-sm text-[#a3b1a5] mt-1 max-w-2xl leading-relaxed">
-                        Les articles, leurs images principales et secondaires, pastilles de couleurs, tailles, matières, caractéristiques, hotspots et disponibilités sont gérés dans un seul écran.
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => onOpenCatalog?.()}
-                    className="shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#9c7844] via-[#c6a877] to-[#e4cb9c] text-[#121613] font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-lg cursor-pointer"
-                  >
-                    <ShoppingBag className="w-4 h-4" />
-                    <span>Ouvrir le catalogue</span>
-                  </button>
-                </div>
-
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-[#121613] border border-[#2e3b30]">
-                    <strong className="text-[#d4af37] block mb-1">Images</strong>
-                    <span className="text-[#a3b1a5]">1 image principale + galerie secondaire illimitée.</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-[#121613] border border-[#2e3b30]">
-                    <strong className="text-[#d4af37] block mb-1">Présentation</strong>
-                    <span className="text-[#a3b1a5]">Cartes, showcase et lookbook utilisent la même source.</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-[#121613] border border-[#2e3b30]">
-                    <strong className="text-[#d4af37] block mb-1">Données produit</strong>
-                    <span className="text-[#a3b1a5]">Pastilles, tailles, matières, specs et hotspots restent disponibles.</span>
-                  </div>
-                </div>
-              </div>
+            <div className="animate-fadeIn min-h-full">
+              <AdminProductModal
+                isOpen
+                embedded
+                onClose={() => setActiveTab('theme')}
+                products={products}
+                onRefreshProducts={onRefreshProducts}
+              />
             </div>
           )}
 
