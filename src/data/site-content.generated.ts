@@ -32,7 +32,8 @@ export const publishedSiteContent = {
         "currency": "€",
         "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787238367336-Art1.png",
         "gallery": [
-          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787238367336-Art1.png"
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787238367336-Art1.png",
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787248557990-20260816_124104.jpg"
         ],
         "description": "Une veste à la stature majestueuse, tissée en drap de laine anthracite ultra-dense, conçue pour braver le vent des vallées tout en conservant une ligne affûtée.",
         "longDescription": "La Veste des Cimes incarne l’équilibre parfait entre la rigueur de la montagne et la finesse des tailleurs. Ses poches plaquées discrètes et sa doublure thermique en sergé fluide apportent aisance et protection contre le froid d’altitude.",
@@ -116,7 +117,8 @@ export const publishedSiteContent = {
           }
         ],
         "isAvailable": true,
-        "availabilityStatus": "on-sale"
+        "availabilityStatus": "on-sale",
+        "customSpecs": {}
       },
       {
         "name": "N02",
@@ -864,5 +866,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787248538138
+  "publishedAt": 1787248567687
 } as const;
