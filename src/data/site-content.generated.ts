@@ -278,12 +278,19 @@ export const publishedSiteContent = {
       "cardMediaPosition": "left",
       "contentPadding": "comfortable",
       "containerWidth": "standard",
+      "showcaseImageScale": 100,
+      "showcaseImageFrameWidth": 60,
+      "showcaseImageFrameHeight": 320,
+      "lookbookImageScale": 100,
+      "lookbookImageFrameWidth": 60,
+      "lookbookImageFrameHeight": 220,
+      "sectionBackgroundImages": {},
       "productBlocksOrder": [
         "title-price",
-        "description",
         "colors",
         "sizes",
         "specs",
+        "description",
         "cta"
       ],
       "formFieldsOrder": [
@@ -850,5 +857,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787242942212
+  "publishedAt": 1787246003561
 } as const;
