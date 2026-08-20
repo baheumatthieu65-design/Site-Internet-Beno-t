@@ -307,9 +307,9 @@ export const publishedSiteContent = {
       "sectionBackgroundImages": {
         "origines": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787258626442-4k-wallpaper-blue-skies-conifers-1526720.webp"
       },
-      "siteThemePreset": "pyrenees-noir",
-      "siteBackgroundColor": "#121613",
-      "navBackgroundColor": "#1a1e1b",
+      "siteThemePreset": "foret-profonde",
+      "siteBackgroundColor": "#0f1a14",
+      "navBackgroundColor": "#16251b",
       "sectionBackgroundOpacity": {
         "hero": 100,
         "collection": 75,
@@ -842,5 +842,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787258735048
+  "publishedAt": 1787258741225
 } as const;
