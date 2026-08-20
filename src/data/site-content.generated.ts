@@ -32,10 +32,7 @@ export const publishedSiteContent = {
         "currency": "€",
         "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787238367336-Art1.png",
         "gallery": [
-          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787238367336-Art1.png",
-          "/assets/jacket_1_summit_1785338933118-BsWlKg9B.jpg",
-          "/assets/wool_detail_macro_1785338963967-Dx13GKak.jpg",
-          "/assets/pyrenees_landscape_hero_1785338591988-pbnVVBN-.jpg"
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787238367336-Art1.png"
         ],
         "description": "Une veste à la stature majestueuse, tissée en drap de laine anthracite ultra-dense, conçue pour braver le vent des vallées tout en conservant une ligne affûtée.",
         "longDescription": "La Veste des Cimes incarne l’équilibre parfait entre la rigueur de la montagne et la finesse des tailleurs. Ses poches plaquées discrètes et sa doublure thermique en sergé fluide apportent aisance et protection contre le froid d’altitude.",
@@ -119,6 +116,57 @@ export const publishedSiteContent = {
           }
         ],
         "isAvailable": true
+      },
+      {
+        "name": "N02",
+        "subTitle": "Confection Artisanale des Pyrénées",
+        "category": "Homme \u0026 Femme",
+        "price": 490,
+        "currency": "€",
+        "heroImage": "https://images.unsplash.com/photo-1544441893-675973e31985?auto=format\u0026fit=crop\u0026q=80\u0026w=1000",
+        "gallery": [
+          "https://images.unsplash.com/photo-1544441893-675973e31985?auto=format\u0026fit=crop\u0026q=80\u0026w=1000"
+        ],
+        "description": "Veste artisanale d'exception tissée dans les Pyrénées.",
+        "longDescription": "Fabriquée selon des savoir-faire d'autrefois en pure laine sélectionnée.",
+        "tagline": "L'élégance des cimes",
+        "fabrics": [
+          "Laine des Pyrénées 100% naturelle"
+        ],
+        "colors": [
+          {
+            "name": "Gris Aspe",
+            "hex": "#4a524b"
+          },
+          {
+            "name": "Ocre Vignemale",
+            "hex": "#8c6b43"
+          }
+        ],
+        "sizes": [
+          "S",
+          "M",
+          "L",
+          "XL"
+        ],
+        "isAvailable": true,
+        "features": [
+          {
+            "iconName": "Shield",
+            "title": "Coupe-Vent",
+            "desc": "Protection thermique haute montagne"
+          }
+        ],
+        "specs": {
+          "weight": "850g",
+          "waterResistance": "Déperlante",
+          "warmthRating": "Très élevée",
+          "fitType": "Ajustée",
+          "origin": "Atelier Pyrénées, France",
+          "care": "Lavage délicat à la main ou nettoyage à sec"
+        },
+        "hotspots": [],
+        "id": "produit-1787241378430-715p3s"
       }
     ],
     "theme": {
@@ -746,5 +794,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787241357893
+  "publishedAt": 1787241439524
 } as const;
