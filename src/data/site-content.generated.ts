@@ -775,6 +775,20 @@ export const publishedSiteContent = {
         "fontFamily": "ui-serif",
         "fontSize": "24px",
         "color": "rgb(208, 197, 180)"
+      },
+      {
+        "id": "element-1787210359401",
+        "type": "text",
+        "section": "hero",
+        "x": 50,
+        "y": 50,
+        "visible": true,
+        "selector": "div:nth-of-type(2) \u003e p:nth-of-type(2)",
+        "kind": "text",
+        "text": "Conçues au cœur de la chaîne pyrénéenne, deux vestes d’exception mariant matières nobles et coupe haute couture test.",
+        "fontFamily": "-apple-system",
+        "fontSize": "16px",
+        "color": "rgb(163, 176, 162)"
       }
     ],
     "floatingImages": [
@@ -794,5 +808,5 @@ export const publishedSiteContent = {
       }
     ]
   },
-  "publishedAt": 1787210153043
+  "publishedAt": 1787210361718
 } as const;
