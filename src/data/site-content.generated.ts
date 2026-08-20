@@ -282,7 +282,7 @@ export const publishedSiteContent = {
       "contentPadding": "comfortable",
       "containerWidth": "standard",
       "showcaseImageScale": 100,
-      "showcaseImageFrameWidth": 60,
+      "showcaseImageFrameWidth": 70,
       "showcaseImageFrameHeight": 360,
       "lookbookImageScale": 100,
       "lookbookImageFrameWidth": 60,
@@ -864,5 +864,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787248333897
+  "publishedAt": 1787248351368
 } as const;
