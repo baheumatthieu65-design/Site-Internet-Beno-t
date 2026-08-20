@@ -233,7 +233,7 @@ export const publishedSiteContent = {
       "buttonBackgroundOverlay": 28,
       "buttonOverrides": {
         "navbar-order": {
-          "buttonStyle": "brut-montagne",
+          "buttonStyle": "minimal-couture",
           "buttonSize": "compact",
           "buttonRadius": "rounded-full",
           "backgroundImageUrl": "",
@@ -868,5 +868,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787249298169
+  "publishedAt": 1787249367186
 } as const;
