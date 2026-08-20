@@ -215,26 +215,121 @@ export default function App() {
   // persistance que le panneau Paramétrage.
   const mergeVisualTextIntoBrandData = (
     base: BrandConfig,
-    editorConfig: SiteEditorConfig
+    editorConfig: SiteEditorConfig,
+    previousEditorConfig?: SiteEditorConfig
   ): BrandConfig => {
     let next = base;
     let changed = false;
 
+    const replaceFirstValue = (
+      value: unknown,
+      oldValue: string,
+      newValue: string
+    ): [unknown, boolean] => {
+      if (typeof value === 'string') {
+        return value === oldValue ? [newValue, true] : [value, false];
+      }
+
+      if (Array.isArray(value)) {
+        const copy = [...value];
+        for (let index = 0; index < copy.length; index += 1) {
+          const [replacement, didChange] = replaceFirstValue(
+            copy[index],
+            oldValue,
+            newValue
+          );
+          if (didChange) {
+            copy[index] = replacement;
+            return [copy, true];
+          }
+        }
+        return [value, false];
+      }
+
+      if (value && typeof value === 'object') {
+        const copy: Record<string, unknown> = {
+          ...(value as Record<string, unknown>),
+        };
+        for (const key of Object.keys(copy)) {
+          const [replacement, didChange] = replaceFirstValue(
+            copy[key],
+            oldValue,
+            newValue
+          );
+          if (didChange) {
+            copy[key] = replacement;
+            return [copy, true];
+          }
+        }
+      }
+
+      return [value, false];
+    };
+
+    const previousBlocks = previousEditorConfig?.blocks || [];
+
     for (const block of editorConfig.blocks || []) {
+      if (!block.selector) continue;
+
+      const previous = previousBlocks.find(
+        (candidate) =>
+          candidate.id === block.id || candidate.selector === block.selector
+      );
+
+      // PRIMARY PATH:
+      // Compare the published/session snapshot with the current editor state.
+      // This makes the editor behave exactly like the Customizer: whatever
+      // canonical value changed is copied into BrandConfig before publication.
       if (
-        block.kind !== 'text' ||
-        typeof block.text !== 'string' ||
-        !block.selector
+        previous &&
+        block.kind === 'text' &&
+        previous.kind === 'text' &&
+        typeof previous.text === 'string' &&
+        typeof block.text === 'string' &&
+        previous.text !== block.text
       ) {
-        continue;
+        const [replacement, didChange] = replaceFirstValue(
+          next,
+          previous.text,
+          block.text
+        );
+
+        if (didChange) {
+          next = replacement as BrandConfig;
+          changed = true;
+        }
+      }
+
+      if (
+        previous &&
+        previous.kind === 'media' &&
+        block.kind === 'media' &&
+        typeof previous.url === 'string' &&
+        typeof block.url === 'string' &&
+        previous.url !== block.url
+      ) {
+        const [replacement, didChange] = replaceFirstValue(
+          next,
+          previous.url,
+          block.url
+        );
+
+        if (didChange) {
+          next = replacement as BrandConfig;
+          changed = true;
+        }
       }
 
       const selector = block.selector;
 
+      // Stable canonical Hero selectors remain explicit fallbacks for blocks
+      // created before the session-baseline comparison existed.
       if (
-        selector.includes('[data-vce-hero-line="2"]') ||
-        selector.includes('[data-vce-role="hero-line-2"]') ||
-        selector.includes('[data-vce-selector="brand-name"]')
+        block.kind === 'text' &&
+        typeof block.text === 'string' &&
+        (selector.includes('[data-vce-hero-line="2"]') ||
+          selector.includes('[data-vce-role="hero-line-2"]') ||
+          selector.includes('[data-vce-selector="brand-name"]'))
       ) {
         next = { ...next, brandName: block.text };
         changed = true;
@@ -242,9 +337,11 @@ export default function App() {
       }
 
       if (
-        selector.includes('[data-vce-hero-line="1"]') ||
-        selector.includes('[data-vce-role="hero-line-1"]') ||
-        selector.includes('[data-vce-selector="hero-title-prefix"]')
+        block.kind === 'text' &&
+        typeof block.text === 'string' &&
+        (selector.includes('[data-vce-hero-line="1"]') ||
+          selector.includes('[data-vce-role="hero-line-1"]') ||
+          selector.includes('[data-vce-selector="hero-title-prefix"]'))
       ) {
         next = {
           ...next,
@@ -782,9 +879,12 @@ export default function App() {
     siteEditorConfigRef.current = configToSave;
     setSiteEditorConfig(configToSave);
 
+    const sessionBaseline = adminSessionSnapshotRef.current?.editorConfig;
+
     const brandDataWithVisualText = mergeVisualTextIntoBrandData(
       brandData,
-      configToSave
+      configToSave,
+      sessionBaseline
     );
 
     const result = await saveSiteConfig(
