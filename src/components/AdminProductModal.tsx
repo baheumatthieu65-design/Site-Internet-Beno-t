@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ComparisonCriterion, JacketModel, JacketAvailabilityStatus } from '../types';
+import { prepareImageForUpload } from '../utils/mediaUpload';
 import { getProductAvailabilityStatus, getProductStatusLabel } from '../utils/productStatus';
 import {
   X,
@@ -144,8 +145,9 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   const uploadProductImage = async (file: File, target: 'primary' | number) => {
     setUploadingImage(target);
     try {
+      const preparedFile = await prepareImageForUpload(file);
       const form = new FormData();
-      form.append('file', file);
+      form.append('file', preparedFile);
 
       const response = await fetch('/api/site-media', {
         method: 'POST',
@@ -611,6 +613,24 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                   </div>
                 </div>
 
+                <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#273429] space-y-3">
+                  <div>
+                    <span className="font-bold text-[#f3ece0] block">Statut de disponibilité</span>
+                    <span className="text-[11px] text-[#a3b1a5]">Choisis l’état commercial de l’article. Il apparaît sous forme de pastille sur le Hero et le Lookbook.</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {([
+                      ['on-sale', 'En vente'],
+                      ['sold-out', 'Épuisé'],
+                      ['coming-soon', 'Bientôt disponible'],
+                    ] as [JacketAvailabilityStatus, string][]).map(([value, label]) => (
+                      <button key={value} type="button" onClick={() => setEditingProduct({ ...editingProduct, availabilityStatus: value, isAvailable: value === 'on-sale' })} className={`px-3 py-2.5 rounded-xl border text-xs font-bold transition-all ${getProductAvailabilityStatus(editingProduct as JacketModel) === value ? 'border-[#d4af37] bg-[#253127] text-[#d4af37]' : 'border-[#354238] bg-[#182019] text-[#a3b1a5] hover:border-[#526355]'}`}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-[#a3b1a5] font-semibold mb-1">Catégorie</label>
                   <input
@@ -945,23 +965,6 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                   {(editingProduct.hotspots || []).length === 0 && <div className="text-center py-4 text-xs text-[#7d8c7f] border border-dashed border-[#374739] rounded-xl">Aucun hotspot configuré.</div>}
                 </div>
 
-                <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#273429] space-y-3">
-                  <div>
-                    <span className="font-bold text-[#f3ece0] block">Statut de disponibilité</span>
-                    <span className="text-[11px] text-[#a3b1a5]">Le statut est affiché directement sur les images du Hero et du Lookbook.</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {([
-                      ['on-sale', 'En vente'],
-                      ['sold-out', 'Épuisé'],
-                      ['coming-soon', 'Bientôt disponible'],
-                    ] as [JacketAvailabilityStatus, string][]).map(([value, label]) => (
-                      <button key={value} type="button" onClick={() => setEditingProduct({ ...editingProduct, availabilityStatus: value, isAvailable: value === 'on-sale' })} className={`px-3 py-2.5 rounded-xl border text-xs font-bold transition-all ${getProductAvailabilityStatus(editingProduct as JacketModel) === value ? 'border-[#d4af37] bg-[#253127] text-[#d4af37]' : 'border-[#354238] bg-[#182019] text-[#a3b1a5] hover:border-[#526355]'}`}>
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </div>
 
               <div className="flex items-center justify-end space-x-3 pt-3 border-t border-[#2d3a2f]">

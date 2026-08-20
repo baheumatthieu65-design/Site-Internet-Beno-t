@@ -337,8 +337,60 @@ export const saveProductsToDB =
   };
 
 // ============================================================
-// COMMANDES
+// COMMANDES / PROTECTION DES DONNÉES CLIENTS
 // ============================================================
+
+const CUSTOMER_DATA_PROTECTION_MS = 365 * 24 * 60 * 60 * 1000;
+
+const getCustomerDataKey = (): Buffer => {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) throw new Error("SESSION_SECRET est obligatoire pour protéger les données client.");
+  return crypto.createHash('sha256').update(`${secret}|customer-data-v1`).digest();
+};
+
+const encryptCustomerValue = (value: string): string => {
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', getCustomerDataKey(), iv);
+  const encrypted = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return [iv.toString('base64url'), tag.toString('base64url'), encrypted.toString('base64url')].join('.');
+};
+
+const protectExpiredOrder = (order: any): any => {
+  if (!order || order.customerDataProtectedAt) return order;
+  const timestamp = Number(order.timestamp);
+  if (!Number.isFinite(timestamp) || Date.now() - timestamp < CUSTOMER_DATA_PROTECTION_MS) return order;
+
+  const protectedAt = new Date().toISOString();
+  const next = {
+    ...order,
+    customerDataProtectedAt: protectedAt,
+    clientNameEncrypted: order.clientName ? encryptCustomerValue(String(order.clientName)) : '',
+    clientEmailEncrypted: order.clientEmail ? encryptCustomerValue(String(order.clientEmail)) : '',
+    clientPhoneEncrypted: order.clientPhone ? encryptCustomerValue(String(order.clientPhone)) : '',
+    clientNotesEncrypted: order.clientNotes ? encryptCustomerValue(String(order.clientNotes)) : '',
+    clientName: 'Donnée client protégée',
+    clientEmail: '',
+    clientPhone: '',
+    clientNotes: '',
+    generatedEmail: {
+      ...(order.generatedEmail || {}),
+      subject: `[MAISON DES PYRÉNÉES] Données client protégées — ${order.id}`,
+      body: `Données personnelles client protégées après 12 mois. Référence : ${order.id}.`,
+    },
+  };
+  return next;
+};
+
+export const protectExpiredCustomerData = async (orders: any[]): Promise<any[]> => {
+  let changed = false;
+  const protectedOrders = orders.map((order) => {
+    const next = protectExpiredOrder(order);
+    if (next !== order) changed = true;
+    return next;
+  });
+  return changed ? protectedOrders : orders;
+};
 
 export const getOrdersFromDB =
   async (): Promise<any[]> => {
@@ -352,7 +404,9 @@ export const getOrdersFromDB =
           );
 
         if (Array.isArray(data)) {
-          return data;
+          const protectedOrders = await protectExpiredCustomerData(data);
+          if (protectedOrders !== data) await redis.set('mdp_orders', protectedOrders);
+          return protectedOrders;
         }
 
         return [];
@@ -366,7 +420,9 @@ export const getOrdersFromDB =
       }
     }
 
-    return localOrdersCache;
+    const protectedOrders = await protectExpiredCustomerData(localOrdersCache);
+    localOrdersCache = protectedOrders;
+    return protectedOrders;
   };
 
 export const saveOrdersToDB =
@@ -596,3 +652,26 @@ Total : ${orderData.totalPrice} ${orderData.currency}
       };
     }
   };
+
+
+export const sendOrdersReportEmail = async (params: {
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+}): Promise<{ sent: boolean; message?: string }> => {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (!resendApiKey) return { sent: false, message: 'RESEND_API_KEY non configuré sur Vercel.' };
+  const fromEmail = process.env.EMAIL_FROM || 'Maison des Pyrénées <onboarding@resend.dev>';
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${resendApiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: fromEmail, to: [params.to], subject: params.subject, html: params.html, text: params.text }),
+    });
+    if (response.ok) return { sent: true };
+    return { sent: false, message: `Erreur Resend (${response.status})` };
+  } catch (error: any) {
+    return { sent: false, message: error?.message || "Erreur lors de l'envoi du rapport." };
+  }
+};

@@ -71,6 +71,7 @@ import {
 import { ButtonManager } from './ButtonManager';
 import { AdminProductModal } from './AdminProductModal';
 import { getStoredCredentials, saveAdminCredentials, resetPasswordServer, maskEmail, AdminCredentials } from '../utils/auth';
+import { prepareImageForUpload } from '../utils/mediaUpload';
 
 interface BrandCustomizerModalProps {
   isOpen: boolean;
@@ -876,8 +877,9 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
       // Les fonds de modules passent par le même stockage Blob que les images
       // produits. On évite ainsi les data URLs que la publication serveur
       // nettoie et qui pouvaient faire disparaître le fond après sauvegarde.
+      const preparedFile = await prepareImageForUpload(file);
       const form = new FormData();
-      form.append('file', file);
+      form.append('file', preparedFile);
       const response = await fetch('/api/site-media', {
         method: 'POST',
         credentials: 'include',

@@ -6,12 +6,14 @@ interface OrdersModalProps {
   isOpen: boolean;
   onClose: () => void;
   ordersEmail?: string;
+  reportEmail?: string;
 }
 
 export const OrdersModal: React.FC<OrdersModalProps> = ({
   isOpen,
   onClose,
   ordersEmail = 'contact@maisondespyrenees.fr',
+  reportEmail = 'contact@maisondespyrenees.fr',
 }) => {
   if (!isOpen) return null;
 
@@ -51,7 +53,7 @@ export const OrdersModal: React.FC<OrdersModalProps> = ({
 
         {/* Modal Content Area */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-          <OrdersManagementView ordersEmail={ordersEmail} />
+          <OrdersManagementView ordersEmail={ordersEmail} reportEmail={reportEmail} />
         </div>
 
         {/* Modal Footer */}

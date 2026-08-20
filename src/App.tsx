@@ -1506,9 +1506,9 @@ export default function App() {
     const sectionBackgroundOverlay = sectionBackgroundImage ? (
       <div
         aria-hidden="true"
-        className="absolute inset-0 z-30 pointer-events-none bg-cover bg-center bg-no-repeat mix-blend-soft-light"
+        className="absolute inset-0 z-10 pointer-events-none bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.22), rgba(0,0,0,0.22)), url(${JSON.stringify(sectionBackgroundImage)})`,
+          backgroundImage: `url(${JSON.stringify(sectionBackgroundImage)})`,
           opacity: sectionBackgroundOpacity / 100,
         }}
       />
@@ -1522,7 +1522,7 @@ export default function App() {
         <div key={sectionId} className="relative overflow-visible" style={{ width: `${Math.min(150, Math.max(0, Number(theme.sectionWidthPercent?.[sectionId] ?? 100)))}%`, marginInline: 'auto' }}>
           {sectionBackgroundOverlay}
           <div className="relative z-20">{content}</div>
-          <div className="relative z-40">
+          <div className="absolute inset-0 z-40 pointer-events-none">
             <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
           </div>
         </div>
@@ -1658,7 +1658,7 @@ export default function App() {
         <div className="relative overflow-visible mx-auto" style={{ width: `${Math.min(150, Math.max(0, Number(theme.sectionWidthPercent?.[sectionId] ?? 100)))}%` }}>
           {sectionBackgroundOverlay}
           <div className="relative z-20">{content}</div>
-          <div className="relative z-40">
+          <div className="absolute inset-0 z-40 pointer-events-none">
             <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
           </div>
         </div>
@@ -1820,6 +1820,9 @@ export default function App() {
         }
         ordersEmail={
           brandData.ordersEmail
+        }
+        reportEmail={
+          brandData.contactEmail
         }
       />
 

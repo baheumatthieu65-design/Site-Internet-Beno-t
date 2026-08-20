@@ -35,10 +35,12 @@ import {
 
 interface OrdersManagementViewProps {
   ordersEmail?: string;
+  reportEmail?: string;
 }
 
 export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
   ordersEmail = 'contact@maisondespyrenees.fr',
+  reportEmail = 'contact@maisondespyrenees.fr',
 }) => {
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [availableStatuses, setAvailableStatuses] = useState<string[]>([]);
@@ -53,6 +55,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
   const [copiedEmailId, setCopiedEmailId] = useState<string | null>(null);
   const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [isSendingReport, setIsSendingReport] = useState(false);
 
   const getWeekInputValue = (date: Date) => {
     const copy = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -125,7 +128,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
 
   // Remove status
   const handleRemoveStatus = (st: string) => {
-    if (st === 'Commande passée' || st === 'Prise en compte' || st === 'Commande annulée') {
+    if (st === 'Demande' || st === 'Commande passée' || st === 'Prise en compte' || st === 'Commande annulée') {
       alert('Les statuts par défaut (Commande passée, Prise en compte, Commande annulée) ne peuvent pas être supprimés.');
       return;
     }
@@ -223,11 +226,12 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
 
   const sumByStatus = (status: string) =>
     filteredOrders.reduce((total, order) => total + (order.status === status ? Number(order.totalPrice) || 0 : 0), 0);
+  const demandeTotal = sumByStatus('Demande');
   const passedTotal = sumByStatus('Commande passée');
   const acceptedTotal = sumByStatus('Prise en compte');
   const cancelledTotal = sumByStatus('Commande annulée');
   const remainingTotal = filteredOrders.reduce((total, order) => {
-    if (['Commande passée', 'Prise en compte', 'Commande annulée'].includes(order.status)) return total;
+    if (['Commande passée', 'Commande annulée'].includes(order.status)) return total;
     return total + (Number(order.totalPrice) || 0);
   }, 0);
   const activeTotal = filteredOrders.reduce((total, order) => total + (order.status === 'Commande annulée' ? 0 : Number(order.totalPrice) || 0), 0);
@@ -235,6 +239,8 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
   // Status color badge map
   const getStatusBadgeStyle = (st: string) => {
     switch (st) {
+      case 'Demande':
+        return 'bg-blue-950/80 text-blue-300 border-blue-600/80 font-semibold';
       case 'Commande passée':
         return 'bg-emerald-950/80 text-emerald-300 border-emerald-600/80 font-bold shadow-md';
       case 'Prise en compte':
@@ -288,11 +294,11 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
 
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 pt-1">
           {[
+            ['Commande', demandeTotal, 'text-blue-300'],
+            ['Prise en compte', acceptedTotal, 'text-amber-300'],
             ['Commandes passées', passedTotal, 'text-emerald-300'],
-            ['Prises en compte', acceptedTotal, 'text-amber-300'],
-            ['Reste à traiter', remainingTotal, 'text-[#d4af37]'],
             ['Annulées', cancelledTotal, 'text-red-300'],
-            ['Total actif', activeTotal, 'text-[#f3ece0]'],
+            ['Reste à passer', remainingTotal, 'text-[#d4af37]'],
           ].map(([label, value, color]) => (
             <div key={String(label)} className="rounded-xl bg-[#121613] border border-[#2e3b30] px-3 py-2">
               <span className="text-[9px] uppercase tracking-wider text-[#8f9d91] block">{label}</span>
@@ -329,7 +335,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
                 )}`}
               >
                 <span>{st}</span>
-                {st !== 'Commande passée' && st !== 'Prise en compte' && st !== 'Commande annulée' && (
+                {st !== 'Demande' && st !== 'Commande passée' && st !== 'Prise en compte' && st !== 'Commande annulée' && (
                   <button
                     type="button"
                     onClick={() => handleRemoveStatus(st)}
@@ -413,6 +419,28 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
               <option value="newest">Plus récentes</option>
               <option value="oldest">Plus anciennes</option>
             </select>
+            <button type="button" onClick={async () => {
+              if (isSendingReport) return;
+              setIsSendingReport(true);
+              try {
+                const response = await fetch('/api/admin/orders-report', {
+                  method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                  body: JSON.stringify({
+                    to: reportEmail,
+                    orderIds: filteredOrders.map((order) => order.id),
+                    status: selectedStatusFilter,
+                    periodMode, periodValue, searchQuery,
+                  }),
+                });
+                const data = await response.json().catch(() => null);
+                if (!response.ok || !data?.success) throw new Error(data?.error || `Rapport : HTTP ${response.status}`);
+                showToast(`Rapport envoyé à ${reportEmail}.`);
+              } catch (error) {
+                showToast(error instanceof Error ? error.message : 'Impossible d’envoyer le rapport.');
+              } finally { setIsSendingReport(false); }
+            }} disabled={isSendingReport} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#d4af37] text-[#121613] text-xs font-bold disabled:opacity-50" title="Envoyer un rapport par email avec les filtres actuels">
+              <Mail className="w-3.5 h-3.5" /> {isSendingReport ? 'Envoi…' : 'Rapport par mail'}
+            </button>
             <button type="button" onClick={() => void refreshData()} disabled={isRefreshing} className="p-2 rounded-xl bg-[#28362b] border border-[#3b4b3e] text-[#d4af37] hover:border-[#d4af37] disabled:opacity-50" title="Actualiser les commandes">
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             </button>

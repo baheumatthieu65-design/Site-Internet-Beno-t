@@ -25,6 +25,11 @@ export interface CustomerOrder {
   currency: string;
   status: string; // e.g., 'Commande passée', 'Prise en compte', 'Commande annulée', etc.
   recipientEmail: string; // referent email address (internal)
+  customerDataProtectedAt?: string;
+  clientNameEncrypted?: string;
+  clientEmailEncrypted?: string;
+  clientPhoneEncrypted?: string;
+  clientNotesEncrypted?: string;
   generatedEmail: {
     subject: string;
     recipient: string;
@@ -34,8 +39,9 @@ export interface CustomerOrder {
 }
 
 export const DEFAULT_ORDER_STATUSES: string[] = [
-  'Commande passée',
+  'Demande',
   'Prise en compte',
+  'Commande passée',
   'Commande annulée',
 ];
 
@@ -134,17 +140,17 @@ export const saveOrders = (orders: CustomerOrder[]) => {
 
 export const getAvailableStatuses = (): string[] => {
   const saved = localStorage.getItem(STATUSES_STORAGE_KEY);
+  let custom: string[] = [];
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
-      }
+      if (Array.isArray(parsed)) custom = parsed.map(String).filter(Boolean);
     } catch (e) {
       console.error('Failed to parse custom statuses:', e);
     }
   }
-  return DEFAULT_ORDER_STATUSES;
+  const merged = [...DEFAULT_ORDER_STATUSES, ...custom.filter((status) => !DEFAULT_ORDER_STATUSES.includes(status))];
+  return merged;
 };
 
 export const saveAvailableStatuses = (statuses: string[]) => {
@@ -240,7 +246,7 @@ Notification automatique générée pour l'adresse référente de gestion des co
     totalQuantity: totalQty,
     totalPrice: orderData.totalPrice,
     currency: orderData.currency,
-    status: 'Commande passée', // Default status on creation
+    status: 'Demande', // Toute nouvelle demande arrive d'abord dans l'état Demande
     recipientEmail: orderData.recipientEmail,
     generatedEmail: generatedEmailObj,
   };

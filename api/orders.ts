@@ -299,7 +299,7 @@ export default async function handler(
         primaryCurrency,
 
       status:
-        'Commande passée',
+        'Demande',
 
       recipientEmail:
         process.env.ADMIN_EMAIL ||
