@@ -3,10 +3,31 @@ import type { EditorBlock, SiteEditorConfig } from './SiteVisualEditor';
 
 function findElement(selector: string): Element | null {
   try {
-    return document.querySelector(selector);
+    const direct = document.querySelector(selector);
+    if (direct) return direct;
   } catch {
-    return null;
+    // Fallback below.
   }
+
+  // Les sélecteurs générés en mode admin peuvent contenir les wrappers
+  // de glisser-déposer. Ces wrappers n'existent plus en mode observateur.
+  // On tente donc les suffixes du chemin jusqu'à trouver un élément unique.
+  const parts = selector
+    .split('>')
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  for (let start = 1; start < parts.length; start += 1) {
+    const candidate = parts.slice(start).join(' > ');
+    try {
+      const matches = document.querySelectorAll(candidate);
+      if (matches.length === 1) return matches[0];
+    } catch {
+      // Continue avec un suffixe plus court.
+    }
+  }
+
+  return null;
 }
 
 function applyBlock(block: EditorBlock) {
