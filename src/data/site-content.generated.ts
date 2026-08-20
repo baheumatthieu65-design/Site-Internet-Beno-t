@@ -605,7 +605,7 @@ export const publishedSiteContent = {
         "kind": "text",
         "text": "Maison Mailhagut",
         "fontFamily": "ui-serif",
-        "fontSize": "60px",
+        "fontSize": "72px",
         "color": "rgb(194, 162, 109)",
         "locator": {
           "tag": "span",
@@ -768,5 +768,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787254848998
+  "publishedAt": 1787254859953
 } as const;
