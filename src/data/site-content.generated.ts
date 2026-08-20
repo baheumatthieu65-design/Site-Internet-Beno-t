@@ -5,7 +5,7 @@ export const publishedSiteContent = {
   "brandData": {
     "brandName": "MAISON Mailhag",
     "tagline": "Élégance Champêtre \u0026 Artisanat des Cimes 5",
-    "subtitle": "Conçues au cœur de la chaîne pyrénéenne, deux vestes d’exception mariant matières nobles et coupe haute couture 4.",
+    "subtitle": "Conçues au cœur de la chaîne pyrénéenne, deux vestes d’exception mariant matières nobles et coupe haute couture 1.",
     "logoUrl": "/assets/pyrenees_brand_logo_1785338626936-BaITKbpK.jpg",
     "accentColor": "#4A5D4E",
     "foundingYear": "2025",
@@ -794,30 +794,16 @@ export const publishedSiteContent = {
         "y": 50,
         "visible": true,
         "kind": "text",
-        "text": "\"Élégance Champêtre \u0026 Artisanat des Cimes 5\"",
-        "fontFamily": "ui-serif",
-        "fontSize": "24px",
-        "color": "rgb(208, 197, 180)",
+        "text": "Conçues au cœur de la chaîne pyrénéenne, deux vestes d’exception mariant matières nobles et coupe haute couture 1.",
+        "fontFamily": "-apple-system",
+        "fontSize": "16px",
+        "color": "rgb(163, 176, 162)",
         "locator": {
           "tag": "p",
-          "text": "\"Élégance Champêtre \u0026 Artisanat des Cimes 4\"",
+          "text": "Conçues au cœur de la chaîne pyrénéenne, deux vestes d’exception mariant matières nobles et coupe haute couture 4.",
           "sectionId": "hero",
           "occurrence": 0
         }
-      },
-      {
-        "id": "element-1h7tod6",
-        "type": "text",
-        "section": "hero",
-        "x": 50,
-        "y": 50,
-        "visible": true,
-        "selector": "div:nth-of-type(2) \u003e p:nth-of-type(2)",
-        "kind": "text",
-        "text": "Conçues au cœur de la chaîne pyrénéenne, deux vestes d’exception mariant matières nobles et coupe haute couture 4.",
-        "fontFamily": "-apple-system",
-        "fontSize": "16px",
-        "color": "rgb(163, 176, 162)"
       },
       {
         "id": "element-1ju1s8k",
@@ -996,14 +982,6 @@ export const publishedSiteContent = {
         "selector": null,
         "locator": "data-vce-id"
       },
-      "element-1h7tod6": {
-        "id": "element-1h7tod6",
-        "type": "text",
-        "kind": "text",
-        "section": "hero",
-        "selector": "div:nth-of-type(2) \u003e p:nth-of-type(2)",
-        "locator": "data-vce-id"
-      },
       "element-1ju1s8k": {
         "id": "element-1ju1s8k",
         "type": "text",
@@ -1022,5 +1000,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787218097180
+  "publishedAt": 1787218105613
 } as const;
