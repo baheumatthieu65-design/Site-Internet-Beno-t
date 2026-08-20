@@ -284,7 +284,9 @@ export const publishedSiteContent = {
       "lookbookImageScale": 100,
       "lookbookImageFrameWidth": 60,
       "lookbookImageFrameHeight": 220,
-      "sectionBackgroundImages": {},
+      "sectionBackgroundImages": {
+        "collection": ""
+      },
       "productBlocksOrder": [
         "title-price",
         "colors",
@@ -857,5 +859,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787246011542
+  "publishedAt": 1787246221398
 } as const;
