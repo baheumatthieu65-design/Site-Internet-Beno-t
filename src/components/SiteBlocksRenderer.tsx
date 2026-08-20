@@ -21,6 +21,21 @@ function normalizeText(value: string): string {
   return value.replace(/\s+/g, ' ').trim();
 }
 
+function normalizeComparableText(value: string): string {
+  return normalizeText(value)
+    .replace(/^[\"'«“„]+|[\"'»”]+$/g, '')
+    .replace(/[.!?]+$/g, '')
+    .trim()
+    .toLocaleLowerCase('fr-FR');
+}
+
+function textMatchesSource(rendered: string, source: string): boolean {
+  const a = normalizeComparableText(rendered);
+  const b = normalizeComparableText(source);
+  if (!a || !b) return false;
+  return a === b || a.includes(b) || b.includes(a);
+}
+
 function cssEscape(value: string): string {
   try {
     return CSS.escape(value);
@@ -147,9 +162,19 @@ function findByPublishedSource(block: EditorBlock): Element | null {
 
     const exact = candidates.filter((candidate) => {
       const text = normalizeText(candidate.textContent || '');
-      if (!publishedStrings.has(text)) return false;
       if (tag && candidate.tagName.toLowerCase() !== tag) return false;
-      return text !== normalizeText(block.text || '');
+
+      // The editor may have selected a rendered value with decorative quotes
+      // (for example the Hero tagline: "…"). Compare against the canonical
+      // published value after removing those decorations instead of requiring
+      // byte-for-byte equality.
+      const matchesPublished = Array.from(publishedStrings).some((source) =>
+        textMatchesSource(text, source),
+      );
+      if (!matchesPublished) return false;
+
+      // Do not select an element that already contains the desired value.
+      return !textMatchesSource(text, block.text || '');
     });
 
     if (exact.length === 1) return exact[0];
@@ -256,23 +281,42 @@ export const SiteBlocksRenderer: React.FC<{
 
     let cancelled = false;
     let timer = 0;
+    let observerTimer = 0;
 
     const apply = () => {
       if (cancelled) return;
       for (const block of config.blocks || []) applyBlock(block);
     };
 
+    const scheduleApply = () => {
+      window.clearTimeout(observerTimer);
+      observerTimer = window.setTimeout(apply, 40);
+    };
+
     const run = () => {
       apply();
-      timer = window.setTimeout(apply, 80);
+      timer = window.setTimeout(apply, 120);
     };
 
     const raf = requestAnimationFrame(run);
+
+    // React can recreate the page DOM when the admin panel opens/closes or
+    // after a state update. Keep the published visual overrides attached to
+    // the newly-created nodes instead of relying on a one-shot DOM mutation.
+    const observer = new MutationObserver((mutations) => {
+      if (cancelled) return;
+      if (mutations.some((mutation) => mutation.type === 'childList')) {
+        scheduleApply();
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
 
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
       window.clearTimeout(timer);
+      window.clearTimeout(observerTimer);
+      observer.disconnect();
     };
   }, [config, enabled]);
 

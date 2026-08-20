@@ -78,12 +78,17 @@ function normalizeEditorConfig(input: any) {
           ? 'media'
           : 'text';
 
-    const id =
-      typeof raw.id === 'string' && raw.id.trim()
-        ? raw.id.trim()
-        : `element-${hash(
-            `${section}|${type}|${kind}|${selector}|${raw.text || ''}|${index}`
-          )}`;
+    // Les anciens IDs `element-<timestamp>` étaient recréés à chaque édition.
+    // Ils donnent l'impression qu'un même élément est plusieurs éléments
+    // différents et rendent les snapshots historiques difficiles à fusionner.
+    // Un locator visuel est déterministe : même section + type + kind +
+    // selector = même identité. Les IDs explicitement nommés par une future
+    // version de l'éditeur restent conservés.
+    const rawId = typeof raw.id === 'string' ? raw.id.trim() : '';
+    const generatedId = !rawId || /^(?:element|text|media)-\d+$/.test(rawId);
+    const id = generatedId
+      ? `element-${hash(`${section}|${type}|${kind}|${selector || 'no-selector'}`)}`
+      : rawId;
 
     const cleanedBlock = {
       ...raw,
@@ -134,7 +139,7 @@ function normalizeEditorConfig(input: any) {
       )
     ),
 
-    schemaVersion: 4,
+    schemaVersion: 5,
     blocks,
     editorElements,
   };
@@ -219,7 +224,7 @@ export default async function handler(
     Authorization: `Bearer ${token}`,
     'X-GitHub-Api-Version': '2022-11-28',
     'Content-Type': 'application/json',
-    'User-Agent': 'Site-Internet-Benoit-V4',
+    'User-Agent': 'Site-Internet-Benoit-V5',
   };
 
   try {
@@ -249,7 +254,7 @@ export default async function handler(
     const updateOnce = async (sha?: string) => {
       const payload: Record<string, unknown> = {
         message:
-          'chore(site-editor): normalize published visual snapshot v4',
+          'chore(site-editor): normalize published visual snapshot v5',
         content: encoded,
         branch,
       };
