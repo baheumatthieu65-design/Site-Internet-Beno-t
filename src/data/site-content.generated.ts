@@ -316,8 +316,8 @@ export const publishedSiteContent = {
       },
       "lookbookProductIds": [],
       "productBlocksOrder": [
-        "colors",
         "title-price",
+        "colors",
         "sizes",
         "cta",
         "specs",
@@ -853,5 +853,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787257385627
+  "publishedAt": 1787257394088
 } as const;
