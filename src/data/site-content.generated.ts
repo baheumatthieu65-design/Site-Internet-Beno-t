@@ -552,7 +552,7 @@ export const publishedSiteContent = {
         "kind": "text",
         "text": "Thème Champêtre \u0026 Élégance",
         "fontFamily": "ui-serif",
-        "fontSize": "72px",
+        "fontSize": "60px",
         "color": "rgb(245, 238, 223)",
         "locator": {
           "tag": "span",
@@ -768,5 +768,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787254827843
+  "publishedAt": 1787254848998
 } as const;
