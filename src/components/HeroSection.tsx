@@ -121,48 +121,33 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       id="hero-section"
       className={`relative min-h-screen flex flex-col justify-between pt-28 pb-12 overflow-hidden ${sectionBackgroundImage ? 'bg-transparent' : 'bg-[#121613]'} group/hero ${contentPaddingClass}`}
     >
-      {/* Background media: image / GIF / video + gradient overlay */}
-      <div className="absolute inset-0 z-0">
-        {brandData.heroBackground?.type === 'video' ? (
-          <video
-            data-vce-id="hero-background-media"
-            src={brandData.heroBackground.url}
-            poster={brandData.heroBackground.poster}
-            autoPlay
-            muted
-            loop
-            playsInline
-            aria-label="Vidéo de présentation des Pyrénées"
-            className="w-full h-full object-cover scale-105"
-            style={{
-              objectPosition: `${brandData.heroBackground.positionX ?? 50}% ${brandData.heroBackground.positionY ?? 50}%`,
-            }}
-          />
-        ) : (
-          <img
-            data-vce-id="hero-background-media"
-            src={sectionBackgroundImage || brandData.heroBackground?.url || brandData.heroBgImage}
-            alt="Les Pyrénées"
-            className="w-full h-full object-cover object-center scale-105 mix-blend-luminosity"
-            style={{
-              objectPosition: `${brandData.heroBackground?.positionX ?? 50}% ${brandData.heroBackground?.positionY ?? 50}%`,
-              opacity: sectionBackgroundImage ? Math.min(100, Math.max(0, sectionBackgroundOpacity)) / 100 : 0.4,
-            }}
-          />
-        )}
-
-        {/* Custom media overlay */}
-        {typeof brandData.heroBackground?.overlay === 'number' && (
-          <div
-            className="absolute inset-0 bg-black"
-            style={{ opacity: brandData.heroBackground.overlay }}
-          />
-        )}
-
-        {/* Existing gradients */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#121613] via-[#121613]/70 to-black/60" />
-        <div className="absolute inset-0 bg-radial-vignette opacity-80" />
-      </div>
+      {/* Background media: le fond personnalisé est porté par le wrapper App. */}
+      {!sectionBackgroundImage && (
+        <div className="absolute inset-0 z-0">
+          {brandData.heroBackground?.type === 'video' ? (
+            <video
+              data-vce-id="hero-background-media"
+              src={brandData.heroBackground.url}
+              poster={brandData.heroBackground.poster}
+              autoPlay muted loop playsInline
+              aria-label="Vidéo de présentation des Pyrénées"
+              className="w-full h-full object-cover scale-105"
+              style={{ objectPosition: `${brandData.heroBackground.positionX ?? 50}% ${brandData.heroBackground.positionY ?? 50}%` }}
+            />
+          ) : (
+            <img
+              data-vce-id="hero-background-media"
+              src={brandData.heroBackground?.url || brandData.heroBgImage}
+              alt="Les Pyrénées"
+              className="w-full h-full object-cover object-center scale-105 mix-blend-luminosity"
+              style={{ objectPosition: `${brandData.heroBackground?.positionX ?? 50}% ${brandData.heroBackground?.positionY ?? 50}%`, opacity: 0.4 }}
+            />
+          )}
+          {typeof brandData.heroBackground?.overlay === 'number' && <div className="absolute inset-0 bg-black" style={{ opacity: brandData.heroBackground.overlay }} />}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#121613] via-[#121613]/70 to-black/60" />
+          <div className="absolute inset-0 bg-radial-vignette opacity-80" />
+        </div>
+      )}
 
       {/* Admin Quick Edit Trigger */}
       {isAdminLoggedIn && onOpenEditorSection && (

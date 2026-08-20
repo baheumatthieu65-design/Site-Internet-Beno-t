@@ -9,7 +9,6 @@ import {
   NavigationId,
   ThemeConfig,
   ComparisonCriterion,
-  ProductBlockId,
   TextAlignId,
   ButtonAlignId,
   ContainerWidthId,
@@ -67,6 +66,7 @@ import {
   defaultThemeConfig,
   getButtonClasses,
   getCardClasses,
+  siteThemePresets,
 } from '../utils/themeStyles';
 import { ButtonManager } from './ButtonManager';
 import { AdminProductModal } from './AdminProductModal';
@@ -84,39 +84,6 @@ interface BrandCustomizerModalProps {
   onRefreshProducts: () => void;
   initialTab?: 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github';
 }
-
-const productBlockMeta: Record<ProductBlockId, { name: string; icon: string; desc: string }> = {
-  'title-price': {
-    name: 'Titre, Sous-titre & Prix',
-    icon: '🏷️',
-    desc: 'Nom de la pièce d’exception, catégorie, prix et mentions de confection.',
-  },
-  'description': {
-    name: 'Description & Récit Terroir',
-    icon: '📜',
-    desc: 'Présentation de la coupe, inspiration montagnarde et détails poétiques.',
-  },
-  'colors': {
-    name: 'Sélecteur de Nuances & Couleurs',
-    icon: '🎨',
-    desc: 'Pastilles de teintes minérales et lainières avec prévisualisation.',
-  },
-  'sizes': {
-    name: 'Guide & Sélection des Tailles',
-    icon: '📏',
-    desc: 'Boutons de tailles (XS à XXL) et informations de prise de mesure.',
-  },
-  'specs': {
-    name: 'Spécifications & Matières',
-    icon: '⚙️',
-    desc: 'Poids, imperméabilité, indice de chaleur, origine et conseils d’entretien.',
-  },
-  'cta': {
-    name: 'Bouton d’Action & Commande',
-    icon: '🛒',
-    desc: 'Bouton principal de réservation et commande sur mesure atelier.',
-  },
-};
 
 const samplePresetImages = [
   { label: 'Veste Cimes (Kaki / Bronze)', url: '/src/assets/images/veste-cimes.png' },
@@ -748,25 +715,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     updateTheme({ lookbookProductIds: next });
   };
 
-  // Product Page Blocks Reorder
-  const handleMoveProductBlock = (blockId: ProductBlockId, direction: 'up' | 'down') => {
-    const currentOrder = [...(currentTheme.productBlocksOrder || defaultThemeConfig.productBlocksOrder || [])];
-    const index = currentOrder.indexOf(blockId);
-    if (index === -1) return;
-
-    if (direction === 'up' && index > 0) {
-      const temp = currentOrder[index - 1];
-      currentOrder[index - 1] = currentOrder[index];
-      currentOrder[index] = temp;
-      updateTheme({ productBlocksOrder: currentOrder });
-    } else if (direction === 'down' && index < currentOrder.length - 1) {
-      const temp = currentOrder[index + 1];
-      currentOrder[index + 1] = currentOrder[index];
-      currentOrder[index] = temp;
-      updateTheme({ productBlocksOrder: currentOrder });
-    }
-  };
-
   // Save & Security Handlers
   const handleSave = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -1058,6 +1006,26 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           {/* ========================================================= */}
           {activeTab === 'theme' && (
             <div className="space-y-8 animate-fadeIn">
+              <div className="p-5 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
+                <div>
+                  <h4 className="font-serif text-base text-[#f3ece0] font-semibold flex items-center gap-2"><Palette className="w-5 h-5 text-[#d4af37]" />Ambiance générale du site</h4>
+                  <p className="text-xs text-[#a3b1a5] mt-1">Choisissez un thème puis ajustez séparément le fond du site et celui de la barre de navigation.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {siteThemePresets.map((preset) => (
+                    <button key={preset.id} type="button" onClick={() => updateTheme({ siteThemePreset: preset.id, siteBackgroundColor: preset.siteBackgroundColor, navBackgroundColor: preset.navBackgroundColor })} className={`text-left p-3 rounded-xl border transition-all ${(currentTheme.siteThemePreset || 'pyrenees-noir') === preset.id ? 'border-[#d4af37] bg-[#222d24]' : 'border-[#344437] bg-[#151b16] hover:border-[#607162]'}`}>
+                      <div className="h-10 rounded-lg mb-2 border border-white/10" style={{ background: preset.previewBg }} />
+                      <div className="text-xs font-bold text-[#f3ece0]">{preset.name}</div>
+                      <div className="text-[10px] text-[#9eb0a0] mt-0.5">{preset.description}</div>
+                    </button>
+                  ))}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-[#2a362c]">
+                  <label className="text-xs text-[#a3b1a5]"><span className="block mb-2 uppercase tracking-widest">Couleur de fond du site</span><div className="flex items-center gap-2"><input type="color" value={currentTheme.siteBackgroundColor || '#121613'} onChange={(e) => updateTheme({ siteBackgroundColor: e.target.value, siteThemePreset: undefined })} className="w-12 h-10 rounded-lg bg-transparent cursor-pointer" /><input value={currentTheme.siteBackgroundColor || '#121613'} onChange={(e) => updateTheme({ siteBackgroundColor: e.target.value, siteThemePreset: undefined })} className="flex-1 bg-[#121613] border border-[#2e3b30] rounded-lg px-3 py-2 text-white" /></div></label>
+                  <label className="text-xs text-[#a3b1a5]"><span className="block mb-2 uppercase tracking-widest">Couleur de la barre de navigation</span><div className="flex items-center gap-2"><input type="color" value={currentTheme.navBackgroundColor || '#1a1e1b'} onChange={(e) => updateTheme({ navBackgroundColor: e.target.value, siteThemePreset: undefined })} className="w-12 h-10 rounded-lg bg-transparent cursor-pointer" /><input value={currentTheme.navBackgroundColor || '#1a1e1b'} onChange={(e) => updateTheme({ navBackgroundColor: e.target.value, siteThemePreset: undefined })} className="flex-1 bg-[#121613] border border-[#2e3b30] rounded-lg px-3 py-2 text-white" /></div></label>
+                </div>
+              </div>
+
               <ButtonManager
                 theme={currentTheme}
                 onChange={updateTheme}
@@ -1184,69 +1152,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                       <option value="spacious">Spacieux & Luxueux</option>
                     </select>
                   </div>
-                </div>
-              </div>
-
-              {/* 2. PRODUCT PAGE BLOCKS ORDERING (User Requested) */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-serif text-base text-[#f3ece0] font-semibold flex items-center space-x-2">
-                      <Sliders className="w-4 h-4 text-[#d4af37]" />
-                      <span>Ordre des Objets & Champs de la Fiche Produit (Showcase)</span>
-                    </h4>
-                    <p className="text-xs text-[#a3b1a5] mt-0.5">
-                      Déplacez les éléments avec les flèches ↑ et ↓ pour réorganiser la présentation de chaque veste :
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  {(currentTheme.productBlocksOrder || defaultThemeConfig.productBlocksOrder || []).map((blockId, idx, arr) => {
-                    const meta = productBlockMeta[blockId] || { name: blockId, icon: '📦', desc: '' };
-                    return (
-                      <div
-                        key={blockId}
-                        className="p-3 rounded-xl bg-[#1a221c] border border-[#344437] flex items-center justify-between transition-all"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <span className="text-xl">{meta.icon}</span>
-                          <div>
-                            <span className="text-xs font-serif font-bold text-[#f3ece0]">
-                              {idx + 1}. {meta.name}
-                            </span>
-                            <p className="text-[11px] text-[#a3b1a5]">{meta.desc}</p>
-                            <div className="mt-2 flex items-center gap-2">
-                              <div className="px-2 py-1 rounded-md bg-[#101510] border border-[#2f3d32] text-[9px] text-[#607162]">
-                                Champs produit
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center space-x-1.5">
-                          <button
-                            type="button"
-                            disabled={idx === 0}
-                            onClick={() => handleMoveProductBlock(blockId, 'up')}
-                            className="p-1.5 rounded-lg bg-[#253127] hover:bg-[#324235] text-[#d4af37] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                            title="Monter"
-                          >
-                            <ArrowUp className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            disabled={idx === arr.length - 1}
-                            onClick={() => handleMoveProductBlock(blockId, 'down')}
-                            className="p-1.5 rounded-lg bg-[#253127] hover:bg-[#324235] text-[#d4af37] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                            title="Descendre"
-                          >
-                            <ArrowDown className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
                 </div>
               </div>
 

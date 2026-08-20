@@ -59,8 +59,9 @@ export const Navbar: React.FC<NavbarProps> = ({ brandData, isAdminLoggedIn, onOp
     </div>
   );
 
+  const navBackground = theme?.navBackgroundColor || '#1a1e1b';
   return (
-    <header id="main-nav-header" className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${scrolled ? 'bg-[#1a1e1b]/95 backdrop-blur-md border-b border-[#3b473e]/50 py-3 shadow-xl' : 'bg-gradient-to-b from-black/85 via-black/40 to-transparent py-4'}`}>
+    <header id="main-nav-header" style={{ backgroundColor: scrolled ? `${navBackground}F2` : `${navBackground}D9` }} className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 backdrop-blur-md border-b border-[#3b473e]/50 ${scrolled ? 'py-3 shadow-xl' : 'py-4'}`}>
       <div className="max-w-[1450px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
         {logoPair}
         <nav id="desktop-nav" className="hidden xl:flex items-center gap-5 2xl:gap-7 ml-auto">
@@ -75,7 +76,7 @@ export const Navbar: React.FC<NavbarProps> = ({ brandData, isAdminLoggedIn, onOp
           <button id="mobile-menu-toggle-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="xl:hidden p-2 text-[#c4ceb8] hover:text-white" aria-label="Menu"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">{mobileMenuOpen ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}</svg></button>
         </div>
       </div>
-      {mobileMenuOpen && <div id="mobile-nav-drawer" className="xl:hidden bg-[#181d19] border-b border-[#3b473e] px-4 pt-4 pb-6 space-y-3 animate-fadeIn"><div className="pb-3 border-b border-[#2a332d]">{logoPair}</div>{navLinks.map(link => <button key={link.id} onClick={() => scrollTo(link.id)} className="block w-full text-left py-2 text-sm uppercase tracking-widest text-[#e2d5c3] hover:text-[#d4af37] border-b border-[#2a332d]">{link.label}</button>)}<button onClick={openGite} className="block w-full text-left py-2 text-sm uppercase tracking-widest text-[#e2d5c3] hover:text-[#d4af37] border-b border-[#2a332d]">Gîte</button>{isAdminLoggedIn && <button onClick={openOrders} className="w-full text-center py-2.5 rounded-xl bg-[#28362b] text-[#d4af37] text-xs uppercase tracking-wider border border-[#d4af37]/70 font-semibold">Commandes</button>}</div>}
+      {mobileMenuOpen && <div id="mobile-nav-drawer" style={{ backgroundColor: navBackground }} className="xl:hidden border-b border-[#3b473e] px-4 pt-4 pb-6 space-y-3 animate-fadeIn"><div className="pb-3 border-b border-[#2a332d]">{logoPair}</div>{navLinks.map(link => <button key={link.id} onClick={() => scrollTo(link.id)} className="block w-full text-left py-2 text-sm uppercase tracking-widest text-[#e2d5c3] hover:text-[#d4af37] border-b border-[#2a332d]">{link.label}</button>)}<button onClick={openGite} className="block w-full text-left py-2 text-sm uppercase tracking-widest text-[#e2d5c3] hover:text-[#d4af37] border-b border-[#2a332d]">Gîte</button>{isAdminLoggedIn && <button onClick={openOrders} className="w-full text-center py-2.5 rounded-xl bg-[#28362b] text-[#d4af37] text-xs uppercase tracking-wider border border-[#d4af37]/70 font-semibold">Commandes</button>}</div>}
     </header>
   );
 };

@@ -8,6 +8,7 @@ import {
   CardStyleId,
   ThemeConfig,
   SectionId,
+  SiteThemePresetId,
 } from '../types.js';
 
 export interface ButtonModelPreset {
@@ -63,6 +64,9 @@ export const defaultThemeConfig: ThemeConfig = {
   lookbookImageFrameWidth: 60,
   lookbookImageFrameHeight: 220,
   sectionBackgroundImages: {},
+  siteThemePreset: 'pyrenees-noir',
+  siteBackgroundColor: '#121613',
+  navBackgroundColor: '#1a1e1b',
   sectionBackgroundOpacity: {},
   sectionWidthPercent: {},
   lookbookProductIds: [],
@@ -75,6 +79,22 @@ export const defaultThemeConfig: ThemeConfig = {
   heroBadgeText: 'Édition Limitée des Pyrénées',
   heroTitlePrefix: 'Thème Champêtre & Élégance',
 };
+
+export interface SiteThemePreset {
+  id: SiteThemePresetId;
+  name: string;
+  description: string;
+  siteBackgroundColor: string;
+  navBackgroundColor: string;
+  previewBg: string;
+}
+
+export const siteThemePresets: SiteThemePreset[] = [
+  { id: 'pyrenees-noir', name: 'Pyrénées Noir', description: 'Vert noir profond, or signature.', siteBackgroundColor: '#121613', navBackgroundColor: '#1a1e1b', previewBg: 'linear-gradient(135deg,#121613,#2a332d)' },
+  { id: 'foret-profonde', name: 'Forêt Profonde', description: 'Vert sapin plus marqué et minéral.', siteBackgroundColor: '#0f1a14', navBackgroundColor: '#16251b', previewBg: 'linear-gradient(135deg,#0f1a14,#284632)' },
+  { id: 'ardoise-luxe', name: 'Ardoise Luxe', description: 'Anthracite froid, très contemporain.', siteBackgroundColor: '#11151a', navBackgroundColor: '#1b2028', previewBg: 'linear-gradient(135deg,#11151a,#303846)' },
+  { id: 'ivoire-atelier', name: 'Ivoire Atelier', description: 'Fond clair pierre et navigation chocolat.', siteBackgroundColor: '#e9e2d6', navBackgroundColor: '#2a2621', previewBg: 'linear-gradient(135deg,#e9e2d6,#2a2621)' },
+];
 
 export const buttonModelPresets: ButtonModelPreset[] = [
   {

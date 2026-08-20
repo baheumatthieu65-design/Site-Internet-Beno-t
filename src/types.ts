@@ -46,6 +46,12 @@ export interface ButtonOverride {
   backgroundOverlay?: number;
 }
 
+export type SiteThemePresetId =
+  | 'pyrenees-noir'
+  | 'foret-profonde'
+  | 'ardoise-luxe'
+  | 'ivoire-atelier';
+
 export type CardStyleId =
   | 'atelier-relief'
   | 'epure-noir'
@@ -313,6 +319,10 @@ export interface ThemeConfig {
   navOrder?: NavigationId[];
 
   accentColorHex?: string;
+  /** Palette globale du site et de la barre de navigation. */
+  siteThemePreset?: SiteThemePresetId;
+  siteBackgroundColor?: string;
+  navBackgroundColor?: string;
 
   /* Positionnement & alignement */
 

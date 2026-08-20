@@ -127,7 +127,7 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
       {selectedImage && (
         <div
           onClick={() => setSelectedImage(null)}
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn"
+          className="lookbook-lightbox fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn"
         >
           <div className="relative max-w-4xl max-h-[90vh] rounded-2xl overflow-hidden border border-[#d4af37]">
             <img src={selectedImage} alt="Lookbook Full" className="max-w-full max-h-[85vh] object-contain" />

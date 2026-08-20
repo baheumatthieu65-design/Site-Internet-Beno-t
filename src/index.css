@@ -15,3 +15,11 @@
 .site-content-scale {
   zoom: 1;
 }
+
+
+/* Fonds personnalisés des modules : le wrapper porte l'image afin qu'aucun fond historique interne ne la masque. */
+.site-section-custom-background > section { background-color: transparent !important; background-image: none !important; }
+/* Les médias flottants restent sous la barre de navigation fixe. */
+.floating-media, .floating-module-image { z-index: 30 !important; }
+/* Les lightboxes passent au-dessus de la navigation. */
+.showcase-lightbox, .lookbook-lightbox { z-index: 1200 !important; }

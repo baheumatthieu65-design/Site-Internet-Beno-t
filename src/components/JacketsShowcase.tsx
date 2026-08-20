@@ -399,9 +399,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
 
   return (
     <section id="collection" className={`py-20 ${sectionBackgroundImage ? 'bg-transparent' : 'bg-[#151a16]'} text-[#e2d5c3] relative overflow-hidden group/showcase`}>
-      {sectionBackgroundImage && (
-        <div aria-hidden="true" className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${JSON.stringify(sectionBackgroundImage)})`, opacity: Math.min(100, Math.max(0, sectionBackgroundOpacity)) / 100 }} />
-      )}
+
       {/* Decorative mountain graphic accent */}
       <div className="absolute top-0 right-0 -mt-12 -mr-12 opacity-5 pointer-events-none">
         <svg className="w-96 h-96 text-[#d4af37]" fill="currentColor" viewBox="0 0 24 24">
@@ -741,7 +739,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
             aria-modal="true"
             aria-label={`Vue agrandie de ${activeJacket.name}`}
             onClick={() => setIsImageLightboxOpen(false)}
-            className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn cursor-zoom-out"
+            className="showcase-lightbox fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn cursor-zoom-out"
           >
             <div
               className="relative w-full max-w-6xl max-h-[92vh] rounded-2xl overflow-hidden border border-[#d4af37] bg-[#111612] shadow-2xl"

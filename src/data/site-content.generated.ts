@@ -30,10 +30,10 @@ export const publishedSiteContent = {
         "category": "Haute Montagne \u0026 Élégance",
         "price": 110,
         "currency": "€",
-        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787255862341-Image-1.jpg",
+        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787238367336-Art1.png",
         "gallery": [
-          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787255862341-Image-1.jpg",
-          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787255871534-Image-2.jpg"
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787238367336-Art1.png",
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787248557990-20260816_124104.jpg"
         ],
         "description": "Une veste à la stature majestueuse, tissée en drap de laine anthracite ultra-dense, conçue pour braver le vent des vallées tout en conservant une ligne affûtée.",
         "longDescription": "La Veste des Cimes incarne l’équilibre parfait entre la rigueur de la montagne et la finesse des tailleurs. Ses poches plaquées discrètes et sa doublure thermique en sergé fluide apportent aisance et protection contre le froid d’altitude.",
@@ -93,24 +93,24 @@ export const publishedSiteContent = {
         "hotspots": [
           {
             "id": "hs1-col",
-            "x": 59,
-            "y": 3,
+            "x": 50,
+            "y": 15,
             "title": "Col Officier à Revers",
             "description": "Protection thermique du cou rehaussée d’une bride en cuir pour fermer hermétiquement le col.",
             "category": "cut"
           },
           {
             "id": "hs1-boutons",
-            "x": 45,
-            "y": 56,
+            "x": 50,
+            "y": 28,
             "title": "Boutonnage en Corne Gravée",
             "description": "Chaque bouton est taillé dans la corne naturelle et gravé au laser avec le monogramme de la marque.",
             "category": "hardware"
           },
           {
             "id": "hs1-poche",
-            "x": 59,
-            "y": 76,
+            "x": 54,
+            "y": 75,
             "title": "Poches Soufflet d’Atelier",
             "description": "Grandes poches doublées en flanelle pour garder les mains au chaud lors des balades en altitude.",
             "category": "utility"
@@ -121,14 +121,14 @@ export const publishedSiteContent = {
         "customSpecs": {}
       },
       {
-        "name": "Veste des Cîmes Enfant",
+        "name": "N02",
         "subTitle": "Confection Artisanale des Pyrénées",
-        "category": "Femme \u0026 Enfant",
-        "price": 60,
+        "category": "Homme \u0026 Femme",
+        "price": 490,
         "currency": "€",
-        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787255936718-Image-3.jpg",
+        "heroImage": "https://images.unsplash.com/photo-1544441893-675973e31985?auto=format\u0026fit=crop\u0026q=80\u0026w=1000",
         "gallery": [
-          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787255936718-Image-3.jpg"
+          "https://images.unsplash.com/photo-1544441893-675973e31985?auto=format\u0026fit=crop\u0026q=80\u0026w=1000"
         ],
         "description": "Veste artisanale d'exception tissée dans les Pyrénées.",
         "longDescription": "Fabriquée selon des savoir-faire d'autrefois en pure laine sélectionnée.",
@@ -144,19 +144,13 @@ export const publishedSiteContent = {
           {
             "name": "Ocre Vignemale",
             "hex": "#8c6b43"
-          },
-          {
-            "name": "Vert des cîmes",
-            "hex": "#526355"
           }
         ],
         "sizes": [
-          "8",
-          "10",
-          "12",
-          "14",
-          "XS",
-          "S"
+          "S",
+          "M",
+          "L",
+          "XL"
         ],
         "isAvailable": true,
         "features": [
@@ -176,18 +170,17 @@ export const publishedSiteContent = {
         },
         "hotspots": [],
         "id": "produit-1787241378430-715p3s",
-        "availabilityStatus": "on-sale",
-        "customSpecs": {}
+        "availabilityStatus": "on-sale"
       },
       {
-        "name": "Todebag",
+        "name": "n°3",
         "subTitle": "Confection Artisanale des Pyrénées",
         "category": "Homme \u0026 Femme",
-        "price": 50,
+        "price": 490,
         "currency": "€",
-        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787256106041-Art1.png",
+        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787252388383-20260816_124059.jpg",
         "gallery": [
-          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787256106041-Art1.png",
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787252388383-20260816_124059.jpg",
           "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787242933243-Art1-2.png"
         ],
         "description": "Veste artisanale d'exception tissée dans les Pyrénées.",
@@ -207,7 +200,10 @@ export const publishedSiteContent = {
           }
         ],
         "sizes": [
-          "Taille unique"
+          "S",
+          "M",
+          "L",
+          "XL"
         ],
         "isAvailable": true,
         "features": [
@@ -230,8 +226,8 @@ export const publishedSiteContent = {
             "id": "hotspot-1787252504808",
             "title": "Nouveau point tet",
             "description": "sdssdsds",
-            "x": 50,
-            "y": 22,
+            "x": 47,
+            "y": 35,
             "category": "fabric"
           }
         ],
@@ -305,10 +301,10 @@ export const publishedSiteContent = {
       "lookbookImageFrameWidth": 60,
       "lookbookImageFrameHeight": 220,
       "sectionBackgroundImages": {
-        "hero": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787257313516-4k-wallpaper-blue-skies-conifers-1526720.webp"
+        "collection": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787253653691-4k-wallpaper-blue-skies-conifers-1526720.webp"
       },
       "sectionBackgroundOpacity": {
-        "hero": 100,
+        "hero": 75,
         "collection": 75
       },
       "sectionWidthPercent": {
@@ -655,63 +651,6 @@ export const publishedSiteContent = {
         "fontFamily": "-apple-system",
         "fontSize": "16px",
         "color": "rgb(163, 176, 162)"
-      },
-      {
-        "id": "hero-designer-location",
-        "type": "text",
-        "section": "hero",
-        "x": 50,
-        "y": 50,
-        "visible": true,
-        "locator": {
-          "tag": "span",
-          "text": "Vallée de Lourdios \u0026 Pic du Midi",
-          "sectionId": "hero",
-          "occurrence": 0
-        },
-        "kind": "text",
-        "text": "ILHET - Vallée d'Aure",
-        "fontFamily": "ui-serif",
-        "fontSize": "12px",
-        "color": "rgb(212, 175, 55)"
-      },
-      {
-        "id": "story-designer-location",
-        "type": "text",
-        "section": "origines",
-        "x": 50,
-        "y": 50,
-        "visible": true,
-        "locator": {
-          "tag": "p",
-          "text": "Vallée de Lourdios \u0026 Pic du Midi",
-          "sectionId": "origines",
-          "occurrence": 0
-        },
-        "kind": "text",
-        "text": "ILHET - Vallée d'Aure",
-        "fontFamily": "-apple-system",
-        "fontSize": "12px",
-        "color": "rgb(163, 177, 165)"
-      },
-      {
-        "id": "vce-ardxk5",
-        "type": "text",
-        "section": "origines",
-        "x": 50,
-        "y": 50,
-        "visible": true,
-        "locator": {
-          "tag": "blockquote",
-          "text": "\"Élégance Champêtre \u0026 Artisanat des Cimes 5\"",
-          "sectionId": "origines",
-          "occurrence": 0
-        },
-        "kind": "text",
-        "text": "- Artisanat local -",
-        "fontFamily": "ui-serif",
-        "fontSize": "14px",
-        "color": "rgb(208, 197, 180)"
       }
     ],
     "editorElements": {
@@ -826,32 +765,8 @@ export const publishedSiteContent = {
         "section": "hero",
         "selector": null,
         "locator": "data-vce-id"
-      },
-      "hero-designer-location": {
-        "id": "hero-designer-location",
-        "type": "text",
-        "kind": "text",
-        "section": "hero",
-        "selector": null,
-        "locator": "data-vce-id"
-      },
-      "story-designer-location": {
-        "id": "story-designer-location",
-        "type": "text",
-        "kind": "text",
-        "section": "origines",
-        "selector": null,
-        "locator": "data-vce-id"
-      },
-      "vce-ardxk5": {
-        "id": "vce-ardxk5",
-        "type": "text",
-        "kind": "text",
-        "section": "origines",
-        "selector": null,
-        "locator": "data-vce-id"
       }
     }
   },
-  "publishedAt": 1787257394088
+  "publishedAt": 1787254943436
 } as const;
