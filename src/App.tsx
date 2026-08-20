@@ -128,6 +128,7 @@ export default function App() {
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [isLogoEditorOpen, setIsLogoEditorOpen] = useState(false);
+  const [isFloatingMediaOpen, setIsFloatingMediaOpen] = useState(false);
 
   // Toutes les publications administrateur passent par une file unique.
   // Une action rapide ne peut donc plus écraser une action plus récente
@@ -1627,6 +1628,8 @@ export default function App() {
             await handleSaveVisualEditor(nextConfig);
           }}
           onOpenCustomizer={() => handleOpenEditor('theme')}
+          floatingMediaOpen={isFloatingMediaOpen}
+          onToggleFloatingMedia={() => setIsFloatingMediaOpen((current) => !current)}
           adminToolbar={
             <AdminBar
               embedded
@@ -1641,6 +1644,8 @@ export default function App() {
               onOpenOrders={handleOpenOrders}
               onOpenProducts={() => setIsProductsOpen(true)}
               onOpenLogoEditor={() => setIsLogoEditorOpen(true)}
+              onToggleFloatingMedia={() => setIsFloatingMediaOpen((current) => !current)}
+              floatingMediaOpen={isFloatingMediaOpen}
               onOpenSecurity={handleOpenSecurity}
               onLogout={handleLogout}
             />

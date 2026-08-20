@@ -53,6 +53,8 @@ interface Props {
   onSave: (nextConfig?: SiteEditorConfig) => Promise<void> | void;
   onOpenCustomizer?: () => void;
   adminToolbar?: React.ReactNode;
+  floatingMediaOpen?: boolean;
+  onToggleFloatingMedia?: () => void;
 }
 
 const FONT_OPTIONS = [
@@ -175,6 +177,8 @@ export const SiteVisualEditor: React.FC<Props> = ({
   onSave,
   onOpenCustomizer,
   adminToolbar,
+  floatingMediaOpen = false,
+  onToggleFloatingMedia,
 }) => {
   const [open, setOpen] = useState(false);
   const [panelPosition, setPanelPosition] = useState<{ x: number; y: number } | null>(null);
@@ -766,16 +770,29 @@ export const SiteVisualEditor: React.FC<Props> = ({
             </div>
           )}
 
-          <div data-floating-editor-section="true" className="border-t border-[#344139] pt-4">
-            <div className="mb-2">
-              <div className="text-sm font-semibold text-[#e8e1d5]">Images flottantes</div>
-              <div className="text-[11px] text-[#87968a]">Ajoutez une image et ancrez-la directement à un module de la page.</div>
+          {floatingMediaOpen && (
+            <div data-floating-editor-section="true" className="border-t border-[#344139] pt-4">
+              <div className="mb-2 flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-sm font-semibold text-[#e8e1d5]">Images flottantes</div>
+                  <div className="text-[11px] text-[#87968a]">Ajoutez une image et ancrez-la directement à un module de la page.</div>
+                </div>
+                {onToggleFloatingMedia && (
+                  <button
+                    type="button"
+                    onClick={onToggleFloatingMedia}
+                    className="shrink-0 rounded-lg border border-[#455248] px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#c4ceb8] hover:border-[#d4af37] hover:text-[#d4af37]"
+                  >
+                    Fermer
+                  </button>
+                )}
+              </div>
+              <FloatingMediaManager
+                config={config}
+                onChange={onChange}
+              />
             </div>
-            <FloatingMediaManager
-              config={config}
-              onChange={onChange}
-            />
-          </div>
+          )}
 
           {message && <div className="rounded-lg bg-[#203428] px-3 py-2 text-xs text-[#cfe0d2]"><Check size={14} className="inline mr-1" />{message}</div>}
           {error && <div className="rounded-lg bg-[#3a2222] px-3 py-2 text-xs text-[#f2caca]">{error}</div>}
