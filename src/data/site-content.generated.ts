@@ -483,7 +483,7 @@ export const publishedSiteContent = {
       "inquiryButtonText": "Commander sur Mesure",
       "workshopButtonText": "Prendre Rendez-vous à l'Atelier",
       "heroBadgeText": "Édition Limitée des Pyrénées",
-      "heroTitlePrefix": "Thème Champêtre \u0026 Élégance 4",
+      "heroTitlePrefix": "Thème Champêtre \u0026 Élégance",
       "comparisonCriteria": [
         {
           "id": "crit_category",
@@ -866,7 +866,7 @@ export const publishedSiteContent = {
         }
       },
       {
-        "id": "vce-c1o0ht",
+        "id": "vce-1io6f2b",
         "type": "text",
         "section": "hero",
         "x": 50,
@@ -874,12 +874,15 @@ export const publishedSiteContent = {
         "visible": true,
         "selector": "[data-vce-hero-line=\"1\"]",
         "kind": "text",
-        "text": "Thème Champêtre \u0026 Élégance 4",
+        "text": "Thème Champêtre \u0026 Élégance",
         "fontFamily": "ui-serif",
         "fontSize": "60px",
         "color": "rgb(194, 162, 109)",
         "locator": {
-          "sectionId": "hero"
+          "tag": "span",
+          "text": "Thème Champêtre \u0026 Élégance 4",
+          "sectionId": "hero",
+          "occurrence": 0
         }
       }
     ],
@@ -1049,16 +1052,19 @@ export const publishedSiteContent = {
           "sectionId": "hero"
         }
       },
-      "vce-c1o0ht": {
-        "id": "vce-c1o0ht",
+      "vce-1io6f2b": {
+        "id": "vce-1io6f2b",
         "type": "text",
         "kind": "text",
         "section": "hero",
         "locator": {
-          "sectionId": "hero"
+          "tag": "span",
+          "text": "Thème Champêtre \u0026 Élégance 4",
+          "sectionId": "hero",
+          "occurrence": 0
         }
       }
     }
   },
-  "publishedAt": 1787215883797
+  "publishedAt": 1787215890321
 } as const;
