@@ -483,7 +483,7 @@ export const publishedSiteContent = {
       "inquiryButtonText": "Commander sur Mesure",
       "workshopButtonText": "Prendre Rendez-vous à l'Atelier",
       "heroBadgeText": "Édition Limitée des Pyrénées",
-      "heroTitlePrefix": "Thème Champêtre \u0026 Élégance",
+      "heroTitlePrefix": "Thème Champêtre \u0026 Élégance 4",
       "comparisonCriteria": [
         {
           "id": "crit_category",
@@ -807,6 +807,20 @@ export const publishedSiteContent = {
         "fontFamily": "-apple-system",
         "fontSize": "16px",
         "color": "rgb(163, 176, 162)"
+      },
+      {
+        "id": "element-1787211492954",
+        "type": "text",
+        "section": "hero",
+        "x": 50,
+        "y": 50,
+        "visible": true,
+        "selector": "[data-vce-hero-line=\"1\"]",
+        "kind": "text",
+        "text": "Thème Champêtre \u0026 Élégance 4",
+        "fontFamily": "ui-serif",
+        "fontSize": "60px",
+        "color": "rgb(194, 162, 109)"
       }
     ],
     "editorElements": {
@@ -953,8 +967,16 @@ export const publishedSiteContent = {
         "section": "hero",
         "selector": "div:nth-of-type(2) \u003e p:nth-of-type(2)",
         "locator": "data-vce-id"
+      },
+      "element-1787211492954": {
+        "id": "element-1787211492954",
+        "type": "text",
+        "kind": "text",
+        "section": "hero",
+        "selector": "[data-vce-hero-line=\"1\"]",
+        "locator": "data-vce-id"
       }
     }
   },
-  "publishedAt": 1787211486938
+  "publishedAt": 1787211494299
 } as const;
