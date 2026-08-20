@@ -116,8 +116,8 @@ export const publishedSiteContent = {
             "category": "utility"
           }
         ],
-        "isAvailable": true,
-        "availabilityStatus": "on-sale",
+        "isAvailable": false,
+        "availabilityStatus": "sold-out",
         "customSpecs": {}
       },
       {
@@ -406,7 +406,7 @@ export const publishedSiteContent = {
         "section": "hero",
         "url": "/assets/persistent-media-2.png",
         "alt": "",
-        "x": 22,
+        "x": 15,
         "y": 27,
         "size": 104,
         "rotate": -18,
@@ -868,5 +868,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787249509866
+  "publishedAt": 1787250459511
 } as const;
