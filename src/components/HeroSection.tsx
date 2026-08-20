@@ -18,6 +18,8 @@ interface HeroSectionProps {
   onOpenEditorSection?: (tab: 'brand' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
   onSelectJacket: (jacketId: string) => void;
   onOpenInquiry: (jacketId?: string) => void;
+  sectionBackgroundImage?: string;
+  sectionBackgroundOpacity?: number;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
@@ -26,6 +28,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   onOpenEditorSection,
   onSelectJacket,
   onOpenInquiry,
+  sectionBackgroundImage,
+  sectionBackgroundOpacity = 100,
 }) => {
   const jackets = brandData.jackets && brandData.jackets.length > 0 ? brandData.jackets : [];
   const theme = brandData.theme;
@@ -115,7 +119,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   return (
     <section
       id="hero-section"
-      className={`relative min-h-screen flex flex-col justify-between pt-28 pb-12 overflow-hidden bg-[#121613] group/hero ${contentPaddingClass}`}
+      className={`relative min-h-screen flex flex-col justify-between pt-28 pb-12 overflow-hidden ${sectionBackgroundImage ? 'bg-transparent' : 'bg-[#121613]'} group/hero ${contentPaddingClass}`}
     >
       {/* Background media: image / GIF / video + gradient overlay */}
       <div className="absolute inset-0 z-0">
@@ -137,11 +141,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         ) : (
           <img
             data-vce-id="hero-background-media"
-            src={brandData.heroBackground?.url || brandData.heroBgImage}
+            src={sectionBackgroundImage || brandData.heroBackground?.url || brandData.heroBgImage}
             alt="Les Pyrénées"
-            className="w-full h-full object-cover object-center scale-105 opacity-40 mix-blend-luminosity"
+            className="w-full h-full object-cover object-center scale-105 mix-blend-luminosity"
             style={{
               objectPosition: `${brandData.heroBackground?.positionX ?? 50}% ${brandData.heroBackground?.positionY ?? 50}%`,
+              opacity: sectionBackgroundImage ? Math.min(100, Math.max(0, sectionBackgroundOpacity)) / 100 : 0.4,
             }}
           />
         )}

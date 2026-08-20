@@ -67,30 +67,37 @@ interface LogoBlockProps {
 
 export const LogoBlock: React.FC<LogoBlockProps> = ({ brandData, kind, onClick, compact = false, className = '' }) => {
   const logo = getLogoConfig(brandData, kind);
+  const [imageRatio, setImageRatio] = React.useState(1);
+  const [imageFailed, setImageFailed] = React.useState(false);
   const imageSize = compact ? Math.min(logo.imageSize, 48) : logo.imageSize;
   const textSize = compact ? `clamp(15px, 1.8vw, ${logo.textSize})` : logo.textSize;
+  const imageHeight = imageSize;
+  const imageWidth = logo.imageUrl && !imageFailed ? Math.min(imageSize * 2.2, Math.max(24, imageSize * imageRatio)) : imageSize;
+
   const content = (
     <div
       className={`flex items-center ${className}`}
       style={{ gap: logo.gap }}
     >
       <div
-        className="shrink-0 rounded-full overflow-hidden flex items-center justify-center"
+        className="shrink-0 overflow-hidden flex items-center justify-center rounded-xl"
         style={{
-          width: imageSize,
-          height: imageSize,
+          width: imageWidth,
+          height: imageHeight,
           border: '1px solid rgba(212,175,55,.65)',
           background: '#202922',
         }}
       >
-        {logo.imageUrl && !logo.imageUrl.startsWith('data:') ? (
+        {logo.imageUrl && !logo.imageUrl.startsWith('data:') && !imageFailed ? (
           <img
             src={logo.imageUrl}
             alt=""
-            className="w-full h-full object-cover"
-            onError={(event) => {
-              event.currentTarget.style.display = 'none';
+            className="w-full h-full object-contain"
+            onLoad={(event) => {
+              const img = event.currentTarget;
+              if (img.naturalWidth && img.naturalHeight) setImageRatio(img.naturalWidth / img.naturalHeight);
             }}
+            onError={() => setImageFailed(true)}
           />
         ) : (
           <span className="font-serif font-bold text-[#d4af37]">MP</span>

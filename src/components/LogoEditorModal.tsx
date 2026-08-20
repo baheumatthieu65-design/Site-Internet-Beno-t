@@ -3,6 +3,7 @@ import { X, Image as ImageIcon, Save, RotateCcw } from 'lucide-react';
 import { BrandConfig } from '../types';
 import { LogoBlockConfig } from './LogoBlock';
 import { getLogoConfig, LogoKind } from './LogoBlock';
+import { prepareImageForUpload } from '../utils/mediaUpload';
 
 interface Props {
   isOpen: boolean;
@@ -33,8 +34,9 @@ const LogoEditorFields: React.FC<{
     setUploadError('');
 
     try {
+      const preparedFile = await prepareImageForUpload(file);
       const form = new FormData();
-      form.append('file', file);
+      form.append('file', preparedFile);
 
       const response = await fetch('/api/site-media', {
         method: 'POST',
@@ -128,7 +130,7 @@ const LogoEditorFields: React.FC<{
         <div className="text-[10px] uppercase tracking-widest text-[#7f8f82] mb-3">Aperçu — {kind === 'boutique' ? 'Boutique' : 'Gîte'}</div>
         <div className="flex items-center justify-center min-h-24">
           <div className="flex items-center min-w-0" style={{ gap: value.gap }}>
-            {value.imageUrl ? <img src={value.imageUrl} alt="" style={{ width: value.imageSize, height: value.imageSize }} className="rounded-full object-cover border border-[#d4af37]/60" /> : <div style={{ width: value.imageSize, height: value.imageSize }} className="rounded-full bg-[#202922] border border-[#d4af37]/60 flex items-center justify-center text-[#d4af37] font-serif font-bold">MP</div>}
+            {value.imageUrl ? <img src={value.imageUrl} alt="" style={{ height: value.imageSize, width: 'auto', maxWidth: value.imageSize * 2.2 }} className="rounded-xl object-contain border border-[#d4af37]/60 bg-[#202922]" /> : <div style={{ width: value.imageSize, height: value.imageSize }} className="rounded-xl bg-[#202922] border border-[#d4af37]/60 flex items-center justify-center text-[#d4af37] font-serif font-bold">MP</div>}
             {value.showText !== false && <span className="min-w-0 max-w-[360px]" style={{ color: value.textColor, fontSize: value.textSize, fontFamily: value.fontFamily === 'sans' ? 'inherit' : 'Georgia, serif', lineHeight: 1.05 }}><span className="block whitespace-pre-line font-semibold">{value.text}</span>{value.secondaryText && <span className="block mt-1 text-[.42em] font-normal tracking-[.12em] uppercase opacity-80">{value.secondaryText}</span>}</span>}
           </div>
         </div>

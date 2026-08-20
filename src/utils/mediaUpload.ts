@@ -1,4 +1,4 @@
-const MAX_UPLOAD_BYTES = 3_500_000;
+const MAX_UPLOAD_BYTES = 2_500_000;
 
 const blobToFile = (blob: Blob, original: File): File => {
   const base = original.name.replace(/\.[^.]+$/, '') || 'image';
@@ -13,14 +13,14 @@ const blobToFile = (blob: Blob, original: File): File => {
 export async function prepareImageForUpload(file: File, maxBytes = MAX_UPLOAD_BYTES): Promise<File> {
   if (!file.type.startsWith('image/') || file.size <= maxBytes || file.type === 'image/svg+xml' || file.type === 'image/gif') {
     if ((file.type === 'image/svg+xml' || file.type === 'image/gif') && file.size > maxBytes) {
-      throw new Error('Cette image est trop volumineuse pour l’import direct. Utilisez un JPG, PNG ou WebP de moins de 3,5 Mo.');
+      throw new Error('Cette image est trop volumineuse pour l’import direct. Utilisez un JPG, PNG ou WebP de moins de 2,5 Mo.');
     }
     return file;
   }
 
   const bitmap = await createImageBitmap(file);
   try {
-    const maxDimension = 2400;
+    const maxDimension = 2000;
     const ratio = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
     const canvas = document.createElement('canvas');
     canvas.width = Math.max(1, Math.round(bitmap.width * ratio));
@@ -38,7 +38,7 @@ export async function prepareImageForUpload(file: File, maxBytes = MAX_UPLOAD_BY
     }
 
     if (!blob || blob.size > maxBytes) {
-      throw new Error('Impossible de réduire suffisamment cette image. Choisissez une image de moins de 3,5 Mo.');
+      throw new Error('Impossible de réduire suffisamment cette image. Choisissez une image de moins de 2,5 Mo.');
     }
     return blobToFile(blob, file);
   } finally {

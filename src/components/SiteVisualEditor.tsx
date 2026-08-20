@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, Image as ImageIcon, Loader2, Move, Save, Settings2, Type, X } from 'lucide-react';
 import type { BrandConfig, SectionId } from '../types';
 import { FloatingMediaManager } from './FloatingMediaManager';
+import { prepareImageForUpload } from '../utils/mediaUpload';
 
 export type AdminBarPosition = 'top' | 'bottom' | 'left' | 'right';
 
@@ -444,8 +445,9 @@ export const SiteVisualEditor: React.FC<Props> = ({
     setMessage('');
 
     try {
+      const preparedFile = await prepareImageForUpload(file);
       const form = new FormData();
-      form.append('file', file);
+      form.append('file', preparedFile);
 
       const response = await fetch('/api/site-media', {
         method: 'POST',

@@ -42,6 +42,8 @@ interface JacketsShowcaseProps {
   onSelectJacket: (id: string) => void;
   onOpenInquiry: (jacketId: string, color?: string, size?: string) => void;
   onReorderProductBlocks?: (newOrder: ProductBlockId[]) => void;
+  sectionBackgroundImage?: string;
+  sectionBackgroundOpacity?: number;
 }
 
 export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
@@ -54,6 +56,8 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   onSelectJacket,
   onOpenInquiry,
   onReorderProductBlocks,
+  sectionBackgroundImage,
+  sectionBackgroundOpacity = 100,
 }) => {
   const visibleJackets = Array.isArray(jackets)
     ? jackets.filter((j) => isAdminLoggedIn || j.isAvailable !== false)
@@ -394,7 +398,10 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   };
 
   return (
-    <section id="collection" className="py-20 bg-[#151a16] text-[#e2d5c3] relative overflow-hidden group/showcase">
+    <section id="collection" className={`py-20 ${sectionBackgroundImage ? 'bg-transparent' : 'bg-[#151a16]'} text-[#e2d5c3] relative overflow-hidden group/showcase`}>
+      {sectionBackgroundImage && (
+        <div aria-hidden="true" className="absolute inset-0 z-0 pointer-events-none bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${JSON.stringify(sectionBackgroundImage)})`, opacity: Math.min(100, Math.max(0, sectionBackgroundOpacity)) / 100 }} />
+      )}
       {/* Decorative mountain graphic accent */}
       <div className="absolute top-0 right-0 -mt-12 -mr-12 opacity-5 pointer-events-none">
         <svg className="w-96 h-96 text-[#d4af37]" fill="currentColor" viewBox="0 0 24 24">
@@ -427,7 +434,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
         </div>
       )}
 
-      <div className={`${containerWidthClass} px-4 sm:px-6 lg:px-8`}>
+      <div className={`${containerWidthClass} px-4 sm:px-6 lg:px-8 relative z-10`}>
         {/* Section Header */}
         <div className={`${textAlignClass} max-w-3xl mx-auto mb-10`}>
           <span className="text-xs uppercase tracking-widest text-[#d4af37] font-serif font-medium">

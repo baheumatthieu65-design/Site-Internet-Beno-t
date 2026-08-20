@@ -1216,6 +1216,20 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                               {idx + 1}. {meta.name}
                             </span>
                             <p className="text-[11px] text-[#a3b1a5]">{meta.desc}</p>
+                            <div className="mt-2 flex items-center gap-2">
+                              <div
+                                className="w-24 h-12 rounded-lg overflow-hidden border border-[#465447] bg-[#101510] shrink-0"
+                                style={currentTheme.sectionBackgroundImages?.[secId] ? {
+                                  backgroundImage: `url(${JSON.stringify(currentTheme.sectionBackgroundImages[secId])})`,
+                                  backgroundSize: 'cover',
+                                  backgroundPosition: 'center',
+                                  opacity: getSectionBackgroundOpacity(secId) / 100,
+                                } : undefined}
+                              >
+                                {!currentTheme.sectionBackgroundImages?.[secId] && <div className="w-full h-full flex items-center justify-center text-[9px] text-[#607162]">Aperçu du bloc</div>}
+                              </div>
+                              {currentTheme.sectionBackgroundImages?.[secId] && <span className="text-[9px] text-[#7f9382]">Fond importé</span>}
+                            </div>
                           </div>
                         </div>
 
@@ -1387,6 +1401,20 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                               )}
                             </div>
                             <p className="text-[11px] text-[#a3b1a5]">{meta.desc}</p>
+                            <div className="mt-2 flex items-center gap-2">
+                              <div
+                                className="w-24 h-12 rounded-lg overflow-hidden border border-[#465447] bg-[#101510] shrink-0"
+                                style={currentTheme.sectionBackgroundImages?.[secId] ? {
+                                  backgroundImage: `url(${JSON.stringify(currentTheme.sectionBackgroundImages[secId])})`,
+                                  backgroundSize: 'cover',
+                                  backgroundPosition: 'center',
+                                  opacity: getSectionBackgroundOpacity(secId) / 100,
+                                } : undefined}
+                              >
+                                {!currentTheme.sectionBackgroundImages?.[secId] && <div className="w-full h-full flex items-center justify-center text-[9px] text-[#607162]">Aperçu du bloc</div>}
+                              </div>
+                              {currentTheme.sectionBackgroundImages?.[secId] && <span className="text-[9px] text-[#7f9382]">Fond importé</span>}
+                            </div>
                           </div>
                         </div>
 
