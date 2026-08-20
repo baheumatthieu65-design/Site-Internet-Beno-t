@@ -289,8 +289,8 @@ export const publishedSiteContent = {
         "title-price",
         "colors",
         "sizes",
-        "specs",
         "cta",
+        "specs",
         "description"
       ],
       "formFieldsOrder": [
@@ -857,5 +857,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787246006481
+  "publishedAt": 1787246011542
 } as const;
