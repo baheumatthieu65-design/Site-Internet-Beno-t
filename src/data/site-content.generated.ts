@@ -666,7 +666,7 @@ export const publishedSiteContent = {
           "occurrence": 0
         },
         "kind": "text",
-        "text": "ILHET - Vallée d'Aure et du Louron",
+        "text": "ILHET - Vallée d'Aure",
         "fontFamily": "ui-serif",
         "fontSize": "12px",
         "color": "rgb(212, 175, 55)"
@@ -795,5 +795,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787255394897
+  "publishedAt": 1787255649515
 } as const;
