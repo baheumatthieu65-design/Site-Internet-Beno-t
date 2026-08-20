@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import type { EditorBlock, SiteEditorConfig } from './SiteVisualEditor';
 
 function findElement(selector: string): Element | null {
@@ -17,10 +17,7 @@ function applyBlock(block: EditorBlock) {
 
   const html = el as HTMLElement;
 
-  // Texte + typographie : fonctionne pour p, h1..h6, span, liens,
-  // boutons et tout autre élément sélectionné par l'éditeur.
-  if (block.text != null && (block.kind === 'text' || block.type === 'text' || block.type === 'heading' || block.type === 'button')) {
-    // Ne pas utiliser innerHTML : l'éditeur travaille volontairement sur du texte.
+  if (block.text != null && block.kind === 'text') {
     html.textContent = block.text;
   }
 
@@ -28,8 +25,7 @@ function applyBlock(block: EditorBlock) {
   if (block.fontSize) html.style.fontSize = block.fontSize;
   if (block.color) html.style.color = block.color;
 
-  // Boutons / liens : le lien édité devient également persistant côté observateur.
-  if ((block.type === 'button' || block.link != null) && block.link != null) {
+  if (block.link != null) {
     if (el instanceof HTMLAnchorElement) {
       el.href = block.link;
     } else {
@@ -37,31 +33,22 @@ function applyBlock(block: EditorBlock) {
     }
   }
 
-  // Images / vidéos.
   if (block.kind === 'media' && block.url) {
     if (el instanceof HTMLImageElement) {
       el.src = block.url;
-      el.removeAttribute('srcset');
-      el.removeAttribute('sizes');
     }
 
-    if (el instanceof HTMLVideoElement) {
-      if (el.src !== block.url) {
-        el.src = block.url;
-        el.load();
-      }
+    if (el instanceof HTMLVideoElement && el.src !== block.url) {
+      el.src = block.url;
+      el.load();
     }
 
-    // Cas d'un élément média encapsulé.
     const image = el.querySelector('img');
     if (image instanceof HTMLImageElement) {
       image.src = block.url;
-      image.removeAttribute('srcset');
-      image.removeAttribute('sizes');
     }
   }
 
-  // Une suppression/masquage depuis l'éditeur doit également être persistante.
   html.style.display = block.visible ? '' : 'none';
 }
 
@@ -75,45 +62,24 @@ export const SiteBlocksRenderer: React.FC<{
   config: SiteEditorConfig;
   enabled: boolean;
 }> = ({ config, enabled }) => {
-  const blocksRef = useRef<EditorBlock[]>(config.blocks || []);
-
-  useEffect(() => {
-    blocksRef.current = config.blocks || [];
-  }, [config.blocks]);
-
   useEffect(() => {
     if (!enabled) return;
 
-    let raf1 = 0;
-    let raf2 = 0;
-
-    const apply = () => applyAll(blocksRef.current);
-
-    // Les composants React peuvent se rerendre juste après le fetch de la
-    // configuration. On applique donc après le paint, pas seulement au moment
-    // où config.blocks change.
-    raf1 = requestAnimationFrame(apply);
-    raf2 = requestAnimationFrame(() => requestAnimationFrame(apply));
-
-    const observer = new MutationObserver(() => {
-      // Un composant peut réinjecter sa valeur par défaut après notre écriture.
-      // Réappliquer les overrides publiés garantit que l'éditeur reste la
-      // source de vérité pour les éléments personnalisés.
-      apply();
+    const raf1 = requestAnimationFrame(() => {
+      applyAll(config.blocks || []);
     });
 
-    observer.observe(document.body, {
-      subtree: true,
-      childList: true,
-      characterData: true,
+    const raf2 = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        applyAll(config.blocks || []);
+      });
     });
 
     return () => {
       cancelAnimationFrame(raf1);
       cancelAnimationFrame(raf2);
-      observer.disconnect();
     };
-  }, [enabled, config.blocks]);
+  }, [config.blocks, enabled]);
 
   return null;
 };
