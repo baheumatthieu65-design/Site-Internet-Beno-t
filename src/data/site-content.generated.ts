@@ -839,7 +839,7 @@ export const publishedSiteContent = {
           "occurrence": 0
         },
         "kind": "text",
-        "text": "\"Élégance Champêtre \u0026 Artisanat des Cimes 3\"",
+        "text": "\"Élégance Champêtre \u0026 Artisanat des Cimes 5\"",
         "fontFamily": "ui-serif",
         "fontSize": "24px",
         "color": "rgb(208, 197, 180)"
@@ -1000,5 +1000,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787218908304
+  "publishedAt": 1787218914122
 } as const;
