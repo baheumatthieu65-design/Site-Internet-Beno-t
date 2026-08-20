@@ -803,7 +803,7 @@ export const publishedSiteContent = {
         "visible": true,
         "selector": "div:nth-of-type(2) \u003e p:nth-of-type(2)",
         "kind": "text",
-        "text": "Conçues au cœur de la chaîne pyrénéenne, deux vestes d’exception mariant matières nobles et coupe haute couture test.",
+        "text": "Conçues au cœur de la chaîne pyrénéenne, deux vestes d’exception mariant matières nobles et coupe haute couture 4.",
         "fontFamily": "-apple-system",
         "fontSize": "16px",
         "color": "rgb(163, 176, 162)"
@@ -956,5 +956,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787211464931
+  "publishedAt": 1787211481237
 } as const;
