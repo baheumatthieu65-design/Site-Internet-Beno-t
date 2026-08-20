@@ -843,6 +843,25 @@ export const publishedSiteContent = {
         "fontFamily": "ui-serif",
         "fontSize": "24px",
         "color": "rgb(208, 197, 180)"
+      },
+      {
+        "id": "hero-subtitle",
+        "type": "text",
+        "section": "hero",
+        "x": 50,
+        "y": 50,
+        "visible": true,
+        "locator": {
+          "tag": "p",
+          "text": "Conçues au cœur de la chaîne pyrénéenne, deux vestes d’exception mariant matières nobles et coupe haute couture 1.",
+          "sectionId": "hero",
+          "occurrence": 0
+        },
+        "kind": "text",
+        "text": "Conçues au cœur de la chaîne pyrénéenne, deux vestes d’exception mariant matières nobles et coupe haute couture.",
+        "fontFamily": "-apple-system",
+        "fontSize": "16px",
+        "color": "rgb(163, 176, 162)"
       }
     ],
     "editorElements": {
@@ -997,8 +1016,16 @@ export const publishedSiteContent = {
         "section": "hero",
         "selector": null,
         "locator": "data-vce-id"
+      },
+      "hero-subtitle": {
+        "id": "hero-subtitle",
+        "type": "text",
+        "kind": "text",
+        "section": "hero",
+        "selector": null,
+        "locator": "data-vce-id"
       }
     }
   },
-  "publishedAt": 1787218937857
+  "publishedAt": 1787219085522
 } as const;
