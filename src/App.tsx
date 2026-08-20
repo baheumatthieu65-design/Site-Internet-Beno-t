@@ -38,8 +38,10 @@ import {
 
 import { defaultThemeConfig } from './utils/themeStyles';
 import {
+  cachePublishedSiteConfig,
   getInitialBrandData,
   getInitialEditorConfig,
+  hasLocalPublishedSiteConfig,
 } from './lib/publishedSite';
 
 type CustomizerTab =
@@ -166,7 +168,7 @@ export default function App() {
 
   // Le contenu publié serveur est la source commune aux visiteurs et à l'admin.
   // On ne révèle l'application qu'après la première synchronisation (ou fallback).
-  const [publishedConfigReady, setPublishedConfigReady] = useState(false);
+  const [publishedConfigReady, setPublishedConfigReady] = useState(() => hasLocalPublishedSiteConfig());
 
 
 
@@ -471,6 +473,11 @@ export default function App() {
           );
         }
 
+        // Dès que Redis confirme la publication, on conserve ce même
+        // snapshot localement pour que le prochain démarrage soit instantané
+        // et n'affiche jamais l'ancien bundle avant la configuration publiée.
+        cachePublishedSiteConfig(config);
+
         // Le runtime est la source active : dès qu'Upstash a confirmé l'écriture,
         // la nouvelle version est considérée comme enregistrée.
         // GitHub est le fallback de déploiement et ne doit plus pouvoir annuler
@@ -601,6 +608,11 @@ export default function App() {
       if (!config || typeof config !== 'object') {
         return false;
       }
+
+      // Le dernier snapshot serveur devient immédiatement le snapshot de
+      // démarrage du prochain chargement. Cela évite de repartir du bundle
+      // historique entre deux déploiements.
+      cachePublishedSiteConfig(config);
 
       if (config.brandData && typeof config.brandData === 'object') {
         setBrandData((previous) => {
@@ -1575,6 +1587,19 @@ export default function App() {
   // ===========================================================================
   // RENDER APP
   // ===========================================================================
+
+  if (!publishedConfigReady) {
+    return (
+      <div className="min-h-screen bg-[#121613] flex items-center justify-center text-[#d4af37]">
+        <div className="flex flex-col items-center gap-3" aria-label="Chargement du site">
+          <div className="w-8 h-8 rounded-full border-2 border-[#3b4b3e] border-t-[#d4af37] animate-spin" />
+          <span className="text-[10px] uppercase tracking-[0.28em] text-[#8f9f91]">
+            Maison Mailha
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#121613] text-[#e2d5c3] font-sans selection:bg-[#d4af37] selection:text-[#121613] relative">
