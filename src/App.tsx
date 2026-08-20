@@ -28,6 +28,7 @@ import {
 import { SiteBlocksRenderer } from './components/SiteBlocksRenderer';
 import GitePage from './components/GitePage';
 import { LogoEditorModal } from './components/LogoEditorModal';
+import { FloatingMediaLayer } from './components/FloatingMediaLayer';
 import './styles/gite-v48.css';
 import './styles/floating-media.css';
 
@@ -1308,7 +1309,6 @@ export default function App() {
             onOpenInquiry={
               handleOpenInquiry
             }
-            floatingImages={siteEditorConfig.floatingImages}
           />
         );
         break;
@@ -1440,7 +1440,8 @@ export default function App() {
       !isDragReorderMode
     ) {
       return (
-        <div key={sectionId}>
+        <div key={sectionId} className="relative">
+          <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
           {content}
         </div>
       );
@@ -1572,7 +1573,10 @@ export default function App() {
           </div>
         </div>
 
-        {content}
+        <div className="relative">
+          <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
+          {content}
+        </div>
       </div>
     );
   };
@@ -1678,6 +1682,7 @@ export default function App() {
           brandData={brandData}
           onBackToVitrine={handleBackToVitrine}
           onAdmin={() => handleOpenEditor('theme')}
+          floatingImages={siteEditorConfig.floatingImages}
         />
       )}
 
