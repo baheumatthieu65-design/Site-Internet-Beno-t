@@ -674,6 +674,25 @@ export const publishedSiteContent = {
         "fontFamily": "ui-serif",
         "fontSize": "12px",
         "color": "rgb(212, 175, 55)"
+      },
+      {
+        "id": "story-designer-location",
+        "type": "text",
+        "section": "origines",
+        "x": 50,
+        "y": 50,
+        "visible": true,
+        "locator": {
+          "tag": "p",
+          "text": "Vallée de Lourdios \u0026 Pic du Midi",
+          "sectionId": "origines",
+          "occurrence": 0
+        },
+        "kind": "text",
+        "text": "ILHET - Vallée d'Aure",
+        "fontFamily": "-apple-system",
+        "fontSize": "12px",
+        "color": "rgb(163, 177, 165)"
       }
     ],
     "editorElements": {
@@ -796,8 +815,16 @@ export const publishedSiteContent = {
         "section": "hero",
         "selector": null,
         "locator": "data-vce-id"
+      },
+      "story-designer-location": {
+        "id": "story-designer-location",
+        "type": "text",
+        "kind": "text",
+        "section": "origines",
+        "selector": null,
+        "locator": "data-vce-id"
       }
     }
   },
-  "publishedAt": 1787256193801
+  "publishedAt": 1787256342981
 } as const;
