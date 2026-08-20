@@ -391,7 +391,7 @@ export const publishedSiteContent = {
     "logos": {
       "boutique": {
         "imageUrl": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787218936185-admin-sheep.png",
-        "text": "MAISON MAILHA",
+        "text": "MAISON MAILHAG",
         "secondaryText": "ÉDITION LIMITÉE DES PYRÉNÉES 4",
         "fontFamily": "serif",
         "textColor": "#f3ece0",
@@ -768,5 +768,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787254009643
+  "publishedAt": 1787254291517
 } as const;
