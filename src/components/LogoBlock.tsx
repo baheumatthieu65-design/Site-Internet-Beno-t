@@ -83,12 +83,14 @@ export const LogoBlock: React.FC<LogoBlockProps> = ({ brandData, kind, onClick, 
           background: '#202922',
         }}
       >
-        {logo.imageUrl ? (
+        {logo.imageUrl && !logo.imageUrl.startsWith('data:') ? (
           <img
-            data-vce-id={`logo-${kind}-image`}
             src={logo.imageUrl}
             alt=""
             className="w-full h-full object-cover"
+            onError={(event) => {
+              event.currentTarget.style.display = 'none';
+            }}
           />
         ) : (
           <span className="font-serif font-bold text-[#d4af37]">MP</span>
@@ -96,7 +98,6 @@ export const LogoBlock: React.FC<LogoBlockProps> = ({ brandData, kind, onClick, 
       </div>
       {logo.showText !== false && (
         <span
-          data-vce-id={`logo-${kind}-name`}
           style={{
             color: logo.textColor,
             fontSize: textSize,
@@ -107,7 +108,7 @@ export const LogoBlock: React.FC<LogoBlockProps> = ({ brandData, kind, onClick, 
         >
           <span className="block whitespace-pre-line">{logo.text}</span>
           {logo.secondaryText && (
-            <span data-vce-id={`logo-${kind}-secondary`} className="block mt-1 text-[.48em] sm:text-[.42em] font-normal tracking-[.12em] uppercase opacity-80 whitespace-pre-line">
+            <span className="block mt-1 text-[.48em] sm:text-[.42em] font-normal tracking-[.12em] uppercase opacity-80 whitespace-pre-line">
               {logo.secondaryText}
             </span>
           )}

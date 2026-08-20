@@ -25,11 +25,38 @@ const LogoEditorFields: React.FC<{
   onChange: (next: LogoBlockConfig) => void;
 }> = ({ kind, value, onChange }) => {
   const update = (fields: Partial<LogoBlockConfig>) => onChange({ ...value, ...fields });
-  const handleFile = (file?: File) => {
+  const handleFile = async (file?: File) => {
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => update({ imageUrl: String(reader.result || '') });
-    reader.readAsDataURL(file);
+    setUploading(true);
+    setUploadError('');
+
+    try {
+      const form = new FormData();
+      form.append('file', file);
+
+      const response = await fetch('/api/site-media', {
+        method: 'POST',
+        credentials: 'include',
+        cache: 'no-store',
+        body: form,
+      });
+
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.success || !data?.url) {
+        throw new Error(data?.error || `Upload logo : HTTP ${response.status}`);
+      }
+
+      // IMPORTANT : ne jamais stocker de data:image;base64 dans la
+      // configuration publiée. Le fichier est placé dans Vercel Blob et
+      // seule son URL publique est persistée. Cela évite les snapshots
+      // de plusieurs centaines de Ko, les ralentissements et les pages
+      // noires au logout/refresh.
+      update({ imageUrl: String(data.url) });
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : 'Upload du logo impossible.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -49,11 +76,12 @@ const LogoEditorFields: React.FC<{
       <div className="flex flex-wrap gap-2">
         <label className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-[#3b4b3e] bg-[#1b241d] text-xs cursor-pointer">
           <ImageIcon className="w-4 h-4 text-[#d4af37]" />
-          <span>Choisir un fichier</span>
-          <input type="file" accept="image/*" className="hidden" onChange={e => handleFile(e.target.files?.[0])} />
+          <span>{uploading ? 'Téléversement…' : 'Choisir un fichier'}</span>
+          <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={e => void handleFile(e.target.files?.[0])} />
         </label>
         <button type="button" onClick={() => update({ imageUrl: '' })} className="px-3 py-2 rounded-xl border border-[#3b4b3e] text-xs text-[#c4ceb8]">Supprimer l'image</button>
       </div>
+      {uploadError && <div className="text-xs text-red-300 rounded-xl border border-red-400/30 bg-red-950/20 px-3 py-2">{uploadError}</div>}
 
       <label className="space-y-1.5 block">
         <span className="text-[11px] uppercase tracking-widest text-[#a3b1a5]">Texte secondaire</span>
@@ -110,6 +138,8 @@ const LogoEditorFields: React.FC<{
 export const LogoEditorModal: React.FC<Props> = ({ isOpen, brandData, onClose, onSave }) => {
   const [draft, setDraft] = useState<BrandConfig>(() => makeInitial(brandData));
   const [active, setActive] = useState<LogoKind>('boutique');
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   useEffect(() => { if (isOpen) { setDraft(makeInitial(brandData)); setActive('boutique'); } }, [isOpen, brandData]);
   if (!isOpen) return null;
 

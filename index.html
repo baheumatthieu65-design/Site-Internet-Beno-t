@@ -6,13 +6,7 @@
     <title>Maison Mailha</title>
 
     <style>
-      /*
-       * V63+ — BOOTSTRAP WITHOUT CONTENT FLASH
-       *
-       * Le navigateur garde #root invisible pendant le bootstrap de la
-       * configuration publiée. Aucun ancien contenu ne doit être affiché
-       * avant que App ait reçu son snapshot serveur ou le fallback généré.
-       */
+      /* Bootstrap non bloquant : le bundle publié sert de fallback immédiat. */
       html,
       body {
         margin: 0;
@@ -20,12 +14,8 @@
         background: #121613;
       }
 
-      html.site-booting #root {
-        visibility: hidden;
-      }
-
-      html.site-ready #root {
-        visibility: visible;
+      #root {
+        min-height: 100vh;
       }
     </style>
   </head>

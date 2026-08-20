@@ -268,116 +268,8 @@ export default function App() {
 
     const previousBlocks = previousEditorConfig?.blocks || [];
 
-    // V4.3 : les éléments canoniques ont une identité métier permanente.
-    // Ils ne passent plus par une recherche « ancien texte -> nouveau texte ».
-    // L'éditeur peut donc modifier directement la même donnée que le panneau
-    // de personnalisation.
-    const canonicalTextBindings: Record<string, (value: string) => void> = {
-      'hero-brand-name': (value) => { next = { ...next, brandName: value }; changed = true; },
-      'hero-tagline': (value) => { next = { ...next, tagline: value.replace(/^["«]|["»]$/g, '') }; changed = true; },
-      'hero-subtitle': (value) => { next = { ...next, subtitle: value }; changed = true; },
-      'hero-designer-location': (value) => { next = { ...next, designerLocation: value }; changed = true; },
-      'hero-title-prefix': (value) => {
-        next = {
-          ...next,
-          theme: { ...defaultThemeConfig, ...(next.theme || {}), heroTitlePrefix: value },
-        };
-        changed = true;
-      },
-      'hero-badge-text': (value) => {
-        next = {
-          ...next,
-          theme: { ...defaultThemeConfig, ...(next.theme || {}), heroBadgeText: value },
-        };
-        changed = true;
-      },
-      'hero-order-button-text': (value) => {
-        next = {
-          ...next,
-          theme: { ...defaultThemeConfig, ...(next.theme || {}), orderButtonText: value },
-        };
-        changed = true;
-      },
-      'hero-discover-button-text': (value) => {
-        next = {
-          ...next,
-          theme: { ...defaultThemeConfig, ...(next.theme || {}), discoverButtonText: value.replace(/\s+la collection(?: \(\d+ créations\))?$/i, '') },
-        };
-        changed = true;
-      },
-      'navbar-order-button-text': (value) => {
-        next = {
-          ...next,
-          theme: { ...defaultThemeConfig, ...(next.theme || {}), orderButtonText: value },
-        };
-        changed = true;
-      },
-      'logo-boutique-name': (value) => { next = { ...next, brandName: value }; changed = true; },
-      'story-title': (value) => { next = { ...next, storyTitle: value }; changed = true; },
-      'story-text-1': (value) => { next = { ...next, storyText1: value }; changed = true; },
-      'story-text-2': (value) => { next = { ...next, storyText2: value }; changed = true; },
-    };
-
     for (const block of editorConfig.blocks || []) {
-      if (block.kind === 'text' && typeof block.text === 'string') {
-        const binding = canonicalTextBindings[block.id];
-        if (binding) {
-          binding(block.text);
-          continue;
-        }
-
-        const productMatch = block.id.match(/^product-(.+)-(name|description)$/);
-        if (productMatch) {
-          const [, productId, field] = productMatch;
-          const jackets = Array.isArray(next.jackets) ? next.jackets : [];
-          const index = jackets.findIndex((j: { id?: string }) => j.id === productId);
-          if (index >= 0) {
-            const updated = [...jackets];
-            updated[index] = { ...updated[index], [field]: block.text };
-            next = { ...next, jackets: updated };
-            changed = true;
-            continue;
-          }
-        }
-      }
-
-      if (block.kind === 'media' && typeof block.url === 'string') {
-        if (block.id === 'logo-boutique-image' || block.id === 'logo-gite-image') {
-          next = { ...next, logoUrl: block.url };
-          changed = true;
-          continue;
-        }
-
-        if (block.id === 'hero-background-media') {
-          next = {
-            ...next,
-            heroBgImage: block.url,
-            heroBackground: {
-              ...(next.heroBackground || { type: 'image' as const }),
-              type: 'image',
-              url: block.url,
-            },
-          };
-          changed = true;
-          continue;
-        }
-
-        const productImageMatch = block.id.match(/^product-(.+)-image$/);
-        if (productImageMatch) {
-          const productId = productImageMatch[1];
-          const jackets = Array.isArray(next.jackets) ? next.jackets : [];
-          const index = jackets.findIndex((j: { id?: string }) => j.id === productId);
-          if (index >= 0) {
-            const updated = [...jackets];
-            updated[index] = { ...updated[index], heroImage: block.url };
-            next = { ...next, jackets: updated };
-            changed = true;
-            continue;
-          }
-        }
-      }
-
-      if (!block.selector && !block.locator) continue;
+      if (!block.selector) continue;
 
       const previous = previousBlocks.find(
         (candidate) =>
@@ -809,12 +701,10 @@ export default function App() {
       const productsPromise = fetchServerProducts();
       const authPromise = verifyAdminSessionServer();
 
+      // La publication serveur ne doit pas bloquer le premier rendu.
+      // Les produits et l'authentification peuvent continuer en parallèle.
       try {
-        const [loaded] = await Promise.all([
-          publishedPromise,
-          productsPromise,
-        ]);
-
+        const loaded = await publishedPromise;
         setPublishedConfigReady(true);
         window.dispatchEvent(
           new CustomEvent('site-bootstrap-ready', {
@@ -822,10 +712,12 @@ export default function App() {
           })
         );
       } catch (error) {
-        console.warn('Initialisation du site:', error);
+        console.warn('Initialisation du contenu publié:', error);
         setPublishedConfigReady(true);
         window.dispatchEvent(new CustomEvent('site-bootstrap-ready'));
       }
+
+      void productsPromise;
 
       try {
         const isAuthenticated = await authPromise;

@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import crypto from 'crypto';
 import {
   getRedisClient,
   parseCookies,
@@ -6,6 +7,36 @@ import {
 } from './_helpers.js';
 
 const KEY = 'mdp_site_config';
+
+const LEGACY_DATA_URLS: Record<string, string> = {
+  '29cbdd45ce9db2074533ba5b587be27fd2eafe2e3e441cb8bc35d8b3f6c41259': '/assets/persistent-media-1.png',
+  '4e6d3b32587362a2efa8b5dccdc177b9cc553c0e60bff5d0cbc6246b513ddded': '/assets/persistent-media-2.png',
+};
+
+function sanitizePersistedMedia(value: unknown): any {
+  if (typeof value === 'string') {
+    if (!value.startsWith('data:image/')) return value;
+    const hash = crypto.createHash('sha256').update(value).digest('hex');
+    // Les anciens snapshots de l'éditeur contenaient des images base64.
+    // On les convertit vers les deux fichiers publics conservés dans cette
+    // version propre du projet. Toute nouvelle image doit passer par Blob.
+    return LEGACY_DATA_URLS[hash] || '';
+  }
+
+  if (Array.isArray(value)) return value.map(sanitizePersistedMedia);
+
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, child]) => [
+        key,
+        sanitizePersistedMedia(child),
+      ])
+    );
+  }
+
+  return value;
+}
+
 
 function json(
   res: VercelResponse,
@@ -44,7 +75,9 @@ export default async function handler(
 
     return json(res, 200, {
       success: true,
-      config: config ?? null,
+      // Nettoyage à la lecture pour que les anciens snapshots base64
+      // ne puissent plus bloquer ou ralentir le visiteur.
+      config: config ? sanitizePersistedMedia(config) : null,
     });
   }
 
@@ -86,7 +119,7 @@ export default async function handler(
   }
 
   const config = {
-    ...body.config,
+    ...sanitizePersistedMedia(body.config),
     publishedAt: Number(body.config.publishedAt) || Date.now(),
   };
 

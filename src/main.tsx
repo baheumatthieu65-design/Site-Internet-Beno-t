@@ -15,8 +15,9 @@ createRoot(rootElement).render(
   </StrictMode>,
 );
 
-// Le contenu publié est chargé avant de révéler l'application.
-// Un délai de sécurité évite qu'une API indisponible puisse laisser le site noir.
+// Le bundle contient déjà une version publiée de secours.
+// Le rendu ne doit donc jamais rester invisible en attendant Redis/Upstash.
+// La synchronisation serveur se fait ensuite en arrière-plan.
 let revealed = false;
 const revealSite = () => {
   if (revealed) return;
@@ -26,4 +27,4 @@ const revealSite = () => {
 };
 
 window.addEventListener('site-bootstrap-ready', revealSite, { once: true });
-window.setTimeout(revealSite, 2500);
+window.setTimeout(revealSite, 900);
