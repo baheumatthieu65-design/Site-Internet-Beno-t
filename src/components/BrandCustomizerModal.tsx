@@ -715,13 +715,13 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   };
 
   const getSectionWidthPercent = (sectionId: SectionId) =>
-    Math.min(100, Math.max(60, Number(currentTheme.sectionWidthPercent?.[sectionId] ?? 100)));
+    Math.min(150, Math.max(0, Number(currentTheme.sectionWidthPercent?.[sectionId] ?? 100)));
 
   const updateSectionWidthPercent = (sectionId: SectionId, value: number) => {
     updateTheme({
       sectionWidthPercent: {
         ...(currentTheme.sectionWidthPercent || {}),
-        [sectionId]: Math.min(100, Math.max(60, value)),
+        [sectionId]: Math.min(150, Math.max(0, value)),
       },
     });
   };
@@ -1397,13 +1397,13 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                         <div className="mt-3 pt-3 border-t border-[#2d392f] grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-center">
                           <label className="block">
                             <div className="flex items-center justify-between text-[10px] text-[#a3b1a5] mb-1">
-                              <span>Largeur d'affichage du module</span>
+                              <span>Zoom / largeur d'affichage du module</span>
                               <strong className="text-[#d4af37]">{getSectionWidthPercent(secId)}%</strong>
                             </div>
-                            <input type="range" min="60" max="100" step="5" value={getSectionWidthPercent(secId)} onChange={(e) => updateSectionWidthPercent(secId, Number(e.target.value))} className="w-full accent-[#d4af37]" />
+                            <input type="range" min="0" max="150" step="5" value={getSectionWidthPercent(secId)} onChange={(e) => updateSectionWidthPercent(secId, Number(e.target.value))} className="w-full accent-[#d4af37]" />
                           </label>
                           <div className="flex items-center space-x-2">
-                            <span className="text-[9px] text-[#708272]">60%</span><span className="text-[9px] text-[#708272]">100%</span>
+                            <span className="text-[9px] text-[#708272]">0%</span><span className="text-[9px] text-[#708272]">100%</span><span className="text-[9px] text-[#708272]">150%</span>
                           </div>
 
                           <div className="md:col-span-2 flex flex-wrap items-center gap-2">

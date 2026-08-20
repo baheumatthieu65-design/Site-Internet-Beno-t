@@ -1503,7 +1503,7 @@ export default function App() {
       !isDragReorderMode
     ) {
       return (
-        <div key={sectionId} className="relative overflow-hidden" style={{ width: `${Math.min(100, Math.max(60, Number(theme.sectionWidthPercent?.[sectionId] ?? 100)))}%`, marginInline: 'auto' }}>
+        <div key={sectionId} className="relative overflow-visible" style={{ width: `${Math.min(150, Math.max(0, Number(theme.sectionWidthPercent?.[sectionId] ?? 100)))}%`, marginInline: 'auto' }}>
           <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
           {content}
           {sectionBackgroundOverlay}
@@ -1637,7 +1637,7 @@ export default function App() {
           </div>
         </div>
 
-        <div className="relative overflow-hidden mx-auto" style={{ width: `${Math.min(100, Math.max(60, Number(theme.sectionWidthPercent?.[sectionId] ?? 100)))}%` }}>
+        <div className="relative overflow-visible mx-auto" style={{ width: `${Math.min(150, Math.max(0, Number(theme.sectionWidthPercent?.[sectionId] ?? 100)))}%` }}>
           <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
           {content}
           {sectionBackgroundOverlay}

@@ -63,6 +63,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   const [selectedColor, setSelectedColor] = useState(activeJacket?.colors[0]?.name || '');
   const [selectedSize, setSelectedSize] = useState(activeJacket?.sizes[1] || 'M');
   const [activeHotspot, setActiveHotspot] = useState<Hotspot | null>(null);
+  const [isImageLightboxOpen, setIsImageLightboxOpen] = useState(false);
 
   // Drag and drop state for product blocks
   const [draggingBlockId, setDraggingBlockId] = useState<ProductBlockId | null>(null);
@@ -475,13 +476,15 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                 className="relative rounded-3xl bg-[#1d241f] border border-[#39483c] overflow-hidden shadow-2xl group flex items-center justify-center mx-auto"
                 style={{ width: '100%', height: `${showcaseFrameHeight}px` }}
               >
-                <div className="relative h-full w-full flex items-center justify-center overflow-hidden">
-                  <img data-vce-gallery-main="true" data-vce-gallery-product-id={activeJacket.id} src={activeImage} alt={activeJacket.name} className="w-full h-full object-contain object-center transition-all duration-500" />
+                <div className="relative h-full w-full flex items-center justify-center overflow-hidden cursor-zoom-in"
+                  onClick={() => setIsImageLightboxOpen(true)}
+                  title="Cliquer pour agrandir">
+                  <img data-vce-gallery-main="true" data-vce-gallery-product-id={activeJacket.id} src={activeImage} alt={activeJacket.name} className="w-full h-full object-cover object-center transition-all duration-500" />
                 </div>
                 {activeJacket.hotspots.map((hs) => {
                   const isSelected = activeHotspot?.id === hs.id;
                   return (
-                    <button key={hs.id} onClick={() => setActiveHotspot(isSelected ? null : hs)} style={{ left: `${hs.x}%`, top: `${hs.y}%` }} className="absolute z-20 -translate-x-1/2 -translate-y-1/2" title={hs.title}>
+                    <button key={hs.id} onClick={(event) => { event.stopPropagation(); setActiveHotspot(isSelected ? null : hs); }} style={{ left: `${hs.x}%`, top: `${hs.y}%` }} className="absolute z-20 -translate-x-1/2 -translate-y-1/2" title={hs.title}>
                       <span className="relative flex h-8 w-8 items-center justify-center">
                         <span className="absolute inline-flex h-full w-full rounded-full bg-[#d4af37] opacity-40 animate-ping" />
                         <span className="relative inline-flex rounded-full h-6 w-6 bg-[#1a201b] border-2 border-[#d4af37] text-[#d4af37] text-[10px] font-bold items-center justify-center shadow-lg">+</span>
@@ -720,6 +723,36 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                   {orderText}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Lightbox Showcase : même comportement d'agrandissement que le Lookbook. */}
+        {isImageLightboxOpen && activeImage && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Vue agrandie de ${activeJacket.name}`}
+            onClick={() => setIsImageLightboxOpen(false)}
+            className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn cursor-zoom-out"
+          >
+            <div
+              className="relative w-full max-w-6xl max-h-[92vh] rounded-2xl overflow-hidden border border-[#d4af37] bg-[#111612] shadow-2xl"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <img
+                src={activeImage}
+                alt={`${activeJacket.name} — vue agrandie`}
+                className="block w-full max-h-[88vh] object-contain"
+              />
+              <button
+                type="button"
+                onClick={() => setIsImageLightboxOpen(false)}
+                className="absolute top-4 right-4 bg-black/80 text-white px-3 py-2 rounded-full font-bold hover:bg-[#d4af37] hover:text-black transition-colors"
+                aria-label="Fermer l'image agrandie"
+              >
+                ✕
+              </button>
             </div>
           </div>
         )}
