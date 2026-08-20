@@ -240,7 +240,9 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
                 Bon de Commande & Réservation
               </h3>
               <p className="text-xs text-[#a3b0a2] mt-1">
-                Ajoutez un ou plusieurs modèles, sélectionnez vos tailles et précisez les quantités souhaitées.
+                {orderType === 'essayage'
+                  ? 'Laissez vos coordonnées et vos demandes particulières pour organiser votre rendez-vous à l’atelier.'
+                  : 'Ajoutez un ou plusieurs modèles, sélectionnez vos tailles et précisez les quantités souhaitées.'}
               </p>
             </div>
 
@@ -272,7 +274,8 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
                 </button>
               </div>
 
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#121713] border border-[#344437] space-y-4">
+              {orderType !== 'essayage' && (
+                <div className="p-4 sm:p-5 rounded-2xl bg-[#121713] border border-[#344437] space-y-4">
                 <div className="flex items-center justify-between border-b border-[#29362b] pb-2.5">
                   <div className="flex items-center space-x-2">
                     <Layers className="w-4 h-4 text-[#d4af37]" />
@@ -455,10 +458,11 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
                   </div>
                 </div>
               </div>
+              )}
 
               <div className="space-y-4">
                 <span className="text-xs uppercase tracking-widest font-bold text-[#d4af37] font-serif block">
-                  Coordonnées de Livraison & Contact
+                  {orderType === 'essayage' ? 'Coordonnées du demandeur' : 'Coordonnées de Livraison & Contact'}
                 </span>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -497,10 +501,11 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
                   <div>
                     <label className="block text-xs uppercase tracking-wider text-[#a3b1a5] mb-1 font-medium flex items-center space-x-1.5">
                       <Phone className="w-3.5 h-3.5 text-[#d4af37]" />
-                      <span>Téléphone (pour le suivi de commande)</span>
+                      <span>{orderType === 'essayage' ? 'Téléphone *' : 'Téléphone (pour le suivi de commande)'}</span>
                     </label>
                     <input
                       type="tel"
+                      required={orderType === 'essayage'}
                       value={clientPhone}
                       onChange={(e) => setClientPhone(e.target.value)}
                       placeholder="+33 6 12 34 56 78"
@@ -511,7 +516,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
                   <div>
                     <label className="block text-xs uppercase tracking-wider text-[#a3b1a5] mb-1 font-medium flex items-center space-x-1.5">
                       <MessageSquare className="w-3.5 h-3.5 text-[#d4af37]" />
-                      <span>Demandes particulières ou mensurations</span>
+                      <span>{orderType === 'essayage' ? 'Demandes particulières' : 'Demandes particulières ou mensurations'}</span>
                     </label>
                     <textarea
                       rows={1}
@@ -536,7 +541,9 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
                     <>
                       <ShieldCheck className="w-4 h-4" />
                       <span>
-                        Confirmer et Envoyer la Commande ({totalQuantity} {totalQuantity > 1 ? 'articles' : 'article'} • {totalPrice} {primaryCurrency})
+                        {orderType === 'essayage'
+                          ? 'Confirmer et Envoyer la Demande de Rendez-vous'
+                          : `Confirmer et Envoyer la Commande (${totalQuantity} ${totalQuantity > 1 ? 'articles' : 'article'} • ${totalPrice} ${primaryCurrency})`}
                       </span>
                     </>
                   )}
@@ -558,11 +565,14 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
                 Merci {clientName || 'cher client'} !
               </h3>
               <p className="text-xs text-[#a3b1a5] max-w-md mx-auto">
-                Votre commande a été enregistrée avec succès et transmise à notre atelier pyrénéen par notification automatique.
+                {orderType === 'essayage'
+                  ? 'Votre demande de rendez-vous a été enregistrée et transmise à notre atelier pyrénéen par notification automatique.'
+                  : 'Votre commande a été enregistrée avec succès et transmise à notre atelier pyrénéen par notification automatique.'}
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#111612] border border-[#303d32] space-y-3">
+            {orderType !== 'essayage' && (
+              <div className="p-4 rounded-2xl bg-[#111612] border border-[#303d32] space-y-3">
               <span className="text-xs font-serif font-bold uppercase tracking-wider text-[#d4af37] block border-b border-[#243026] pb-2">
                 Récapitulatif de votre sélection ({orderLines.length} {orderLines.length > 1 ? 'lignes' : 'ligne'}) :
               </span>
@@ -607,10 +617,13 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
                 </span>
               </div>
             </div>
+            )}
 
             <div className="p-3.5 rounded-xl bg-[#18231b] border border-[#3b4e3e] text-xs text-[#b8c5ba] space-y-1">
               <p>
-                Un récapitulatif détaillé a été transmis à l'atelier. Notre équipe vérifiera vos options sous 24h.
+                {orderType === 'essayage'
+                  ? 'Notre équipe vous recontactera pour confirmer le rendez-vous et organiser votre accueil à l’atelier.'
+                  : "Un récapitulatif détaillé a été transmis à l’atelier. Notre équipe vérifiera vos options sous 24h."}
               </p>
             </div>
 

@@ -30,16 +30,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const jackets = brandData.jackets && brandData.jackets.length > 0 ? brandData.jackets : [];
   const theme = brandData.theme;
 
-  // Le Hero doit suivre exactement le visuel principal du catalogue utilisé
-  // par le Lookbook. Les fiches historiques peuvent encore avoir un heroImage
-  // décalé alors que gallery[0] contient le visuel actuellement publié.
-  // On privilégie donc la première image publiée de la galerie, puis heroImage.
-  const getHeroProductImage = (jacket: typeof jackets[number]) => {
-    const galleryPrimary = Array.isArray(jacket.gallery)
-      ? String(jacket.gallery[0] || '').trim()
-      : '';
-    return galleryPrimary || String(jacket.heroImage || '').trim();
-  };
+  // Le Hero utilise exactement la même source que le Lookbook :
+  // heroImage est l'image principale de l'article.
+  // La galerie ne doit jamais remplacer cette image.
+  const getHeroProductImage = (jacket: typeof jackets[number]) =>
+    String(jacket.heroImage || '').trim();
 
   const layout = theme?.heroLayout || 'split-cards';
   const cardStyle = getCardClasses(theme);
