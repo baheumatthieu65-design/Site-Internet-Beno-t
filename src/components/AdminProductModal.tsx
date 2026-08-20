@@ -39,6 +39,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [imageTab, setImageTab] = useState<'primary' | 'secondary'>('primary');
+  const [uploadingImage, setUploadingImage] = useState<'primary' | number | null>(null);
 
   if (!isOpen) return null;
 
@@ -64,6 +65,37 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
 
   const handleHeroImageChange = (value: string) => {
     setEditingProduct((current) => current ? syncProductGallery(current, value) : current);
+  };
+
+  const uploadProductImage = async (file: File, target: 'primary' | number) => {
+    setUploadingImage(target);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+
+      const response = await fetch('/api/site-media', {
+        method: 'POST',
+        credentials: 'include',
+        cache: 'no-store',
+        body: form,
+      });
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.success || !data?.url) {
+        throw new Error(data?.error || `Upload image : HTTP ${response.status}`);
+      }
+
+      if (target === 'primary') {
+        handleHeroImageChange(String(data.url));
+      } else {
+        handleSecondaryImageChange(target, String(data.url));
+      }
+    } catch (error) {
+      console.error(error);
+      alert(error instanceof Error ? error.message : 'Impossible d’importer cette image.');
+    } finally {
+      setUploadingImage(null);
+    }
   };
 
   const handleSecondaryImageChange = (index: number, value: string) => {
@@ -418,13 +450,35 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                     {imageTab === 'primary' ? (
                       <div className="space-y-3">
                         <label className="block text-[#a3b1a5] font-semibold">Image Principale (URL)</label>
-                        <input
-                          type="url"
-                          value={editingProduct.heroImage || ''}
-                          onChange={(e) => handleHeroImageChange(e.target.value)}
-                          placeholder="https://..."
-                          className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                        />
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <input
+                            type="url"
+                            value={editingProduct.heroImage || ''}
+                            onChange={(e) => handleHeroImageChange(e.target.value)}
+                            placeholder="https://..."
+                            className="flex-1 w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                          />
+                          <input
+                            id="admin-product-primary-image-file"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) uploadProductImage(file, 'primary');
+                              e.currentTarget.value = '';
+                            }}
+                          />
+                          <button
+                            type="button"
+                            disabled={uploadingImage === 'primary'}
+                            onClick={() => document.getElementById('admin-product-primary-image-file')?.click()}
+                            className="shrink-0 px-3.5 py-2.5 rounded-xl bg-[#28362b] border border-[#d4af37] text-[#d4af37] hover:bg-[#344638] disabled:opacity-50 disabled:cursor-wait text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
+                          >
+                            <ImageIcon className="w-3.5 h-3.5" />
+                            <span>{uploadingImage === 'primary' ? 'Import...' : 'Importer depuis mon PC'}</span>
+                          </button>
+                        </div>
                         {editingProduct.heroImage && (
                           <div className="h-32 rounded-xl overflow-hidden bg-[#0b0f0c] border border-[#273429]">
                             <img src={editingProduct.heroImage} alt={editingProduct.name || 'Image principale'} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
@@ -452,13 +506,35 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
-                            <input
-                              type="url"
-                              value={url}
-                              onChange={(e) => handleSecondaryImageChange(index, e.target.value)}
-                              placeholder="https://..."
-                              className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                            />
+                            <div className="flex flex-col sm:flex-row gap-2">
+                              <input
+                                type="url"
+                                value={url}
+                                onChange={(e) => handleSecondaryImageChange(index, e.target.value)}
+                                placeholder="https://..."
+                                className="flex-1 w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                              />
+                              <input
+                                id={`admin-product-secondary-image-file-${index}`}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) uploadProductImage(file, index);
+                                  e.currentTarget.value = '';
+                                }}
+                              />
+                              <button
+                                type="button"
+                                disabled={uploadingImage === index}
+                                onClick={() => document.getElementById(`admin-product-secondary-image-file-${index}`)?.click()}
+                                className="shrink-0 px-3 py-2.5 rounded-xl bg-[#28362b] border border-[#d4af37] text-[#d4af37] hover:bg-[#344638] disabled:opacity-50 disabled:cursor-wait text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
+                              >
+                                <ImageIcon className="w-3.5 h-3.5" />
+                                <span>{uploadingImage === index ? 'Import...' : 'Importer depuis mon PC'}</span>
+                              </button>
+                            </div>
                             {url && (
                               <div className="h-24 rounded-lg overflow-hidden bg-[#0b0f0c] border border-[#273429]">
                                 <img src={url} alt={`Image secondaire ${index + 1}`} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
