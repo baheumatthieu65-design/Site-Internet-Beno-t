@@ -305,10 +305,10 @@ export const publishedSiteContent = {
       "lookbookImageFrameWidth": 60,
       "lookbookImageFrameHeight": 220,
       "sectionBackgroundImages": {
-        "collection": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787253653691-4k-wallpaper-blue-skies-conifers-1526720.webp"
+        "hero": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787257313516-4k-wallpaper-blue-skies-conifers-1526720.webp"
       },
       "sectionBackgroundOpacity": {
-        "hero": 75,
+        "hero": 100,
         "collection": 75
       },
       "sectionWidthPercent": {
@@ -853,5 +853,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787256367357
+  "publishedAt": 1787257323779
 } as const;
