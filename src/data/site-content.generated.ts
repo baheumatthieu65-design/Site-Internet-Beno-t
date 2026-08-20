@@ -116,8 +116,8 @@ export const publishedSiteContent = {
             "category": "utility"
           }
         ],
-        "isAvailable": false,
-        "availabilityStatus": "sold-out",
+        "isAvailable": true,
+        "availabilityStatus": "on-sale",
         "customSpecs": {}
       },
       {
@@ -178,8 +178,9 @@ export const publishedSiteContent = {
         "category": "Homme \u0026 Femme",
         "price": 490,
         "currency": "€",
-        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787242933243-Art1-2.png",
+        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787252388383-20260816_124059.jpg",
         "gallery": [
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787252388383-20260816_124059.jpg",
           "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787242933243-Art1-2.png"
         ],
         "description": "Veste artisanale d'exception tissée dans les Pyrénées.",
@@ -222,7 +223,8 @@ export const publishedSiteContent = {
         },
         "hotspots": [],
         "id": "produit-1787242939553-ezbmjg",
-        "availabilityStatus": "on-sale"
+        "availabilityStatus": "on-sale",
+        "customSpecs": {}
       }
     ],
     "theme": {
@@ -292,6 +294,7 @@ export const publishedSiteContent = {
       "sectionBackgroundImages": {
         "collection": ""
       },
+      "sectionBackgroundOpacity": {},
       "sectionWidthPercent": {
         "collection": 110
       },
@@ -499,18 +502,6 @@ export const publishedSiteContent = {
         "color": "rgb(243, 236, 224)"
       },
       {
-        "id": "element-7bccga",
-        "type": "image",
-        "section": "hero",
-        "x": 50,
-        "y": 50,
-        "visible": true,
-        "selector": "section:nth-of-type(1) \u003e div:nth-of-type(3) \u003e div:nth-of-type(3) \u003e div:nth-of-type(1) \u003e div:nth-of-type(1) \u003e img:nth-of-type(1)",
-        "kind": "media",
-        "text": "",
-        "url": "https://site-internet-beno-t.vercel.app/assets/pyrenees_jacket_1_1785338603269-DB14hVWQ.jpg"
-      },
-      {
         "id": "element-1pm4g7c",
         "type": "text",
         "section": "hero",
@@ -539,17 +530,6 @@ export const publishedSiteContent = {
         "color": "rgb(243, 236, 224)"
       },
       {
-        "id": "element-1l9gpen",
-        "type": "image",
-        "section": "hero",
-        "x": 50,
-        "y": 50,
-        "visible": true,
-        "selector": "div:nth-of-type(2) \u003e section:nth-of-type(1) \u003e div:nth-of-type(3) \u003e div:nth-of-type(3) \u003e div:nth-of-type(1) \u003e div:nth-of-type(1) \u003e img:nth-of-type(1)",
-        "kind": "media",
-        "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787063558934-20260605_205859.jpg"
-      },
-      {
         "id": "element-115krkx",
         "type": "text",
         "section": "hero",
@@ -568,50 +548,6 @@ export const publishedSiteContent = {
           "sectionId": "hero",
           "occurrence": 0
         }
-      },
-      {
-        "id": "element-1vd5k7f",
-        "type": "image",
-        "section": "hero",
-        "x": 50,
-        "y": 50,
-        "visible": true,
-        "selector": "button:nth-of-type(3) \u003e img:nth-of-type(1)",
-        "kind": "media",
-        "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787063825877-20260605_205836.jpg"
-      },
-      {
-        "id": "element-ramuve",
-        "type": "image",
-        "section": "hero",
-        "x": 50,
-        "y": 50,
-        "visible": true,
-        "selector": "[data-vce-role=\"jacket-veste-des-cimes-gallery-2\"]",
-        "kind": "media",
-        "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787063825877-20260605_205836.jpg"
-      },
-      {
-        "id": "element-12mgdm6",
-        "type": "image",
-        "section": "hero",
-        "x": 50,
-        "y": 50,
-        "visible": true,
-        "selector": "div:nth-of-type(3) \u003e div:nth-of-type(3) \u003e div:nth-of-type(1) \u003e img:nth-of-type(1)",
-        "kind": "media",
-        "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787063825877-20260605_205836.jpg"
-      },
-      {
-        "id": "element-8l43pq",
-        "type": "image",
-        "section": "hero",
-        "x": 50,
-        "y": 50,
-        "visible": true,
-        "selector": "[data-vce-role=\"jacket-veste-modele-9583-gallery-0\"]",
-        "kind": "media",
-        "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787063825877-20260605_205836.jpg"
       },
       {
         "id": "element-1dd70g4",
@@ -754,14 +690,6 @@ export const publishedSiteContent = {
         "selector": "div:nth-of-type(1) \u003e h3:nth-of-type(1)",
         "locator": "data-vce-id"
       },
-      "element-7bccga": {
-        "id": "element-7bccga",
-        "type": "image",
-        "kind": "media",
-        "section": "hero",
-        "selector": "section:nth-of-type(1) \u003e div:nth-of-type(3) \u003e div:nth-of-type(3) \u003e div:nth-of-type(1) \u003e div:nth-of-type(1) \u003e img:nth-of-type(1)",
-        "locator": "data-vce-id"
-      },
       "element-1pm4g7c": {
         "id": "element-1pm4g7c",
         "type": "text",
@@ -778,52 +706,12 @@ export const publishedSiteContent = {
         "selector": "div:nth-of-type(3) \u003e section:nth-of-type(1) \u003e div:nth-of-type(2) \u003e div:nth-of-type(1) \u003e h2:nth-of-type(1)",
         "locator": "data-vce-id"
       },
-      "element-1l9gpen": {
-        "id": "element-1l9gpen",
-        "type": "image",
-        "kind": "media",
-        "section": "hero",
-        "selector": "div:nth-of-type(2) \u003e section:nth-of-type(1) \u003e div:nth-of-type(3) \u003e div:nth-of-type(3) \u003e div:nth-of-type(1) \u003e div:nth-of-type(1) \u003e img:nth-of-type(1)",
-        "locator": "data-vce-id"
-      },
       "element-115krkx": {
         "id": "element-115krkx",
         "type": "text",
         "kind": "text",
         "section": "hero",
         "selector": "[data-vce-hero-line=\"2\"]",
-        "locator": "data-vce-id"
-      },
-      "element-1vd5k7f": {
-        "id": "element-1vd5k7f",
-        "type": "image",
-        "kind": "media",
-        "section": "hero",
-        "selector": "button:nth-of-type(3) \u003e img:nth-of-type(1)",
-        "locator": "data-vce-id"
-      },
-      "element-ramuve": {
-        "id": "element-ramuve",
-        "type": "image",
-        "kind": "media",
-        "section": "hero",
-        "selector": "[data-vce-role=\"jacket-veste-des-cimes-gallery-2\"]",
-        "locator": "data-vce-id"
-      },
-      "element-12mgdm6": {
-        "id": "element-12mgdm6",
-        "type": "image",
-        "kind": "media",
-        "section": "hero",
-        "selector": "div:nth-of-type(3) \u003e div:nth-of-type(3) \u003e div:nth-of-type(1) \u003e img:nth-of-type(1)",
-        "locator": "data-vce-id"
-      },
-      "element-8l43pq": {
-        "id": "element-8l43pq",
-        "type": "image",
-        "kind": "media",
-        "section": "hero",
-        "selector": "[data-vce-role=\"jacket-veste-modele-9583-gallery-0\"]",
         "locator": "data-vce-id"
       },
       "element-1dd70g4": {
@@ -868,5 +756,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787250459511
+  "publishedAt": 1787252403138
 } as const;
