@@ -647,7 +647,7 @@ export const publishedSiteContent = {
           "occurrence": 0
         },
         "kind": "text",
-        "text": "Conçues au cœur de la chaîne pyrénéenne, deux vestes d’exception mariant matières nobles et coupe haute couture.",
+        "text": "Conçues au cœur de la chaîne pyrénéenne, des articles d’exception mariant matières nobles et la laine de nos brebis.",
         "fontFamily": "-apple-system",
         "fontSize": "16px",
         "color": "rgb(163, 176, 162)"
@@ -768,5 +768,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787254880168
+  "publishedAt": 1787254943436
 } as const;
