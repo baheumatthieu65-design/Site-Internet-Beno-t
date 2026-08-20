@@ -787,18 +787,23 @@ export const publishedSiteContent = {
         "color": "#d2b16f"
       },
       {
-        "id": "element-x64pwr",
+        "id": "element-1oie024",
         "type": "text",
         "section": "hero",
         "x": 50,
         "y": 50,
         "visible": true,
-        "selector": "section:nth-of-type(1) \u003e div:nth-of-type(3) \u003e div:nth-of-type(2) \u003e p:nth-of-type(1)",
         "kind": "text",
-        "text": "\"Élégance Champêtre \u0026 Artisanat des Cimes 4\"",
+        "text": "\"Élégance Champêtre \u0026 Artisanat des Cimes 5\"",
         "fontFamily": "ui-serif",
         "fontSize": "24px",
-        "color": "rgb(208, 197, 180)"
+        "color": "rgb(208, 197, 180)",
+        "locator": {
+          "tag": "p",
+          "text": "\"Élégance Champêtre \u0026 Artisanat des Cimes 4\"",
+          "sectionId": "hero",
+          "occurrence": 0
+        }
       },
       {
         "id": "element-1h7tod6",
@@ -964,12 +969,12 @@ export const publishedSiteContent = {
         "selector": "button:nth-of-type(1) \u003e div:nth-of-type(1) \u003e span:nth-of-type(2)",
         "locator": "data-vce-id"
       },
-      "element-x64pwr": {
-        "id": "element-x64pwr",
+      "element-1oie024": {
+        "id": "element-1oie024",
         "type": "text",
         "kind": "text",
         "section": "hero",
-        "selector": "section:nth-of-type(1) \u003e div:nth-of-type(3) \u003e div:nth-of-type(2) \u003e p:nth-of-type(1)",
+        "selector": null,
         "locator": "data-vce-id"
       },
       "element-1h7tod6": {
@@ -990,5 +995,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787217835196
+  "publishedAt": 1787217930174
 } as const;
