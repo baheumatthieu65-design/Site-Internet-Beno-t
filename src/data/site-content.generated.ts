@@ -3,7 +3,7 @@
 
 export const publishedSiteContent = {
   "brandData": {
-    "brandName": "Maison Mailhagut",
+    "brandName": "Thème Champêtre \u0026 Élégance",
     "tagline": "Élégance Champêtre \u0026 Artisanat des Cimes 5",
     "subtitle": "Conçues au cœur de la chaîne pyrénéenne, deux vestes d’exception mariant matières nobles et coupe haute couture 1.",
     "logoUrl": "/assets/pyrenees_brand_logo_1785338626936-BaITKbpK.jpg",
@@ -550,7 +550,7 @@ export const publishedSiteContent = {
         "visible": true,
         "selector": "[data-vce-hero-line=\"2\"]",
         "kind": "text",
-        "text": "Maison Mailhagut",
+        "text": "Thème Champêtre \u0026 Élégance",
         "fontFamily": "ui-serif",
         "fontSize": "72px",
         "color": "rgb(245, 238, 223)",
@@ -768,5 +768,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787254820069
+  "publishedAt": 1787254827843
 } as const;
