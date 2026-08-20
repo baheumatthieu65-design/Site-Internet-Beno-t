@@ -761,6 +761,20 @@ export const publishedSiteContent = {
         "fontFamily": "-apple-system",
         "fontSize": "10px",
         "color": "#d2b16f"
+      },
+      {
+        "id": "element-1787208612214",
+        "type": "text",
+        "section": "hero",
+        "x": 50,
+        "y": 50,
+        "visible": true,
+        "selector": "section:nth-of-type(1) \u003e div:nth-of-type(3) \u003e div:nth-of-type(2) \u003e p:nth-of-type(1)",
+        "kind": "text",
+        "text": "\"Élégance Champêtre \u0026 Artisanat des Cimes 2\"",
+        "fontFamily": "ui-serif",
+        "fontSize": "24px",
+        "color": "rgb(208, 197, 180)"
       }
     ],
     "floatingImages": [
@@ -780,5 +794,5 @@ export const publishedSiteContent = {
       }
     ]
   },
-  "publishedAt": 1787208576016
+  "publishedAt": 1787208614397
 } as const;
