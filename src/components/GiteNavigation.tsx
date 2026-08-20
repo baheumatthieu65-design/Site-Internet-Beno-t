@@ -7,7 +7,8 @@ export const GiteNavigation: React.FC<{
   brandData: BrandConfig;
   onBackToVitrine: () => void;
   onAdmin: () => void;
-}> = ({ brandData, onBackToVitrine, onAdmin }) => {
+  labels?: Record<string,string>;
+}> = ({ brandData, onBackToVitrine, onAdmin, labels = {} }) => {
   const items = getVisiblePageNavigation(pageConfigs.gite);
   return <nav className="gite-navigation">
     <div className="gite-navigation-logos">
@@ -16,10 +17,8 @@ export const GiteNavigation: React.FC<{
       <LogoBlock brandData={brandData} kind="gite" compact />
     </div>
     <div className="gite-nav-links">
-      {items.map(item => item.kind === 'home'
-        ? <button key={item.id} onClick={onBackToVitrine}>← {item.label}</button>
-        : <button key={item.id} onClick={() => item.targetModuleId && document.getElementById(item.targetModuleId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>{item.label}</button>)}
-      <button className="gite-nav-admin" onClick={onAdmin} aria-label="Administration">●</button>
+      {items.filter(item => item.kind !== 'home').map(item => { const key = item.id.replace('gite-nav-','').replace(/^experience$/,'experience'); const label = labels[key] || item.label; return <button key={item.id} onClick={() => item.targetModuleId && document.getElementById(item.targetModuleId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>{label}</button>; })}
+      <button className="gite-nav-admin" onClick={onAdmin} aria-label="Administration">⌂</button>
     </div>
   </nav>;
 };

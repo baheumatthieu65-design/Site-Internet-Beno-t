@@ -46,12 +46,6 @@ export interface ButtonOverride {
   backgroundOverlay?: number;
 }
 
-export type SiteThemePresetId =
-  | 'pyrenees-noir'
-  | 'foret-profonde'
-  | 'ardoise-luxe'
-  | 'ivoire-atelier';
-
 export type CardStyleId =
   | 'atelier-relief'
   | 'epure-noir'
@@ -189,9 +183,6 @@ export interface JacketModel {
   subTitle: string;
   category: string;
 
-  /** Ligne éditoriale affichée au-dessus du nom dans le Showcase. */
-  showcaseEyebrow?: string;
-
   /**
    * Prix officiel du produit.
    * Le serveur doit toujours utiliser cette valeur depuis Redis
@@ -322,12 +313,6 @@ export interface ThemeConfig {
   navOrder?: NavigationId[];
 
   accentColorHex?: string;
-  /** Palette globale du site et de la barre de navigation. */
-  siteThemePreset?: SiteThemePresetId;
-  siteBackgroundColor?: string;
-  navBackgroundColor?: string;
-  /** Opacité de fond de la barre de navigation (0 = transparente, 100 = opaque). */
-  navBackgroundOpacity?: number;
 
   /* Positionnement & alignement */
 
@@ -352,10 +337,8 @@ export interface ThemeConfig {
   lookbookImageScale?: number;
   lookbookImageFrameWidth?: number;
   lookbookImageFrameHeight?: number;
-  /** Images de fond choisies par module principal (compatibilité historique). */
+  /** Images de fond choisies par module principal. */
   sectionBackgroundImages?: Partial<Record<SectionId, string>>;
-  /** Média de fond par module : image, GIF ou vidéo. Les vidéos sont lues en boucle, sans son. */
-  sectionBackgroundMedia?: Partial<Record<SectionId, BackgroundMedia>>;
   /** Largeur d'affichage de chaque module principal, en pourcentage. */
   sectionWidthPercent?: Partial<Record<SectionId, number>>;
   /** Opacité des images de fond de chaque module principal, en pourcentage. */
@@ -403,6 +386,33 @@ export interface ThemeConfig {
 /* =========================================================
    CONFIGURATION DE LA MARQUE / DU SITE
    ========================================================= */
+
+
+export interface GiteModuleConfig {
+  id: string;
+  label: string;
+  visible: boolean;
+  background?: BackgroundMedia;
+}
+
+export interface GiteSiteConfig {
+  name: string;
+  location: string;
+  tagline: string;
+  heroImage: string;
+  intro: { title: string; text: string };
+  gallery: { src: string; alt: string }[];
+  videoUrl?: string;
+  videoPoster?: string;
+  essentials: { value: string; label: string }[];
+  bookingText: string;
+  airbnbUrl: string;
+  bookingUrl: string;
+  nearby: { title: string; text: string }[];
+  access: { title: string; text: string };
+  modules: GiteModuleConfig[];
+  navLabels?: Record<string, string>;
+}
 
 export interface BrandConfig {
   brandName: string;
@@ -474,4 +484,7 @@ export interface BrandConfig {
      ======================================================= */
 
   theme?: ThemeConfig;
+
+  /** Configuration indépendante de la page Gîte. */
+  gite?: GiteSiteConfig;
 }

@@ -63,7 +63,8 @@ type CustomizerTab =
   | 'layouts'
   | 'labels'
   | 'security'
-  | 'github';
+  | 'github'
+  | 'gite';
 
 export default function App() {
   // ===========================================================================
@@ -1384,8 +1385,6 @@ export default function App() {
               selectedJacketId
             }
             theme={theme}
-            sectionBackgroundImage={theme?.sectionBackgroundImages?.collection || ''}
-            sectionBackgroundOpacity={theme?.sectionBackgroundOpacity?.collection ?? 100}
             isAdminLoggedIn={
               isAdminLoggedIn
             }
@@ -1454,9 +1453,6 @@ export default function App() {
             heroBgImage={
               brandData.heroBgImage
             }
-            sectionBackgroundImage={theme?.sectionBackgroundImages?.hero || ''}
-            sectionBackgroundOpacity={theme?.sectionBackgroundOpacity?.hero ?? 100}
-            sectionBackgroundMediaType={theme?.sectionBackgroundMedia?.hero?.type}
             theme={theme}
             isAdminLoggedIn={
               isAdminLoggedIn
@@ -1501,42 +1497,22 @@ export default function App() {
     // NORMAL VISITOR MODE
     // =========================================================================
 
-    const sectionBackgroundMedia = theme?.sectionBackgroundMedia?.[sectionId];
     const sectionBackgroundImage =
-      sectionBackgroundMedia?.type === 'image'
-        ? sectionBackgroundMedia.url
-        : (theme?.sectionBackgroundImages?.[sectionId] || '');
+      theme?.sectionBackgroundImages?.[sectionId] || '';
 
     const sectionBackgroundOpacity = Math.min(100, Math.max(0, Number(
       theme?.sectionBackgroundOpacity?.[sectionId] ?? (sectionId === 'hero' ? 20 : 28)
     )));
 
-    const sectionBackgroundOverlay = (sectionBackgroundMedia?.url || sectionBackgroundImage) ? (
-      <div aria-hidden="true" className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        {sectionBackgroundMedia?.type === 'video' ? (
-          <video
-            src={sectionBackgroundMedia.url}
-            poster={sectionBackgroundMedia.poster}
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{
-              opacity: sectionBackgroundOpacity / 100,
-              objectPosition: `${sectionBackgroundMedia.positionX ?? 50}% ${sectionBackgroundMedia.positionY ?? 50}%`,
-            }}
-          />
-        ) : (
-          <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: `url(${sectionBackgroundImage})`,
-              opacity: sectionBackgroundOpacity / 100,
-            }}
-          />
-        )}
-      </div>
+    const sectionBackgroundOverlay = sectionBackgroundImage ? (
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-10 pointer-events-none bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url(${JSON.stringify(sectionBackgroundImage)})`,
+          opacity: sectionBackgroundOpacity / 100,
+        }}
+      />
     ) : null;
 
     if (
@@ -1546,8 +1522,8 @@ export default function App() {
       return (
         <div key={sectionId} className="relative overflow-visible" style={{ width: `${Math.min(150, Math.max(0, Number(theme.sectionWidthPercent?.[sectionId] ?? 100)))}%`, marginInline: 'auto' }}>
           {sectionBackgroundOverlay}
-          <div className={`relative ${sectionBackgroundImage ? "site-section-custom-background" : ""}`}>{content}</div>
-          <div className="absolute inset-0 z-30 pointer-events-none">
+          <div className="relative z-20">{content}</div>
+          <div className="absolute inset-0 z-40 pointer-events-none">
             <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
           </div>
         </div>
@@ -1682,8 +1658,8 @@ export default function App() {
 
         <div className="relative overflow-visible mx-auto" style={{ width: `${Math.min(150, Math.max(0, Number(theme.sectionWidthPercent?.[sectionId] ?? 100)))}%` }}>
           {sectionBackgroundOverlay}
-          <div className={`relative ${sectionBackgroundImage ? "site-section-custom-background" : ""}`}>{content}</div>
-          <div className="absolute inset-0 z-30 pointer-events-none">
+          <div className="relative z-20">{content}</div>
+          <div className="absolute inset-0 z-40 pointer-events-none">
             <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
           </div>
         </div>
@@ -1785,7 +1761,7 @@ export default function App() {
               onOpenGite={handleOpenGite}
             />
           </div>
-          <main className="site-content-scale" style={{ backgroundColor: theme?.siteBackgroundColor || "#121613" }}>
+          <main className="site-content-scale">
             {sectionOrder.map((sectionId, index) => renderSection(sectionId, index))}
           </main>
         </>

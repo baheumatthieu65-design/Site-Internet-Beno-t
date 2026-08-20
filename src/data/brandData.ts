@@ -1,6 +1,8 @@
 import { BrandConfig } from '../types.js';
 import { defaultThemeConfig } from '../utils/themeStyles.js';
+import { defaultGiteConfig } from './giteConfig.js';
 
+import pyreneesHeroImg from '../assets/images/pyrenees_landscape_hero_1785338591988.jpg';
 import pyreneesJacket1Img from '../assets/images/pyrenees_jacket_1_1785338603269.jpg';
 import pyreneesJacket2Img from '../assets/images/pyrenees_jacket_2_1785338614694.jpg';
 import pyreneesLogoImg from '../assets/images/pyrenees_brand_logo_1785338626936.jpg';
@@ -18,7 +20,7 @@ export const initialBrandData: BrandConfig = {
   accentColor: '#4A5D4E', // Alpine Evergreen / Sage Warm Green
   foundingYear: '2025',
   designerLocation: 'Vallée de Lourdios & Pic du Midi',
-  heroBgImage: '',
+  heroBgImage: pyreneesHeroImg,
   storyTitle: 'Aux origines de la Maison',
   storyText1: 'Pensée entre pâturages verdoyants et sommets acérés, notre maison fait le pari d’un luxe brut et authentique. Chaque veste est façonnée pour affronter les brumes pyrénéennes tout en offrant une silhouette d’une distinction rare.',
   storyText2: 'Nous avons sélectionné des laines de bergers pyrénéens et des toiles techniques imperméables d’exception pour façonner ces deux pièces signatures : La Veste des Cimes et Le Manteau Pastorale.',
@@ -30,6 +32,7 @@ export const initialBrandData: BrandConfig = {
   contactEmail: 'contact@maisondespyrenees.fr',
   ordersEmail: 'contact@maisondespyrenees.fr',
   instagram: '@maison.des.pyrenees',
+  gite: JSON.parse(JSON.stringify(defaultGiteConfig)),
   jackets: [
     {
       id: 'veste-des-cimes',
@@ -42,7 +45,8 @@ export const initialBrandData: BrandConfig = {
       gallery: [
         pyreneesJacket1Img,
         jacket1SummitImg,
-        woolMacroImg
+        woolMacroImg,
+        pyreneesHeroImg
       ],
       description: 'Une veste à la stature majestueuse, tissée en drap de laine anthracite ultra-dense, conçue pour braver le vent des vallées tout en conservant une ligne affûtée.',
       longDescription: 'La Veste des Cimes incarne l’équilibre parfait entre la rigueur de la montagne et la finesse des tailleurs. Ses poches plaquées discrètes et sa doublure thermique en sergé fluide apportent aisance et protection contre le froid d’altitude.',
@@ -105,7 +109,8 @@ export const initialBrandData: BrandConfig = {
       gallery: [
         pyreneesJacket2Img,
         jacket2PastureImg,
-        waxedMacroImg
+        waxedMacroImg,
+        pyreneesHeroImg
       ],
       description: 'L’esprit champêtre pyrénéen réinventé : une veste robuste en coton huilé olive champêtre, agrémentée de détails en cuir patiné et boutons pression en laiton vieilli.',
       longDescription: 'Inspirée des habits traditionnels des gardiens de troupeaux et des randonneurs des sommets, cette veste conjugue imperméabilité totale et silhouette d’une classe incontestable pour la ville comme pour la campagne.',

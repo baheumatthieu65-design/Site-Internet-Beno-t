@@ -9,6 +9,7 @@ import {
   NavigationId,
   ThemeConfig,
   ComparisonCriterion,
+  ProductBlockId,
   TextAlignId,
   ButtonAlignId,
   ContainerWidthId,
@@ -66,12 +67,13 @@ import {
   defaultThemeConfig,
   getButtonClasses,
   getCardClasses,
-  siteThemePresets,
 } from '../utils/themeStyles';
 import { ButtonManager } from './ButtonManager';
 import { AdminProductModal } from './AdminProductModal';
 import { getStoredCredentials, saveAdminCredentials, resetPasswordServer, maskEmail, AdminCredentials } from '../utils/auth';
-import { prepareImageForUpload, uploadBackgroundVideo } from '../utils/mediaUpload';
+import { prepareImageForUpload } from '../utils/mediaUpload';
+import { defaultGiteConfig } from '../data/giteConfig';
+import { GiteCustomizerPanel } from './GiteCustomizerPanel';
 
 interface BrandCustomizerModalProps {
   isOpen: boolean;
@@ -82,8 +84,41 @@ interface BrandCustomizerModalProps {
   onOpenCatalog?: () => void;
   products: JacketModel[];
   onRefreshProducts: () => void;
-  initialTab?: 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github';
+  initialTab?: 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite';
 }
+
+const productBlockMeta: Record<ProductBlockId, { name: string; icon: string; desc: string }> = {
+  'title-price': {
+    name: 'Titre, Sous-titre & Prix',
+    icon: '🏷️',
+    desc: 'Nom de la pièce d’exception, catégorie, prix et mentions de confection.',
+  },
+  'description': {
+    name: 'Description & Récit Terroir',
+    icon: '📜',
+    desc: 'Présentation de la coupe, inspiration montagnarde et détails poétiques.',
+  },
+  'colors': {
+    name: 'Sélecteur de Nuances & Couleurs',
+    icon: '🎨',
+    desc: 'Pastilles de teintes minérales et lainières avec prévisualisation.',
+  },
+  'sizes': {
+    name: 'Guide & Sélection des Tailles',
+    icon: '📏',
+    desc: 'Boutons de tailles (XS à XXL) et informations de prise de mesure.',
+  },
+  'specs': {
+    name: 'Spécifications & Matières',
+    icon: '⚙️',
+    desc: 'Poids, imperméabilité, indice de chaleur, origine et conseils d’entretien.',
+  },
+  'cta': {
+    name: 'Bouton d’Action & Commande',
+    icon: '🛒',
+    desc: 'Bouton principal de réservation et commande sur mesure atelier.',
+  },
+};
 
 const samplePresetImages = [
   { label: 'Veste Cimes (Kaki / Bronze)', url: '/src/assets/images/veste-cimes.png' },
@@ -121,6 +156,9 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     if (!Array.isArray(copy.jackets)) {
       copy.jackets = [];
     }
+    if (!copy.gite) {
+      copy.gite = JSON.parse(JSON.stringify(defaultGiteConfig));
+    }
     return copy;
   });
 
@@ -134,15 +172,15 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     }
   }, [isOpen]);
 
-  const getInitialTab = (): 'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' => {
+  const getInitialTab = (): 'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite' => {
     if (initialTab === 'j1' || initialTab === 'j2' || initialTab === 'articles') return 'articles';
-    if (initialTab === 'brand' || initialTab === 'theme' || initialTab === 'layouts' || initialTab === 'labels' || initialTab === 'security' || initialTab === 'orders' || initialTab === 'github') {
+    if (initialTab === 'brand' || initialTab === 'theme' || initialTab === 'layouts' || initialTab === 'labels' || initialTab === 'security' || initialTab === 'orders' || initialTab === 'github' || initialTab === 'gite') {
       return initialTab;
     }
     return 'theme';
   };
 
-  const [activeTab, setActiveTab] = useState<'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github'>(
+  const [activeTab, setActiveTab] = useState<'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite'>(
     getInitialTab()
   );
 
@@ -715,6 +753,25 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     updateTheme({ lookbookProductIds: next });
   };
 
+  // Product Page Blocks Reorder
+  const handleMoveProductBlock = (blockId: ProductBlockId, direction: 'up' | 'down') => {
+    const currentOrder = [...(currentTheme.productBlocksOrder || defaultThemeConfig.productBlocksOrder || [])];
+    const index = currentOrder.indexOf(blockId);
+    if (index === -1) return;
+
+    if (direction === 'up' && index > 0) {
+      const temp = currentOrder[index - 1];
+      currentOrder[index - 1] = currentOrder[index];
+      currentOrder[index] = temp;
+      updateTheme({ productBlocksOrder: currentOrder });
+    } else if (direction === 'down' && index < currentOrder.length - 1) {
+      const temp = currentOrder[index + 1];
+      currentOrder[index + 1] = currentOrder[index];
+      currentOrder[index] = temp;
+      updateTheme({ productBlocksOrder: currentOrder });
+    }
+  };
+
   // Save & Security Handlers
   const handleSave = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -844,10 +901,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           ...(currentTheme.sectionBackgroundImages || {}),
           [sectionId]: String(data.url),
         },
-        sectionBackgroundMedia: {
-          ...(currentTheme.sectionBackgroundMedia || {}),
-          [sectionId]: { type: 'image', url: String(data.url), overlay: 0, objectFit: 'cover', positionX: 50, positionY: 50 },
-        },
       });
     } catch (error) {
       console.error(error);
@@ -857,41 +910,10 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     }
   };
 
-  const handleSectionBackgroundVideoUpload = async (
-    sectionId: SectionId,
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = event.target.files?.[0];
-    event.target.value = '';
-    if (!file) return;
-
-    setUploadingSectionBackground(sectionId);
-    try {
-      const url = await uploadBackgroundVideo(file);
-      updateTheme({
-        sectionBackgroundImages: {
-          ...(currentTheme.sectionBackgroundImages || {}),
-          [sectionId]: '',
-        },
-        sectionBackgroundMedia: {
-          ...(currentTheme.sectionBackgroundMedia || {}),
-          [sectionId]: { type: 'video', url, overlay: 0, objectFit: 'cover', positionX: 50, positionY: 50 },
-        },
-      });
-    } catch (error) {
-      console.error(error);
-      alert(error instanceof Error ? error.message : 'Impossible d’importer cette vidéo de fond.');
-    } finally {
-      setUploadingSectionBackground(null);
-    }
-  };
-
   const clearSectionBackground = (sectionId: SectionId) => {
     const next = { ...(currentTheme.sectionBackgroundImages || {}) };
     delete next[sectionId];
-    const media = { ...(currentTheme.sectionBackgroundMedia || {}) };
-    delete media[sectionId];
-    updateTheme({ sectionBackgroundImages: next, sectionBackgroundMedia: media });
+    updateTheme({ sectionBackgroundImages: next });
   };
 
   const currentJacket = formData.jackets[selectedJacketIndex] || formData.jackets[0];
@@ -953,6 +975,19 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           >
             <Palette className="w-4 h-4 text-[#d4af37]" />
             <span>1. Styles de Boutons & Cartes</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('gite')}
+            className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'gite'
+                ? 'bg-[#29362c] text-[#d4af37] border border-[#d4af37]/60 shadow'
+                : 'text-[#9eb0a0] hover:text-[#f3ece0] hover:bg-[#1a211c]'
+            }`}
+          >
+            <Globe className="w-4 h-4 text-[#d4af37]" />
+            <span>Page Gîte</span>
           </button>
 
           <button
@@ -1041,34 +1076,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           {/* ========================================================= */}
           {activeTab === 'theme' && (
             <div className="space-y-8 animate-fadeIn">
-              <div className="p-5 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
-                <div>
-                  <h4 className="font-serif text-base text-[#f3ece0] font-semibold flex items-center gap-2"><Palette className="w-5 h-5 text-[#d4af37]" />Ambiance générale du site</h4>
-                  <p className="text-xs text-[#a3b1a5] mt-1">Choisissez un thème puis ajustez séparément le fond du site et celui de la barre de navigation.</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {siteThemePresets.map((preset) => (
-                    <button key={preset.id} type="button" onClick={() => updateTheme({ siteThemePreset: preset.id, siteBackgroundColor: preset.siteBackgroundColor, navBackgroundColor: preset.navBackgroundColor })} className={`text-left p-3 rounded-xl border transition-all ${(currentTheme.siteThemePreset || 'pyrenees-noir') === preset.id ? 'border-[#d4af37] bg-[#222d24]' : 'border-[#344437] bg-[#151b16] hover:border-[#607162]'}`}>
-                      <div className="h-10 rounded-lg mb-2 border border-white/10" style={{ background: preset.previewBg }} />
-                      <div className="text-xs font-bold text-[#f3ece0]">{preset.name}</div>
-                      <div className="text-[10px] text-[#9eb0a0] mt-0.5">{preset.description}</div>
-                    </button>
-                  ))}
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-[#2a362c]">
-                  <label className="text-xs text-[#a3b1a5]"><span className="block mb-2 uppercase tracking-widest">Couleur de fond du site</span><div className="flex items-center gap-2"><input type="color" value={currentTheme.siteBackgroundColor || '#121613'} onChange={(e) => updateTheme({ siteBackgroundColor: e.target.value, siteThemePreset: undefined })} className="w-12 h-10 rounded-lg bg-transparent cursor-pointer" /><input value={currentTheme.siteBackgroundColor || '#121613'} onChange={(e) => updateTheme({ siteBackgroundColor: e.target.value, siteThemePreset: undefined })} className="flex-1 bg-[#121613] border border-[#2e3b30] rounded-lg px-3 py-2 text-white" /></div></label>
-                  <label className="text-xs text-[#a3b1a5]"><span className="block mb-2 uppercase tracking-widest">Couleur de la barre de navigation</span><div className="flex items-center gap-2"><input type="color" value={currentTheme.navBackgroundColor || '#1a1e1b'} onChange={(e) => updateTheme({ navBackgroundColor: e.target.value, siteThemePreset: undefined })} className="w-12 h-10 rounded-lg bg-transparent cursor-pointer" /><input value={currentTheme.navBackgroundColor || '#1a1e1b'} onChange={(e) => updateTheme({ navBackgroundColor: e.target.value, siteThemePreset: undefined })} className="flex-1 bg-[#121613] border border-[#2e3b30] rounded-lg px-3 py-2 text-white" /></div></label>
-                </div>
-                <label className="block pt-3 border-t border-[#2a362c] text-xs text-[#a3b1a5]">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="uppercase tracking-widest">Opacité du fond de la barre de navigation</span>
-                    <strong className="text-[#d4af37]">{currentTheme.navBackgroundOpacity ?? 0}%</strong>
-                  </div>
-                  <input type="range" min="0" max="100" step="5" value={currentTheme.navBackgroundOpacity ?? 0} onChange={(e) => updateTheme({ navBackgroundOpacity: Number(e.target.value) })} className="w-full accent-[#d4af37]" />
-                  <div className="flex justify-between text-[9px] text-[#708272] mt-1"><span>0% transparent</span><span>50%</span><span>100% opaque</span></div>
-                </label>
-              </div>
-
               <ButtonManager
                 theme={currentTheme}
                 onChange={updateTheme}
@@ -1104,6 +1111,13 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           {/* ========================================================= */}
           {/* TAB 2: FORMATS & SECTION / BLOCKS PLACEMENT               */}
           {/* ========================================================= */}
+          {activeTab === 'gite' && (
+            <GiteCustomizerPanel
+              value={formData.gite}
+              onChange={(gite) => setFormData((current) => ({ ...current, gite }))}
+            />
+          )}
+
           {activeTab === 'layouts' && (
             <div className="space-y-8 animate-fadeIn">
               {/* 1. ALIGNMENT & POSITIONING CONTROLS (User Requested) */}
@@ -1195,6 +1209,78 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                       <option value="spacious">Spacieux & Luxueux</option>
                     </select>
                   </div>
+                </div>
+              </div>
+
+              {/* 2. PRODUCT PAGE BLOCKS ORDERING (User Requested) */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-serif text-base text-[#f3ece0] font-semibold flex items-center space-x-2">
+                      <Sliders className="w-4 h-4 text-[#d4af37]" />
+                      <span>Ordre des Objets & Champs de la Fiche Produit (Showcase)</span>
+                    </h4>
+                    <p className="text-xs text-[#a3b1a5] mt-0.5">
+                      Déplacez les éléments avec les flèches ↑ et ↓ pour réorganiser la présentation de chaque veste :
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  {(currentTheme.productBlocksOrder || defaultThemeConfig.productBlocksOrder || []).map((blockId, idx, arr) => {
+                    const meta = productBlockMeta[blockId] || { name: blockId, icon: '📦', desc: '' };
+                    return (
+                      <div
+                        key={blockId}
+                        className="p-3 rounded-xl bg-[#1a221c] border border-[#344437] flex items-center justify-between transition-all"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <span className="text-xl">{meta.icon}</span>
+                          <div>
+                            <span className="text-xs font-serif font-bold text-[#f3ece0]">
+                              {idx + 1}. {meta.name}
+                            </span>
+                            <p className="text-[11px] text-[#a3b1a5]">{meta.desc}</p>
+                            <div className="mt-2 flex items-center gap-2">
+                              <div
+                                className="w-24 h-12 rounded-lg overflow-hidden border border-[#465447] bg-[#101510] shrink-0"
+                                style={currentTheme.sectionBackgroundImages?.[secId] ? {
+                                  backgroundImage: `url(${JSON.stringify(currentTheme.sectionBackgroundImages[secId])})`,
+                                  backgroundSize: 'cover',
+                                  backgroundPosition: 'center',
+                                  opacity: getSectionBackgroundOpacity(secId) / 100,
+                                } : undefined}
+                              >
+                                {!currentTheme.sectionBackgroundImages?.[secId] && <div className="w-full h-full flex items-center justify-center text-[9px] text-[#607162]">Aperçu du bloc</div>}
+                              </div>
+                              {currentTheme.sectionBackgroundImages?.[secId] && <span className="text-[9px] text-[#7f9382]">Fond importé</span>}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-1.5">
+                          <button
+                            type="button"
+                            disabled={idx === 0}
+                            onClick={() => handleMoveProductBlock(blockId, 'up')}
+                            className="p-1.5 rounded-lg bg-[#253127] hover:bg-[#324235] text-[#d4af37] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                            title="Monter"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={idx === arr.length - 1}
+                            onClick={() => handleMoveProductBlock(blockId, 'down')}
+                            className="p-1.5 rounded-lg bg-[#253127] hover:bg-[#324235] text-[#d4af37] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                            title="Descendre"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1341,16 +1427,18 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                             </div>
                             <p className="text-[11px] text-[#a3b1a5]">{meta.desc}</p>
                             <div className="mt-2 flex items-center gap-2">
-                              <div className="w-24 h-12 rounded-lg overflow-hidden border border-[#465447] bg-[#101510] shrink-0 relative">
-                                {currentTheme.sectionBackgroundMedia?.[secId]?.type === 'video' ? (
-                                  <video src={currentTheme.sectionBackgroundMedia[secId]?.url} muted autoPlay loop playsInline className="absolute inset-0 w-full h-full object-cover" style={{ opacity: getSectionBackgroundOpacity(secId) / 100 }} />
-                                ) : currentTheme.sectionBackgroundImages?.[secId] ? (
-                                  <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${currentTheme.sectionBackgroundImages[secId]})`, opacity: getSectionBackgroundOpacity(secId) / 100 }} />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-[9px] text-[#607162]">Aperçu du bloc</div>
-                                )}
+                              <div
+                                className="w-24 h-12 rounded-lg overflow-hidden border border-[#465447] bg-[#101510] shrink-0"
+                                style={currentTheme.sectionBackgroundImages?.[secId] ? {
+                                  backgroundImage: `url(${JSON.stringify(currentTheme.sectionBackgroundImages[secId])})`,
+                                  backgroundSize: 'cover',
+                                  backgroundPosition: 'center',
+                                  opacity: getSectionBackgroundOpacity(secId) / 100,
+                                } : undefined}
+                              >
+                                {!currentTheme.sectionBackgroundImages?.[secId] && <div className="w-full h-full flex items-center justify-center text-[9px] text-[#607162]">Aperçu du bloc</div>}
                               </div>
-                              {(currentTheme.sectionBackgroundImages?.[secId] || currentTheme.sectionBackgroundMedia?.[secId]) && <span className="text-[9px] text-[#7f9382]">{currentTheme.sectionBackgroundMedia?.[secId]?.type === 'video' ? 'Vidéo de fond' : 'Fond importé'}</span>}
+                              {currentTheme.sectionBackgroundImages?.[secId] && <span className="text-[9px] text-[#7f9382]">Fond importé</span>}
                             </div>
                           </div>
                         </div>
@@ -1414,13 +1502,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                             />
                           </label>
 
-                          <label className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-[#536456] bg-[#182019] hover:border-[#d4af37] text-[10px] uppercase tracking-wider text-[#c4ceb8] cursor-pointer">
-                            <Upload className="w-3.5 h-3.5 text-[#d4af37]" />
-                            <span>{uploadingSectionBackground === secId ? 'Import en cours…' : 'Vidéo de fond 10 s'}</span>
-                            <input type="file" accept="video/mp4,video/webm" className="hidden" onChange={(event) => handleSectionBackgroundVideoUpload(secId, event)} />
-                          </label>
-
-                          {(currentTheme.sectionBackgroundImages?.[secId] || currentTheme.sectionBackgroundMedia?.[secId]) && (
+                          {currentTheme.sectionBackgroundImages?.[secId] && (
                             <>
                               <span className="text-[10px] text-[#7f9382]">Fond personnalisé</span>
                               <button
@@ -1434,7 +1516,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                             </>
                           )}
 
-                          {(currentTheme.sectionBackgroundImages?.[secId] || currentTheme.sectionBackgroundMedia?.[secId]) && (
+                          {currentTheme.sectionBackgroundImages?.[secId] && (
                             <label className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#536456] bg-[#182019] text-[10px] text-[#c4ceb8] min-w-[220px]">
                               <span className="whitespace-nowrap">Opacité du fond</span>
                               <input
