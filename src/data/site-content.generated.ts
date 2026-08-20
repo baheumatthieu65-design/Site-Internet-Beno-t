@@ -93,24 +93,24 @@ export const publishedSiteContent = {
         "hotspots": [
           {
             "id": "hs1-col",
-            "x": 51,
-            "y": 22,
+            "x": 56,
+            "y": 11,
             "title": "Col Officier à Revers",
             "description": "Protection thermique du cou rehaussée d’une bride en cuir pour fermer hermétiquement le col.",
             "category": "cut"
           },
           {
             "id": "hs1-boutons",
-            "x": 49,
-            "y": 67,
+            "x": 47,
+            "y": 61,
             "title": "Boutonnage en Corne Gravée",
             "description": "Chaque bouton est taillé dans la corne naturelle et gravé au laser avec le monogramme de la marque.",
             "category": "hardware"
           },
           {
             "id": "hs1-poche",
-            "x": 55,
-            "y": 70,
+            "x": 54,
+            "y": 71,
             "title": "Poches Soufflet d’Atelier",
             "description": "Grandes poches doublées en flanelle pour garder les mains au chaud lors des balades en altitude.",
             "category": "utility"
@@ -799,5 +799,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787256152172
+  "publishedAt": 1787256175559
 } as const;
