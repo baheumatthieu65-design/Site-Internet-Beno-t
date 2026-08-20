@@ -93,24 +93,24 @@ export const publishedSiteContent = {
         "hotspots": [
           {
             "id": "hs1-col",
-            "x": 15,
-            "y": 22,
+            "x": 50,
+            "y": 15,
             "title": "Col Officier à Revers",
             "description": "Protection thermique du cou rehaussée d’une bride en cuir pour fermer hermétiquement le col.",
             "category": "cut"
           },
           {
             "id": "hs1-boutons",
-            "x": 52,
-            "y": 45,
+            "x": 50,
+            "y": 28,
             "title": "Boutonnage en Corne Gravée",
             "description": "Chaque bouton est taillé dans la corne naturelle et gravé au laser avec le monogramme de la marque.",
             "category": "hardware"
           },
           {
             "id": "hs1-poche",
-            "x": 62,
-            "y": 65,
+            "x": 54,
+            "y": 75,
             "title": "Poches Soufflet d’Atelier",
             "description": "Grandes poches doublées en flanelle pour garder les mains au chaud lors des balades en altitude.",
             "category": "utility"
@@ -301,9 +301,12 @@ export const publishedSiteContent = {
       "lookbookImageFrameWidth": 60,
       "lookbookImageFrameHeight": 220,
       "sectionBackgroundImages": {
-        "collection": ""
+        "collection": "",
+        "hero": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787253590106-4k-wallpaper-blue-skies-conifers-1526720.webp"
       },
-      "sectionBackgroundOpacity": {},
+      "sectionBackgroundOpacity": {
+        "hero": 75
+      },
       "sectionWidthPercent": {
         "collection": 110
       },
@@ -419,7 +422,7 @@ export const publishedSiteContent = {
         "url": "/assets/persistent-media-2.png",
         "alt": "",
         "x": 15,
-        "y": 27,
+        "y": 28,
         "size": 104,
         "rotate": -18,
         "opacity": 100,
@@ -765,5 +768,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787252529090
+  "publishedAt": 1787253599184
 } as const;
