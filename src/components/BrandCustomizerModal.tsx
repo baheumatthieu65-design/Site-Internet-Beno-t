@@ -156,6 +156,16 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     return copy;
   });
 
+  const [draftProducts, setDraftProducts] = useState<JacketModel[]>(() =>
+    JSON.parse(JSON.stringify(products || brandData.jackets || []))
+  );
+
+  useEffect(() => {
+    if (isOpen) {
+      setDraftProducts(JSON.parse(JSON.stringify(products || brandData.jackets || [])));
+    }
+  }, [isOpen]);
+
   const getInitialTab = (): 'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' => {
     if (initialTab === 'j1' || initialTab === 'j2' || initialTab === 'articles') return 'articles';
     if (initialTab === 'brand' || initialTab === 'theme' || initialTab === 'layouts' || initialTab === 'labels' || initialTab === 'security' || initialTab === 'orders' || initialTab === 'github') {
@@ -254,6 +264,10 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     updateTheme({
       comparisonCriteria: [...activeCriteria, newCrit],
     });
+    setDraftProducts((current) => current.map((product) => ({
+      ...product,
+      customSpecs: { ...(product.customSpecs || {}), [newKey]: product.customSpecs?.[newKey] || '' },
+    })));
   };
 
   const handleUpdateCriterionLabel = (id: string, newLabel: string) => {
@@ -263,13 +277,52 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     updateTheme({ comparisonCriteria: updated });
   };
 
+  const getCriterionValueForProduct = (criterion: ComparisonCriterion, product: JacketModel) => {
+    switch (criterion.key) {
+      case 'category': return product.category || '';
+      case 'fabric': return product.fabrics?.[0] || '';
+      case 'warmth': return product.specs?.warmthRating || '';
+      case 'water': return product.specs?.waterResistance || '';
+      case 'weight': return product.specs?.weight || '';
+      case 'fit': return product.specs?.fitType || '';
+      case 'care': return product.specs?.care || '';
+      case 'price': return `${product.price} ${product.currency || '€'}`;
+      default: return product.customSpecs?.[criterion.key] || '';
+    }
+  };
+
+  const updateCriterionValue = (criterion: ComparisonCriterion, productId: string, value: string) => {
+    setDraftProducts((current) => current.map((product) => {
+      if (product.id !== productId) return product;
+      switch (criterion.key) {
+        case 'category': return { ...product, category: value };
+        case 'fabric': return { ...product, fabrics: [value, ...(product.fabrics || []).slice(1)] };
+        case 'warmth': return { ...product, specs: { ...product.specs, warmthRating: value } };
+        case 'water': return { ...product, specs: { ...product.specs, waterResistance: value } };
+        case 'weight': return { ...product, specs: { ...product.specs, weight: value } };
+        case 'fit': return { ...product, specs: { ...product.specs, fitType: value } };
+        case 'care': return { ...product, specs: { ...product.specs, care: value } };
+        case 'price': return product;
+        default: return { ...product, customSpecs: { ...(product.customSpecs || {}), [criterion.key]: value } };
+      }
+    }));
+  };
+
   const handleDeleteCriterion = (id: string) => {
     if (activeCriteria.length <= 1) {
       alert('Le tableau comparatif doit conserver au moins un critère.');
       return;
     }
+    const criterion = activeCriteria.find((c) => c.id === id);
     const updated = activeCriteria.filter((c) => c.id !== id);
     updateTheme({ comparisonCriteria: updated });
+    if (criterion) {
+      setDraftProducts((current) => current.map((product) => {
+        const customSpecs = { ...(product.customSpecs || {}) };
+        delete customSpecs[criterion.key];
+        return { ...product, customSpecs };
+      }));
+    }
   };
 
   const handleChangeBrand = (field: keyof BrandConfig, value: any) => {
@@ -689,7 +742,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     // de jackets dans BrandConfig et écraser une modification serveur récente.
     const dataToSave: BrandConfig = {
       ...formData,
-      jackets: brandData.jackets,
+      jackets: draftProducts,
     };
 
     onSave(dataToSave);
@@ -743,7 +796,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   };
 
   const handleExportConfig = () => {
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(formData, null, 2));
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify({ ...formData, jackets: draftProducts }, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
     downloadAnchor.setAttribute('download', `pyrenees-site-config-${new Date().toISOString().slice(0, 10)}.json`);
@@ -869,7 +922,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
             }`}
           >
             <Type className="w-4 h-4 text-[#b89f74]" />
-            <span>4. Textes & Libellés</span>
+            <span>4. Barre de navigation</span>
           </button>
 
           <button
@@ -925,6 +978,29 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
               />
 
               {/* 1. BUTTON STYLE SELECTION — géré désormais par ButtonManager */}
+
+              <div className="p-5 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
+                <div className="flex items-center gap-2 text-[#d4af37]">
+                  <Type className="w-5 h-5" />
+                  <h4 className="font-serif text-base font-bold text-[#f3ece0]">Textes des boutons</h4>
+                </div>
+                <p className="text-xs text-[#a3b1a5]">Personnalisez les libellés des boutons sans quitter la gestion des styles et cartes.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {([
+                    ['orderButtonText','Texte Bouton Commande Rapide','Commander'],
+                    ['discoverButtonText','Texte Bouton Découverte','Découvrir'],
+                    ['inquiryButtonText','Texte Bouton Sur-Mesure','Commander sur Mesure'],
+                    ['workshopButtonText','Texte Bouton Atelier','Prendre Rendez-vous à l’Atelier'],
+                    ['heroBadgeText','Badge de Sous-Titre Accueil','Édition Limitée des Pyrénées'],
+                    ['heroTitlePrefix','Surtitre d’Accueil','Thème Champêtre & Élégance'],
+                  ] as const).map(([key,label,placeholder]) => (
+                    <div key={key}>
+                      <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">{label} :</label>
+                      <input value={(currentTheme as any)[key] || ''} onChange={(e) => updateTheme({ [key]: e.target.value } as any)} placeholder={placeholder} className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -1223,15 +1299,78 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
               <AdminProductModal
                 isOpen
                 embedded
+                deferServerSave
                 onClose={() => setActiveTab('theme')}
-                products={products}
+                products={draftProducts}
+                onProductsChange={setDraftProducts}
+                technicalCriteria={activeCriteria}
+                initialProductId={initialTab === 'j1' ? draftProducts[0]?.id : initialTab === 'j2' ? draftProducts[1]?.id : undefined}
                 onRefreshProducts={onRefreshProducts}
               />
+
+              {/* Critères techniques : un intitulé commun + une valeur propre à chaque article. */}
+              <div className="mt-6 p-5 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2 text-[#d4af37]">
+                      <Scale className="w-5 h-5" />
+                      <h4 className="font-serif text-base font-bold text-[#f3ece0]">Critères techniques du tableau comparatif</h4>
+                    </div>
+                    <p className="text-xs text-[#a3b1a5] mt-1">Ajoutez un critère, puis définissez sa valeur article par article. Ces valeurs alimentent directement « Caractéristiques techniques » de chaque fiche et le tableau comparatif.</p>
+                  </div>
+                  <span className="text-xs text-[#a3b1a5] whitespace-nowrap">{activeCriteria.length} critère(s)</span>
+                </div>
+
+                <div className="overflow-x-auto rounded-xl border border-[#2e3b30]">
+                  <table className="w-full min-w-[760px] text-left">
+                    <thead>
+                      <tr className="bg-[#121613] border-b border-[#2e3b30]">
+                        <th className="p-3 text-[10px] uppercase tracking-wider text-[#d4af37] w-[28%]">Critère</th>
+                        {draftProducts.map((product, idx) => (
+                          <th key={product.id} className="p-3 text-[10px] uppercase tracking-wider text-[#a3b1a5]">N°{idx + 1} — {product.name}</th>
+                        ))}
+                        <th className="p-3 w-10"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {activeCriteria.map((crit, idx) => (
+                        <tr key={crit.id} className="border-b border-[#263128] last:border-b-0">
+                          <td className="p-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-mono text-[#d4af37]">#{idx + 1}</span>
+                              <input value={crit.label} onChange={(e) => handleUpdateCriterionLabel(crit.id, e.target.value)} className="w-full bg-[#121613] border border-[#38483b] text-xs text-white px-3 py-2 rounded-lg outline-none focus:border-[#d4af37]" />
+                            </div>
+                          </td>
+                          {draftProducts.map((product) => (
+                            <td key={product.id} className="p-3">
+                              <input
+                                value={getCriterionValueForProduct(crit, product)}
+                                onChange={(e) => updateCriterionValue(crit, product.id, e.target.value)}
+                                disabled={crit.key === 'price'}
+                                placeholder={crit.key === 'price' ? 'Prix du produit' : 'Valeur pour cet article…'}
+                                className="w-full bg-[#121613] border border-[#38483b] text-xs text-white px-3 py-2 rounded-lg outline-none focus:border-[#d4af37] disabled:opacity-60"
+                              />
+                            </td>
+                          ))}
+                          <td className="p-3">
+                            <button type="button" onClick={() => handleDeleteCriterion(crit.id)} className="p-1.5 rounded-lg bg-red-950/40 text-red-300 hover:bg-red-900/60 hover:text-white cursor-pointer" title="Supprimer ce critère"><Trash2 className="w-4 h-4" /></button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2 border-t border-[#2a362c]">
+                  <input value={newCriterionLabel} onChange={(e) => setNewCriterionLabel(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (newCriterionLabel.trim()) { handleAddCriterion(newCriterionLabel.trim()); setNewCriterionLabel(''); } } }} placeholder="Nouveau critère (ex. Respirabilité, Doublure, Garantie...)" className="flex-1 bg-[#121613] border border-[#38483b] text-xs text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" />
+                  <button type="button" onClick={() => { if (newCriterionLabel.trim()) { handleAddCriterion(newCriterionLabel.trim()); setNewCriterionLabel(''); } }} className="px-4 py-2.5 rounded-xl bg-[#28362b] border border-[#d4af37] text-[#d4af37] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"><Plus className="w-4 h-4" /> Ajouter</button>
+                </div>
+              </div>
             </div>
           )}
 
           {/* ========================================================= */}
-          {/* TAB 4: CUSTOM LABELS, TAB TITLES & COMPARISON CRITERIA    */}
+          {/* TAB 4: BARRE DE NAVIGATION    */}
           {/* ========================================================= */}
           {activeTab === 'labels' && (
             <div className="space-y-8 animate-fadeIn">
@@ -1381,177 +1520,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                 </div>
               </div>
 
-              {/* SECTION: COMPARISON TABLE CRITERIA MANAGER */}
-              <div className="p-5 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2 text-[#d4af37]">
-                    <Scale className="w-5 h-5" />
-                    <h4 className="font-serif text-base font-bold text-[#f3ece0]">
-                      Gestion des Critères Techniques du Tableau Comparatif
-                    </h4>
-                  </div>
-                  <span className="text-xs text-[#a3b1a5]">
-                    Total : <strong className="text-[#d4af37]">{activeCriteria.length}</strong> critères
-                  </span>
-                </div>
-                <p className="text-xs text-[#a3b1a5]">
-                  Ajoutez, modifiez le nom ou supprimez les critères techniques affichés dans les lignes du tableau comparatif des vestes.
-                </p>
-
-                {/* Criteria Items List */}
-                <div className="space-y-2.5">
-                  {activeCriteria.map((crit, idx) => (
-                    <div
-                      key={crit.id}
-                      className="flex items-center space-x-3 p-3 rounded-xl bg-[#121613] border border-[#2e3b30]"
-                    >
-                      <span className="w-6 text-center text-xs font-mono text-[#d4af37] font-bold">#{idx + 1}</span>
-                      <input
-                        type="text"
-                        value={crit.label}
-                        onChange={(e) => handleUpdateCriterionLabel(crit.id, e.target.value)}
-                        className="flex-1 bg-[#1a221c] border border-[#38483b] text-xs text-white px-3 py-1.5 rounded-lg outline-none focus:border-[#d4af37]"
-                        placeholder="Intitulé du critère..."
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteCriterion(crit.id)}
-                        className="p-1.5 rounded-lg bg-red-950/40 text-red-300 hover:bg-red-900/60 hover:text-white text-xs cursor-pointer transition-colors flex items-center space-x-1"
-                        title="Supprimer ce critère"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        <span className="hidden sm:inline">Supprimer</span>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Add New Criterion Input */}
-                <div className="flex items-center space-x-2 pt-2 border-t border-[#2a362c]">
-                  <input
-                    type="text"
-                    value={newCriterionLabel}
-                    onChange={(e) => setNewCriterionLabel(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        if (newCriterionLabel.trim()) {
-                          handleAddCriterion(newCriterionLabel.trim());
-                          setNewCriterionLabel('');
-                        }
-                      }
-                    }}
-                    placeholder="Nouveau critère technique (ex: Doublure intérieure, Garantie, Respirabilité...)"
-                    className="flex-1 bg-[#121613] border border-[#38483b] text-xs text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (newCriterionLabel.trim()) {
-                        handleAddCriterion(newCriterionLabel.trim());
-                        setNewCriterionLabel('');
-                      }
-                    }}
-                    className="px-4 py-2.5 rounded-xl bg-[#28362b] border border-[#d4af37] text-[#d4af37] hover:bg-[#344638] text-xs font-bold uppercase tracking-wider flex items-center space-x-1.5 cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Ajouter Critère</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* BUTTON & BADGE LABELS */}
-              <div className="p-5 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
-                <div className="flex items-center space-x-2 text-[#d4af37]">
-                  <Type className="w-5 h-5" />
-                  <h4 className="font-serif text-base font-bold text-[#f3ece0]">
-                    Personnalisation des Textes & Libellés des Boutons
-                  </h4>
-                </div>
-                <p className="text-xs text-[#a3b1a5]">
-                  Ajustez les textes d'appel à l'action affichés dans l'ensemble de votre boutique.
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">
-                      Texte Bouton Commande Rapide :
-                    </label>
-                    <input
-                      type="text"
-                      value={currentTheme.orderButtonText || 'Commander'}
-                      onChange={(e) => updateTheme({ orderButtonText: e.target.value })}
-                      className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                      placeholder="Ex: Commander, Réserver..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">
-                      Texte Bouton Découverte :
-                    </label>
-                    <input
-                      type="text"
-                      value={currentTheme.discoverButtonText || 'Découvrir'}
-                      onChange={(e) => updateTheme({ discoverButtonText: e.target.value })}
-                      className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                      placeholder="Ex: Découvrir, Explorer..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">
-                      Texte Bouton Sur-Mesure :
-                    </label>
-                    <input
-                      type="text"
-                      value={currentTheme.inquiryButtonText || 'Commander sur Mesure'}
-                      onChange={(e) => updateTheme({ inquiryButtonText: e.target.value })}
-                      className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                      placeholder="Ex: Commander sur Mesure..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">
-                      Texte Bouton Atelier (Pied de Page) :
-                    </label>
-                    <input
-                      type="text"
-                      value={currentTheme.workshopButtonText || "Prendre Rendez-vous à l'Atelier"}
-                      onChange={(e) => updateTheme({ workshopButtonText: e.target.value })}
-                      className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                      placeholder="Ex: Prendre Rendez-vous à l'Atelier..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">
-                      Badge de Sous-Titre Accueil (Haut de page) :
-                    </label>
-                    <input
-                      type="text"
-                      value={currentTheme.heroBadgeText || 'Édition Limitée des Pyrénées'}
-                      onChange={(e) => updateTheme({ heroBadgeText: e.target.value })}
-                      className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                      placeholder="Ex: Édition Limitée des Pyrénées..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-2 font-medium">
-                      Surtitre d'Accueil (Italique au-dessus du nom) :
-                    </label>
-                    <input
-                      type="text"
-                      value={currentTheme.heroTitlePrefix || 'Thème Champêtre & Élégance'}
-                      onChange={(e) => updateTheme({ heroTitlePrefix: e.target.value })}
-                      className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                      placeholder="Ex: Thème Champêtre & Élégance..."
-                    />
-                  </div>
-                </div>
-              </div>
             </div>
           )}
 
@@ -2099,25 +2067,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           )}
         </div>
 
-        {/* Modal Bottom Action Bar */}
-        <div className="px-6 py-4 bg-[#18201a] border-t border-[#2b372d] flex items-center justify-between flex-shrink-0">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-xs uppercase tracking-wider text-[#a3b1a5] hover:text-white rounded-xl bg-[#202922] cursor-pointer"
-          >
-            Annuler
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSave}
-            className="flex items-center space-x-2 px-6 py-2.5 bg-gradient-to-r from-[#9c7844] via-[#c6a877] to-[#e4cb9c] text-[#121613] font-serif font-bold text-xs uppercase tracking-wider rounded-xl hover:brightness-110 shadow-lg cursor-pointer"
-          >
-            <Save className="w-4 h-4" />
-            <span>Enregistrer toutes les modifications</span>
-          </button>
-        </div>
       </div>
     </div>
   );

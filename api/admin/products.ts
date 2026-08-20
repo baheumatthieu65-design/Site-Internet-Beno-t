@@ -153,6 +153,26 @@ export default async function handler(req: any, res: any) {
 
     if (req.method === 'PUT') {
       const body = parseBody(req.body);
+
+      // Publication atomique du catalogue : utilisée par le panneau admin
+      // pour appliquer en une seule fois toutes les modifications validées.
+      if (body.action === 'replace' && Array.isArray(body.products)) {
+        const normalizedProducts = body.products.map((product: any) => normalizeProductRecord(product));
+        const invalid = normalizedProducts.find((product: any) => !product.id || !product.name || !Number.isFinite(product.price));
+        if (invalid) {
+          return res.status(400).json({ success: false, message: 'Un ou plusieurs produits sont incomplets ou invalides.' });
+        }
+        const ids = new Set<string>();
+        for (const product of normalizedProducts) {
+          if (ids.has(product.id)) {
+            return res.status(409).json({ success: false, message: `Identifiant produit dupliqué : ${product.id}` });
+          }
+          ids.add(product.id);
+        }
+        await saveProductsToDB(normalizedProducts);
+        return res.status(200).json({ success: true, products: normalizedProducts, message: 'Catalogue publié en une seule opération.' });
+      }
+
       const incoming = body.product;
 
       if (!incoming || typeof incoming !== 'object' || !incoming.id) {

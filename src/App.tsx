@@ -452,6 +452,31 @@ export default function App() {
       };
 
       try {
+        // Le catalogue est publié avec le même bouton que le reste de
+        // l'administration. Les fiches produits restent ensuite la source
+        // unique pour les images, tailles, pastilles et caractéristiques.
+        if (isAdminLoggedIn && Array.isArray(normalizedBrandData.jackets)) {
+          const catalogResponse = await fetch('/api/admin/products', {
+            method: 'PUT',
+            credentials: 'include',
+            cache: 'no-store',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+              'Cache-Control': 'no-cache',
+            },
+            body: JSON.stringify({
+              action: 'replace',
+              products: normalizedBrandData.jackets,
+            }),
+          });
+
+          const catalogBody = await catalogResponse.json().catch(() => null);
+          if (!catalogResponse.ok || catalogBody?.success !== true) {
+            throw new Error(catalogBody?.message || `Synchronisation catalogue: HTTP ${catalogResponse.status}`);
+          }
+        }
+
         // 1) Upstash est la source runtime. On l'écrit EN PREMIER afin que
         // visiteurs et admin voient le même snapshot dès l'enregistrement.
         const response = await fetch('/api/site-config', {

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { JacketModel } from '../types';
+import React, { useEffect, useState } from 'react';
+import { ComparisonCriterion, JacketModel } from '../types';
 import {
   X,
   Plus,
@@ -33,6 +33,10 @@ interface AdminProductModalProps {
   products: JacketModel[];
   onRefreshProducts: () => void;
   embedded?: boolean;
+  deferServerSave?: boolean;
+  onProductsChange?: (products: JacketModel[]) => void;
+  technicalCriteria?: ComparisonCriterion[];
+  initialProductId?: string;
 }
 
 export const AdminProductModal: React.FC<AdminProductModalProps> = ({
@@ -41,7 +45,12 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   products,
   onRefreshProducts,
   embedded = false,
+  deferServerSave = false,
+  onProductsChange,
+  technicalCriteria = [],
+  initialProductId,
 }) => {
+  const [draftProducts, setDraftProducts] = useState<JacketModel[]>(() => JSON.parse(JSON.stringify(products || [])));
   const [editingProduct, setEditingProduct] = useState<Partial<JacketModel> | null>(null);
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
@@ -49,6 +58,21 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [imageTab, setImageTab] = useState<'primary' | 'secondary'>('primary');
   const [uploadingImage, setUploadingImage] = useState<'primary' | number | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      const nextProducts = JSON.parse(JSON.stringify(products || []));
+      setDraftProducts(nextProducts);
+      if (initialProductId) {
+        const initialProduct = nextProducts.find((product: JacketModel) => product.id === initialProductId);
+        if (initialProduct) {
+          setEditingProduct(syncProductGallery(initialProduct));
+          setIsCreating(false);
+          setImageTab('primary');
+        }
+      }
+    }
+  }, [isOpen, products, initialProductId]);
 
   if (!isOpen) return null;
 
@@ -184,6 +208,25 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
     });
   };
 
+  const addSize = (size: string) => {
+    const value = size.trim();
+    if (!value) return;
+    setEditingProduct((current) => {
+      if (!current) return current;
+      const sizes = Array.from(new Set([...(current.sizes || []), value]));
+      return { ...current, sizes };
+    });
+  };
+
+  const deleteSize = (index: number) => {
+    setEditingProduct((current) => {
+      if (!current) return current;
+      const sizes = [...(current.sizes || [])];
+      sizes.splice(index, 1);
+      return { ...current, sizes };
+    });
+  };
+
   const addFeature = () => {
     setEditingProduct((current) => current ? {
       ...current,
@@ -278,6 +321,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
         care: 'Lavage délicat à la main ou nettoyage à sec',
       },
       hotspots: [],
+      customSpecs: {},
     });
   };
 
@@ -288,6 +332,12 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   };
 
   const handleToggleAvailability = async (product: JacketModel) => {
+    if (deferServerSave) {
+      const updated = draftProducts.map((item) => item.id === product.id ? { ...item, isAvailable: !(item.isAvailable ?? true) } : item);
+      setDraftProducts(updated);
+      onProductsChange?.(updated);
+      return;
+    }
     setLoading(true);
     try {
       const newStatus = !product.isAvailable;
@@ -320,6 +370,15 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   };
 
   const handleDeleteProduct = async (productId: string) => {
+    if (deferServerSave) {
+      const target = draftProducts.find((item) => item.id === productId);
+      if (!target) return;
+      if (!window.confirm(`Supprimer « ${target.name} » de la liste des modifications ?`)) return;
+      const updated = draftProducts.filter((item) => item.id !== productId);
+      setDraftProducts(updated);
+      onProductsChange?.(updated);
+      return;
+    }
     if (deletingProductId !== productId) {
       setDeletingProductId(productId);
       setTimeout(() => setDeletingProductId(null), 4000);
@@ -354,6 +413,25 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
     e.preventDefault();
     if (!editingProduct?.name || editingProduct.price === undefined) {
       alert('Veuillez remplir au moins le nom et le prix du produit.');
+      return;
+    }
+
+    if (deferServerSave) {
+      const normalized = syncProductGallery({
+        ...editingProduct,
+        id: String(editingProduct.id || `produit-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`),
+        name: String(editingProduct.name).trim(),
+        price: Number(editingProduct.price),
+        customSpecs: { ...(editingProduct.customSpecs || {}) },
+      }) as JacketModel;
+      const updated = isCreating
+        ? [...draftProducts, normalized]
+        : draftProducts.map((item) => item.id === normalized.id ? normalized : item);
+      setDraftProducts(updated);
+      onProductsChange?.(updated);
+      showToast(isCreating ? `Produit « ${normalized.name} » ajouté aux modifications.` : `Produit « ${normalized.name} » modifié.`);
+      setEditingProduct(null);
+      setIsCreating(false);
       return;
     }
 
@@ -731,17 +809,23 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                     <span className="text-[10px] text-[#a3b1a5]">{editingProduct.sizes?.length || 0} active(s)</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {Array.from(new Set(['XS','S','M','L','XL','XXL','3XL','Sur Mesure',...(editingProduct.sizes || [])])).map((size) => {
-                      const active = editingProduct.sizes?.includes(size);
-                      return <button key={size} type="button" onClick={() => toggleSize(size)} className={`px-3 py-1.5 rounded-xl text-xs font-semibold border cursor-pointer ${active ? 'bg-[#d4af37] text-[#121613] border-[#d4af37]' : 'bg-[#1e2720] text-[#a3b1a5] border-[#374739]'}`}>{active ? '✓ ' : ''}{size}</button>;
-                    })}
+                    {(editingProduct.sizes || []).map((size, idx) => (
+                      <div key={`${size}-${idx}`} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#d4af37]/10 border border-[#d4af37]/50">
+                        <span className="text-xs font-semibold text-[#f3ece0]">{size}</span>
+                        <button type="button" onClick={() => deleteSize(idx)} className="text-red-300 hover:text-white cursor-pointer" title={`Supprimer ${size}`}><Trash2 className="w-3.5 h-3.5" /></button>
+                      </div>
+                    ))}
+                    {(editingProduct.sizes || []).length === 0 && <span className="text-xs text-[#7d8c7f]">Aucune taille définie.</span>}
                   </div>
-                  <input
-                    value={(editingProduct.sizes || []).join(', ')}
-                    onChange={(e) => updateEditingProduct({ sizes: e.target.value.split(',').map(v => v.trim()).filter(Boolean) })}
-                    placeholder="Ou saisir directement : S, M, L, XL, 42..."
-                    className="w-full bg-[#121613] border border-[#38483b] text-xs text-white px-3 py-2 rounded-xl"
-                  />
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-[#263128]">
+                    {['XS','S','M','L','XL','XXL','3XL','Sur Mesure'].filter((size) => !(editingProduct.sizes || []).includes(size)).map((size) => (
+                      <button key={size} type="button" onClick={() => addSize(size)} className="px-2.5 py-1.5 rounded-lg bg-[#1e2720] text-[#a3b1a5] border border-[#374739] hover:border-[#d4af37] hover:text-[#d4af37] text-[11px] cursor-pointer">+ {size}</button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input id="custom-size-input" placeholder="Ajouter une taille…" className="flex-1 bg-[#121613] border border-[#38483b] text-xs text-white px-3 py-2 rounded-xl" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSize(e.currentTarget.value); e.currentTarget.value = ''; } }} />
+                    <button type="button" onClick={() => { const input = document.getElementById('custom-size-input') as HTMLInputElement | null; if (input) { addSize(input.value); input.value = ''; } }} className="px-3 py-2 rounded-xl border border-[#d4af37] text-[#d4af37] text-xs font-bold flex items-center gap-1 cursor-pointer"><Plus className="w-3.5 h-3.5" /> Ajouter</button>
+                  </div>
                 </div>
 
                 <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#273429] space-y-4">
@@ -764,6 +848,12 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                       ['origin','Origine'],['warmthRating','Indice de chaleur'],['waterResistance','Imperméabilité'],['weight','Poids'],['fitType','Coupe'],['care','Entretien']
                     ] as const).map(([key,label]) => (
                       <div key={key}><label className="block text-[10px] text-[#a3b1a5] mb-1">{label}</label><input value={editingProduct.specs?.[key] || ''} onChange={(e) => setEditingProduct(current => current ? { ...current, specs: { ...(current.specs || {} as any), [key]: e.target.value } as any } : current)} className="w-full bg-[#121613] border border-[#38483b] text-xs text-white px-2.5 py-2 rounded-lg" /></div>
+                    ))}
+                    {technicalCriteria.filter((criterion) => !['category','fabric','warmth','water','weight','fit','care','price'].includes(criterion.key)).map((criterion) => (
+                      <div key={criterion.id}>
+                        <label className="block text-[10px] text-[#a3b1a5] mb-1">{criterion.label}</label>
+                        <input value={editingProduct.customSpecs?.[criterion.key] || ''} onChange={(e) => setEditingProduct(current => current ? { ...current, customSpecs: { ...(current.customSpecs || {}), [criterion.key]: e.target.value } } : current)} className="w-full bg-[#121613] border border-[#38483b] text-xs text-white px-2.5 py-2 rounded-lg" />
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -840,7 +930,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                   className="px-6 py-2.5 rounded-xl bg-[#d4af37] text-[#121613] font-bold hover:brightness-110 transition-all flex items-center space-x-2 cursor-pointer shadow-lg disabled:opacity-50"
                 >
                   <Save className="w-4 h-4" />
-                  <span>{loading ? 'Enregistrement...' : 'Enregistrer le Produit'}</span>
+                  <span>{loading ? 'Enregistrement...' : (deferServerSave ? 'Valider les modifications' : 'Enregistrer le Produit')}</span>
                 </button>
               </div>
             </form>
@@ -849,11 +939,11 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
             <div className="space-y-4">
               <div className="flex items-center justify-between text-xs text-[#a3b1a5]">
                 <span>Catalogue officiel enregistré dans la base de données Upstash Redis ({products.length} article(s))</span>
-                <span className="text-[#d4af37] font-semibold">Toutes les modifications sont synchronisées avec le serveur</span>
+                <span className="text-[#d4af37] font-semibold">{deferServerSave ? 'Modifications en attente — seront publiées avec Enregistrer & Appliquer' : 'Toutes les modifications sont synchronisées avec le serveur'}</span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {products.map((p) => {
+                {draftProducts.map((p) => {
                   const isAvail = p.isAvailable !== false;
                   return (
                     <div
