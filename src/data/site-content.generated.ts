@@ -167,6 +167,57 @@ export const publishedSiteContent = {
         },
         "hotspots": [],
         "id": "produit-1787241378430-715p3s"
+      },
+      {
+        "name": "n°3",
+        "subTitle": "Confection Artisanale des Pyrénées",
+        "category": "Homme \u0026 Femme",
+        "price": 490,
+        "currency": "€",
+        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787242933243-Art1-2.png",
+        "gallery": [
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787242933243-Art1-2.png"
+        ],
+        "description": "Veste artisanale d'exception tissée dans les Pyrénées.",
+        "longDescription": "Fabriquée selon des savoir-faire d'autrefois en pure laine sélectionnée.",
+        "tagline": "L'élégance des cimes",
+        "fabrics": [
+          "Laine des Pyrénées 100% naturelle"
+        ],
+        "colors": [
+          {
+            "name": "Gris Aspe",
+            "hex": "#4a524b"
+          },
+          {
+            "name": "Ocre Vignemale",
+            "hex": "#8c6b43"
+          }
+        ],
+        "sizes": [
+          "S",
+          "M",
+          "L",
+          "XL"
+        ],
+        "isAvailable": true,
+        "features": [
+          {
+            "iconName": "Shield",
+            "title": "Coupe-Vent",
+            "desc": "Protection thermique haute montagne"
+          }
+        ],
+        "specs": {
+          "weight": "850g",
+          "waterResistance": "Déperlante",
+          "warmthRating": "Très élevée",
+          "fitType": "Ajustée",
+          "origin": "Atelier Pyrénées, France",
+          "care": "Lavage délicat à la main ou nettoyage à sec"
+        },
+        "hotspots": [],
+        "id": "produit-1787242939553-ezbmjg"
       }
     ],
     "theme": {
@@ -799,5 +850,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787242542455
+  "publishedAt": 1787242942212
 } as const;
