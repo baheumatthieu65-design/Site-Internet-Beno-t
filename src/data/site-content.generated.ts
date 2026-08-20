@@ -406,8 +406,8 @@ export const publishedSiteContent = {
         "section": "hero",
         "url": "/assets/persistent-media-2.png",
         "alt": "",
-        "x": 15,
-        "y": 23,
+        "x": 22,
+        "y": 27,
         "size": 104,
         "rotate": -18,
         "opacity": 100,
@@ -868,5 +868,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787249367186
+  "publishedAt": 1787249509866
 } as const;
