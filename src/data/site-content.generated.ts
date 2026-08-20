@@ -391,10 +391,10 @@ export const publishedSiteContent = {
     "logos": {
       "boutique": {
         "imageUrl": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787254609604-Logo.png",
-        "text": "MAISON MAILHAG",
-        "secondaryText": "ÉDITION LIMITÉE DES PYRÉNÉES 4",
+        "text": "Maison Mailhagut",
+        "secondaryText": "Au coeur des pyrénées",
         "fontFamily": "serif",
-        "textColor": "#f3ece0",
+        "textColor": "#b38144",
         "textSize": "21px",
         "imageSize": 58,
         "gap": 12,
@@ -768,5 +768,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787254616515
+  "publishedAt": 1787254710619
 } as const;
