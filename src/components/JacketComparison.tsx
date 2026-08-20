@@ -97,10 +97,10 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
             <Scale className="w-3.5 h-3.5" />
             <span>Guide de choix</span>
           </div>
-          <h2 className="font-serif text-3xl sm:text-5xl font-light text-[#f3ece0]">
+          <h2 data-vce-id="comparison-title" className="font-serif text-3xl sm:text-5xl font-light text-[#f3ece0]">
             {sectionTitle}
           </h2>
-          <p className="text-sm text-[#a3b0a2] mt-3 font-sans max-w-xl mx-auto">
+          <p data-vce-id="comparison-subtitle" className="text-sm text-[#a3b0a2] mt-3 font-sans max-w-xl mx-auto">
             Découvrez en un coup d’œil quelle création correspond le mieux à votre style de vie et vos escapades dans les Pyrénées.
           </p>
         </div>

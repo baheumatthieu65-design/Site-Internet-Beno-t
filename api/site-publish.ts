@@ -43,34 +43,13 @@ function hash(value: string): string {
 function normalizeEditorConfig(input: any) {
   const source = input && typeof input === 'object' ? input : {};
   const rawBlocks = Array.isArray(source.blocks) ? source.blocks : [];
-
   const byId = new Map<string, any>();
-  const bySelector = new Map<string, string>();
 
-  for (let index = 0; index < rawBlocks.length; index += 1) {
-    const raw = rawBlocks[index];
+  for (const raw of rawBlocks) {
     if (!raw || typeof raw !== 'object') continue;
 
-    const selector =
-      typeof raw.selector === 'string' ? raw.selector.trim() : '';
-
-    // Un bloc sans selector, sans binding et sans contenu exploitable ne peut
-    // rien appliquer au DOM : on le retire du snapshot pour éviter les vieux
-    // blocs fantômes accumulés au fil des versions.
-    const hasContent =
-      typeof raw.text === 'string' ||
-      typeof raw.url === 'string' ||
-      typeof raw.link === 'string' ||
-      typeof raw.fontFamily === 'string' ||
-      typeof raw.fontSize === 'string' ||
-      typeof raw.color === 'string';
-
-    if (!selector && !hasContent) continue;
-
     const type = typeof raw.type === 'string' ? raw.type : 'text';
-    const section =
-      typeof raw.section === 'string' ? raw.section : 'hero';
-
+    const section = typeof raw.section === 'string' ? raw.section : 'hero';
     const kind =
       raw.kind === 'media' || raw.kind === 'text'
         ? raw.kind
@@ -78,58 +57,91 @@ function normalizeEditorConfig(input: any) {
           ? 'media'
           : 'text';
 
-    // Les anciens IDs `element-<timestamp>` étaient recréés à chaque édition.
-    // Ils donnent l'impression qu'un même élément est plusieurs éléments
-    // différents et rendent les snapshots historiques difficiles à fusionner.
-    // Un locator visuel est déterministe : même section + type + kind +
-    // selector = même identité. Les IDs explicitement nommés par une future
-    // version de l'éditeur restent conservés.
-    const rawId = typeof raw.id === 'string' ? raw.id.trim() : '';
-    const generatedId = !rawId || /^(?:element|text|media)-\d+$/.test(rawId);
-    const id = generatedId
-      ? `element-${hash(`${section}|${type}|${kind}|${selector || 'no-selector'}`)}`
-      : rawId;
+    const rawLocator =
+      raw.locator && typeof raw.locator === 'object'
+        ? raw.locator
+        : {};
 
+    const locator = {
+      ...(typeof rawLocator.tag === 'string' ? { tag: rawLocator.tag } : {}),
+      ...(typeof rawLocator.text === 'string' ? { text: rawLocator.text } : {}),
+      ...(typeof rawLocator.url === 'string' ? { url: rawLocator.url } : {}),
+      ...(typeof rawLocator.sectionId === 'string'
+        ? { sectionId: rawLocator.sectionId }
+        : { sectionId: section }),
+      ...(Number.isInteger(rawLocator.occurrence)
+        ? { occurrence: Math.max(0, rawLocator.occurrence) }
+        : {}),
+    };
+
+    const selector =
+      typeof raw.selector === 'string' && raw.selector.trim()
+        ? raw.selector.trim()
+        : undefined;
+
+    const hasContent =
+      typeof raw.text === 'string' ||
+      typeof raw.url === 'string' ||
+      typeof raw.link === 'string' ||
+      typeof raw.fontFamily === 'string' ||
+      typeof raw.fontSize === 'string' ||
+      typeof raw.color === 'string' ||
+      Boolean(selector) ||
+      Object.keys(locator).length > 0;
+
+    if (!hasContent) continue;
+
+    const suppliedId =
+      typeof raw.id === 'string' ? raw.id.trim() : '';
+
+    const legacyId =
+      !suppliedId ||
+      /^(?:element|text|media|block)-\d+$/.test(suppliedId);
+
+    const identity = [
+      section,
+      kind,
+      locator.tag || '',
+      locator.text || '',
+      locator.url || '',
+      locator.occurrence ?? '',
+      selector || '',
+    ].join('|');
+
+    const id = legacyId
+      ? `vce-${hash(identity)}`
+      : suppliedId;
+
+    // Les selectors nth-of-type ne sont plus produits par cette version.
+    // Ils restent lisibles seulement pour les anciens snapshots.
     const cleanedBlock = {
       ...raw,
       id,
       type,
       section,
       kind,
-      selector: selector || undefined,
+      locator,
+      ...(selector ? { selector } : {}),
       visible: raw.visible !== false,
     };
 
-    // Dernière modification = priorité.
     byId.set(id, cleanedBlock);
-
-    // Si plusieurs blocs ciblent exactement le même selector, seul le dernier
-    // reste actif. Cela élimine une grande partie des doublons historiques.
-    if (selector) {
-      bySelector.set(selector, id);
-    }
   }
 
-  const blocks = Array.from(byId.values()).filter((block) => {
-    if (!block.selector) return true;
-    return bySelector.get(block.selector) === block.id;
-  });
+  const blocks = Array.from(byId.values());
 
   const editorElements: Record<string, unknown> = {};
-
   for (const block of blocks) {
     editorElements[block.id] = {
       id: block.id,
       type: block.type,
       kind: block.kind,
       section: block.section,
-      selector: block.selector || null,
-      locator: 'data-vce-id',
+      locator: block.locator || null,
     };
   }
 
   return {
-    // On conserve les options de l'éditeur existantes.
     ...Object.fromEntries(
       Object.entries(source).filter(
         ([key]) =>
@@ -138,8 +150,7 @@ function normalizeEditorConfig(input: any) {
           key !== 'schemaVersion'
       )
     ),
-
-    schemaVersion: 5,
+    schemaVersion: 6,
     blocks,
     editorElements,
   };
@@ -224,7 +235,7 @@ export default async function handler(
     Authorization: `Bearer ${token}`,
     'X-GitHub-Api-Version': '2022-11-28',
     'Content-Type': 'application/json',
-    'User-Agent': 'Site-Internet-Benoit-V5',
+    'User-Agent': 'Site-Internet-Benoit-V6',
   };
 
   try {
@@ -254,7 +265,7 @@ export default async function handler(
     const updateOnce = async (sha?: string) => {
       const payload: Record<string, unknown> = {
         message:
-          'chore(site-editor): normalize published visual snapshot v5',
+          'chore(site-editor): normalize published visual snapshot v6',
         content: encoded,
         branch,
       };

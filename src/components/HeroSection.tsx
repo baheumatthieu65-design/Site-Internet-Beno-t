@@ -60,9 +60,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       <div className={`flex ${textAlignClass === 'text-left' ? 'justify-start' : textAlignClass === 'text-right' ? 'justify-end' : 'justify-center'} mb-6`}>
         <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-[#273229]/80 backdrop-blur-md border border-[#4d5e50] text-[#d4af37] text-xs font-serif tracking-widest uppercase shadow-xl">
           <Mountain className="w-3.5 h-3.5 text-[#d4af37]" />
-          <span>{brandData.designerLocation}</span>
+          <span data-vce-id="hero-designer-location">{brandData.designerLocation}</span>
           <span className="text-[#627666]">|</span>
-          <span className="text-[#e2d5c3]">{badgeText}</span>
+          <span data-vce-id="hero-badge-text" className="text-[#e2d5c3]">{badgeText}</span>
         </div>
       </div>
     );
@@ -86,6 +86,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           data-vce-editable="true"
           data-vce-role="hero-line-1"
           data-vce-hero-line="1"
+          data-vce-id="hero-title-prefix"
           className={`block ${prefixClass}`}
         >
           {titlePrefix}
@@ -96,6 +97,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         data-vce-editable="true"
         data-vce-role="hero-line-2"
         data-vce-hero-line="2"
+        data-vce-id="hero-brand-name"
         className={`block ${brandClass}`}
       >
         {brandData.brandName}
@@ -112,6 +114,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       <div className="absolute inset-0 z-0">
         {brandData.heroBackground?.type === 'video' ? (
           <video
+            data-vce-id="hero-background-media"
             src={brandData.heroBackground.url}
             poster={brandData.heroBackground.poster}
             autoPlay
@@ -126,6 +129,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           />
         ) : (
           <img
+            data-vce-id="hero-background-media"
             src={brandData.heroBackground?.url || brandData.heroBgImage}
             alt="Les Pyrénées"
             className="w-full h-full object-cover object-center scale-105 opacity-40 mix-blend-luminosity"
@@ -189,13 +193,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             {badgePosition === 'below-title' && renderBadge()}
 
             {brandData.tagline && (
-              <p className="text-xl sm:text-3xl text-[#d0c5b4] font-serif font-light max-w-2xl mx-auto italic">
+              <p data-vce-id="hero-tagline" className="text-xl sm:text-3xl text-[#d0c5b4] font-serif font-light max-w-2xl mx-auto italic">
                 "{brandData.tagline}"
               </p>
             )}
 
             {brandData.subtitle && (
-              <p className="text-sm sm:text-base text-[#a3b0a2] max-w-2xl mx-auto leading-relaxed font-sans pt-2">
+              <p data-vce-id="hero-subtitle" className="text-sm sm:text-base text-[#a3b0a2] max-w-2xl mx-auto leading-relaxed font-sans pt-2">
                 {brandData.subtitle}
               </p>
             )}
@@ -208,7 +212,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 className={`px-8 py-3.5 text-sm uppercase tracking-widest flex items-center space-x-2 ${primaryBtnClass}`}
               >
                 <Sparkles className="w-4 h-4" />
-                <span>{orderText}</span>
+                <span data-vce-id="hero-order-button-text">{orderText}</span>
               </button>
 
               <button
@@ -216,7 +220,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 style={discoverButtonInlineStyle}
                 className={`px-7 py-3.5 text-sm uppercase tracking-widest flex items-center space-x-2 ${secondaryBtnClass}`}
               >
-                <span>{discoverText} la collection ({jackets.length} créations)</span>
+                <span data-vce-id="hero-discover-button-text">{discoverText} la collection ({jackets.length} créations)</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -247,13 +251,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               {badgePosition === 'below-title' && renderBadge()}
 
               {brandData.tagline && (
-                <p className="text-lg sm:text-xl text-[#d0c5b4] font-serif font-light italic">
+                <p data-vce-id="hero-tagline" className="text-lg sm:text-xl text-[#d0c5b4] font-serif font-light italic">
                   "{brandData.tagline}"
                 </p>
               )}
 
               {brandData.subtitle && (
-                <p className="text-sm text-[#a3b0a2] leading-relaxed font-sans">
+                <p data-vce-id="hero-subtitle" className="text-sm text-[#a3b0a2] leading-relaxed font-sans">
                   {brandData.subtitle}
                 </p>
               )}
@@ -265,14 +269,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   className={`px-6 py-3 text-xs uppercase tracking-widest flex items-center space-x-2 ${primaryBtnClass}`}
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>{orderText}</span>
+                  <span data-vce-id="hero-order-button-text">{orderText}</span>
                 </button>
                 <button
                   onClick={scrollToCollection}
                 style={discoverButtonInlineStyle}
                   className={`px-5 py-3 text-xs uppercase tracking-widest flex items-center space-x-1.5 ${secondaryBtnClass}`}
                 >
-                  <span>{discoverText} la collection</span>
+                  <span data-vce-id="hero-discover-button-text">{discoverText} la collection</span>
                 </button>
               </div>
             </div>
@@ -325,13 +329,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               {badgePosition === 'below-title' && renderBadge()}
 
               {brandData.tagline && (
-                <p className="text-lg sm:text-2xl text-[#d0c5b4] font-serif font-light max-w-2xl mx-auto italic">
+                <p data-vce-id="hero-tagline" className="text-lg sm:text-2xl text-[#d0c5b4] font-serif font-light max-w-2xl mx-auto italic">
                   "{brandData.tagline}"
                 </p>
               )}
 
               {brandData.subtitle && (
-                <p className="text-sm sm:text-base text-[#a3b0a2] max-w-xl mx-auto leading-relaxed font-sans pt-2">
+                <p data-vce-id="hero-subtitle" className="text-sm sm:text-base text-[#a3b0a2] max-w-xl mx-auto leading-relaxed font-sans pt-2">
                   {brandData.subtitle}
                 </p>
               )}
@@ -361,6 +365,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                       }`}
                     >
                       <img
+                        data-vce-id={`product-${j.id}-image`}
                         src={j.heroImage}
                         alt={j.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -370,21 +375,21 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <span className="text-[11px] uppercase tracking-widest text-[#a3b1a5] font-medium block">
+                      <span data-vce-id={`product-${j.id}-category`} className="text-[11px] uppercase tracking-widest text-[#a3b1a5] font-medium block">
                         {j.category}
                       </span>
-                      <h3 className="font-serif text-lg sm:text-xl text-[#f3ece0] font-semibold truncate group-hover:text-[#d4af37] transition-colors">
+                      <h3 data-vce-id={`product-${j.id}-name`} className="font-serif text-lg sm:text-xl text-[#f3ece0] font-semibold truncate group-hover:text-[#d4af37] transition-colors">
                         {j.name}
                       </h3>
-                      <p className="text-xs text-[#a8b5a9] line-clamp-2 mt-1">
+                      <p data-vce-id={`product-${j.id}-description`} className="text-xs text-[#a8b5a9] line-clamp-2 mt-1">
                         {j.description}
                       </p>
                       <div className="mt-3 flex items-center justify-between">
-                        <span className="font-serif text-base font-semibold text-[#c2a26d]">
+                        <span data-vce-id={`product-${j.id}-price`} className="font-serif text-base font-semibold text-[#c2a26d]">
                           {j.price} {j.currency}
                         </span>
                         <span className="text-xs text-[#d4af37] group-hover:translate-x-1 transition-transform inline-flex items-center space-x-1 font-medium">
-                          <span>{discoverText}</span>
+                          <span data-vce-id={`product-${j.id}-discover`}>{discoverText}</span>
                           <ChevronRight className="w-3.5 h-3.5" />
                         </span>
                       </div>

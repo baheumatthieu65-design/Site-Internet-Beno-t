@@ -95,10 +95,10 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
             <Camera className="w-3.5 h-3.5" />
             <span>Galerie Editorial</span>
           </div>
-          <h2 className="font-serif text-3xl sm:text-5xl font-light text-[#f3ece0]">
+          <h2 data-vce-id="lookbook-title" className="font-serif text-3xl sm:text-5xl font-light text-[#f3ece0]">
             Lookbook Champêtre
           </h2>
-          <p className="text-sm text-[#a3b0a2] mt-3 font-sans">
+          <p data-vce-id="lookbook-subtitle" className="text-sm text-[#a3b0a2] mt-3 font-sans">
             Mise en scène de nos créations au cœur des paysages sauvages des Pyrénées.
           </p>
         </div>

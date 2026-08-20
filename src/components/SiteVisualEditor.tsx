@@ -15,7 +15,16 @@ export interface EditorBlock {
   url?: string;
   link?: string;
   visible: boolean;
+  /** Ancien locator CSS conservé uniquement pour compatibilité historique. */
   selector?: string;
+  /** Locator stable utilisé lorsque le DOM ne porte pas encore data-vce-id. */
+  locator?: {
+    tag?: string;
+    text?: string;
+    url?: string;
+    sectionId?: string;
+    occurrence?: number;
+  };
   kind?: 'text' | 'media';
   fontFamily?: string;
   fontSize?: string;
@@ -66,49 +75,90 @@ function cloneEditorConfig(config: SiteEditorConfig): SiteEditorConfig {
   return JSON.parse(JSON.stringify(config)) as SiteEditorConfig;
 }
 
-function selectorFor(el: Element): string {
-  const explicit = el.getAttribute('data-vce-selector');
-  if (explicit) return `[data-vce-selector="${esc(explicit)}"]`;
-
-  const heroLine = el.getAttribute('data-vce-hero-line');
-  if (heroLine) return `[data-vce-hero-line="${esc(heroLine)}"]`;
-
-  const role = el.getAttribute('data-vce-role');
-  if (role) return `[data-vce-role="${esc(role)}"]`;
-
-  const parts: string[] = [];
-  let current: Element | null = el;
-
-  while (current && current !== document.body && parts.length < 8) {
-    const parent = current.parentElement;
-    const tag = current.tagName.toLowerCase();
-
-    if (!parent) {
-      parts.unshift(tag);
-      break;
-    }
-
-    const same = Array.from(parent.children).filter(
-      (child) => child.tagName === current!.tagName,
-    );
-    const index = same.indexOf(current) + 1;
-    parts.unshift(`${tag}:nth-of-type(${index})`);
-
-    const candidate = parts.join(' > ');
-    try {
-      if (document.querySelectorAll(candidate).length === 1) return candidate;
-    } catch {
-      // Continue building a more specific selector.
-    }
-
-    current = parent;
+function stableHash(value: string): string {
+  let h = 2166136261;
+  for (let i = 0; i < value.length; i += 1) {
+    h ^= value.charCodeAt(i);
+    h = Math.imul(h, 16777619);
   }
-
-  return parts.join(' > ');
+  return (h >>> 0).toString(36);
 }
 
-function readableText(el: Element) {
+function readableText(el: Element): string {
   return (el.textContent || '').replace(/\s+/g, ' ').trim();
+}
+
+function sectionFor(el: Element): SectionId {
+  const section = el.closest('section[id]')?.getAttribute('id');
+  const allowed: SectionId[] = ['hero', 'collection', 'comparatif', 'origines', 'lookbook', 'contact'];
+  return allowed.includes(section as SectionId) ? section as SectionId : 'hero';
+}
+
+function stableElementId(el: Element): string {
+  const existing = el.getAttribute('data-vce-id');
+  if (existing) return existing;
+
+  const role = el.getAttribute('data-vce-role');
+  if (role) return `vce-${role}`;
+
+  const explicit = el.getAttribute('data-vce-selector');
+  if (explicit) return `vce-${explicit}`;
+
+  const section = sectionFor(el);
+  const tag = el.tagName.toLowerCase();
+  const text = readableText(el).slice(0, 180);
+  const url = el instanceof HTMLImageElement
+    ? (el.currentSrc || el.src)
+    : el instanceof HTMLVideoElement
+      ? (el.currentSrc || el.src)
+      : '';
+
+  const id = `vce-${stableHash(`${section}|${tag}|${text}|${url}`)}`;
+  el.setAttribute('data-vce-id', id);
+  return id;
+}
+
+function locatorFor(el: Element) {
+  const sectionId = sectionFor(el);
+  const tag = el.tagName.toLowerCase();
+  const text = readableText(el);
+  const url = el instanceof HTMLImageElement
+    ? (el.currentSrc || el.src)
+    : el instanceof HTMLVideoElement
+      ? (el.currentSrc || el.src)
+      : undefined;
+
+  const root = el.closest('section[id]') || document.body;
+  const same = Array.from(root.querySelectorAll(tag)).filter((candidate) => {
+    if (url) {
+      const current = candidate instanceof HTMLImageElement
+        ? (candidate.currentSrc || candidate.src)
+        : candidate instanceof HTMLVideoElement
+          ? (candidate.currentSrc || candidate.src)
+          : '';
+      return current === url;
+    }
+    return readableText(candidate) === text;
+  });
+  const occurrence = Math.max(0, same.indexOf(el));
+
+  return {
+    tag,
+    text: text || undefined,
+    url,
+    sectionId,
+    occurrence,
+  };
+}
+
+function legacySelectorFor(el: Element): string {
+  const explicit = el.getAttribute('data-vce-selector');
+  if (explicit) return `[data-vce-selector="${esc(explicit)}"]`;
+  const heroLine = el.getAttribute('data-vce-hero-line');
+  if (heroLine) return `[data-vce-hero-line="${esc(heroLine)}"]`;
+  const role = el.getAttribute('data-vce-role');
+  if (role) return `[data-vce-role="${esc(role)}"]`;
+  return '';
 }
 
 function isText(el: Element) {
@@ -139,7 +189,9 @@ export const SiteVisualEditor: React.FC<Props> = ({
   } | null>(null);
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<{
+    id: string;
     selector: string;
+    locator: NonNullable<EditorBlock['locator']>;
     element: Element;
     kind: 'text' | 'media';
     originalText: string;
@@ -242,9 +294,13 @@ export const SiteVisualEditor: React.FC<Props> = ({
             ? media.currentSrc || media.src
             : '';
 
+        const stableMedia = media.closest('[data-vce-id]') || media;
+        const id = stableElementId(stableMedia);
         setSelected({
-          selector: selectorFor(media),
-          element: media,
+          id,
+          selector: legacySelectorFor(stableMedia),
+          locator: locatorFor(stableMedia),
+          element: stableMedia,
           kind: 'media',
           originalText: '',
           originalUrl: url,
@@ -257,17 +313,21 @@ export const SiteVisualEditor: React.FC<Props> = ({
       }
 
       if (isText(element)) {
-        const style = getComputedStyle(element);
+        const stableElement = element.closest('[data-vce-id]') || element;
+        const style = getComputedStyle(stableElement);
+        const id = stableElementId(stableElement);
         setSelected({
-          selector: selectorFor(element),
-          element,
+          id,
+          selector: legacySelectorFor(stableElement),
+          locator: locatorFor(stableElement),
+          element: stableElement,
           kind: 'text',
           originalText: readableText(element),
           originalUrl: '',
           originalStyle: (element as HTMLElement).getAttribute('style') || '',
           originalConfig: cloneEditorConfig(config),
         });
-        setText(readableText(element));
+        setText(readableText(stableElement));
         setFont(style.fontFamily.split(',')[0].replace(/["']/g, '') || 'Playfair Display');
         setSize(style.fontSize || '48px');
         setColor(style.color || '#F5EEDF');
@@ -280,7 +340,9 @@ export const SiteVisualEditor: React.FC<Props> = ({
   }, [selecting]);
 
   const blockIndex = useMemo(
-    () => selected ? config.blocks.findIndex((b) => b.selector === selected.selector) : -1,
+    () => selected
+      ? config.blocks.findIndex((b) => b.id === selected.id || (b.selector && b.selector === selected.selector))
+      : -1,
     [config.blocks, selected],
   );
 
@@ -291,17 +353,26 @@ export const SiteVisualEditor: React.FC<Props> = ({
     const existing: EditorBlock = blockIndex >= 0
       ? blocks[blockIndex]
       : {
-          id: `element-${Date.now()}`,
+          id: selected.id,
           type: selected.kind === 'media' ? 'image' : 'text',
-          section: 'hero',
+          section: sectionFor(selected.element),
           x: 50,
           y: 50,
           visible: true,
-          selector: selected.selector,
+          selector: selected.selector || undefined,
+          locator: selected.locator,
           kind: selected.kind,
         };
 
-    const nextBlock = { ...existing, ...patch };
+    const nextBlock = {
+      ...existing,
+      ...patch,
+      id: existing.id || selected.id,
+      // Le locator décrit la valeur AVANT la première modification. Il ne
+      // doit jamais être remplacé par la nouvelle valeur, sinon un élément
+      // générique sans data-vce-id deviendrait introuvable après refresh.
+      locator: existing.locator || selected.locator,
+    };
     if (blockIndex >= 0) blocks[blockIndex] = nextBlock;
     else blocks.push(nextBlock);
 
@@ -329,7 +400,9 @@ export const SiteVisualEditor: React.FC<Props> = ({
     commitBlock({
       type: 'text',
       kind: 'text',
-      selector: selected.selector,
+      id: selected.id,
+      selector: selected.selector || undefined,
+      locator: selected.locator,
       text: patch.text ?? text,
       fontFamily: patch.fontFamily ?? font,
       fontSize: patch.fontSize ?? size,
@@ -352,7 +425,9 @@ export const SiteVisualEditor: React.FC<Props> = ({
     commitBlock({
       type: el instanceof HTMLVideoElement ? 'video' : 'image',
       kind: 'media',
-      selector: selected.selector,
+      id: selected.id,
+      selector: selected.selector || undefined,
+      locator: selected.locator,
       url,
       visible: true,
     });
