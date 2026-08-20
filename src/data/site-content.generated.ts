@@ -483,7 +483,7 @@ export const publishedSiteContent = {
       "inquiryButtonText": "Commander sur Mesure",
       "workshopButtonText": "Prendre Rendez-vous à l'Atelier",
       "heroBadgeText": "Édition Limitée des Pyrénées",
-      "heroTitlePrefix": "Thème Champêtre \u0026 Élégance",
+      "heroTitlePrefix": "Thème Champêtre \u0026 Élégance 2",
       "comparisonCriteria": [
         {
           "id": "crit_category",
@@ -828,7 +828,7 @@ export const publishedSiteContent = {
         "visible": true,
         "selector": "[data-vce-hero-line=\"1\"]",
         "kind": "text",
-        "text": "Thème Champêtre \u0026 Élégance",
+        "text": "Thème Champêtre \u0026 Élégance 2",
         "fontFamily": "ui-serif",
         "fontSize": "60px",
         "color": "rgb(194, 162, 109)",
@@ -1022,5 +1022,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787218091785
+  "publishedAt": 1787218097180
 } as const;
