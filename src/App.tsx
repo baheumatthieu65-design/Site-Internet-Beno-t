@@ -726,7 +726,28 @@ export default function App() {
         return;
       }
 
-      const products = data.products;
+      // Une seule convention image dans toute l'application :
+      // gallery[0] = image principale = heroImage.
+      // Les anciennes fiches pouvaient conserver un heroImage historique alors
+      // que gallery[0] contenait déjà la nouvelle image. On corrige ce décalage
+      // à la lecture pour que Hero, cartes, Showcase, Lookbook et administration
+      // utilisent exactement la même première image.
+      const products = data.products.map((product: any) => {
+        const rawGallery = Array.isArray(product?.gallery) ? product.gallery : [];
+        const cleanGallery: string[] = Array.from(new Set(rawGallery
+          .map((url: unknown) => String(url || '').trim())
+          .filter(Boolean)));
+        const legacyHero = String(product?.heroImage || '').trim();
+        const primary = cleanGallery[0] || legacyHero;
+        const gallery = primary
+          ? [primary, ...cleanGallery.filter((url: string) => url !== primary)]
+          : cleanGallery;
+        return {
+          ...product,
+          heroImage: primary,
+          gallery,
+        };
+      });
 
       // IMPORTANT :
       // Si l'API retourne un tableau vide, on conserve

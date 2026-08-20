@@ -1212,7 +1212,68 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                 </div>
               </div>
 
-              {/* 4. SECTION REORDERING & VISIBILITY */}
+              {/* 4. TAILLE DES IMAGES — SHOWCASE & LOOKBOOK */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[#2a362c]">
+                <div className="p-4 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
+                  <div>
+                    <h4 className="font-serif text-sm text-[#f3ece0] font-semibold">Grande image du Showcase</h4>
+                    <p className="text-[11px] text-[#a3b1a5] mt-1">Image à 60 % par défaut, centrée dans un cadre dont tu contrôles la taille.</p>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between text-[10px] text-[#a3b1a5] mb-1">
+                      <span>Taille de l'image</span><strong className="text-[#d4af37]">{currentTheme.showcaseImageScale ?? 60}%</strong>
+                    </div>
+                    <input type="range" min="30" max="100" step="5" value={currentTheme.showcaseImageScale ?? 60} onChange={(e) => updateTheme({ showcaseImageScale: Number(e.target.value) })} className="w-full accent-[#d4af37]" />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between text-[10px] text-[#a3b1a5] mb-1">
+                      <span>Largeur du cadre</span><strong className="text-[#d4af37]">{currentTheme.showcaseImageFrameWidth ?? 100}%</strong>
+                    </div>
+                    <input type="range" min="60" max="100" step="5" value={currentTheme.showcaseImageFrameWidth ?? 100} onChange={(e) => updateTheme({ showcaseImageFrameWidth: Number(e.target.value) })} className="w-full accent-[#d4af37]" />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between text-[10px] text-[#a3b1a5] mb-1">
+                      <span>Hauteur du cadre</span><strong className="text-[#d4af37]">{currentTheme.showcaseImageFrameHeight ?? 520}px</strong>
+                    </div>
+                    <input type="range" min="280" max="900" step="20" value={currentTheme.showcaseImageFrameHeight ?? 520} onChange={(e) => updateTheme({ showcaseImageFrameHeight: Number(e.target.value) })} className="w-full accent-[#d4af37]" />
+                    <div className="flex gap-2 mt-2">
+                      {[420, 520, 620].map((height) => (
+                        <button key={height} type="button" onClick={() => updateTheme({ showcaseImageFrameHeight: height })} className={`px-2.5 py-1 rounded-lg text-[10px] border ${Number(currentTheme.showcaseImageFrameHeight ?? 520) === height ? 'border-[#d4af37] bg-[#d4af37] text-[#121613]' : 'border-[#38483b] text-[#a3b1a5]'}`}>
+                          {height}px
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
+                  <div>
+                    <h4 className="font-serif text-sm text-[#f3ece0] font-semibold">Galerie & Lookbook</h4>
+                    <p className="text-[11px] text-[#a3b1a5] mt-1">Les images passent à 60 % par défaut et restent contenues dans leur cadre.</p>
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between text-[10px] text-[#a3b1a5] mb-1">
+                      <span>Taille de l'image</span><strong className="text-[#d4af37]">{currentTheme.lookbookImageScale ?? 60}%</strong>
+                    </div>
+                    <input type="range" min="30" max="100" step="5" value={currentTheme.lookbookImageScale ?? 60} onChange={(e) => updateTheme({ lookbookImageScale: Number(e.target.value) })} className="w-full accent-[#d4af37]" />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between text-[10px] text-[#a3b1a5] mb-1">
+                      <span>Hauteur du cadre</span><strong className="text-[#d4af37]">{currentTheme.lookbookImageFrameHeight ?? 360}px</strong>
+                    </div>
+                    <input type="range" min="220" max="700" step="20" value={currentTheme.lookbookImageFrameHeight ?? 360} onChange={(e) => updateTheme({ lookbookImageFrameHeight: Number(e.target.value) })} className="w-full accent-[#d4af37]" />
+                    <div className="flex gap-2 mt-2">
+                      {[280, 360, 460].map((height) => (
+                        <button key={height} type="button" onClick={() => updateTheme({ lookbookImageFrameHeight: height })} className={`px-2.5 py-1 rounded-lg text-[10px] border ${Number(currentTheme.lookbookImageFrameHeight ?? 360) === height ? 'border-[#d4af37] bg-[#d4af37] text-[#121613]' : 'border-[#38483b] text-[#a3b1a5]'}`}>
+                          {height}px
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 5. SECTION REORDERING & VISIBILITY */}
               <div className="space-y-4 pt-4 border-t border-[#2a362c]">
                 <h4 className="font-serif text-base text-[#f3ece0] font-semibold flex items-center justify-between">
                   <span>Ordre & Visibilité des Modules Principaux sur la Page</span>

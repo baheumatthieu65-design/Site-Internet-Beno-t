@@ -36,31 +36,40 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
   const textAlignClass = getTextAlignClass(theme);
   const containerWidthClass = getContainerWidthClass(theme);
   const contentPaddingClass = getContentPaddingClass(theme);
+  const lookbookImageScale = Math.min(100, Math.max(30, Number(theme?.lookbookImageScale ?? 60)));
+  const lookbookFrameHeight = Math.min(800, Math.max(220, Number(theme?.lookbookImageFrameHeight ?? 360)));
 
-  // Une seule source de vérité : heroImage est toujours gallery[0],
-  // puis toutes les images secondaires sont exposées au lookbook.
+  // Dynamic gallery items created from all registered jackets
   const galleryItems = jackets.flatMap((j, jIdx) => {
-    const images = Array.from(new Set([
-      j.heroImage,
-      ...(Array.isArray(j.gallery) ? j.gallery : []),
-    ].map((url) => String(url || '').trim()).filter(Boolean)));
+    const images = Array.from(
+      new Set(
+        [j.heroImage, ...(Array.isArray(j.gallery) ? j.gallery : [])]
+          .map((url) => String(url || '').trim())
+          .filter(Boolean)
+      )
+    );
 
-    return images.map((url, imageIdx) => ({
+    return images.map((url, imageIndex) => ({
       url,
-      title: imageIdx === 0
-        ? `${j.name} — Portrait & Silhouette`
-        : imageIdx === 1
-          ? `${j.name} — Vue en Déplacement`
-          : `${j.name} — Vue ${imageIdx + 1}`,
-      model: imageIdx === 0
-        ? j.name
-        : j.fabrics?.[0] || 'Tissage Artisanal Noble',
+      title:
+        imageIndex === 0
+          ? `${j.name} — Portrait & Silhouette`
+          : imageIndex === 1
+            ? `${j.name} — Vue en Déplacement`
+            : `Focus Matières & Finitions — ${j.name}`,
+      model:
+        imageIndex === 0
+          ? j.name
+          : imageIndex === 1
+            ? `Silhouette Signature N°${jIdx + 1}`
+            : j.fabrics[0] || 'Tissage Artisanal Noble',
       jacketId: j.id,
-      location: imageIdx === 0
-        ? `Atelier Pyrénéen • Création N°${jIdx + 1}`
-        : imageIdx === 1
-          ? 'Massif des Pyrénées'
-          : 'Détail d’Atelier',
+      location:
+        imageIndex === 0
+          ? `Atelier Pyrénéen • Création N°${jIdx + 1}`
+          : imageIndex === 1
+            ? 'Massif des Pyrénées'
+            : 'Détail d’Atelier',
     }));
   });
 
@@ -103,13 +112,18 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
               onClick={() => setSelectedImage(item.url)}
               className="group relative cursor-pointer rounded-3xl overflow-hidden bg-[#1a201b] border border-[#374739] shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:border-[#d4af37]"
             >
-              <div className="aspect-[4/5] w-full overflow-hidden relative">
-                <img
-                  src={item.url}
-                  alt={item.title}
-                  className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+              <div
+                className="w-full overflow-hidden relative flex items-center justify-center bg-[#111612]"
+                style={{ height: `${lookbookFrameHeight}px` }}
+              >
+                <div className="relative h-full flex items-center justify-center overflow-hidden" style={{ width: `${lookbookImageScale}%` }}>
+                  <img
+                    src={item.url}
+                    alt={item.title}
+                    className="w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                </div>
               </div>
 
               <div className="absolute bottom-0 left-0 right-0 p-6 space-y-2">

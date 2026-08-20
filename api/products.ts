@@ -2,11 +2,16 @@ import { getProductsFromDB } from './_helpers.js';
 
 const normalizeProductImages = (product: any) => {
   const gallery = Array.isArray(product?.gallery) ? product.gallery : [];
-  const heroImage = String(product?.heroImage || gallery[0] || '').trim();
-  const secondaryImages = gallery
-    .map((url: any) => String(url || '').trim())
-    .filter(Boolean)
-    .filter((url: string) => url !== heroImage);
+  const galleryPrimary = String(gallery[0] || '').trim();
+  const heroImage = String(galleryPrimary || product?.heroImage || '').trim();
+  const secondaryImages = Array.from(
+    new Set(
+      gallery
+        .map((url: any) => String(url || '').trim())
+        .filter(Boolean)
+        .filter((url: string) => url !== heroImage)
+    )
+  );
 
   return {
     ...product,

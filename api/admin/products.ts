@@ -7,7 +7,11 @@ import {
 
 const normalizeProductImages = (product: any) => {
   const gallery = Array.isArray(product?.gallery) ? product.gallery : [];
-  const heroImage = String(product?.heroImage || gallery[0] || '').trim();
+  // Convention canonique : si une galerie existe, son premier élément est
+  // l'image principale. Cela répare les anciennes fiches où heroImage était
+  // resté sur une photo historique.
+  const galleryPrimary = String(gallery[0] || '').trim();
+  const heroImage = String(galleryPrimary || product?.heroImage || '').trim();
   const secondaryImages = Array.from(
     new Set(
       gallery

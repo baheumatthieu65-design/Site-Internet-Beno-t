@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+/*
+ * Échelle visuelle de la vitrine :
+ * le Hero reste à 100 %, tandis que la navigation et les sections
+ * secondaires sont légèrement dézoomées pour alléger la page.
+ */
+#main-nav-header {
+  zoom: 0.9;
+}
+
+#collection,
+#comparatif,
+#origines,
+#lookbook,
+#contact {
+  zoom: 0.9;
+}
+

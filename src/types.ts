@@ -323,6 +323,13 @@ export interface ThemeConfig {
 
   containerWidth?: ContainerWidthId;
 
+  /* Échelle visuelle des médias principaux. Les valeurs sont des pourcentages. */
+  showcaseImageScale?: number;
+  showcaseImageFrameWidth?: number;
+  showcaseImageFrameHeight?: number;
+  lookbookImageScale?: number;
+  lookbookImageFrameHeight?: number;
+
   /* Ordre des blocs */
 
   productBlocksOrder?: ProductBlockId[];

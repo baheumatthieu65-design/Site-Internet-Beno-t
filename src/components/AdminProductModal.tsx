@@ -58,6 +58,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [imageTab, setImageTab] = useState<'primary' | 'secondary'>('primary');
   const [uploadingImage, setUploadingImage] = useState<'primary' | number | null>(null);
+  const [editingHotspotIndex, setEditingHotspotIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -90,8 +91,12 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   };
 
   const syncProductGallery = (product: Partial<JacketModel>, heroImage?: string, secondaryImages?: string[]) => {
-    const hero = String(heroImage ?? product.heroImage ?? '').trim();
-    const secondary = (secondaryImages ?? getSecondaryImages(product))
+    // Quand aucune nouvelle image principale n'est fournie, gallery[0] est
+    // prioritaire. Cela corrige les anciennes fiches où heroImage pointait
+    // encore vers une photo historique alors que la galerie avait été mise à jour.
+    const galleryPrimary = Array.isArray(product.gallery) ? String(product.gallery[0] || '').trim() : '';
+    const hero = String(heroImage !== undefined ? heroImage : (galleryPrimary || product.heroImage || '')).trim();
+    const secondary = (secondaryImages ?? getSecondaryImages({ ...product, heroImage: hero }))
       .map((url) => String(url || '').trim())
       .filter(Boolean)
       .filter((url) => url !== hero);
@@ -284,6 +289,16 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       hotspots.splice(index, 1);
       return { ...current, hotspots };
     });
+    setEditingHotspotIndex((current) => current === index ? null : current !== null && current > index ? current - 1 : current);
+  };
+
+  const setHotspotPositionFromPointer = (index: number, event: React.PointerEvent<HTMLElement>, element?: HTMLElement | null) => {
+    const rect = (element || event.currentTarget).getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const x = Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100));
+    updateHotspot(index, 'x', Math.round(x));
+    updateHotspot(index, 'y', Math.round(y));
   };
 
   const handleStartCreate = () => {
@@ -860,9 +875,57 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
 
                 <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#273429] space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="font-bold text-[#f3ece0] flex items-center gap-2"><Crosshair className="w-4 h-4 text-[#d4af37]" /> Points interactifs / hotspots</div>
-                    <button type="button" onClick={addHotspot} className="text-[#d4af37] text-[11px] font-bold flex items-center gap-1 cursor-pointer"><Plus className="w-3.5 h-3.5" /> Ajouter un point</button>
+                    <div>
+                      <div className="font-bold text-[#f3ece0] flex items-center gap-2"><Crosshair className="w-4 h-4 text-[#d4af37]" /> Points interactifs / hotspots</div>
+                      <div className="text-[10px] text-[#7d8c7f] mt-1">Sélectionne un point puis clique ou glisse-le directement sur l'image pour régler X/Y.</div>
+                    </div>
+                    <button type="button" onClick={() => { addHotspot(); setEditingHotspotIndex((editingProduct?.hotspots || []).length); }} className="text-[#d4af37] text-[11px] font-bold flex items-center gap-1 cursor-pointer"><Plus className="w-3.5 h-3.5" /> Ajouter un point</button>
                   </div>
+
+                  <div
+                    className="relative w-full h-[320px] rounded-2xl overflow-hidden border border-[#39483c] bg-[#080c09] flex items-center justify-center select-none"
+                    onPointerDown={(event) => {
+                      if (editingHotspotIndex !== null && event.target === event.currentTarget) setHotspotPositionFromPointer(editingHotspotIndex, event);
+                    }}
+                    onPointerMove={(event) => {
+                      if (editingHotspotIndex !== null && (event.buttons & 1) === 1) setHotspotPositionFromPointer(editingHotspotIndex, event);
+                    }}
+                    onPointerUp={() => setEditingHotspotIndex(null)}
+                    onPointerLeave={() => setEditingHotspotIndex(null)}
+                  >
+                    {editingProduct.heroImage ? (
+                      <img src={editingProduct.heroImage} alt="Aperçu pour positionner les hotspots" className="absolute inset-0 w-full h-full object-contain pointer-events-none" referrerPolicy="no-referrer" />
+                    ) : (
+                      <div className="text-xs text-[#647266]">Ajoute d'abord une image principale.</div>
+                    )}
+                    {(editingProduct.hotspots || []).map((spot, idx) => {
+                      const selected = editingHotspotIndex === idx;
+                      return (
+                        <button
+                          key={spot.id || idx}
+                          type="button"
+                          title={`Point #${idx + 1} — ${spot.title || 'Sans titre'}`}
+                          onPointerDown={(event) => {
+                            event.stopPropagation();
+                            setEditingHotspotIndex(idx);
+                            event.currentTarget.setPointerCapture(event.pointerId);
+                          }}
+                          onPointerMove={(event) => {
+                            if (editingHotspotIndex === idx && event.buttons === 1) setHotspotPositionFromPointer(idx, event, event.currentTarget.parentElement);
+                          }}
+                          onPointerUp={(event) => {
+                            event.stopPropagation();
+                            setEditingHotspotIndex(null);
+                          }}
+                          style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
+                          className={`absolute -translate-x-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full border-2 flex items-center justify-center text-[11px] font-bold shadow-xl transition-transform ${selected ? 'bg-[#d4af37] text-[#121613] border-white scale-110' : 'bg-[#141915] text-[#d4af37] border-[#d4af37] hover:scale-110'}`}
+                        >
+                          {idx + 1}
+                        </button>
+                      );
+                    })}
+                  </div>
+
                   {(editingProduct.hotspots || []).map((spot, idx) => (
                     <div key={spot.id || idx} className="p-3 rounded-xl bg-[#121613] border border-[#2e3b30] space-y-3">
                       <div className="flex items-center justify-between"><span className="text-xs font-bold text-[#d4af37]">Point #{idx + 1}</span><button type="button" onClick={() => deleteHotspot(idx)} className="text-red-300 text-[11px] cursor-pointer">Supprimer</button></div>

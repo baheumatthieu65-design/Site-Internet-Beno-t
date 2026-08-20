@@ -67,27 +67,27 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   const [draggingBlockId, setDraggingBlockId] = useState<ProductBlockId | null>(null);
   const [dragOverBlockId, setDragOverBlockId] = useState<ProductBlockId | null>(null);
 
-  // Update image and color when active jacket changes
+  // Recalcule aussi l'image active quand la fiche est modifiée sans changer
+  // d'identifiant. L'ancien code ne dépendait que de `id`, ce qui laissait
+  // l'ancienne photo affichée après un changement de heroImage.
   useEffect(() => {
     if (activeJacket) {
-      setActiveImage(activeJacket.heroImage);
+      const gallery = Array.from(new Set([
+        activeJacket.heroImage,
+        ...(Array.isArray(activeJacket.gallery) ? activeJacket.gallery : []),
+      ].map((url) => String(url || '').trim()).filter(Boolean)));
+      setActiveImage(gallery[0] || '');
       if (activeJacket.colors.length > 0) {
         setSelectedColor(activeJacket.colors[0].name);
       }
       if (activeJacket.sizes.length > 0) {
         setSelectedSize(activeJacket.sizes[1] || activeJacket.sizes[0]);
       }
+      setActiveHotspot(null);
     }
-  }, [activeJacket?.id]);
+  }, [activeJacket?.id, activeJacket?.heroImage, activeJacket?.gallery?.join('|')]);
 
   if (!activeJacket) return null;
-
-  // La galerie publique est toujours normalisée : image principale en premier,
-  // puis toutes les images secondaires, sans doublons.
-  const activeGallery = Array.from(new Set([
-    activeJacket.heroImage,
-    ...(Array.isArray(activeJacket.gallery) ? activeJacket.gallery : []),
-  ].map((url) => String(url || '').trim()).filter(Boolean)));
 
   const layout = theme?.showcaseLayout || 'split-interactive';
   const cardStyle = getCardClasses(theme);
@@ -100,9 +100,20 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   const containerWidthClass = getContainerWidthClass(theme);
   const contentPaddingClass = getContentPaddingClass(theme);
   const cardMediaPos = theme?.cardMediaPosition || 'left';
+  const galleryImages = Array.from(
+    new Set(
+      [activeJacket.heroImage, ...(Array.isArray(activeJacket.gallery) ? activeJacket.gallery : [])]
+        .map((url) => String(url || '').trim())
+        .filter(Boolean)
+    )
+  );
 
   const orderText = theme?.orderButtonText || 'Commander';
   const inquiryText = theme?.inquiryButtonText || 'Commander sur Mesure';
+
+  const showcaseImageScale = Math.min(100, Math.max(30, Number(theme?.showcaseImageScale ?? 60)));
+  const showcaseFrameWidth = Math.min(100, Math.max(50, Number(theme?.showcaseImageFrameWidth ?? 100)));
+  const showcaseFrameHeight = Math.min(900, Math.max(280, Number(theme?.showcaseImageFrameHeight ?? 520)));
 
   const blocksOrder: ProductBlockId[] = theme?.productBlocksOrder || [
     'title-price',
@@ -458,14 +469,22 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
             {/* Left Image & Hotspots */}
             <div className={`${cardMediaPos === 'right' ? 'lg:col-span-7 lg:order-2' : 'lg:col-span-7'} space-y-6`}>
-              <div className="relative rounded-3xl bg-[#1d241f] border border-[#39483c] overflow-hidden shadow-2xl group min-h-[420px] sm:min-h-[520px] flex items-center justify-center">
-                <img
-                  data-vce-gallery-main="true"
-                  data-vce-gallery-product-id={activeJacket.id}
-                  src={activeImage}
-                  alt={activeJacket.name}
-                  className="w-full h-full max-h-[620px] object-cover object-center transition-all duration-500"
-                />
+              <div
+                className="relative rounded-3xl bg-[#1d241f] border border-[#39483c] overflow-hidden shadow-2xl group flex items-center justify-center mx-auto"
+                style={{ width: `${showcaseFrameWidth}%`, height: `${showcaseFrameHeight}px`, minHeight: `${Math.min(showcaseFrameHeight, 280)}px` }}
+              >
+                <div
+                  className="relative h-full flex items-center justify-center overflow-hidden"
+                  style={{ width: `${showcaseImageScale}%` }}
+                >
+                  <img
+                    data-vce-gallery-main="true"
+                    data-vce-gallery-product-id={activeJacket.id}
+                    src={activeImage}
+                    alt={activeJacket.name}
+                    className="w-full h-full object-contain object-center transition-all duration-500"
+                  />
+                </div>
 
                 {/* Hotspots */}
                 {activeJacket.hotspots.map((hs) => {
@@ -474,7 +493,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                     <button
                       key={hs.id}
                       onClick={() => setActiveHotspot(isSelected ? null : hs)}
-                      style={{ left: `${hs.x}%`, top: `${hs.y}%` }}
+                      style={{ left: `${50 + (hs.x - 50) * (showcaseImageScale / 100)}%`, top: `${hs.y}%` }}
                       className="absolute z-20 transform -translate-x-1/2 -translate-y-1/2 group/pin focus:outline-none"
                       title={hs.title}
                     >
@@ -523,9 +542,9 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
               </div>
 
               {/* Gallery Thumbnails */}
-              {activeGallery.length > 1 && (
+              {galleryImages.length > 1 && (
                 <div className="flex items-center space-x-3 overflow-x-auto pb-1">
-                  {activeGallery.map((imgUrl, idx) => {
+                  {galleryImages.map((imgUrl, idx) => {
                     const isActive = activeImage === imgUrl;
                     return (
                       <button
@@ -674,22 +693,25 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
         {layout === 'lookbook-focus' && (
           <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {activeGallery.map((img, idx) => (
+              {galleryImages.map((img, idx) => (
                 <div
                   key={idx}
                   onClick={() => setActiveImage(img)}
-                  className={`relative rounded-2xl overflow-hidden cursor-pointer h-72 border-2 transition-all ${
+                  className={`relative rounded-2xl overflow-hidden cursor-pointer border-2 transition-all flex items-center justify-center bg-[#111612] ${
                     activeImage === img ? 'border-[#d4af37] ring-2 ring-[#d4af37]/40' : 'border-[#39483c]'
                   }`}
+                  style={{ height: `${Math.min(700, Math.max(220, Number(theme?.lookbookImageFrameHeight ?? 360)))}px` }}
                 >
-                  <img
-                    data-vce-gallery-thumbnail="true"
-                    data-vce-gallery-product-id={activeJacket.id}
-                    data-vce-gallery-index={idx}
-                    src={img}
-                    alt=""
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                  />
+                  <div className="relative h-full flex items-center justify-center overflow-hidden" style={{ width: `${Math.min(100, Math.max(30, Number(theme?.lookbookImageScale ?? 60)))}%` }}>
+                    <img
+                      data-vce-gallery-thumbnail="true"
+                      data-vce-gallery-product-id={activeJacket.id}
+                      data-vce-gallery-index={idx}
+                      src={img}
+                      alt=""
+                      className="w-full h-full object-contain hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
                   <span className="absolute bottom-2 left-2 bg-black/70 text-[#d4af37] text-[10px] px-2 py-0.5 rounded font-serif">
                     Angle {idx + 1}
                   </span>
