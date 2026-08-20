@@ -28,7 +28,7 @@ export const publishedSiteContent = {
         "name": "La Veste des Cimes",
         "subTitle": "Modèle N°1 — Draps de Laine des Pyrénées \u0026 Coupe Structurée",
         "category": "Haute Montagne \u0026 Élégance",
-        "price": 680,
+        "price": 110,
         "currency": "€",
         "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787238367336-Art1.png",
         "gallery": [
@@ -768,5 +768,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787253658480
+  "publishedAt": 1787254009643
 } as const;
