@@ -1772,6 +1772,10 @@ export default function App() {
         onReset={
           handleResetBrandData
         }
+        onOpenCatalog={() => {
+          setIsCustomizerOpen(false);
+          setIsProductsOpen(true);
+        }}
         initialTab={
           customizerTab
         }

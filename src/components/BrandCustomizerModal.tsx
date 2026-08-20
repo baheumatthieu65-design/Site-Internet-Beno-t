@@ -77,6 +77,7 @@ interface BrandCustomizerModalProps {
   brandData: BrandConfig;
   onSave: (newData: BrandConfig) => void;
   onReset: () => void;
+  onOpenCatalog?: () => void;
   initialTab?: 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github';
 }
 
@@ -128,6 +129,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   brandData,
   onSave,
   onReset,
+  onOpenCatalog,
   initialTab = 'theme',
 }) => {
   if (!isOpen) return null;
@@ -676,7 +678,16 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   // Save & Security Handlers
   const handleSave = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    onSave(formData);
+
+    // Le catalogue est désormais géré exclusivement par AdminProductModal.
+    // Le panneau visuel ne doit donc jamais réinjecter son ancien snapshot
+    // de jackets dans BrandConfig et écraser une modification serveur récente.
+    const dataToSave: BrandConfig = {
+      ...formData,
+      jackets: brandData.jackets,
+    };
+
+    onSave(dataToSave);
     onClose();
   };
 
@@ -840,7 +851,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
             }`}
           >
             <Tag className="w-4 h-4 text-[#d4af37]" />
-            <span>3. Articles & Catalogue ({formData.jackets.length})</span>
+            <span>3. Catalogue</span>
           </button>
 
           <button
@@ -1200,607 +1211,51 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           )}
 
           {/* ========================================================= */}
-          {/* TAB 3: ARTICLES & CATALOGUE (CRUD: ADD / REMOVE / EDIT)    */}
+          {/* TAB 3: CATALOGUE CENTRALISÉ                            */}
           {/* ========================================================= */}
           {activeTab === 'articles' && (
             <div className="space-y-6 animate-fadeIn">
-              {/* Header with Add Button */}
-              <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-[#1a221c] border border-[#38483b]">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#d4af37]/20 border border-[#d4af37]/50 flex items-center justify-center text-[#d4af37]">
-                    <Tag className="w-5 h-5" />
+              <div className="p-6 sm:p-8 rounded-3xl bg-[#18201a] border border-[#3b4b3e]">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-[#d4af37]/15 border border-[#d4af37]/50 flex items-center justify-center text-[#d4af37] shrink-0">
+                      <Tag className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="font-serif text-xl text-[#f3ece0] font-bold">
+                        Gestion centralisée du catalogue
+                      </h4>
+                      <p className="text-sm text-[#a3b1a5] mt-1 max-w-2xl leading-relaxed">
+                        Les articles, leurs images principales et secondaires, pastilles de couleurs, tailles, matières, caractéristiques, hotspots et disponibilités sont gérés dans un seul écran.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-serif text-base text-[#f3ece0] font-bold">
-                      Gestion du Catalogue ({formData.jackets.length} article{formData.jackets.length > 1 ? 's' : ''})
-                    </h4>
-                    <p className="text-xs text-[#a3b1a5]">
-                      Ajoutez, supprimez et personnalisez librement vos pièces d'exception.
-                    </p>
-                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onOpenCatalog?.()}
+                    className="shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#9c7844] via-[#c6a877] to-[#e4cb9c] text-[#121613] font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-lg cursor-pointer"
+                  >
+                    <ShoppingBag className="w-4 h-4" />
+                    <span>Ouvrir le catalogue</span>
+                  </button>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleAddNewJacket}
-                  className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#9c7844] via-[#c6a877] to-[#e4cb9c] text-[#121613] font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-lg cursor-pointer transition-all"
-                >
-                  <PackagePlus className="w-4 h-4" />
-                  <span>+ Ajouter un article</span>
-                </button>
-              </div>
-
-              {/* Jacket Selector Pills */}
-              <div className="flex overflow-x-auto gap-2.5 pb-2">
-                {formData.jackets.map((j, idx) => {
-                  const isSelected = idx === selectedJacketIndex;
-                  return (
-                    <button
-                      key={j.id || idx}
-                      type="button"
-                      onClick={() => setSelectedJacketIndex(idx)}
-                      className={`flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl border transition-all text-left flex-shrink-0 cursor-pointer ${
-                        isSelected
-                          ? 'bg-[#222d24] border-[#d4af37] text-[#f3ece0] shadow-lg shadow-[#d4af37]/10'
-                          : 'bg-[#161c17] border-[#2f3d32] text-[#a3b1a5] hover:border-[#526a57] hover:text-[#e2d5c3]'
-                      }`}
-                    >
-                      <img
-                        src={j.heroImage}
-                        alt={j.name}
-                        className="w-10 h-10 rounded-lg object-cover border border-[#435747]"
-                        onError={(e) => {
-                          (e.target as HTMLElement).style.display = 'none';
-                        }}
-                      />
-                      <div>
-                        <div className="font-serif font-bold text-xs flex items-center space-x-1.5">
-                          <span>{idx + 1}. {j.name}</span>
-                          {isSelected && <span className="w-2 h-2 rounded-full bg-[#d4af37]" />}
-                        </div>
-                        <div className="text-[11px] text-[#d4af37] font-mono font-bold">
-                          {j.price} {j.currency}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Edit Selected Jacket Form */}
-              {currentJacket && (
-                <div className="p-6 rounded-3xl bg-[#18201a] border border-[#3b4b3e] space-y-6">
-                  <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#2d3a2f]">
-                    <div className="flex items-center space-x-2">
-                      <span className="px-2.5 py-1 rounded-full bg-[#d4af37]/20 text-[#d4af37] text-xs font-bold font-mono">
-                        Article #{selectedJacketIndex + 1}
-                      </span>
-                      <h4 className="font-serif text-lg font-bold text-[#f3ece0]">{currentJacket.name}</h4>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteJacket(selectedJacketIndex)}
-                      className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-red-950/40 border border-red-800/60 text-red-300 hover:bg-red-900/60 hover:text-white text-xs font-medium cursor-pointer transition-all"
-                      title="Supprimer cet article du catalogue"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Supprimer cet article</span>
-                    </button>
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  <div className="p-3 rounded-xl bg-[#121613] border border-[#2e3b30]">
+                    <strong className="text-[#d4af37] block mb-1">Images</strong>
+                    <span className="text-[#a3b1a5]">1 image principale + galerie secondaire illimitée.</span>
                   </div>
-
-                  {/* Main Fields Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div>
-                      <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-1 font-medium">
-                        Nom de la pièce :
-                      </label>
-                      <input
-                        type="text"
-                        value={currentJacket.name}
-                        onChange={(e) => handleChangeCurrentJacket('name', e.target.value)}
-                        className="w-full bg-[#121613] border border-[#313f33] text-sm text-white px-3.5 py-2 rounded-xl outline-none focus:border-[#d4af37]"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-1 font-medium">
-                        Sous-titre / Origine :
-                      </label>
-                      <input
-                        type="text"
-                        value={currentJacket.subTitle}
-                        onChange={(e) => handleChangeCurrentJacket('subTitle', e.target.value)}
-                        className="w-full bg-[#121613] border border-[#313f33] text-sm text-white px-3.5 py-2 rounded-xl outline-none focus:border-[#d4af37]"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-1 font-medium">
-                        Prix (€) :
-                      </label>
-                      <input
-                        type="number"
-                        value={currentJacket.price}
-                        onChange={(e) => handleChangeCurrentJacket('price', Number(e.target.value))}
-                        className="w-full bg-[#121613] border border-[#313f33] text-sm text-white px-3.5 py-2 rounded-xl outline-none focus:border-[#d4af37]"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] mb-1 font-medium">
-                        Catégorie :
-                      </label>
-                      <input
-                        type="text"
-                        value={currentJacket.category}
-                        onChange={(e) => handleChangeCurrentJacket('category', e.target.value)}
-                        className="w-full bg-[#121613] border border-[#313f33] text-sm text-white px-3.5 py-2 rounded-xl outline-none focus:border-[#d4af37]"
-                      />
-                    </div>
+                  <div className="p-3 rounded-xl bg-[#121613] border border-[#2e3b30]">
+                    <strong className="text-[#d4af37] block mb-1">Présentation</strong>
+                    <span className="text-[#a3b1a5]">Cartes, showcase et lookbook utilisent la même source.</span>
                   </div>
-
-                  {/* Slogan & Descriptions */}
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] font-medium">
-                          Slogan de la veste :
-                        </label>
-                        {currentJacket.tagline && (
-                          <button
-                            type="button"
-                            onClick={() => handleChangeCurrentJacket('tagline', '')}
-                            className="text-[11px] text-red-400 hover:text-red-300 underline cursor-pointer flex items-center space-x-1"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                            <span>Supprimer le slogan</span>
-                          </button>
-                        )}
-                      </div>
-                      <input
-                        type="text"
-                        value={currentJacket.tagline || ''}
-                        onChange={(e) => handleChangeCurrentJacket('tagline', e.target.value)}
-                        className="w-full bg-[#121613] border border-[#313f33] text-sm text-white px-3.5 py-2 rounded-xl outline-none focus:border-[#d4af37]"
-                        placeholder="Ex: L'élégance brute de la haute montagne... (ou laisser vide pour masquer)"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] font-medium">
-                            Description Courte :
-                          </label>
-                          {currentJacket.description && (
-                            <button
-                              type="button"
-                              onClick={() => handleChangeCurrentJacket('description', '')}
-                              className="text-[11px] text-red-400 hover:text-red-300 underline cursor-pointer flex items-center space-x-1"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                              <span>Effacer</span>
-                            </button>
-                          )}
-                        </div>
-                        <textarea
-                          rows={3}
-                          value={currentJacket.description || ''}
-                          onChange={(e) => handleChangeCurrentJacket('description', e.target.value)}
-                          className="w-full bg-[#121613] border border-[#313f33] text-sm text-white px-3.5 py-2 rounded-xl outline-none focus:border-[#d4af37]"
-                          placeholder="Description courte de la pièce (ou laisser vide)"
-                        />
-                      </div>
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] font-medium">
-                            Récit & Confection Détaillée :
-                          </label>
-                          {currentJacket.longDescription && (
-                            <button
-                              type="button"
-                              onClick={() => handleChangeCurrentJacket('longDescription', '')}
-                              className="text-[11px] text-red-400 hover:text-red-300 underline cursor-pointer flex items-center space-x-1"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                              <span>Effacer</span>
-                            </button>
-                          )}
-                        </div>
-                        <textarea
-                          rows={3}
-                          value={currentJacket.longDescription || ''}
-                          onChange={(e) => handleChangeCurrentJacket('longDescription', e.target.value)}
-                          className="w-full bg-[#121613] border border-[#313f33] text-sm text-white px-3.5 py-2 rounded-xl outline-none focus:border-[#d4af37]"
-                          placeholder="Détails de confection, histoire, matières..."
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Photos & Hero Image Selector */}
-                  <div className="space-y-3 pt-4 border-t border-[#2b372d]">
-                    <div className="flex items-center justify-between">
-                      <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] font-medium flex items-center space-x-2">
-                        <ImageIcon className="w-4 h-4 text-[#d4af37]" />
-                        <span>Photo Principale (Hero Image) :</span>
-                      </label>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <input
-                        type="text"
-                        value={currentJacket.heroImage}
-                        onChange={(e) => handleChangeCurrentJacket('heroImage', e.target.value)}
-                        className="flex-1 bg-[#121613] border border-[#313f33] text-xs text-white px-3.5 py-2 rounded-xl outline-none focus:border-[#d4af37]"
-                        placeholder="URL de l'image..."
-                      />
-                      <div className="flex items-center space-x-2">
-                        <img
-                          src={currentJacket.heroImage}
-                          alt="preview"
-                          className="w-10 h-10 rounded-xl object-cover border border-[#445647]"
-                          onError={(e) => {
-                            (e.target as HTMLElement).style.display = 'none';
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Quick Image Presets */}
-                    <div className="space-y-1.5">
-                      <span className="text-[11px] text-[#7d8c7f]">Photos prédéfinies :</span>
-                      <div className="flex flex-wrap gap-2">
-                        {samplePresetImages.map((preset, pIdx) => (
-                          <button
-                            key={pIdx}
-                            type="button"
-                            onClick={() => handleChangeCurrentJacket('heroImage', preset.url)}
-                            className="text-[11px] px-2.5 py-1 rounded-lg bg-[#202922] hover:bg-[#2e3b30] text-[#a3b1a5] hover:text-[#d4af37] border border-[#313e33] cursor-pointer"
-                          >
-                            {preset.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Colors & Nuances Editor */}
-                  <div className="space-y-3 pt-4 border-t border-[#2b372d]">
-                    <div className="flex items-center justify-between">
-                      <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] font-medium flex items-center space-x-2">
-                        <Palette className="w-4 h-4 text-[#d4af37]" />
-                        <span>Nuances & Couleurs Disponibles :</span>
-                      </label>
-                      <button
-                        type="button"
-                        onClick={handleAddColor}
-                        className="text-xs text-[#d4af37] hover:underline flex items-center space-x-1 cursor-pointer"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Ajouter une couleur</span>
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                      {currentJacket.colors.map((c, cIdx) => (
-                        <div
-                          key={cIdx}
-                          className="p-3 rounded-xl bg-[#121613] border border-[#2e3b30] flex items-center space-x-2.5"
-                        >
-                          <input
-                            type="color"
-                            value={c.hex}
-                            onChange={(e) => handleUpdateColor(cIdx, 'hex', e.target.value)}
-                            className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0"
-                          />
-                          <input
-                            type="text"
-                            value={c.name}
-                            onChange={(e) => handleUpdateColor(cIdx, 'name', e.target.value)}
-                            className="flex-1 bg-[#1a221c] border border-[#38483b] text-xs text-white px-2 py-1.5 rounded-lg"
-                          />
-                          {currentJacket.colors.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteColor(cIdx)}
-                              className="text-red-400 hover:text-red-300 p-1 cursor-pointer"
-                              title="Supprimer"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Sizes Management with Checkboxes & Custom Size Terms */}
-                  <div className="space-y-3 pt-4 border-t border-[#2b372d]">
-                    <div className="flex items-center justify-between">
-                      <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] font-medium flex items-center space-x-2">
-                        <Ruler className="w-4 h-4 text-[#d4af37]" />
-                        <span>Tailles Disponibles (Sélection par Coches) :</span>
-                      </label>
-                      <span className="text-[11px] text-[#a3b1a5]">
-                        Actives : <strong className="text-[#d4af37]">{currentJacket.sizes?.length || 0}</strong>
-                      </span>
-                    </div>
-
-                    <div className="p-3.5 rounded-2xl bg-[#121613] border border-[#2e3b30] space-y-3">
-                      {/* Size Checkbox Grid */}
-                      <div className="flex flex-wrap gap-2">
-                        {Array.from(new Set([...customSizesList, ...(currentJacket.sizes || [])])).map((sz) => {
-                          const isChecked = currentJacket.sizes?.includes(sz);
-                          return (
-                            <div
-                              key={sz}
-                              className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center space-x-2 ${
-                                isChecked
-                                  ? 'bg-[#d4af37] text-[#121613] border-[#d4af37] shadow-md font-bold'
-                                  : 'bg-[#1e2720] text-[#a3b1a5] border-[#374739] hover:border-[#a3b1a5]'
-                              }`}
-                            >
-                              <button
-                                type="button"
-                                onClick={() => handleToggleSize(sz)}
-                                className="flex items-center space-x-2 cursor-pointer focus:outline-none"
-                              >
-                                <span
-                                  className={`w-3.5 h-3.5 rounded flex items-center justify-center border text-[9px] font-bold ${
-                                    isChecked
-                                      ? 'bg-[#121613] text-[#d4af37] border-[#121613]'
-                                      : 'border-[#4a5c4d] bg-[#121613]'
-                                  }`}
-                                >
-                                  {isChecked && '✓'}
-                                </span>
-                                <span>{sz}</span>
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleRemoveCustomSizeTerm(sz);
-                                }}
-                                className="text-red-400/70 hover:text-red-300 p-0.5 rounded hover:bg-red-950/60 transition-colors cursor-pointer"
-                                title={`Supprimer définitivement la taille "${sz}"`}
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Add Custom Size Term */}
-                      <div className="pt-2 border-t border-[#263328] flex items-center space-x-2">
-                        <input
-                          type="text"
-                          value={customSizeInput}
-                          onChange={(e) => setCustomSizeInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleAddCustomSizeTerm();
-                            }
-                          }}
-                          placeholder="Ajouter un terme personnalisé (ex: Taille Unique, S/M, 42...)"
-                          className="flex-1 bg-[#1a221c] border border-[#38483b] text-xs text-white px-3 py-1.5 rounded-xl outline-none focus:border-[#d4af37]"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleAddCustomSizeTerm}
-                          className="px-3 py-1.5 rounded-xl bg-[#28362b] hover:bg-[#354839] border border-[#d4af37]/60 text-[#d4af37] text-xs font-semibold flex items-center space-x-1 cursor-pointer transition-colors"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          <span>Ajouter Taille</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Hotspots & Points d'Intérêt sur l'Image */}
-                  <div className="space-y-3 pt-4 border-t border-[#2b372d]">
-                    <div className="flex items-center justify-between">
-                      <label className="block text-xs uppercase tracking-widest text-[#a3b1a5] font-medium flex items-center space-x-2">
-                        <Crosshair className="w-4 h-4 text-[#d4af37]" />
-                        <span>Points Interactifs / Hotspots sur la Photo ({currentJacket.hotspots?.length || 0}) :</span>
-                      </label>
-                      <button
-                        type="button"
-                        onClick={handleAddHotspot}
-                        className="text-xs text-[#d4af37] hover:underline flex items-center space-x-1 cursor-pointer"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Ajouter un Point</span>
-                      </button>
-                    </div>
-
-                    <div className="space-y-3">
-                      {(currentJacket.hotspots || []).map((spot, hIdx) => (
-                        <div
-                          key={spot.id || hIdx}
-                          className="p-3.5 rounded-2xl bg-[#121613] border border-[#2e3b30] space-y-3"
-                        >
-                          <div className="flex items-center justify-between border-b border-[#253227] pb-2">
-                            <span className="text-xs font-semibold text-[#d4af37] flex items-center space-x-1.5">
-                              <MapPin className="w-3.5 h-3.5 text-[#d4af37]" />
-                              <span>Point #{hIdx + 1} — {spot.title}</span>
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteHotspot(spot.id)}
-                              className="text-red-400 hover:text-red-300 text-xs flex items-center space-x-1 cursor-pointer"
-                              title="Supprimer ce point"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                              <span>Supprimer</span>
-                            </button>
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                            <div className="md:col-span-2 space-y-2">
-                              <div>
-                                <span className="text-[10px] text-[#a3b1a5] uppercase block mb-1">Titre du Point :</span>
-                                <input
-                                  type="text"
-                                  value={spot.title}
-                                  onChange={(e) => handleUpdateHotspot(spot.id, 'title', e.target.value)}
-                                  className="w-full bg-[#1a221c] border border-[#38483b] text-xs text-white px-3 py-1.5 rounded-xl outline-none focus:border-[#d4af37]"
-                                  placeholder="Ex: Col Montant Doublé..."
-                                />
-                              </div>
-                              <div>
-                                <span className="text-[10px] text-[#a3b1a5] uppercase block mb-1">Description explicative :</span>
-                                <textarea
-                                  rows={2}
-                                  value={spot.description}
-                                  onChange={(e) => handleUpdateHotspot(spot.id, 'description', e.target.value)}
-                                  className="w-full bg-[#1a221c] border border-[#38483b] text-xs text-white px-3 py-1.5 rounded-xl outline-none focus:border-[#d4af37]"
-                                  placeholder="Ex: Protection thermique optimale contre le vent..."
-                                />
-                              </div>
-                            </div>
-
-                            <div className="space-y-2 bg-[#18201a] p-2.5 rounded-xl border border-[#2a382d]">
-                              <span className="text-[10px] text-[#d4af37] uppercase font-bold block mb-1">Position sur l'image :</span>
-                              <div>
-                                <span className="text-[10px] text-[#a3b1a5] block">Horizontale X ({spot.x}%) :</span>
-                                <input
-                                  type="range"
-                                  min="5"
-                                  max="95"
-                                  value={spot.x}
-                                  onChange={(e) => handleUpdateHotspot(spot.id, 'x', parseInt(e.target.value) || 50)}
-                                  className="w-full accent-[#d4af37] cursor-pointer"
-                                />
-                              </div>
-                              <div>
-                                <span className="text-[10px] text-[#a3b1a5] block">Verticale Y ({spot.y}%) :</span>
-                                <input
-                                  type="range"
-                                  min="5"
-                                  max="95"
-                                  value={spot.y}
-                                  onChange={(e) => handleUpdateHotspot(spot.id, 'y', parseInt(e.target.value) || 50)}
-                                  className="w-full accent-[#d4af37] cursor-pointer"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-
-                      {(!currentJacket.hotspots || currentJacket.hotspots.length === 0) && (
-                        <div className="text-center py-4 px-3 rounded-xl bg-[#121613] border border-dashed border-[#2d3a2e] text-xs text-[#a3b1a5]">
-                          Aucun point interactif configuré pour cet article. Cliquez sur "Ajouter un Point" pour en créer un.
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Technical Specs Editor */}
-                  <div className="space-y-3 pt-4 border-t border-[#2b372d]">
-                    <label className="block text-xs uppercase tracking-widest text-[#d4af37] font-medium">
-                      Caractéristiques Techniques & Confection :
-                    </label>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                      <div>
-                        <span className="text-[11px] text-[#a3b1a5] block mb-1">Origine :</span>
-                        <input
-                          type="text"
-                          value={currentJacket.specs?.origin || ''}
-                          onChange={(e) => handleChangeCurrentJacketSpecs('origin', e.target.value)}
-                          className="w-full bg-[#121613] border border-[#313f33] text-xs text-white px-3 py-1.5 rounded-lg"
-                        />
-                      </div>
-                      <div>
-                        <span className="text-[11px] text-[#a3b1a5] block mb-1">Indice de Chaleur :</span>
-                        <input
-                          type="text"
-                          value={currentJacket.specs?.warmthRating || ''}
-                          onChange={(e) => handleChangeCurrentJacketSpecs('warmthRating', e.target.value)}
-                          className="w-full bg-[#121613] border border-[#313f33] text-xs text-white px-3 py-1.5 rounded-lg"
-                        />
-                      </div>
-                      <div>
-                        <span className="text-[11px] text-[#a3b1a5] block mb-1">Imperméabilité :</span>
-                        <input
-                          type="text"
-                          value={currentJacket.specs?.waterResistance || ''}
-                          onChange={(e) => handleChangeCurrentJacketSpecs('waterResistance', e.target.value)}
-                          className="w-full bg-[#121613] border border-[#313f33] text-xs text-white px-3 py-1.5 rounded-lg"
-                        />
-                      </div>
-                      <div>
-                        <span className="text-[11px] text-[#a3b1a5] block mb-1">Poids :</span>
-                        <input
-                          type="text"
-                          value={currentJacket.specs?.weight || ''}
-                          onChange={(e) => handleChangeCurrentJacketSpecs('weight', e.target.value)}
-                          className="w-full bg-[#121613] border border-[#313f33] text-xs text-white px-3 py-1.5 rounded-lg"
-                        />
-                      </div>
-                      <div>
-                        <span className="text-[11px] text-[#a3b1a5] block mb-1">Coupe :</span>
-                        <input
-                          type="text"
-                          value={currentJacket.specs?.fitType || ''}
-                          onChange={(e) => handleChangeCurrentJacketSpecs('fitType', e.target.value)}
-                          className="w-full bg-[#121613] border border-[#313f33] text-xs text-white px-3 py-1.5 rounded-lg"
-                        />
-                      </div>
-                      <div>
-                        <span className="text-[11px] text-[#a3b1a5] block mb-1">Entretien :</span>
-                        <input
-                          type="text"
-                          value={currentJacket.specs?.care || ''}
-                          onChange={(e) => handleChangeCurrentJacketSpecs('care', e.target.value)}
-                          className="w-full bg-[#121613] border border-[#313f33] text-xs text-white px-3 py-1.5 rounded-lg"
-                        />
-                      </div>
-
-                      {/* Custom Added Comparison Criteria */}
-                      {activeCriteria
-                        .filter((c) => !['category', 'fabric', 'warmth', 'water', 'weight', 'fit', 'care', 'price'].includes(c.key))
-                        .map((crit) => (
-                          <div key={crit.id}>
-                            <span className="text-[11px] text-[#d4af37] font-semibold block mb-1">
-                              {crit.label} :
-                            </span>
-                            <input
-                              type="text"
-                              value={currentJacket.customSpecs?.[crit.key] || ''}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                setFormData((prev) => {
-                                  const jackets = [...prev.jackets];
-                                  const curr = jackets[selectedJacketIndex];
-                                  if (curr) {
-                                    jackets[selectedJacketIndex] = {
-                                      ...curr,
-                                      customSpecs: {
-                                        ...(curr.customSpecs || {}),
-                                        [crit.key]: val,
-                                      },
-                                    };
-                                  }
-                                  return { ...prev, jackets };
-                                });
-                              }}
-                              placeholder={`Valeur pour ${crit.label}...`}
-                              className="w-full bg-[#121613] border border-[#d4af37]/40 text-xs text-white px-3 py-1.5 rounded-lg focus:border-[#d4af37]"
-                            />
-                          </div>
-                        ))}
-                    </div>
+                  <div className="p-3 rounded-xl bg-[#121613] border border-[#2e3b30]">
+                    <strong className="text-[#d4af37] block mb-1">Données produit</strong>
+                    <span className="text-[#a3b1a5]">Pastilles, tailles, matières, specs et hotspots restent disponibles.</span>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           )}
 

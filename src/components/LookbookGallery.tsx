@@ -37,37 +37,30 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
   const containerWidthClass = getContainerWidthClass(theme);
   const contentPaddingClass = getContentPaddingClass(theme);
 
-  // Dynamic gallery items created from all registered jackets
+  // Une seule source de vérité : heroImage est toujours gallery[0],
+  // puis toutes les images secondaires sont exposées au lookbook.
   const galleryItems = jackets.flatMap((j, jIdx) => {
-    const images = Array.from(
-      new Set(
-        [j.heroImage, ...(Array.isArray(j.gallery) ? j.gallery : [])]
-          .map((url) => String(url || '').trim())
-          .filter(Boolean)
-      )
-    );
+    const images = Array.from(new Set([
+      j.heroImage,
+      ...(Array.isArray(j.gallery) ? j.gallery : []),
+    ].map((url) => String(url || '').trim()).filter(Boolean)));
 
-    return images.map((url, imageIndex) => ({
+    return images.map((url, imageIdx) => ({
       url,
-      title:
-        imageIndex === 0
-          ? `${j.name} — Portrait & Silhouette`
-          : imageIndex === 1
-            ? `${j.name} — Vue en Déplacement`
-            : `Focus Matières & Finitions — ${j.name}`,
-      model:
-        imageIndex === 0
-          ? j.name
-          : imageIndex === 1
-            ? `Silhouette Signature N°${jIdx + 1}`
-            : j.fabrics[0] || 'Tissage Artisanal Noble',
+      title: imageIdx === 0
+        ? `${j.name} — Portrait & Silhouette`
+        : imageIdx === 1
+          ? `${j.name} — Vue en Déplacement`
+          : `${j.name} — Vue ${imageIdx + 1}`,
+      model: imageIdx === 0
+        ? j.name
+        : j.fabrics?.[0] || 'Tissage Artisanal Noble',
       jacketId: j.id,
-      location:
-        imageIndex === 0
-          ? `Atelier Pyrénéen • Création N°${jIdx + 1}`
-          : imageIndex === 1
-            ? 'Massif des Pyrénées'
-            : 'Détail d’Atelier',
+      location: imageIdx === 0
+        ? `Atelier Pyrénéen • Création N°${jIdx + 1}`
+        : imageIdx === 1
+          ? 'Massif des Pyrénées'
+          : 'Détail d’Atelier',
     }));
   });
 

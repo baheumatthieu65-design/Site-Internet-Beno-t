@@ -82,6 +82,13 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
 
   if (!activeJacket) return null;
 
+  // La galerie publique est toujours normalisée : image principale en premier,
+  // puis toutes les images secondaires, sans doublons.
+  const activeGallery = Array.from(new Set([
+    activeJacket.heroImage,
+    ...(Array.isArray(activeJacket.gallery) ? activeJacket.gallery : []),
+  ].map((url) => String(url || '').trim()).filter(Boolean)));
+
   const layout = theme?.showcaseLayout || 'split-interactive';
   const cardStyle = getCardClasses(theme);
   const primaryBtnClass = getButtonClasses(theme, 'primary', 'showcase-order');
@@ -93,13 +100,6 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   const containerWidthClass = getContainerWidthClass(theme);
   const contentPaddingClass = getContentPaddingClass(theme);
   const cardMediaPos = theme?.cardMediaPosition || 'left';
-  const galleryImages = Array.from(
-    new Set(
-      [activeJacket.heroImage, ...(Array.isArray(activeJacket.gallery) ? activeJacket.gallery : [])]
-        .map((url) => String(url || '').trim())
-        .filter(Boolean)
-    )
-  );
 
   const orderText = theme?.orderButtonText || 'Commander';
   const inquiryText = theme?.inquiryButtonText || 'Commander sur Mesure';
@@ -523,9 +523,9 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
               </div>
 
               {/* Gallery Thumbnails */}
-              {galleryImages.length > 1 && (
+              {activeGallery.length > 1 && (
                 <div className="flex items-center space-x-3 overflow-x-auto pb-1">
-                  {galleryImages.map((imgUrl, idx) => {
+                  {activeGallery.map((imgUrl, idx) => {
                     const isActive = activeImage === imgUrl;
                     return (
                       <button
@@ -674,7 +674,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
         {layout === 'lookbook-focus' && (
           <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {galleryImages.map((img, idx) => (
+              {activeGallery.map((img, idx) => (
                 <div
                   key={idx}
                   onClick={() => setActiveImage(img)}

@@ -17,7 +17,14 @@ import {
   Maximize2,
   AlertCircle,
   Sparkles,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Minus,
+  Crosshair,
+  Ruler,
+  Shield,
+  Feather,
+  CloudRain,
+  GripVertical
 } from 'lucide-react';
 
 interface AdminProductModalProps {
@@ -51,7 +58,9 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   const getSecondaryImages = (product: Partial<JacketModel>) => {
     const gallery = Array.isArray(product.gallery) ? product.gallery : [];
     const hero = String(product.heroImage || gallery[0] || '').trim();
-    return Array.from(new Set(gallery.map((url) => String(url || '').trim()).filter((url) => url !== hero)));
+    return gallery
+      .map((url) => String(url || '').trim())
+      .filter((url) => url !== hero);
   };
 
   const syncProductGallery = (product: Partial<JacketModel>, heroImage?: string, secondaryImages?: string[]) => {
@@ -60,11 +69,44 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       .map((url) => String(url || '').trim())
       .filter(Boolean)
       .filter((url) => url !== hero);
-    return { ...product, heroImage: hero, gallery: Array.from(new Set([hero, ...secondary].filter(Boolean))) };
+
+    return {
+      ...product,
+      heroImage: hero,
+      gallery: Array.from(new Set([hero, ...secondary].filter(Boolean))),
+    };
   };
 
   const handleHeroImageChange = (value: string) => {
     setEditingProduct((current) => current ? syncProductGallery(current, value) : current);
+  };
+
+  const handleSecondaryImageChange = (index: number, value: string) => {
+    setEditingProduct((current) => {
+      if (!current) return current;
+      const secondary = getSecondaryImages(current);
+      secondary[index] = value;
+      return syncProductGallery(current, undefined, secondary);
+    });
+  };
+
+  const handleAddSecondaryImage = () => {
+    setEditingProduct((current) => {
+      if (!current) return current;
+      const hero = String(current.heroImage || (Array.isArray(current.gallery) ? current.gallery[0] : '') || '').trim();
+      const secondary = getSecondaryImages(current);
+      return { ...current, heroImage: hero, gallery: [hero, ...secondary, ''] };
+    });
+    setImageTab('secondary');
+  };
+
+  const handleDeleteSecondaryImage = (index: number) => {
+    setEditingProduct((current) => {
+      if (!current) return current;
+      const secondary = getSecondaryImages(current);
+      secondary.splice(index, 1);
+      return syncProductGallery(current, undefined, secondary);
+    });
   };
 
   const uploadProductImage = async (file: File, target: 'primary' | number) => {
@@ -98,31 +140,104 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
     }
   };
 
-  const handleSecondaryImageChange = (index: number, value: string) => {
+  const updateEditingProduct = (patch: Partial<JacketModel>) => {
+    setEditingProduct((current) => current ? { ...current, ...patch } : current);
+  };
+
+  const updateColor = (index: number, field: 'name' | 'hex', value: string) => {
     setEditingProduct((current) => {
       if (!current) return current;
-      const secondary = getSecondaryImages(current);
-      secondary[index] = value;
-      return syncProductGallery(current, undefined, secondary);
+      const colors = Array.isArray(current.colors) ? [...current.colors] : [];
+      if (!colors[index]) return current;
+      colors[index] = { ...colors[index], [field]: value };
+      return { ...current, colors };
     });
   };
 
-  const handleAddSecondaryImage = () => {
-    setEditingProduct((current) => {
-      if (!current) return current;
-      const hero = String(current.heroImage || (Array.isArray(current.gallery) ? current.gallery[0] : '') || '').trim();
-      const secondary = getSecondaryImages(current);
-      return { ...current, heroImage: hero, gallery: [hero, ...secondary, ''] };
-    });
-    setImageTab('secondary');
+  const addColor = () => {
+    setEditingProduct((current) => current ? {
+      ...current,
+      colors: [...(current.colors || []), { name: 'Nouvelle Nuance', hex: '#526355' }],
+    } : current);
   };
 
-  const handleDeleteSecondaryImage = (index: number) => {
+  const deleteColor = (index: number) => {
     setEditingProduct((current) => {
       if (!current) return current;
-      const secondary = getSecondaryImages(current);
-      secondary.splice(index, 1);
-      return syncProductGallery(current, undefined, secondary);
+      const colors = [...(current.colors || [])];
+      if (colors.length <= 1) return current;
+      colors.splice(index, 1);
+      return { ...current, colors };
+    });
+  };
+
+  const toggleSize = (size: string) => {
+    setEditingProduct((current) => {
+      if (!current) return current;
+      const sizes = [...(current.sizes || [])];
+      const index = sizes.indexOf(size);
+      if (index >= 0) sizes.splice(index, 1);
+      else sizes.push(size);
+      return { ...current, sizes };
+    });
+  };
+
+  const addFeature = () => {
+    setEditingProduct((current) => current ? {
+      ...current,
+      features: [...(current.features || []), { iconName: 'Shield', title: 'Nouvel atout', desc: '' }],
+    } : current);
+  };
+
+  const updateFeature = (index: number, field: 'iconName' | 'title' | 'desc', value: string) => {
+    setEditingProduct((current) => {
+      if (!current) return current;
+      const features = [...(current.features || [])];
+      if (!features[index]) return current;
+      features[index] = { ...features[index], [field]: value };
+      return { ...current, features };
+    });
+  };
+
+  const deleteFeature = (index: number) => {
+    setEditingProduct((current) => {
+      if (!current) return current;
+      const features = [...(current.features || [])];
+      features.splice(index, 1);
+      return { ...current, features };
+    });
+  };
+
+  const addHotspot = () => {
+    setEditingProduct((current) => current ? {
+      ...current,
+      hotspots: [...(current.hotspots || []), {
+        id: `hotspot-${Date.now()}`,
+        title: 'Nouveau point',
+        description: '',
+        x: 50,
+        y: 50,
+        category: 'fabric',
+      }],
+    } : current);
+  };
+
+  const updateHotspot = (index: number, field: string, value: any) => {
+    setEditingProduct((current) => {
+      if (!current) return current;
+      const hotspots = [...(current.hotspots || [])];
+      if (!hotspots[index]) return current;
+      hotspots[index] = { ...hotspots[index], [field]: value };
+      return { ...current, hotspots };
+    });
+  };
+
+  const deleteHotspot = (index: number) => {
+    setEditingProduct((current) => {
+      if (!current) return current;
+      const hotspots = [...(current.hotspots || [])];
+      hotspots.splice(index, 1);
+      return { ...current, hotspots };
     });
   };
 
@@ -136,7 +251,9 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       price: 490,
       currency: '€',
       heroImage: 'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&q=80&w=1000',
-      gallery: ['https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&q=80&w=1000'],
+      gallery: [
+        'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&q=80&w=1000',
+      ],
       description: 'Veste artisanale d\'exception tissée dans les Pyrénées.',
       longDescription: 'Fabriquée selon des savoir-faire d\'autrefois en pure laine sélectionnée.',
       tagline: 'L\'élégance des cimes',
@@ -240,23 +357,14 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
 
     setLoading(true);
     try {
-      const normalizedProduct = editingProduct ? syncProductGallery(editingProduct) : editingProduct;
-
-      // Les créations ET modifications passent par le même endpoint
-      // d'upsert. Cela évite les désynchronisations entre l'ID du produit
-      // chargé dans l'admin et celui réellement présent dans Redis.
+      const method = isCreating ? 'POST' : 'PUT';
       const res = await fetch('/api/admin/products', {
-        method: 'POST',
-        credentials: 'include',
-        cache: 'no-store',
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'upsert',
-          product: normalizedProduct,
-        }),
+        body: JSON.stringify({ product: editingProduct }),
       });
 
-      const data = await res.json().catch(() => null);
+      const data = await res.json();
       if (data.success) {
         showToast(
           isCreating
@@ -267,7 +375,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
         setIsCreating(false);
         onRefreshProducts();
       } else {
-        alert(data?.message || data?.error || `Erreur lors de l'enregistrement (HTTP ${res.status}).`);
+        alert(data.message || 'Erreur lors de l\'enregistrement.');
       }
     } catch (e: any) {
       console.error(e);
@@ -413,135 +521,117 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                   />
                 </div>
 
-                <div className="md:col-span-2 rounded-2xl bg-[#111612] border border-[#344337] overflow-hidden">
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-[#2d3a2f]">
+                <div className="md:col-span-2 rounded-2xl bg-[#111612] border border-[#2e3b30] overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-[#2e3b30]">
                     <div>
-                      <span className="block text-[#f3ece0] font-bold">Images de l’article</span>
-                      <span className="text-[11px] text-[#a3b1a5]">L’image principale reste toujours la première image affichée sur le site.</span>
+                      <div className="text-sm font-bold text-[#f3ece0]">Images de l'article</div>
+                      <div className="text-[11px] text-[#a3b1a5]">L'image principale reste toujours la première image affichée sur le site.</div>
                     </div>
                     <button
                       type="button"
                       onClick={handleAddSecondaryImage}
-                      className="px-3 py-2 rounded-xl bg-[#28362b] border border-[#d4af37] text-[#d4af37] text-[11px] font-bold uppercase tracking-wider flex items-center space-x-1.5 hover:bg-[#344638]"
+                      className="px-3 py-2 rounded-xl border border-[#d4af37] text-[#d4af37] text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      <span>Ajouter une image</span>
+                      Ajouter une image
                     </button>
                   </div>
 
-                  <div className="flex border-b border-[#2d3a2f]">
+                  <div className="grid grid-cols-2 border-b border-[#2e3b30]">
                     <button
                       type="button"
                       onClick={() => setImageTab('primary')}
-                      className={`flex-1 px-4 py-2.5 text-xs font-bold transition-colors ${imageTab === 'primary' ? 'text-[#d4af37] bg-[#1d281f] border-b-2 border-[#d4af37]' : 'text-[#a3b1a5] hover:text-white'}`}
+                      className={`px-4 py-3 text-xs font-bold ${imageTab === 'primary' ? 'text-[#d4af37] bg-[#1c281e] border-b-2 border-[#d4af37]' : 'text-[#a3b1a5]'}`}
                     >
                       Image principale
                     </button>
                     <button
                       type="button"
                       onClick={() => setImageTab('secondary')}
-                      className={`flex-1 px-4 py-2.5 text-xs font-bold transition-colors ${imageTab === 'secondary' ? 'text-[#d4af37] bg-[#1d281f] border-b-2 border-[#d4af37]' : 'text-[#a3b1a5] hover:text-white'}`}
+                      className={`px-4 py-3 text-xs font-bold ${imageTab === 'secondary' ? 'text-[#d4af37] bg-[#1c281e] border-b-2 border-[#d4af37]' : 'text-[#a3b1a5]'}`}
                     >
                       Images secondaires ({getSecondaryImages(editingProduct).length})
                     </button>
                   </div>
 
-                  <div className="p-4">
+                  <div className="p-4 space-y-4">
                     {imageTab === 'primary' ? (
-                      <div className="space-y-3">
-                        <label className="block text-[#a3b1a5] font-semibold">Image Principale (URL)</label>
-                        <div className="flex flex-col sm:flex-row gap-2">
+                      <>
+                        <div className="flex flex-col md:flex-row gap-3">
                           <input
-                            type="url"
+                            type="text"
                             value={editingProduct.heroImage || ''}
                             onChange={(e) => handleHeroImageChange(e.target.value)}
-                            placeholder="https://..."
-                            className="flex-1 w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                            placeholder="URL de l'image principale..."
+                            className="flex-1 bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
                           />
-                          <input
-                            id="admin-product-primary-image-file"
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) uploadProductImage(file, 'primary');
-                              e.currentTarget.value = '';
-                            }}
-                          />
-                          <button
-                            type="button"
-                            disabled={uploadingImage === 'primary'}
-                            onClick={() => document.getElementById('admin-product-primary-image-file')?.click()}
-                            className="shrink-0 px-3.5 py-2.5 rounded-xl bg-[#28362b] border border-[#d4af37] text-[#d4af37] hover:bg-[#344638] disabled:opacity-50 disabled:cursor-wait text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
-                          >
-                            <ImageIcon className="w-3.5 h-3.5" />
+                          <label className="px-4 py-2.5 rounded-xl border border-[#d4af37] text-[#d4af37] font-bold text-[11px] uppercase tracking-wider cursor-pointer flex items-center justify-center gap-2">
+                            <ImageIcon className="w-4 h-4" />
                             <span>{uploadingImage === 'primary' ? 'Import...' : 'Importer depuis mon PC'}</span>
-                          </button>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              disabled={uploadingImage === 'primary'}
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) void uploadProductImage(file, 'primary');
+                                e.currentTarget.value = '';
+                              }}
+                            />
+                          </label>
                         </div>
-                        {editingProduct.heroImage && (
-                          <div className="h-32 rounded-xl overflow-hidden bg-[#0b0f0c] border border-[#273429]">
-                            <img src={editingProduct.heroImage} alt={editingProduct.name || 'Image principale'} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-                          </div>
-                        )}
-                        <p className="text-[10px] text-[#78857b]">Cette image est utilisée en priorité dans les cartes, le showcase et le lookbook.</p>
-                      </div>
+                        <div className="h-48 rounded-xl bg-[#0b0f0c] border border-[#273429] flex items-center justify-center overflow-hidden">
+                          {editingProduct.heroImage ? (
+                            <img src={editingProduct.heroImage} alt={editingProduct.name || 'Image principale'} className="max-h-full max-w-full object-contain" referrerPolicy="no-referrer" />
+                          ) : (
+                            <span className="text-xs text-[#647266]">Aucune image principale</span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-[#7d8c7f]">Cette image est utilisée en priorité dans les cartes, le showcase et le lookbook.</p>
+                      </>
                     ) : (
                       <div className="space-y-3">
-                        {getSecondaryImages(editingProduct).length === 0 && (
-                          <div className="rounded-xl border border-dashed border-[#3b4a3c] p-5 text-center text-xs text-[#89968d]">
-                            Aucune image secondaire. Clique sur « Ajouter une image » pour créer le premier angle.
-                          </div>
-                        )}
-                        {getSecondaryImages(editingProduct).map((url, index) => (
-                          <div key={`${index}-${url}`} className="rounded-xl border border-[#344337] bg-[#151d17] p-3 space-y-2">
+                        {getSecondaryImages(editingProduct).map((imgUrl, idx) => (
+                          <div key={`${idx}-${imgUrl}`} className="p-3 rounded-xl bg-[#121613] border border-[#2e3b30] space-y-3">
                             <div className="flex items-center justify-between">
-                              <span className="text-[11px] uppercase tracking-wider text-[#d4af37] font-bold">Image secondaire N°{index + 1}</span>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteSecondaryImage(index)}
-                                className="p-1.5 rounded-lg text-red-300 border border-red-900/60 hover:bg-red-950/60"
-                                title="Supprimer cette image"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
+                              <span className="text-xs font-bold text-[#d4af37]">Image secondaire {idx + 1}</span>
+                              <button type="button" onClick={() => handleDeleteSecondaryImage(idx)} className="text-red-300 hover:text-red-200 text-[11px] flex items-center gap-1 cursor-pointer">
+                                <Trash2 className="w-3.5 h-3.5" /> Supprimer
                               </button>
                             </div>
-                            <div className="flex flex-col sm:flex-row gap-2">
+                            <div className="flex flex-col md:flex-row gap-3">
                               <input
-                                type="url"
-                                value={url}
-                                onChange={(e) => handleSecondaryImageChange(index, e.target.value)}
-                                placeholder="https://..."
-                                className="flex-1 w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                                type="text"
+                                value={imgUrl}
+                                onChange={(e) => handleSecondaryImageChange(idx, e.target.value)}
+                                placeholder="URL de l'image secondaire..."
+                                className="flex-1 bg-[#0d120e] border border-[#38483b] text-white px-3 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
                               />
-                              <input
-                                id={`admin-product-secondary-image-file-${index}`}
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (file) uploadProductImage(file, index);
-                                  e.currentTarget.value = '';
-                                }}
-                              />
-                              <button
-                                type="button"
-                                disabled={uploadingImage === index}
-                                onClick={() => document.getElementById(`admin-product-secondary-image-file-${index}`)?.click()}
-                                className="shrink-0 px-3 py-2.5 rounded-xl bg-[#28362b] border border-[#d4af37] text-[#d4af37] hover:bg-[#344638] disabled:opacity-50 disabled:cursor-wait text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
-                              >
-                                <ImageIcon className="w-3.5 h-3.5" />
-                                <span>{uploadingImage === index ? 'Import...' : 'Importer depuis mon PC'}</span>
-                              </button>
+                              <label className="px-4 py-2.5 rounded-xl border border-[#38483b] text-[#d4af37] font-bold text-[11px] uppercase tracking-wider cursor-pointer flex items-center justify-center gap-2">
+                                <ImageIcon className="w-4 h-4" />
+                                <span>{uploadingImage === idx ? 'Import...' : 'Importer depuis mon PC'}</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  disabled={uploadingImage === idx}
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) void uploadProductImage(file, idx);
+                                    e.currentTarget.value = '';
+                                  }}
+                                />
+                              </label>
                             </div>
-                            {url && (
-                              <div className="h-24 rounded-lg overflow-hidden bg-[#0b0f0c] border border-[#273429]">
-                                <img src={url} alt={`Image secondaire ${index + 1}`} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-                              </div>
-                            )}
+                            <div className="h-32 rounded-xl bg-[#0b0f0c] border border-[#273429] flex items-center justify-center overflow-hidden">
+                              {imgUrl ? <img src={imgUrl} alt={`Image secondaire ${idx + 1}`} className="max-h-full max-w-full object-contain" referrerPolicy="no-referrer" /> : <span className="text-xs text-[#647266]">Aucune image</span>}
+                            </div>
                           </div>
                         ))}
+                        {getSecondaryImages(editingProduct).length === 0 && (
+                          <div className="py-8 text-center text-xs text-[#7d8c7f] border border-dashed border-[#374739] rounded-xl">Aucune image secondaire. Utilisez « Ajouter une image ».</div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -608,6 +698,90 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                     placeholder="Laine des Pyrénées, Cuir de bovin"
                     className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
                   />
+                </div>
+
+                <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#273429] space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-[#f3ece0] flex items-center gap-2"><Palette className="w-4 h-4 text-[#d4af37]" /> Pastilles & nuances</div>
+                      <div className="text-[10px] text-[#7d8c7f] mt-1">Ces couleurs alimentent directement le sélecteur du produit.</div>
+                    </div>
+                    <button type="button" onClick={addColor} className="text-[#d4af37] text-[11px] font-bold flex items-center gap-1 cursor-pointer"><Plus className="w-3.5 h-3.5" /> Ajouter</button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {(editingProduct.colors || []).map((color, idx) => (
+                      <div key={idx} className="flex items-center gap-2 p-2 rounded-xl bg-[#121613] border border-[#2e3b30]">
+                        <input type="color" value={color.hex || '#526355'} onChange={(e) => updateColor(idx, 'hex', e.target.value)} className="w-8 h-8 bg-transparent cursor-pointer" />
+                        <input value={color.name || ''} onChange={(e) => updateColor(idx, 'name', e.target.value)} className="min-w-0 flex-1 bg-[#1a221c] border border-[#38483b] text-xs text-white px-2 py-1.5 rounded-lg" />
+                        {(editingProduct.colors || []).length > 1 && <button type="button" onClick={() => deleteColor(idx)} className="text-red-300 cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#273429] space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="font-bold text-[#f3ece0] flex items-center gap-2"><Ruler className="w-4 h-4 text-[#d4af37]" /> Tailles disponibles</div>
+                    <span className="text-[10px] text-[#a3b1a5]">{editingProduct.sizes?.length || 0} active(s)</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from(new Set(['XS','S','M','L','XL','XXL','3XL','Sur Mesure',...(editingProduct.sizes || [])])).map((size) => {
+                      const active = editingProduct.sizes?.includes(size);
+                      return <button key={size} type="button" onClick={() => toggleSize(size)} className={`px-3 py-1.5 rounded-xl text-xs font-semibold border cursor-pointer ${active ? 'bg-[#d4af37] text-[#121613] border-[#d4af37]' : 'bg-[#1e2720] text-[#a3b1a5] border-[#374739]'}`}>{active ? '✓ ' : ''}{size}</button>;
+                    })}
+                  </div>
+                  <input
+                    value={(editingProduct.sizes || []).join(', ')}
+                    onChange={(e) => updateEditingProduct({ sizes: e.target.value.split(',').map(v => v.trim()).filter(Boolean) })}
+                    placeholder="Ou saisir directement : S, M, L, XL, 42..."
+                    className="w-full bg-[#121613] border border-[#38483b] text-xs text-white px-3 py-2 rounded-xl"
+                  />
+                </div>
+
+                <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#273429] space-y-4">
+                  <div className="font-bold text-[#f3ece0] flex items-center gap-2"><Shield className="w-4 h-4 text-[#d4af37]" /> Caractéristiques & atouts</div>
+                  {(editingProduct.features || []).map((feature, idx) => (
+                    <div key={idx} className="grid grid-cols-1 md:grid-cols-[150px_1fr_1.5fr_auto] gap-2 p-3 rounded-xl bg-[#121613] border border-[#2e3b30]">
+                      <select value={feature.iconName || 'Shield'} onChange={(e) => updateFeature(idx, 'iconName', e.target.value)} className="bg-[#1a221c] border border-[#38483b] text-xs text-white px-2 py-2 rounded-lg"><option value="Shield">Bouclier</option><option value="Feather">Plume</option><option value="CloudRain">Pluie</option></select>
+                      <input value={feature.title || ''} onChange={(e) => updateFeature(idx, 'title', e.target.value)} placeholder="Titre" className="bg-[#1a221c] border border-[#38483b] text-xs text-white px-2 py-2 rounded-lg" />
+                      <input value={feature.desc || ''} onChange={(e) => updateFeature(idx, 'desc', e.target.value)} placeholder="Description" className="bg-[#1a221c] border border-[#38483b] text-xs text-white px-2 py-2 rounded-lg" />
+                      <button type="button" onClick={() => deleteFeature(idx)} className="text-red-300 cursor-pointer"><Trash2 className="w-4 h-4" /></button>
+                    </div>
+                  ))}
+                  <button type="button" onClick={addFeature} className="text-[#d4af37] text-[11px] font-bold flex items-center gap-1 cursor-pointer"><Plus className="w-3.5 h-3.5" /> Ajouter un atout</button>
+                </div>
+
+                <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#273429] space-y-4">
+                  <div className="font-bold text-[#f3ece0] flex items-center gap-2"><GripVertical className="w-4 h-4 text-[#d4af37]" /> Caractéristiques techniques</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {([
+                      ['origin','Origine'],['warmthRating','Indice de chaleur'],['waterResistance','Imperméabilité'],['weight','Poids'],['fitType','Coupe'],['care','Entretien']
+                    ] as const).map(([key,label]) => (
+                      <div key={key}><label className="block text-[10px] text-[#a3b1a5] mb-1">{label}</label><input value={editingProduct.specs?.[key] || ''} onChange={(e) => setEditingProduct(current => current ? { ...current, specs: { ...(current.specs || {} as any), [key]: e.target.value } as any } : current)} className="w-full bg-[#121613] border border-[#38483b] text-xs text-white px-2.5 py-2 rounded-lg" /></div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#273429] space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="font-bold text-[#f3ece0] flex items-center gap-2"><Crosshair className="w-4 h-4 text-[#d4af37]" /> Points interactifs / hotspots</div>
+                    <button type="button" onClick={addHotspot} className="text-[#d4af37] text-[11px] font-bold flex items-center gap-1 cursor-pointer"><Plus className="w-3.5 h-3.5" /> Ajouter un point</button>
+                  </div>
+                  {(editingProduct.hotspots || []).map((spot, idx) => (
+                    <div key={spot.id || idx} className="p-3 rounded-xl bg-[#121613] border border-[#2e3b30] space-y-3">
+                      <div className="flex items-center justify-between"><span className="text-xs font-bold text-[#d4af37]">Point #{idx + 1}</span><button type="button" onClick={() => deleteHotspot(idx)} className="text-red-300 text-[11px] cursor-pointer">Supprimer</button></div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <input value={spot.title || ''} onChange={(e) => updateHotspot(idx,'title',e.target.value)} placeholder="Titre" className="bg-[#1a221c] border border-[#38483b] text-xs text-white px-2 py-2 rounded-lg" />
+                        <select value={spot.category || 'fabric'} onChange={(e) => updateHotspot(idx,'category',e.target.value)} className="bg-[#1a221c] border border-[#38483b] text-xs text-white px-2 py-2 rounded-lg"><option value="fabric">Matière</option><option value="hardware">Fournitures</option><option value="cut">Coupe</option><option value="utility">Usage</option></select>
+                      </div>
+                      <textarea rows={2} value={spot.description || ''} onChange={(e) => updateHotspot(idx,'description',e.target.value)} placeholder="Description explicative" className="w-full bg-[#1a221c] border border-[#38483b] text-xs text-white px-2 py-2 rounded-lg" />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <label className="text-[10px] text-[#a3b1a5]">X : {spot.x}%<input type="range" min="5" max="95" value={spot.x ?? 50} onChange={(e) => updateHotspot(idx,'x',Number(e.target.value))} className="w-full accent-[#d4af37]" /></label>
+                        <label className="text-[10px] text-[#a3b1a5]">Y : {spot.y}%<input type="range" min="5" max="95" value={spot.y ?? 50} onChange={(e) => updateHotspot(idx,'y',Number(e.target.value))} className="w-full accent-[#d4af37]" /></label>
+                      </div>
+                    </div>
+                  ))}
+                  {(editingProduct.hotspots || []).length === 0 && <div className="text-center py-4 text-xs text-[#7d8c7f] border border-dashed border-[#374739] rounded-xl">Aucun hotspot configuré.</div>}
                 </div>
 
                 <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#273429] flex items-center justify-between">
