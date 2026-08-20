@@ -7,7 +7,6 @@ import jacketModel2Hero from './jacket_model_2_hero_1785338527992.jpg';
 import pyreneesBrandLogo from './pyrenees_brand_logo_1785338626936.jpg';
 import pyreneesJacket1 from './pyrenees_jacket_1_1785338603269.jpg';
 import pyreneesJacket2 from './pyrenees_jacket_2_1785338614694.jpg';
-import pyreneesLandscapeHero from './pyrenees_landscape_hero_1785338591988.jpg';
 import waxedDetailMacro from './waxed_detail_macro_1785338977808.jpg';
 import woolDetailMacro from './wool_detail_macro_1785338963967.jpg';
 
@@ -21,7 +20,6 @@ export {
   pyreneesBrandLogo,
   pyreneesJacket1,
   pyreneesJacket2,
-  pyreneesLandscapeHero,
   waxedDetailMacro,
   woolDetailMacro,
 };
@@ -36,7 +34,6 @@ export const images = {
   pyreneesBrandLogo,
   pyreneesJacket1,
   pyreneesJacket2,
-  pyreneesLandscapeHero,
   waxedDetailMacro,
   woolDetailMacro,
 };

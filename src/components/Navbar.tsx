@@ -60,8 +60,25 @@ export const Navbar: React.FC<NavbarProps> = ({ brandData, isAdminLoggedIn, onOp
   );
 
   const navBackground = theme?.navBackgroundColor || '#1a1e1b';
+  const navOpacity = Math.max(0, Math.min(100, Number(theme?.navBackgroundOpacity ?? 0))) / 100;
+  const navBackgroundWithOpacity = (() => {
+    const value = navBackground.trim();
+    if (/^#[0-9a-f]{6}$/i.test(value)) {
+      const r = parseInt(value.slice(1, 3), 16);
+      const g = parseInt(value.slice(3, 5), 16);
+      const b = parseInt(value.slice(5, 7), 16);
+      return `rgba(${r}, ${g}, ${b}, ${navOpacity})`;
+    }
+    if (/^#[0-9a-f]{3}$/i.test(value)) {
+      const r = parseInt(value[1] + value[1], 16);
+      const g = parseInt(value[2] + value[2], 16);
+      const b = parseInt(value[3] + value[3], 16);
+      return `rgba(${r}, ${g}, ${b}, ${navOpacity})`;
+    }
+    return value;
+  })();
   return (
-    <header id="main-nav-header" style={{ backgroundColor: scrolled ? `${navBackground}F2` : `${navBackground}D9` }} className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 backdrop-blur-md border-b border-[#3b473e]/50 ${scrolled ? 'py-3 shadow-xl' : 'py-4'}`}>
+    <header id="main-nav-header" style={{ backgroundColor: navBackgroundWithOpacity }} className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 backdrop-blur-md border-b border-[#3b473e]/50 ${scrolled ? 'py-3 shadow-xl' : 'py-4'}`}>
       <div className="max-w-[1450px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
         {logoPair}
         <nav id="desktop-nav" className="hidden xl:flex items-center gap-5 2xl:gap-7 ml-auto">

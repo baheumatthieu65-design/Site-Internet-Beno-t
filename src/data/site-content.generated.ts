@@ -10,7 +10,7 @@ export const publishedSiteContent = {
     "accentColor": "#4A5D4E",
     "foundingYear": "2025",
     "designerLocation": "Vallée de Lourdios \u0026 Pic du Midi",
-    "heroBgImage": "/assets/pyrenees_landscape_hero_1785338591988-pbnVVBN-.jpg",
+    "heroBgImage": "",
     "storyTitle": "Aux origines de la Maison",
     "storyText1": "Pensée entre pâturages verdoyants et sommets acérés, notre maison fait le pari d’un luxe brut et authentique. Chaque veste est façonnée pour affronter les brumes pyrénéennes tout en offrant une silhouette d’une distinction rare.",
     "storyText2": "Nous avons sélectionné des laines de bergers pyrénéens et des toiles techniques imperméables d’exception pour façonner ces deux pièces signatures : La Veste des Cimes et Le Manteau Pastorale.",

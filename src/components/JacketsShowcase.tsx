@@ -526,7 +526,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
               <div>
                 <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#354238] pb-4">
                   <div className="min-w-0">
-                    <span className="text-[10px] uppercase tracking-[0.2em] text-[#d4af37]">{activeJacket.category}</span>
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-[#d4af37]">{activeJacket.showcaseEyebrow || activeJacket.category || 'Haute Montagne & Élégance'}</span>
                     <h3 className="font-serif text-2xl sm:text-4xl text-[#f3ece0] font-normal mt-1">{activeJacket.name}</h3>
                     <p className="text-xs text-[#a8b5a9] mt-1 line-clamp-2">{activeJacket.subTitle || activeJacket.tagline}</p>
                   </div>
@@ -739,7 +739,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
             aria-modal="true"
             aria-label={`Vue agrandie de ${activeJacket.name}`}
             onClick={() => setIsImageLightboxOpen(false)}
-            className="showcase-lightbox fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn cursor-zoom-out"
+            className="showcase-lightbox fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn cursor-zoom-out"
           >
             <div
               className="relative w-full max-w-6xl max-h-[92vh] rounded-2xl overflow-hidden border border-[#d4af37] bg-[#111612] shadow-2xl"

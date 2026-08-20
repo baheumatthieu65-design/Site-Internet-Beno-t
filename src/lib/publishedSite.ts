@@ -85,6 +85,9 @@ export function getInitialBrandData(defaultBrandData: BrandConfig): BrandConfig 
   return {
     ...defaultBrandData,
     ...(published as Partial<BrandConfig>),
+    // Les anciens fonds image locaux des assets ne sont plus des fonds de module.
+    // Les fonds doivent désormais provenir de theme.sectionBackgroundImages.
+    heroBgImage: '',
     theme: {
       ...(defaultBrandData.theme || {}),
       ...((published as Partial<BrandConfig>).theme || {}),
