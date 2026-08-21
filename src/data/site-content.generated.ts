@@ -796,7 +796,7 @@ export const publishedSiteContent = {
           "y": 89.43181818181817,
           "width": 9,
           "height": 12,
-          "text": "Réserver",
+          "text": "AirBnb",
           "link": "",
           "url": "",
           "fontSize": 18,
@@ -826,7 +826,7 @@ export const publishedSiteContent = {
           "y": 88.63636363636364,
           "width": 8,
           "height": 11,
-          "text": "Réserver",
+          "text": "Booking",
           "link": "",
           "url": "",
           "fontSize": 18,
@@ -1742,5 +1742,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787321228254
+  "publishedAt": 1787321249748
 } as const;
