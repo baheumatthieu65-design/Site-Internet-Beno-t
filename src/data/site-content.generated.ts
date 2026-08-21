@@ -254,8 +254,8 @@ export const publishedSiteContent = {
             "category": "utility"
           }
         ],
-        "isAvailable": true,
-        "availabilityStatus": "on-sale",
+        "isAvailable": false,
+        "availabilityStatus": "sold-out",
         "customSpecs": {}
       },
       {
@@ -1061,5 +1061,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787295184169
+  "publishedAt": 1787295196315
 } as const;
