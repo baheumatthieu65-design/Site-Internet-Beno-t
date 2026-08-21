@@ -100,7 +100,7 @@ export const publishedSiteContent = {
           "height": 520,
           "background": {
             "type": "image",
-            "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787325698167-acc--s1.jpg",
+            "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787325758123-acc--s1.jpg",
             "overlay": 0
           }
         }
@@ -2105,5 +2105,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787325714824
+  "publishedAt": 1787325760501
 } as const;
