@@ -430,11 +430,11 @@ export const publishedSiteContent = {
           "id": "gite-block-1787319925497-8hkoz3",
           "moduleId": "gite-sejourner",
           "type": "text",
-          "x": 22.864583333333332,
+          "x": 21,
           "y": 8.018867924528301,
           "width": 30,
           "height": 18,
-          "text": "_________",
+          "text": "______",
           "link": "",
           "url": "",
           "fontSize": 48,
@@ -1349,5 +1349,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787319998882
+  "publishedAt": 1787320008706
 } as const;
