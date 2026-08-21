@@ -110,21 +110,21 @@ export const publishedSiteContent = {
           "id": "gite-block-1787303077623-485fcy",
           "moduleId": "gite-accueil",
           "type": "text",
-          "x": 50,
-          "y": 50,
+          "x": 16.9270827553489,
+          "y": 81.05208587646484,
           "width": 30,
           "height": 18,
-          "text": "Nouvelle zone de texte",
+          "text": "Le Gîte",
           "link": "",
           "url": "",
-          "fontSize": 18,
-          "color": "#24231f",
+          "fontSize": 70,
+          "color": "#ffffff",
           "align": "left",
-          "fontFamily": "sans",
+          "fontFamily": "display",
           "fontWeight": 400,
           "lineHeight": 1.45,
           "italic": false,
-          "backgroundColor": "rgba(255,255,255,0.88)",
+          "backgroundColor": "transparent",
           "borderColor": "#8c6e3f",
           "borderWidth": 0,
           "borderRadius": 18,
@@ -1039,5 +1039,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787303766341
+  "publishedAt": 1787303908275
 } as const;
