@@ -171,10 +171,10 @@ export const publishedSiteContent = {
           "x": 49,
           "y": 27,
           "width": 49,
-          "height": 52,
+          "height": 57,
           "text": "Nouvelle zone de texte",
           "link": "",
-          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/section-background-1787304476009-test-jHMPxKjviKjbooxiKnAUjCPL8Y861i.mp4",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/section-background-1787319176828-test-qFiRi6B7U2jVKy4bZbGRU23ATb7Fzk.mp4",
           "fontSize": 18,
           "color": "#24231f",
           "align": "left",
@@ -190,7 +190,8 @@ export const publishedSiteContent = {
           "opacity": 100,
           "rotation": 0,
           "objectFit": "cover",
-          "visible": true
+          "visible": true,
+          "autoSize": false
         },
         {
           "id": "gite-block-1787318886775-1k9pkt",
@@ -1176,5 +1177,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787319142216
+  "publishedAt": 1787319194198
 } as const;
