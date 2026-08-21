@@ -52,7 +52,7 @@ export const GitePage:React.FC<{
     const nextIndex = index + direction;
     if (index < 0 || nextIndex < 0 || nextIndex >= modules.length) return;
     [modules[index], modules[nextIndex]] = [modules[nextIndex], modules[index]];
-    onGiteChange({...c, modules});
+    onGiteChange({ ...c, modules, navOrder: modules.map((module) => module.id) });
   };
 
   const renderEditorControls = (module:GiteModuleConfig, index:number) => editable ? (

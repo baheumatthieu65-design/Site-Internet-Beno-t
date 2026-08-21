@@ -33,11 +33,15 @@ export const GiteCustomizerPanel:React.FC<Props>=({value,onChange})=>{
   };
   const moveModule=(index:number,direction:-1|1)=>{
     const next=index+direction; if(next<0||next>=modules.length)return;
-    const list=[...modules]; [list[index],list[next]]=[list[next],list[index]]; update({modules:list});
+    const list=[...modules]; [list[index],list[next]]=[list[next],list[index]];
+    update({modules:list,navOrder:list.map(m=>m.id)});
   };
   const moveNav=(id:string,direction:-1|1)=>{
     const list=[...navOrder]; const index=list.indexOf(id); const next=index+direction; if(index<0||next<0||next>=list.length)return;
-    [list[index],list[next]]=[list[next],list[index]]; update({navOrder:list});
+    [list[index],list[next]]=[list[next],list[index]];
+    const moduleById=new Map(modules.map(m=>[m.id,m]));
+    const reordered=list.map(moduleId=>moduleById.get(moduleId)).filter(Boolean) as GiteModuleConfig[];
+    update({navOrder:list,modules:reordered});
   };
   const upload=async(id:string,file:File,type:'image'|'video')=>{
     setUploading(id); try{

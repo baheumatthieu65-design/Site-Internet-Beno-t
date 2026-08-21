@@ -901,7 +901,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   const previewCard = getCardClasses(currentTheme);
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
+    <div className="fixed inset-0 z-[2147483200] overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
       <div className="relative w-full max-w-6xl bg-[#141a15] border border-[#3b473e] rounded-3xl shadow-2xl overflow-hidden text-[#e2d5c3] flex flex-col max-h-[92vh]">
         {/* Modal Top Header */}
         <div className="px-6 py-4 bg-[#18201a] border-b border-[#2b372d] flex items-center justify-between flex-shrink-0">
