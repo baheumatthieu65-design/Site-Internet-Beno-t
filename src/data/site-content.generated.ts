@@ -45,15 +45,15 @@ export const publishedSiteContent = {
       },
       "modules": [
         {
-          "id": "gite-le-gite",
-          "label": "Le gîte",
+          "id": "gite-accueil",
+          "label": "Accueil",
           "visible": true,
           "width": 100,
           "height": 520
         },
         {
-          "id": "gite-accueil",
-          "label": "Accueil",
+          "id": "gite-le-gite",
+          "label": "Le gîte",
           "visible": true,
           "width": 100,
           "height": 520
@@ -88,8 +88,8 @@ export const publishedSiteContent = {
         "gite-acces": "Accès"
       },
       "navOrder": [
-        "gite-le-gite",
         "gite-accueil",
+        "gite-le-gite",
         "gite-region",
         "gite-sejourner",
         "gite-acces"
@@ -1003,5 +1003,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787302749618
+  "publishedAt": 1787302758635
 } as const;
