@@ -497,6 +497,33 @@ export const publishedSiteContent = {
           "rotation": 0,
           "objectFit": "cover",
           "visible": true
+        },
+        {
+          "id": "gite-block-1787320471167-nwoxst",
+          "moduleId": "gite-le-gite",
+          "type": "image",
+          "x": 34.6875,
+          "y": 44.310344827586206,
+          "width": 17,
+          "text": "Nouvelle zone de texte",
+          "link": "",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787320475740-Carr--s-blancs.png",
+          "fontSize": 18,
+          "color": "#24231f",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "transparent",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "contain",
+          "visible": true
         }
       ],
       "navBackgroundColor": "#000000",
@@ -1392,5 +1419,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787320431964
+  "publishedAt": 1787320492320
 } as const;
