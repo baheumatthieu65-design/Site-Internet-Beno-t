@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Check, Image as ImageIcon, Loader2, Move, Save, Settings2, Type, X } from 'lucide-react';
-import type { BrandConfig, SectionId } from '../types';
+import type { BrandConfig, GiteSiteConfig, SectionId } from '../types';
+import { GiteFreeformEditor } from './GiteFreeformEditor';
 import { FloatingMediaManager } from './FloatingMediaManager';
 import { prepareImageForUpload } from '../utils/mediaUpload';
 
@@ -52,7 +54,11 @@ interface Props {
   config: SiteEditorConfig;
   onChange: (config: SiteEditorConfig) => void;
   onSave: (nextConfig?: SiteEditorConfig) => Promise<void> | void;
-  onOpenCustomizer?: () => void;
+  onOpenCustomizer?: (tab?: 'theme' | 'gite') => void;
+  isGitePage?: boolean;
+  giteConfig?: GiteSiteConfig;
+  onGiteChange?: (config: GiteSiteConfig) => void;
+  onGiteSave?: (config: GiteSiteConfig) => Promise<void> | void;
   adminToolbar?: React.ReactNode;
   floatingMediaOpen?: boolean;
   onToggleFloatingMedia?: () => void;
@@ -180,8 +186,14 @@ export const SiteVisualEditor: React.FC<Props> = ({
   adminToolbar,
   floatingMediaOpen = false,
   onToggleFloatingMedia,
+  isGitePage = false,
+  giteConfig,
+  onGiteChange,
+  onGiteSave,
 }) => {
   const [open, setOpen] = useState(false);
+  const [editorPage, setEditorPage] = useState<'boutique' | 'gite'>(isGitePage ? 'gite' : 'boutique');
+  const [giteFreeformOpen, setGiteFreeformOpen] = useState(false);
   const [panelPosition, setPanelPosition] = useState<{ x: number; y: number } | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{
@@ -549,7 +561,7 @@ export const SiteVisualEditor: React.FC<Props> = ({
         type="button"
         data-vce-ignore="true"
         onClick={() => setOpen(true)}
-        className="fixed right-5 bottom-5 z-[1100] h-14 w-14 rounded-full bg-[#1c241f] text-[#d4af37] shadow-2xl border border-[#4a5a4c] flex items-center justify-center"
+        className="fixed right-5 bottom-5 z-[2147483000] h-14 w-14 rounded-full bg-[#1c241f] text-[#d4af37] shadow-2xl border border-[#4a5a4c] flex items-center justify-center"
         title="Éditeur visuel"
       >
         <Settings2 size={23} />
@@ -557,14 +569,14 @@ export const SiteVisualEditor: React.FC<Props> = ({
     );
   }
 
-  return (
+  return createPortal((
     <>
       <div
         ref={panelRef}
         data-vce-panel="true"
         data-vce-ignore="true"
         style={panelPosition ? { left: panelPosition.x, top: panelPosition.y, right: 'auto', bottom: 'auto' } : undefined}
-        className="fixed right-4 bottom-4 z-[1100] w-[min(94vw,440px)] max-h-[88vh] overflow-auto rounded-2xl border border-[#536258] bg-[#111613]/98 text-[#f5eedf] shadow-2xl backdrop-blur"
+        className="fixed right-4 bottom-4 z-[2147483000] w-[min(94vw,440px)] max-h-[88vh] overflow-auto rounded-2xl border border-[#536258] bg-[#111613]/98 text-[#f5eedf] shadow-2xl backdrop-blur"
       >
         <div
           onPointerDown={startPanelDrag}
@@ -583,7 +595,7 @@ export const SiteVisualEditor: React.FC<Props> = ({
             {onOpenCustomizer && (
               <button
                 type="button"
-                onClick={onOpenCustomizer}
+                onClick={() => onOpenCustomizer?.(editorPage === 'gite' ? 'gite' : 'theme')}
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#d4af37]/70 bg-[#263129] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#d4af37] hover:bg-[#334236]"
               >
                 <Settings2 size={13} />
@@ -765,12 +777,29 @@ export const SiteVisualEditor: React.FC<Props> = ({
             </div>
           )}
 
-          {adminToolbar && (
-            <div className="border-t border-[#344139] pt-4">
-              <div className="mb-2 text-xs text-[#87968a]">Barre d’administration</div>
-              {adminToolbar}
+          <div className="border-t border-[#344139] pt-4">
+            <div className="grid grid-cols-2 gap-2 rounded-xl bg-[#0d120f] p-1 border border-[#344139]">
+              <button type="button" onClick={() => setEditorPage('boutique')} className={`rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider ${editorPage === 'boutique' ? 'bg-[#d4af37] text-[#111612]' : 'text-[#a3b1a5] hover:text-white'}`}>🛍️ Boutique</button>
+              <button type="button" onClick={() => setEditorPage('gite')} className={`rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider ${editorPage === 'gite' ? 'bg-[#d4af37] text-[#111612]' : 'text-[#a3b1a5] hover:text-white'}`}>🏔️ Gîte</button>
             </div>
-          )}
+
+            {editorPage === 'boutique' && adminToolbar && (
+              <div className="mt-3">
+                {adminToolbar}
+              </div>
+            )}
+
+            {editorPage === 'gite' && (
+              <div className="mt-3 space-y-3">
+                <div className="rounded-xl border border-[#536258] bg-[#18201a] p-3">
+                  <div className="text-sm font-semibold text-[#f3ece0]">Édition directe du Gîte</div>
+                  <div className="mt-1 text-[11px] text-[#87968a]">Les éléments Texte, Image, Vidéo et Bouton peuvent être déplacés directement sur la page.</div>
+                </div>
+                <button type="button" onClick={() => setGiteFreeformOpen(true)} disabled={!giteConfig || !onGiteChange} className="w-full rounded-xl bg-[#d4af37] px-4 py-3 text-sm font-semibold text-[#111612] disabled:opacity-40">＋ Ouvrir l’éditeur des zones libres</button>
+                <button type="button" onClick={() => onOpenCustomizer?.('gite')} className="w-full rounded-xl border border-[#536258] bg-[#263129] px-4 py-3 text-xs font-semibold text-[#e7dfd1]">⚙ Personnalisation complète du Gîte</button>
+              </div>
+            )}
+          </div>
 
           {floatingMediaOpen && (
             <div data-floating-editor-section="true" className="border-t border-[#344139] pt-4">
@@ -800,7 +829,16 @@ export const SiteVisualEditor: React.FC<Props> = ({
           {error && <div className="rounded-lg bg-[#3a2222] px-3 py-2 text-xs text-[#f2caca]">{error}</div>}
         </div>
       </div>
-    </>
+      {giteFreeformOpen && giteConfig && onGiteChange && (
+        <GiteFreeformEditor
+          value={giteConfig}
+          onChange={onGiteChange}
+          onSave={onGiteSave}
+          onClose={() => setGiteFreeformOpen(false)}
+        />
+      )}
+    </>),
+    document.body,
   );
 };
 

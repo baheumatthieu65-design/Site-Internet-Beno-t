@@ -3,3 +3,13 @@
 .gite-section-media,.gite-hero,.gite-video{overflow:hidden}.gite-module-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none}.gite-section-media>*:not(.gite-module-video),.gite-hero>*:not(.gite-module-video),.gite-video>*:not(.gite-module-video){position:relative;z-index:1}.gite-hero>img{position:relative;z-index:1}.gite-hero-overlay{z-index:2!important}.gite-navigation{z-index:1000}
 
 .gite-content-block{position:absolute;z-index:6;pointer-events:auto}.gite-section-media,.gite-hero,.gite-video{position:relative}.gite-content-block video{display:block;max-width:100%;height:auto}
+
+/* Admin live editing: freeform Gîte elements stay on top of their module content
+   while remaining below the global admin/navigation overlays. */
+.gite-page .gite-content-block {
+  position: absolute;
+}
+.gite-page .gite-content-block[data-gite-editing="true"] {
+  cursor: move;
+  user-select: none;
+}

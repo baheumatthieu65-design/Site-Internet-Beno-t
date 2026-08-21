@@ -6,6 +6,7 @@ import {
   ButtonStyleId,
   ProductBlockId,
   SectionId,
+  GiteContentBlock,
 } from './types';
 
 import { Navbar } from './components/Navbar';
@@ -1727,6 +1728,14 @@ export default function App() {
           onOpenCustomizer={() => handleOpenEditor('theme')}
           floatingMediaOpen={isFloatingMediaOpen}
           onToggleFloatingMedia={() => setIsFloatingMediaOpen((current) => !current)}
+          isGitePage={isGitePageOpen}
+          giteConfig={brandData.gite}
+          onGiteChange={(gite) => setBrandData((current) => ({ ...current, gite }))}
+          onGiteSave={async (gite) => {
+            const next = { ...brandData, gite };
+            setBrandData(next);
+            await saveSiteConfig(next, siteEditorConfigRef.current);
+          }}
           adminToolbar={
             <AdminBar
               embedded
@@ -1777,6 +1786,11 @@ export default function App() {
           onBackToVitrine={handleBackToVitrine}
           onAdmin={() => handleOpenEditor('gite')}
           floatingImages={siteEditorConfig.floatingImages}
+          editable={isAdminLoggedIn}
+          onContentBlocksChange={(blocks: GiteContentBlock[]) => setBrandData((current) => ({
+            ...current,
+            gite: current.gite ? { ...current.gite, contentBlocks: blocks } : current.gite,
+          }))}
         />
       )}
 
