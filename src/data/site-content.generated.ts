@@ -52,7 +52,7 @@ export const publishedSiteContent = {
           "height": 800,
           "background": {
             "type": "image",
-            "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787303018866-kalen-emsley-Bkci_8qcdvQ-unsplash.webp",
+            "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787315639131-ChatGPT-Image-21-ao--t-2026--14_33_09.webp",
             "overlay": 25
           }
         },
@@ -1086,5 +1086,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787315403677
+  "publishedAt": 1787315647130
 } as const;
