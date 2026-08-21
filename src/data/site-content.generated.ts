@@ -1650,7 +1650,7 @@ export const publishedSiteContent = {
         "text": "Maison Mailhagut",
         "secondaryText": "Au coeur des pyrénées",
         "fontFamily": "serif",
-        "textColor": "#b38144",
+        "textColor": "#ffffff",
         "textSize": "21px",
         "imageSize": 58,
         "gap": 12,
@@ -2105,5 +2105,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787324398512
+  "publishedAt": 1787324423008
 } as const;
