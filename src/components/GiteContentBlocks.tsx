@@ -21,7 +21,7 @@ export const GiteContentBlocks: React.FC<Props> = ({ moduleId, blocks = [], edit
 
   const startDrag = (event: React.PointerEvent<HTMLDivElement>, block: GiteContentBlock) => {
     if (!editable || !onChange) return;
-    if ((event.target as Element).closest('a,button,input,textarea,select,video')) return;
+    if ((event.target as Element).closest('input,textarea,select')) return;
     const section = event.currentTarget.closest('section');
     if (!section) return;
     dragRef.current = { id: block.id, rect: section.getBoundingClientRect() };
@@ -69,6 +69,7 @@ export const GiteContentBlocks: React.FC<Props> = ({ moduleId, blocks = [], edit
         onPointerMove: moveDrag,
         onPointerUp: stopDrag,
         onPointerCancel: stopDrag,
+        onClick: editable ? (e: React.MouseEvent<HTMLDivElement>) => { e.preventDefault(); } : undefined,
       } : {};
 
       if (block.type === 'image' && block.url) return <div key={block.id} className="gite-content-block" style={style} {...dragProps}><img src={block.url} alt={block.alt || ''} className="w-full h-full rounded-2xl shadow-2xl border border-black/10" style={{ objectFit: block.objectFit || 'cover', display: 'block' }} /></div>;

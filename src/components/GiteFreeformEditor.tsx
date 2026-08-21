@@ -33,9 +33,11 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
   const [dragging, setDragging] = useState(false);
   const dragRef = useRef<{ sx: number; sy: number; ox: number; oy: number; w: number; h: number } | null>(null);
   const [selectedId, setSelectedId] = useState(value.contentBlocks?.[0]?.id || '');
+  const [selectedModuleId, setSelectedModuleId] = useState(moduleOptions[0][0]);
   const [saving, setSaving] = useState(false);
   const blocks = value.contentBlocks || [];
   const selected = blocks.find((b) => b.id === selectedId) || null;
+  const moduleBlocks = blocks.filter((b) => b.moduleId === selectedModuleId);
 
   useEffect(() => {
     const move = (e: PointerEvent) => {
@@ -61,7 +63,8 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
 
   const update = (patch: Partial<GiteSiteConfig>) => onChange({ ...value, ...patch });
   const updateBlock = (id: string, patch: Partial<GiteContentBlock>) => update({ contentBlocks: blocks.map((b) => b.id === id ? { ...b, ...patch } : b) });
-  const add = (type: GiteContentBlockType) => { const b = newBlock(type, 'gite-experience'); update({ contentBlocks: [...blocks, b] }); setSelectedId(b.id); };
+  const add = (type: GiteContentBlockType) => { const b = newBlock(type, selectedModuleId); update({ contentBlocks: [...blocks, b] }); setSelectedId(b.id); };
+  const selectModule = (id: string) => { setSelectedModuleId(id); const first = blocks.find((b) => b.moduleId === id); setSelectedId(first?.id || ''); };
   const remove = (id: string) => { const next = blocks.filter((b) => b.id !== id); update({ contentBlocks: next }); setSelectedId(next[0]?.id || ''); };
 
   const upload = async (type: 'image' | 'video', file: File) => {
@@ -99,17 +102,25 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
         </div>
 
         <div className="p-4 space-y-4">
-          <div className="grid grid-cols-5 gap-2">
-            {([['text','Texte',Type],['heading','Titre',Type],['image','Image',ImageIcon],['video','Vidéo',Video],['button','Bouton',LinkIcon]] as const).map(([type,label,Icon]) => (
-              <button key={type} type="button" onClick={() => add(type)} className="rounded-xl border border-[#3d4b40] bg-[#18201a] px-2 py-2 text-[10px] text-[#e9e0d2] hover:border-[#d4af37]"><Icon size={14} className="mx-auto mb-1 text-[#d4af37]"/>{label}</button>
-            ))}
-          </div>
+          <div className="grid grid-cols-[190px_1fr] gap-3">
+            <aside className="space-y-2 rounded-xl border border-[#344139] bg-[#0d120f] p-2">
+              <div className="px-2 pb-1 text-[10px] uppercase tracking-[.16em] text-[#87968a]">Blocs de la page</div>
+              {moduleOptions.map(([id,label]) => (
+                <button key={id} type="button" onClick={() => selectModule(id)} className={`w-full rounded-lg px-3 py-2 text-left text-xs ${selectedModuleId === id ? 'bg-[#d4af37] text-[#111612]' : 'bg-[#18201a] text-[#c5d0c6]'}`}>{label}</button>
+              ))}
+              <div className="border-t border-[#344139] pt-2 mt-2">
+                <div className="px-2 pb-1 text-[10px] uppercase tracking-[.16em] text-[#87968a]">Éléments</div>
+                {moduleBlocks.map((b, i) => <button key={b.id} type="button" onClick={() => setSelectedId(b.id)} className={`w-full rounded-lg px-3 py-2 text-left text-xs ${b.id === selectedId ? 'bg-[#d4af37] text-[#111612]' : 'bg-[#1b241d] text-[#c5d0c6]'}`}>{i + 1}. {b.type === 'heading' ? 'Titre' : b.type === 'text' ? 'Texte' : b.type === 'image' ? 'Image' : b.type === 'video' ? 'Vidéo' : 'Bouton'}</button>)}
+                {!moduleBlocks.length && <div className="px-2 text-[11px] text-[#7f9382]">Aucun élément dans ce bloc.</div>}
+              </div>
+            </aside>
 
-          <div className="grid grid-cols-[150px_1fr] gap-3">
-            <div className="space-y-2">
-              {blocks.map((b, i) => <button key={b.id} type="button" onClick={() => setSelectedId(b.id)} className={`w-full rounded-lg px-3 py-2 text-left text-xs ${b.id === selectedId ? 'bg-[#d4af37] text-[#111612]' : 'bg-[#1b241d] text-[#c5d0c6]'}`}>{i + 1}. {b.type === 'heading' ? 'Titre' : b.type === 'text' ? 'Texte' : b.type === 'image' ? 'Image' : b.type === 'video' ? 'Vidéo' : 'Bouton'}</button>)}
-              {!blocks.length && <div className="text-[11px] text-[#7f9382]">Aucun élément.</div>}
-            </div>
+            <div className="space-y-3">
+              <div className="grid grid-cols-5 gap-2">
+                {([['text','Texte',Type],['heading','Titre',Type],['image','Image',ImageIcon],['video','Vidéo',Video],['button','Bouton',LinkIcon]] as const).map(([type,label,Icon]) => (
+                  <button key={type} type="button" onClick={() => add(type)} className="rounded-xl border border-[#3d4b40] bg-[#18201a] px-2 py-2 text-[10px] text-[#e9e0d2] hover:border-[#d4af37]"><Icon size={14} className="mx-auto mb-1 text-[#d4af37]"/>{label}</button>
+                ))}
+              </div>
 
             {selected ? <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
@@ -143,6 +154,7 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
                 <button type="button" disabled={saving} onClick={()=>void save()} className="rounded-lg bg-[#d4af37] px-4 py-2 text-xs font-semibold text-[#111612]"><Save size={14} className="inline mr-1"/>{saving ? 'Enregistrement…' : 'Enregistrer'}</button>
               </div>
             </div> : <div className="rounded-xl border border-dashed border-[#536258] p-6 text-center text-xs text-[#87968a]">Sélectionne un élément.</div>}
+            </div>
           </div>
         </div>
       </div>
