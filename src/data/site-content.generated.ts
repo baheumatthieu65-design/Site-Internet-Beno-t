@@ -10,7 +10,7 @@ export const publishedSiteContent = {
     "accentColor": "#4A5D4E",
     "foundingYear": "2025",
     "designerLocation": "Vallée de Lourdios \u0026 Pic du Midi",
-    "heroBgImage": "/assets/pyrenees_landscape_hero_1785338591988-pbnVVBN-.jpg",
+    "heroBgImage": "",
     "storyTitle": "Aux origines de la Maison",
     "storyText1": "Pensée entre pâturages verdoyants et sommets acérés, notre maison fait le pari d’un luxe brut et authentique. Chaque veste est façonnée pour affronter les brumes pyrénéennes tout en offrant une silhouette d’une distinction rare.",
     "storyText2": "Nous avons sélectionné des laines de bergers pyrénéens et des toiles techniques imperméables d’exception pour façonner ces deux pièces signatures : La Veste des Cimes et Le Manteau Pastorale.",
@@ -92,16 +92,6 @@ export const publishedSiteContent = {
       },
       "modules": [
         {
-          "id": "gite-hero",
-          "label": "Le gîte — Accueil",
-          "visible": true,
-          "background": {
-            "type": "image",
-            "url": "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format\u0026fit=crop\u0026w=2200\u0026q=85",
-            "overlay": 25
-          }
-        },
-        {
           "id": "gite-experience",
           "label": "Le gîte",
           "visible": true,
@@ -109,6 +99,16 @@ export const publishedSiteContent = {
             "type": "image",
             "url": "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format\u0026fit=crop\u0026w=1800\u0026q=85",
             "overlay": 12
+          }
+        },
+        {
+          "id": "gite-hero",
+          "label": "Le gîte — Accueil",
+          "visible": true,
+          "background": {
+            "type": "image",
+            "url": "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format\u0026fit=crop\u0026w=2200\u0026q=85",
+            "overlay": 25
           }
         },
         {
@@ -161,15 +161,15 @@ export const publishedSiteContent = {
       },
       "contentBlocks": [
         {
-          "id": "gite-block-1787301611351-bo4jrp",
+          "id": "gite-block-1787300777646-91kj1c",
           "moduleId": "gite-hero",
-          "type": "text",
-          "x": 24,
+          "type": "button",
+          "x": 50,
           "y": 50,
-          "width": 23,
+          "width": 30,
           "height": 18,
-          "text": "Le Gîte",
-          "link": "",
+          "text": "Réserver",
+          "link": "https://www.geolux.fr/sde65/",
           "url": "",
           "fontSize": 18,
           "color": "#24231f",
@@ -1091,5 +1091,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787301627784
+  "publishedAt": 1787301668230
 } as const;
