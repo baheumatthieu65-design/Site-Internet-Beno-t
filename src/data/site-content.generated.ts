@@ -504,8 +504,8 @@ export const publishedSiteContent = {
           "type": "image",
           "x": 51,
           "y": 55,
-          "width": 79,
-          "height": 81,
+          "width": 95,
+          "height": 78,
           "text": "Nouvelle zone de texte",
           "link": "",
           "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787326129041-Sans-titre-9.jpg",
@@ -2133,5 +2133,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787328743142
+  "publishedAt": 1787328871617
 } as const;
