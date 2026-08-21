@@ -76,18 +76,21 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   sectionBackgroundOpacity = 100,
   sectionBackgroundMedia,
 }) => {
-  // Showcase : les produits épuisés sont masqués. Les autres suivent
-  // l'ordre commercial En vente → Bientôt disponible, puis leur numéro de modèle.
+  // Showcase : affiche tous les articles, y compris « Bientôt disponible »
+  // et « Épuisé ». L'ordre commercial reste En vente → Bientôt disponible
+  // → Épuisé, puis par numéro de modèle.
   const orderedJackets = sortProductsByAvailability(Array.isArray(jackets) ? jackets : []);
   const visibleJackets = orderedJackets
-    .filter((j) => getProductAvailabilityStatus(j) !== 'sold-out')
     .sort((a, b) => {
       const modelNumber = (product: JacketModel) => {
         const source = `${product.subTitle || ''} ${product.name || ''}`;
         const match = source.match(/mod[eè]le\s*n[°ºo]?\s*(\d+)/i) || source.match(/n[°ºo]\s*(\d+)/i);
         return match ? Number(match[1]) : 9999;
       };
-      const statusRank = (product: JacketModel) => getProductAvailabilityStatus(product) === 'on-sale' ? 0 : 1;
+      const statusRank = (product: JacketModel) => {
+        const status = getProductAvailabilityStatus(product);
+        return status === 'on-sale' ? 0 : status === 'coming-soon' ? 1 : 2;
+      };
       return statusRank(a) - statusRank(b) || modelNumber(a) - modelNumber(b);
     });
   const activeJacket = visibleJackets.find((j) => j.id === selectedJacketId) || visibleJackets[0] || null;

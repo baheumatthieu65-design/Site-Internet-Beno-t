@@ -392,6 +392,13 @@ export interface ThemeConfig {
 
   heroTitlePrefix: string;
 
+  /* Page d'accueil / orientation */
+
+  landingBoutiqueKicker?: string;
+  landingBoutiqueTitle?: string;
+  landingGiteKicker?: string;
+  landingGiteTitle?: string;
+
   /* Navigation */
 
   collectionTabLabel?: string;

@@ -48,8 +48,8 @@ export const UniverseLanding: React.FC<UniverseLandingProps> = ({ brandData, onO
         <div className="universe-side-bg" style={{ backgroundImage: boutiqueBackground ? `url(${JSON.stringify(boutiqueBackground)})` : undefined }} />
         <div className="universe-side-overlay" />
         <div className="universe-side-content">
-          <p className="universe-kicker">MAISON MAILHAGUT</p>
-          <h1>La Boutique</h1>
+          <p className="universe-kicker">{theme.landingBoutiqueKicker || 'MAISON MAILHAGUT'}</p>
+          <h1>{theme.landingBoutiqueTitle || 'La Boutique'}</h1>
           <LogoBlock brandData={brandData} kind="boutique" compact className="universe-logo" />
           <span className="universe-enter">Entrer <ArrowRight size={18} /></span>
         </div>
@@ -67,8 +67,8 @@ export const UniverseLanding: React.FC<UniverseLandingProps> = ({ brandData, onO
         <div className="universe-side-bg" style={{ backgroundImage: giteBackground ? `url(${JSON.stringify(giteBackground)})` : undefined }} />
         <div className="universe-side-overlay" />
         <div className="universe-side-content">
-          <p className="universe-kicker">PYRÉNÉES</p>
-          <h1>Le Gîte</h1>
+          <p className="universe-kicker">{theme.landingGiteKicker || 'PYRÉNÉES'}</p>
+          <h1>{theme.landingGiteTitle || 'Le Gîte'}</h1>
           <LogoBlock brandData={brandData} kind="gite" compact className="universe-logo" />
           <span className="universe-enter">Entrer <ArrowRight size={18} /></span>
         </div>

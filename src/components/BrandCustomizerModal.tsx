@@ -84,7 +84,7 @@ interface BrandCustomizerModalProps {
   onOpenCatalog?: () => void;
   products: JacketModel[];
   onRefreshProducts: () => void;
-  initialTab?: 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite';
+  initialTab?: 'landing' | 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite';
 }
 
 const samplePresetImages = [
@@ -139,15 +139,15 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     }
   }, [isOpen]);
 
-  const getInitialTab = (): 'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite' => {
+  const getInitialTab = (): 'landing' | 'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite' => {
     if (initialTab === 'j1' || initialTab === 'j2' || initialTab === 'articles') return 'articles';
-    if (initialTab === 'brand' || initialTab === 'theme' || initialTab === 'layouts' || initialTab === 'labels' || initialTab === 'security' || initialTab === 'orders' || initialTab === 'github' || initialTab === 'gite') {
+    if (initialTab === 'landing' || initialTab === 'brand' || initialTab === 'theme' || initialTab === 'layouts' || initialTab === 'labels' || initialTab === 'security' || initialTab === 'orders' || initialTab === 'github' || initialTab === 'gite') {
       return initialTab;
     }
     return 'theme';
   };
 
-  const [activeTab, setActiveTab] = useState<'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite'>(
+  const [activeTab, setActiveTab] = useState<'landing' | 'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite'>(
     getInitialTab()
   );
 
@@ -938,6 +938,19 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
         <div className="flex overflow-x-auto border-b border-[#2a362c] bg-[#111612] px-4 py-2 space-x-1 flex-shrink-0">
           <button
             type="button"
+            onClick={() => setActiveTab('landing')}
+            className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'landing'
+                ? 'bg-[#29362c] text-[#d4af37] border border-[#d4af37]/60 shadow'
+                : 'text-[#9eb0a0] hover:text-[#f3ece0] hover:bg-[#1a211c]'
+            }`}
+          >
+            <Globe className="w-4 h-4 text-[#d4af37]" />
+            <span>0. Page d'accueil</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('theme')}
             className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all whitespace-nowrap cursor-pointer ${
               activeTab === 'theme'
@@ -1043,6 +1056,40 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
 
         {/* Scrollable Form Body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* ========================================================= */}
+          {/* TAB 0: PAGE D'ACCUEIL / ORIENTATION                      */}
+          {/* ========================================================= */}
+          {activeTab === 'landing' && (
+            <div className="space-y-8 animate-fadeIn">
+              <div className="p-5 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
+                <div>
+                  <h4 className="font-serif text-base text-[#f3ece0] font-semibold flex items-center gap-2"><Globe className="w-5 h-5 text-[#d4af37]" />Page d'accueil — Orientation Boutique / Gîte</h4>
+                  <p className="text-xs text-[#a3b1a5] mt-1">Modifie uniquement les textes affichés sur la première page. Les fonds, logos, effets de survol et liens vers les deux univers restent inchangés.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="rounded-2xl border border-[#3c4c3f] bg-[#151b16] p-4 space-y-4">
+                    <div className="text-xs uppercase tracking-widest text-[#d4af37] font-semibold">La Boutique</div>
+                    <label className="block text-xs text-[#a3b1a5]">Texte supérieur
+                      <input type="text" value={currentTheme.landingBoutiqueKicker || 'MAISON MAILHAGUT'} onChange={(e)=>updateTheme({landingBoutiqueKicker:e.target.value})} className="mt-2 w-full bg-[#121613] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" />
+                    </label>
+                    <label className="block text-xs text-[#a3b1a5]">Titre
+                      <input type="text" value={currentTheme.landingBoutiqueTitle || 'La Boutique'} onChange={(e)=>updateTheme({landingBoutiqueTitle:e.target.value})} className="mt-2 w-full bg-[#121613] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" />
+                    </label>
+                  </div>
+                  <div className="rounded-2xl border border-[#3c4c3f] bg-[#151b16] p-4 space-y-4">
+                    <div className="text-xs uppercase tracking-widest text-[#d4af37] font-semibold">Le Gîte</div>
+                    <label className="block text-xs text-[#a3b1a5]">Texte supérieur
+                      <input type="text" value={currentTheme.landingGiteKicker || 'PYRÉNÉES'} onChange={(e)=>updateTheme({landingGiteKicker:e.target.value})} className="mt-2 w-full bg-[#121613] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" />
+                    </label>
+                    <label className="block text-xs text-[#a3b1a5]">Titre
+                      <input type="text" value={currentTheme.landingGiteTitle || 'Le Gîte'} onChange={(e)=>updateTheme({landingGiteTitle:e.target.value})} className="mt-2 w-full bg-[#121613] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ========================================================= */}
           {/* TAB 1: THEME & BUTTONS PRESETS                            */}
           {/* ========================================================= */}

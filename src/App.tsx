@@ -76,6 +76,7 @@ const getDefaultShowcaseProductId = (products: Array<{ id: string; subTitle?: st
 };
 
 type CustomizerTab =
+  | 'landing'
   | 'brand'
   | 'articles'
   | 'j1'
@@ -1821,7 +1822,7 @@ export default function App() {
         <GitePage
           brandData={brandData}
           onBackToVitrine={handleBackToVitrine}
-          onAdmin={() => { if (isAdminLoggedIn) { void handleLogout(); } else { handleOpenEditor('gite'); } }}
+          onAdmin={() => { if (isAdminLoggedIn) { void handleLogout(); } else { setIsAdminLoginOpen(true); } }}
           onLogout={handleLogout}
           isAdminLoggedIn={isAdminLoggedIn}
           floatingImages={siteEditorConfig.floatingImages}

@@ -290,8 +290,8 @@ export const publishedSiteContent = {
             "category": "utility"
           }
         ],
-        "isAvailable": true,
-        "availabilityStatus": "on-sale",
+        "isAvailable": false,
+        "availabilityStatus": "sold-out",
         "customSpecs": {}
       },
       {
@@ -383,7 +383,7 @@ export const publishedSiteContent = {
         "sizes": [
           "Taille unique"
         ],
-        "isAvailable": false,
+        "isAvailable": true,
         "features": [
           {
             "iconName": "Shield",
@@ -410,7 +410,7 @@ export const publishedSiteContent = {
           }
         ],
         "id": "produit-1787242939553-ezbmjg",
-        "availabilityStatus": "coming-soon",
+        "availabilityStatus": "on-sale",
         "customSpecs": {}
       },
       {
@@ -446,8 +446,8 @@ export const publishedSiteContent = {
           "XL",
           "test"
         ],
-        "isAvailable": false,
-        "availabilityStatus": "sold-out",
+        "isAvailable": true,
+        "availabilityStatus": "on-sale",
         "features": [
           {
             "iconName": "Shield",
@@ -534,12 +534,12 @@ export const publishedSiteContent = {
       "lookbookImageFrameHeight": 220,
       "sectionBackgroundImages": {
         "origines": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787258626442-4k-wallpaper-blue-skies-conifers-1526720.webp",
-        "hero": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787313318819-denys-nevozhai-z0nVqfrOqWA-unsplash.jpg"
+        "hero": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787294484822-pyrenees_landscape_hero_1785338591988.jpg"
       },
       "sectionBackgroundMedia": {
         "hero": {
           "type": "image",
-          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787313318819-denys-nevozhai-z0nVqfrOqWA-unsplash.jpg",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787294484822-pyrenees_landscape_hero_1785338591988.jpg",
           "overlay": 0,
           "objectFit": "cover",
           "positionX": 50,
@@ -650,8 +650,8 @@ export const publishedSiteContent = {
       },
       "gite": {
         "imageUrl": "/assets/persistent-media-2.png",
-        "text": "GÎTE DES\nPYRER",
-        "secondaryText": "Un espace de détente",
+        "text": "GÎTE DES\nPYR",
+        "secondaryText": "Test 4",
         "fontFamily": "sans",
         "textColor": "#f3ece0",
         "textSize": "20px",
@@ -1097,5 +1097,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787313939919
+  "publishedAt": 1787308535177
 } as const;

@@ -80,6 +80,10 @@ export const defaultThemeConfig: ThemeConfig = {
   workshopButtonText: "Prendre Rendez-vous à l'Atelier",
   heroBadgeText: 'Édition Limitée des Pyrénées',
   heroTitlePrefix: 'Thème Champêtre & Élégance',
+  landingBoutiqueKicker: 'MAISON MAILHAGUT',
+  landingBoutiqueTitle: 'La Boutique',
+  landingGiteKicker: 'PYRÉNÉES',
+  landingGiteTitle: 'Le Gîte',
 };
 
 export interface SiteThemePreset {
