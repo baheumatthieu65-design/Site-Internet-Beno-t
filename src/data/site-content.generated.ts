@@ -1129,7 +1129,7 @@ export const publishedSiteContent = {
           "italic": false,
           "backgroundColor": "transparent",
           "borderColor": "#8c6e3f",
-          "borderWidth": 0,
+          "borderWidth": 1,
           "borderRadius": 18,
           "padding": 12,
           "opacity": 100,
@@ -1158,7 +1158,7 @@ export const publishedSiteContent = {
           "italic": false,
           "backgroundColor": "transparent",
           "borderColor": "#8c6e3f",
-          "borderWidth": 0,
+          "borderWidth": 1,
           "borderRadius": 18,
           "padding": 12,
           "opacity": 100,
@@ -1187,7 +1187,7 @@ export const publishedSiteContent = {
           "italic": false,
           "backgroundColor": "transparent",
           "borderColor": "#8c6e3f",
-          "borderWidth": 0,
+          "borderWidth": 1,
           "borderRadius": 18,
           "padding": 12,
           "opacity": 100,
@@ -2105,5 +2105,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787324604488
+  "publishedAt": 1787324714461
 } as const;
