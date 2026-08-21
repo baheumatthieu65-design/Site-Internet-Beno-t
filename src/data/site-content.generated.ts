@@ -216,6 +216,34 @@ export const publishedSiteContent = {
           "rotation": 0,
           "objectFit": "cover",
           "visible": true
+        },
+        {
+          "id": "gite-block-1787304469172-08tmq3",
+          "moduleId": "gite-le-gite",
+          "type": "video",
+          "x": 49,
+          "y": 27,
+          "width": 49,
+          "height": 52,
+          "text": "Nouvelle zone de texte",
+          "link": "",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/section-background-1787304476009-test-jHMPxKjviKjbooxiKnAUjCPL8Y861i.mp4",
+          "fontSize": 18,
+          "color": "#24231f",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "rgba(255,255,255,0.88)",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true
         }
       ],
       "navBackgroundColor": "#558ed5",
@@ -1122,5 +1150,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787304170357
+  "publishedAt": 1787304536510
 } as const;
