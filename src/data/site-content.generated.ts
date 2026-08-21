@@ -196,8 +196,8 @@ export const publishedSiteContent = {
           "id": "gite-block-1787318886775-1k9pkt",
           "moduleId": "gite-accueil",
           "type": "text",
-          "x": 15.572916666666666,
-          "y": 82.02127659574468,
+          "x": 15.625,
+          "y": 83.40425531914893,
           "width": 30,
           "height": 18,
           "text": "Une parenthèse au cœur des montagnes.",
@@ -225,8 +225,8 @@ export const publishedSiteContent = {
           "id": "gite-block-1787304121004-b1n56m",
           "moduleId": "gite-accueil",
           "type": "button",
-          "x": 10,
-          "y": 85,
+          "x": 10.208333333333334,
+          "y": 85.1063829787234,
           "width": 9,
           "height": 11,
           "text": "",
@@ -1176,5 +1176,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787319114279
+  "publishedAt": 1787319142216
 } as const;
