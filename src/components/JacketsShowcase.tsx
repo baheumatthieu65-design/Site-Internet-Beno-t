@@ -21,6 +21,7 @@ import {
   ChevronDown,
   Move
 } from 'lucide-react';
+import { sortProductsByAvailability } from '../utils/productOrdering';
 import { getProductAvailabilityStatus, getProductStatusLabel, isProductOrderable } from '../utils/productStatus';
 import {
   getButtonClasses,
@@ -61,9 +62,11 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   sectionBackgroundOpacity = 100,
   sectionBackgroundMedia,
 }) => {
-  const visibleJackets = Array.isArray(jackets)
-    ? jackets.filter((j) => isAdminLoggedIn || j.isAvailable !== false)
-    : [];
+  const visibleJackets = sortProductsByAvailability(
+    Array.isArray(jackets)
+      ? jackets.filter((j) => isAdminLoggedIn || j.isAvailable !== false)
+      : []
+  );
   const activeJacket = visibleJackets.find((j) => j.id === selectedJacketId) || visibleJackets[0] || jackets[0];
   const [activeImage, setActiveImage] = useState(activeJacket?.heroImage || '');
   const [selectedColor, setSelectedColor] = useState(activeJacket?.colors[0]?.name || '');
@@ -749,7 +752,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
             aria-modal="true"
             aria-label={`Vue agrandie de ${activeJacket.name}`}
             onClick={() => setIsImageLightboxOpen(false)}
-            className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn cursor-zoom-out"
+            className="showcase-lightbox fixed inset-0 z-[1200] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn cursor-zoom-out"
           >
             <div
               className="relative w-full max-w-6xl max-h-[92vh] rounded-2xl overflow-hidden border border-[#d4af37] bg-[#111612] shadow-2xl"

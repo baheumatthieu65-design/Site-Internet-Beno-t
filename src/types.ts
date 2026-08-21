@@ -414,6 +414,25 @@ export interface ThemeConfig {
    ========================================================= */
 
 
+export type GiteContentBlockType = 'text' | 'heading' | 'video' | 'button';
+
+export interface GiteContentBlock {
+  id: string;
+  moduleId: string;
+  type: GiteContentBlockType;
+  x: number;
+  y: number;
+  width: number;
+  height?: number;
+  text?: string;
+  url?: string;
+  link?: string;
+  fontSize?: number;
+  color?: string;
+  align?: 'left' | 'center' | 'right';
+  visible: boolean;
+}
+
 export interface GiteModuleConfig {
   id: string;
   label: string;
@@ -438,6 +457,8 @@ export interface GiteSiteConfig {
   access: { title: string; text: string };
   modules: GiteModuleConfig[];
   navLabels?: Record<string, string>;
+  /** Zones libres déplaçables de la page Gîte. */
+  contentBlocks?: GiteContentBlock[];
 }
 
 export interface BrandConfig {

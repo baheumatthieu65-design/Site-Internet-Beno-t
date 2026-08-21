@@ -78,7 +78,7 @@ export const Navbar: React.FC<NavbarProps> = ({ brandData, isAdminLoggedIn, onOp
     return value;
   })();
   return (
-    <header id="main-nav-header" style={{ backgroundColor: navBackgroundWithOpacity }} className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 backdrop-blur-md border-b border-[#3b473e]/50 ${scrolled ? 'py-3 shadow-xl' : 'py-4'}`}>
+    <header id="main-nav-header" style={{ backgroundColor: navBackgroundWithOpacity }} className={`fixed top-0 left-0 right-0 z-[1000] transition-all duration-300 backdrop-blur-md border-b border-[#3b473e]/50 ${scrolled ? 'py-3 shadow-xl' : 'py-4'}`}>
       <div className="max-w-[1450px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
         {logoPair}
         <nav id="desktop-nav" className="hidden xl:flex items-center gap-5 2xl:gap-7 ml-auto">

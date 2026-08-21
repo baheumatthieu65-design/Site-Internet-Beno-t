@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { JacketModel, ThemeConfig } from '../types';
 import { Camera, Eye, Sparkles, ZoomIn, Edit3 } from 'lucide-react';
+import { sortProductsByAvailability } from '../utils/productOrdering';
 import { getProductAvailabilityStatus, getProductStatusLabel, isProductOrderable } from '../utils/productStatus';
 import {
   getButtonClasses,
@@ -39,7 +40,9 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
   const contentPaddingClass = getContentPaddingClass(theme);
   const lookbookImageScale = 100;
   const selectedProductIds = Array.isArray(theme?.lookbookProductIds) ? theme.lookbookProductIds : [];
-  const lookbookJackets = (selectedProductIds.length > 0 ? jackets.filter((j) => selectedProductIds.includes(j.id)) : jackets);
+  const lookbookJackets = sortProductsByAvailability(
+    selectedProductIds.length > 0 ? jackets.filter((j) => selectedProductIds.includes(j.id)) : jackets
+  );
   const lookbookFrameHeight = Math.min(500, Math.max(160, Number(theme?.lookbookImageFrameHeight ?? 220)));
   const lookbookFrameWidth = Math.min(100, Math.max(40, Number(theme?.lookbookImageFrameWidth ?? 60)));
 
@@ -127,7 +130,7 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
       {selectedImage && (
         <div
           onClick={() => setSelectedImage(null)}
-          className="lookbook-lightbox fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn"
+          className="lookbook-lightbox fixed inset-0 z-[1200] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn"
         >
           <div className="relative max-w-4xl max-h-[90vh] rounded-2xl overflow-hidden border border-[#d4af37]">
             <img src={selectedImage} alt="Lookbook Full" className="max-w-full max-h-[85vh] object-contain" />

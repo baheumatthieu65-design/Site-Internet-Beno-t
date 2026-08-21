@@ -1524,9 +1524,9 @@ export default function App() {
       !isDragReorderMode
     ) {
       return (
-        <div key={sectionId} className="relative overflow-visible" style={{ width: `${Math.min(150, Math.max(0, Number(theme.sectionWidthPercent?.[sectionId] ?? 100)))}%`, marginInline: 'auto' }}>
+        <div key={sectionId} className={`relative overflow-visible ${sectionBackgroundOverlay ? 'site-section-custom-background' : ''}`} style={{ width: `${Math.min(150, Math.max(0, Number(theme.sectionWidthPercent?.[sectionId] ?? 100)))}%`, marginInline: 'auto' }}>
           {sectionBackgroundOverlay}
-          <div className="relative z-20">{content}</div>
+          <div className="relative z-20 site-section-content">{content}</div>
           <div className="absolute inset-0 z-40 pointer-events-none">
             <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
           </div>
@@ -1660,9 +1660,9 @@ export default function App() {
           </div>
         </div>
 
-        <div className="relative overflow-visible mx-auto" style={{ width: `${Math.min(150, Math.max(0, Number(theme.sectionWidthPercent?.[sectionId] ?? 100)))}%` }}>
+        <div className={`relative overflow-visible mx-auto ${sectionBackgroundOverlay ? 'site-section-custom-background' : ''}`} style={{ width: `${Math.min(150, Math.max(0, Number(theme.sectionWidthPercent?.[sectionId] ?? 100)))}%` }}>
           {sectionBackgroundOverlay}
-          <div className="relative z-20">{content}</div>
+          <div className="relative z-20 site-section-content">{content}</div>
           <div className="absolute inset-0 z-40 pointer-events-none">
             <FloatingMediaLayer sectionId={sectionId} items={siteEditorConfig.floatingImages} />
           </div>
