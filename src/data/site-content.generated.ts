@@ -77,7 +77,7 @@ export const publishedSiteContent = {
           "background": {
             "type": "image",
             "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787320280353-istockphoto-2177833057-1024x1024.jpg",
-            "overlay": 0
+            "overlay": 17
           }
         },
         {
@@ -1382,5 +1382,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787320283292
+  "publishedAt": 1787320291865
 } as const;
