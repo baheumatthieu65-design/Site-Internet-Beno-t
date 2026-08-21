@@ -909,7 +909,7 @@ export const publishedSiteContent = {
           "id": "gite-block-1787321377914-h2wiua",
           "moduleId": "gite-acces",
           "type": "text",
-          "x": 38,
+          "x": 37,
           "y": 39,
           "width": 30,
           "height": 18,
@@ -2133,5 +2133,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787326365089
+  "publishedAt": 1787326373129
 } as const;
