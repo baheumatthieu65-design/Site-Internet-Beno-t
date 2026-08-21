@@ -77,7 +77,7 @@ export const publishedSiteContent = {
           "background": {
             "type": "image",
             "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787320384013-Sans-titre-1.jpg",
-            "overlay": 17
+            "overlay": 0
           }
         },
         {
@@ -1382,5 +1382,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787320385876
+  "publishedAt": 1787320391816
 } as const;
