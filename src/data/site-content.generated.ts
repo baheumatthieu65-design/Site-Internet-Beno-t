@@ -499,6 +499,34 @@ export const publishedSiteContent = {
           "visible": true
         },
         {
+          "id": "gite-block-1787326119367-4h8qt0",
+          "moduleId": "gite-le-gite",
+          "type": "image",
+          "x": 51,
+          "y": 55,
+          "width": 79,
+          "height": 81,
+          "text": "Nouvelle zone de texte",
+          "link": "",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787326129041-Sans-titre-9.jpg",
+          "fontSize": 18,
+          "color": "#24231f",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "transparent",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "contain",
+          "visible": true
+        },
+        {
           "id": "gite-block-1787320775735-3etfpf",
           "moduleId": "gite-le-gite",
           "type": "text",
@@ -2105,5 +2133,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787326062579
+  "publishedAt": 1787326175256
 } as const;
