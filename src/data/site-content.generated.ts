@@ -364,6 +364,33 @@ export const publishedSiteContent = {
           "rotation": 0,
           "objectFit": "contain",
           "visible": true
+        },
+        {
+          "id": "gite-block-1787319463889-emjnw9",
+          "moduleId": "gite-sejourner",
+          "type": "image",
+          "x": 57.447916666666664,
+          "y": 61.52542372881356,
+          "width": 25,
+          "text": "Nouvelle zone de texte",
+          "link": "",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787319481183-cameron-smith-WFaLFAyKp5g-unsplash.jpg",
+          "fontSize": 18,
+          "color": "#24231f",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "transparent",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "contain",
+          "visible": true
         }
       ],
       "navBackgroundColor": "#000000",
@@ -1259,5 +1286,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787319461992
+  "publishedAt": 1787319525501
 } as const;
