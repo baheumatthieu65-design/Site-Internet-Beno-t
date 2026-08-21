@@ -414,7 +414,7 @@ export interface ThemeConfig {
    ========================================================= */
 
 
-export type GiteContentBlockType = 'text' | 'heading' | 'video' | 'button';
+export type GiteContentBlockType = 'text' | 'heading' | 'image' | 'video' | 'button';
 
 export interface GiteContentBlock {
   id: string;
@@ -427,9 +427,22 @@ export interface GiteContentBlock {
   text?: string;
   url?: string;
   link?: string;
+  alt?: string;
   fontSize?: number;
   color?: string;
   align?: 'left' | 'center' | 'right';
+  fontFamily?: string;
+  fontWeight?: number;
+  lineHeight?: number;
+  italic?: boolean;
+  backgroundColor?: string;
+  borderColor?: string;
+  borderWidth?: number;
+  borderRadius?: number;
+  padding?: number;
+  opacity?: number;
+  rotation?: number;
+  objectFit?: 'cover' | 'contain';
   visible: boolean;
 }
 
