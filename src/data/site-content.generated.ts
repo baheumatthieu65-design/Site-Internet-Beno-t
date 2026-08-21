@@ -57,13 +57,6 @@ export const publishedSiteContent = {
           }
         },
         {
-          "id": "gite-le-gite",
-          "label": "Le gîte",
-          "visible": true,
-          "width": 100,
-          "height": 580
-        },
-        {
           "id": "gite-sejourner",
           "label": "Séjourner",
           "visible": true,
@@ -74,6 +67,13 @@ export const publishedSiteContent = {
             "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787319613476-lv-1696.jpg",
             "overlay": 32
           }
+        },
+        {
+          "id": "gite-le-gite",
+          "label": "Le gîte",
+          "visible": true,
+          "width": 100,
+          "height": 580
         },
         {
           "id": "gite-region",
@@ -99,8 +99,8 @@ export const publishedSiteContent = {
       },
       "navOrder": [
         "gite-accueil",
-        "gite-le-gite",
         "gite-sejourner",
+        "gite-le-gite",
         "gite-region",
         "gite-acces"
       ],
@@ -396,6 +396,64 @@ export const publishedSiteContent = {
           "rotation": 0,
           "objectFit": "contain",
           "visible": true
+        },
+        {
+          "id": "gite-block-1787319834810-i7pabf",
+          "moduleId": "gite-sejourner",
+          "type": "text",
+          "x": 23,
+          "y": 5.09433962264151,
+          "width": 34,
+          "height": 10,
+          "text": "LE GÎTE EN IMAGES",
+          "link": "",
+          "url": "",
+          "fontSize": 23,
+          "color": "#ffffff",
+          "align": "left",
+          "fontFamily": "Nunito Sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "transparent",
+          "borderColor": "#ffffff",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true,
+          "autoSize": true
+        },
+        {
+          "id": "gite-block-1787319925497-8hkoz3",
+          "moduleId": "gite-sejourner",
+          "type": "text",
+          "x": 22.864583333333332,
+          "y": 8.018867924528301,
+          "width": 30,
+          "height": 18,
+          "text": "_________",
+          "link": "",
+          "url": "",
+          "fontSize": 48,
+          "color": "#ffffff",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "transparent",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true,
+          "autoSize": true
         }
       ],
       "navBackgroundColor": "#000000",
@@ -1291,5 +1349,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787319721151
+  "publishedAt": 1787319998882
 } as const;
