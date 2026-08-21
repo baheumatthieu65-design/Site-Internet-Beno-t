@@ -85,7 +85,7 @@ export const publishedSiteContent = {
           "label": "La région",
           "visible": true,
           "width": 100,
-          "height": 520,
+          "height": 810,
           "background": {
             "type": "image",
             "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787320405397-Sans-titre-1.jpg",
@@ -1595,5 +1595,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787320928936
+  "publishedAt": 1787320959628
 } as const;
