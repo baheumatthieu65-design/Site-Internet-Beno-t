@@ -68,7 +68,7 @@ export const publishedSiteContent = {
           "label": "Séjourner",
           "visible": true,
           "width": 100,
-          "height": 1180,
+          "height": 1060,
           "background": {
             "type": "image",
             "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787319613476-lv-1696.jpg",
@@ -1291,5 +1291,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787319617097
+  "publishedAt": 1787319628477
 } as const;
