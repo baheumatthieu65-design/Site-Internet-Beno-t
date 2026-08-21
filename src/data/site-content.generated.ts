@@ -49,7 +49,7 @@ export const publishedSiteContent = {
           "label": "Accueil",
           "visible": true,
           "width": 100,
-          "height": 520
+          "height": 1180
         },
         {
           "id": "gite-le-gite",
@@ -1003,5 +1003,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787302758635
+  "publishedAt": 1787302768089
 } as const;
