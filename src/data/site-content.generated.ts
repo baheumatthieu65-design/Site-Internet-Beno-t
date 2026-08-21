@@ -158,7 +158,37 @@ export const publishedSiteContent = {
         "video": "Vidéo",
         "nearby": "La région",
         "stay": "Séjourner"
-      }
+      },
+      "contentBlocks": [
+        {
+          "id": "gite-block-1787299500338-81jgno",
+          "moduleId": "gite-experience",
+          "type": "text",
+          "x": 48,
+          "y": 50,
+          "width": 30,
+          "height": 18,
+          "text": "Test",
+          "link": "",
+          "url": "",
+          "fontSize": 18,
+          "color": "#24231f",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "rgba(255,255,255,0.88)",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true
+        }
+      ]
     },
     "jackets": [
       {
@@ -1061,5 +1091,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787295196315
+  "publishedAt": 1787299517700
 } as const;
