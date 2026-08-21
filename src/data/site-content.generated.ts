@@ -597,7 +597,7 @@ export const publishedSiteContent = {
           "link": "",
           "url": "",
           "fontSize": 29,
-          "color": "#24231f",
+          "color": "#000000",
           "align": "left",
           "fontFamily": "Montserrat",
           "fontWeight": 400,
@@ -684,7 +684,7 @@ export const publishedSiteContent = {
           "link": "",
           "url": "",
           "fontSize": 29,
-          "color": "#24231f",
+          "color": "#000000",
           "align": "left",
           "fontFamily": "Montserrat",
           "fontWeight": 400,
@@ -1005,7 +1005,7 @@ export const publishedSiteContent = {
           "link": "",
           "url": "",
           "fontSize": 29,
-          "color": "#24231f",
+          "color": "#000000",
           "align": "left",
           "fontFamily": "Montserrat",
           "fontWeight": 400,
@@ -1092,7 +1092,7 @@ export const publishedSiteContent = {
           "link": "",
           "url": "",
           "fontSize": 29,
-          "color": "#24231f",
+          "color": "#000000",
           "align": "left",
           "fontFamily": "Montserrat",
           "fontWeight": 400,
@@ -2003,5 +2003,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787323247241
+  "publishedAt": 1787323281353
 } as const;
