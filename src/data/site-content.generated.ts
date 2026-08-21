@@ -502,14 +502,14 @@ export const publishedSiteContent = {
           "id": "gite-block-1787320775735-3etfpf",
           "moduleId": "gite-le-gite",
           "type": "text",
-          "x": 23,
-          "y": 28.965517241379313,
+          "x": 24,
+          "y": 27,
           "width": 30,
           "height": 18,
           "text": "LES ESSENTIELS",
           "link": "",
           "url": "",
-          "fontSize": 18,
+          "fontSize": 24,
           "color": "#000000",
           "align": "left",
           "fontFamily": "sans",
@@ -2003,5 +2003,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787323214819
+  "publishedAt": 1787323247241
 } as const;
