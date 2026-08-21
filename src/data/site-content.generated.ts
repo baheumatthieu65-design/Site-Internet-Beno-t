@@ -337,6 +337,33 @@ export const publishedSiteContent = {
           "rotation": 0,
           "objectFit": "contain",
           "visible": true
+        },
+        {
+          "id": "gite-block-1787319442419-ocy3aj",
+          "moduleId": "gite-sejourner",
+          "type": "image",
+          "x": 74.94791666666667,
+          "y": 56.271186440677965,
+          "width": 15,
+          "text": "Nouvelle zone de texte",
+          "link": "",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787319449777-samuel-regan-asante-S8hsoJVeFYA-unsplash.webp",
+          "fontSize": 18,
+          "color": "#24231f",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "transparent",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "contain",
+          "visible": true
         }
       ],
       "navBackgroundColor": "#000000",
@@ -1232,5 +1259,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787319440273
+  "publishedAt": 1787319461992
 } as const;
