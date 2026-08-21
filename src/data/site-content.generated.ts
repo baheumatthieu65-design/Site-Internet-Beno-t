@@ -480,7 +480,7 @@ export const publishedSiteContent = {
           "height": 33,
           "text": "Nouvelle zone de texte",
           "link": "",
-          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/section-background-1787320142540-test-g86LA4gfdHHLU5moFVyezZLlJpgnF8.mp4",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/section-background-1787324080939-test-d3QmdwonaZJ7UHYdXk0vKqYSLIYys9.mp4",
           "fontSize": 18,
           "color": "#24231f",
           "align": "left",
@@ -2105,5 +2105,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787324018194
+  "publishedAt": 1787324086810
 } as const;
