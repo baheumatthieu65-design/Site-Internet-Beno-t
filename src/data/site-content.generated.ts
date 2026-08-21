@@ -856,7 +856,7 @@ export const publishedSiteContent = {
           "y": 50,
           "width": 30,
           "height": 18,
-          "text": "ACCES",
+          "text": "ACCÈS",
           "link": "",
           "url": "",
           "fontSize": 18,
@@ -1770,5 +1770,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787321360676
+  "publishedAt": 1787321364048
 } as const;
