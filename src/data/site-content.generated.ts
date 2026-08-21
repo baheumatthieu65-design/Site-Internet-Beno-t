@@ -49,7 +49,7 @@ export const publishedSiteContent = {
           "label": "Accueil",
           "visible": true,
           "width": 100,
-          "height": 1180,
+          "height": 800,
           "background": {
             "type": "image",
             "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787303018866-kalen-emsley-Bkci_8qcdvQ-unsplash.webp",
@@ -1037,5 +1037,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787303022912
+  "publishedAt": 1787303031808
 } as const;
