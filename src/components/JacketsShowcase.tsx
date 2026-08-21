@@ -95,27 +95,55 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
     });
   const activeJacket = visibleJackets.find((j) => j.id === selectedJacketId) || visibleJackets[0] || null;
 
+  // Le nom visible du Showcase est piloté par l'identifiant produit lorsque
+  // les anciennes données publiées contiennent encore un nom générique
+  // (« Maison Mailha », etc.). Les noms personnalisés saisis dans le catalogue
+  // restent prioritaires s'ils existent. Ainsi le titre de marque ne peut plus
+  // remplacer le nom de l'article affiché.
   const displayProductName = (product: JacketModel) => {
     const raw = String(product.name || '').trim();
-    const generic = /^(maison\s+mailha(?:gut)?|maison\s+des\s+pyrenees)$/i.test(raw);
-    if (!generic) return raw;
-    const extended = product as JacketModel & { title?: string; productName?: string; displayName?: string; label?: string };
+    const isGeneric = (value: string) =>
+      /^(maison\s+mailha(?:gut)?|maison\s+des\s+pyrenees)$/i.test(value);
+
+    const extended = product as JacketModel & {
+      title?: string;
+      productName?: string;
+      displayName?: string;
+      label?: string;
+    };
+
+    // 1. Un intitulé explicitement renseigné dans les données produit.
     const explicit = [extended.title, extended.productName, extended.displayName, extended.label]
       .map((value) => String(value || '').trim())
-      .find((value) => value && !/^(maison\s+mailha(?:gut)?|maison\s+des\s+pyrenees)$/i.test(value));
+      .find((value) => value && !isGeneric(value));
     if (explicit) return explicit;
-    const source = `${product.subTitle || ''} ${product.name || ''}`;
-    const modelMatch = source.match(/mod[eè]le\s*n[°ºo]?\s*(\d+)/i) || source.match(/n[°ºo]\s*(\d+)/i);
-    if (modelMatch) {
-      const modelNumber = Number(modelMatch[1]);
-      const fallbackProduct = (initialBrandData.jackets || []).find((candidate) => {
-        const candidateSource = `${candidate.subTitle || ''} ${candidate.name || ''}`;
-        const candidateMatch = candidateSource.match(/mod[eè]le\s*n[°ºo]?\s*(\d+)/i) || candidateSource.match(/n[°ºo]\s*(\d+)/i);
-        return candidateMatch && Number(candidateMatch[1]) === modelNumber;
-      });
-      if (fallbackProduct?.name) return fallbackProduct.name;
+
+    // 2. Si `name` est générique, reprendre le nom canonique du catalogue
+    //    local à partir de l'ID, comme pour les autres éléments persistés du site.
+    if (isGeneric(raw)) {
+      const canonicalProduct = (initialBrandData.jackets || []).find(
+        (candidate) => candidate.id === product.id && candidate.name && !isGeneric(String(candidate.name))
+      );
+      if (canonicalProduct?.name) return canonicalProduct.name;
+
+      // Compatibilité avec les anciennes données qui ne conservent pas l'ID
+      // mais gardent le numéro de modèle dans le sous-titre.
+      const source = `${product.subTitle || ''} ${product.name || ''}`;
+      const modelMatch = source.match(/mod[eè]le\s*n[°ºo]?\s*(\d+)/i) || source.match(/n[°ºo]\s*(\d+)/i);
+      if (modelMatch) {
+        const modelNumber = Number(modelMatch[1]);
+        const fallbackProduct = (initialBrandData.jackets || []).find((candidate) => {
+          const candidateSource = `${candidate.subTitle || ''} ${candidate.name || ''}`;
+          const candidateMatch = candidateSource.match(/mod[eè]le\s*n[°ºo]?\s*(\d+)/i) || candidateSource.match(/n[°ºo]\s*(\d+)/i);
+          return candidateMatch && Number(candidateMatch[1]) === modelNumber;
+        });
+        if (fallbackProduct?.name) return fallbackProduct.name;
+      }
+
+      return rawProductNameFromId(product.id);
     }
-    return rawProductNameFromId(product.id);
+
+    return raw || rawProductNameFromId(product.id);
   };
 
   const modelNumberLabel = (product: JacketModel) => {
@@ -670,7 +698,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                     {activeJacket.category}
                   </span>
                   <h3 className="font-serif text-3xl sm:text-5xl text-[#f3ece0] font-normal mt-1">
-                    {activeJacket.name}
+                    {displayProductName(activeJacket)}
                   </h3>
                   <p className="text-sm text-[#d0c5b4] font-serif italic mt-1">
                     "{activeJacket.tagline}"
