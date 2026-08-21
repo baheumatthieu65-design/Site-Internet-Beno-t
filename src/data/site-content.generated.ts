@@ -49,7 +49,12 @@ export const publishedSiteContent = {
           "label": "Accueil",
           "visible": true,
           "width": 100,
-          "height": 1180
+          "height": 1180,
+          "background": {
+            "type": "image",
+            "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787303018866-kalen-emsley-Bkci_8qcdvQ-unsplash.webp",
+            "overlay": 25
+          }
         },
         {
           "id": "gite-le-gite",
@@ -1032,5 +1037,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787302900319
+  "publishedAt": 1787303022912
 } as const;
