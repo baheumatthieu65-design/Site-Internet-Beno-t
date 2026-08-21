@@ -292,8 +292,8 @@ export const publishedSiteContent = {
           "id": "gite-block-1787319271954-mxrw2w",
           "moduleId": "gite-sejourner",
           "type": "image",
-          "x": 31.5625,
-          "y": 39.23728813559322,
+          "x": 32.55208333333333,
+          "y": 47.16981132075472,
           "width": 32,
           "text": "Nouvelle zone de texte",
           "link": "",
@@ -319,9 +319,9 @@ export const publishedSiteContent = {
           "id": "gite-block-1787319370313-y4q14s",
           "moduleId": "gite-sejourner",
           "type": "image",
-          "x": 64.16666666666667,
-          "y": 20.508474576271183,
-          "width": 38,
+          "x": 62.760416666666664,
+          "y": 27.547169811320753,
+          "width": 34,
           "height": 42,
           "text": "Nouvelle zone de texte",
           "link": "",
@@ -344,15 +344,15 @@ export const publishedSiteContent = {
           "visible": true
         },
         {
-          "id": "gite-block-1787319442419-ocy3aj",
+          "id": "gite-block-1787319463889-emjnw9",
           "moduleId": "gite-sejourner",
           "type": "image",
-          "x": 74.94791666666667,
-          "y": 56.271186440677965,
-          "width": 15,
+          "x": 56.40625,
+          "y": 69.71698113207547,
+          "width": 25,
           "text": "Nouvelle zone de texte",
           "link": "",
-          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787319449777-samuel-regan-asante-S8hsoJVeFYA-unsplash.webp",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787319481183-cameron-smith-WFaLFAyKp5g-unsplash.jpg",
           "fontSize": 18,
           "color": "#24231f",
           "align": "left",
@@ -371,15 +371,15 @@ export const publishedSiteContent = {
           "visible": true
         },
         {
-          "id": "gite-block-1787319463889-emjnw9",
+          "id": "gite-block-1787319442419-ocy3aj",
           "moduleId": "gite-sejourner",
           "type": "image",
-          "x": 57.447916666666664,
-          "y": 61.52542372881356,
-          "width": 25,
+          "x": 76.14583333333333,
+          "y": 62.64150943396226,
+          "width": 17,
           "text": "Nouvelle zone de texte",
           "link": "",
-          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787319481183-cameron-smith-WFaLFAyKp5g-unsplash.jpg",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787319449777-samuel-regan-asante-S8hsoJVeFYA-unsplash.webp",
           "fontSize": 18,
           "color": "#24231f",
           "align": "left",
@@ -1291,5 +1291,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787319628477
+  "publishedAt": 1787319721151
 } as const;
