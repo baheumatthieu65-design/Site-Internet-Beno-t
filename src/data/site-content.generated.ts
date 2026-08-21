@@ -769,7 +769,7 @@ export const publishedSiteContent = {
           "text": "Consulter les disponibilités",
           "link": "",
           "url": "",
-          "fontSize": 80,
+          "fontSize": 76,
           "color": "#000000",
           "align": "left",
           "fontFamily": "Dancing Script",
@@ -888,7 +888,7 @@ export const publishedSiteContent = {
           "link": "",
           "url": "",
           "fontSize": 25,
-          "color": "#ffffff",
+          "color": "#000000",
           "align": "left",
           "fontFamily": "sans",
           "fontWeight": 400,
@@ -917,7 +917,7 @@ export const publishedSiteContent = {
           "link": "",
           "url": "",
           "fontSize": 60,
-          "color": "#ffffff",
+          "color": "#000000",
           "align": "left",
           "fontFamily": "Libre Baskerville",
           "fontWeight": 400,
@@ -946,7 +946,7 @@ export const publishedSiteContent = {
           "link": "",
           "url": "",
           "fontSize": 24,
-          "color": "#ffffff",
+          "color": "#000000",
           "align": "left",
           "fontFamily": "sans",
           "fontWeight": 400,
@@ -2133,5 +2133,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787328657294
+  "publishedAt": 1787328688534
 } as const;
