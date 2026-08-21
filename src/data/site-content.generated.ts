@@ -10,7 +10,7 @@ export const publishedSiteContent = {
     "accentColor": "#4A5D4E",
     "foundingYear": "2025",
     "designerLocation": "Vallée de Lourdios \u0026 Pic du Midi",
-    "heroBgImage": "",
+    "heroBgImage": "/assets/pyrenees_landscape_hero_1785338591988-pbnVVBN-.jpg",
     "storyTitle": "Aux origines de la Maison",
     "storyText1": "Pensée entre pâturages verdoyants et sommets acérés, notre maison fait le pari d’un luxe brut et authentique. Chaque veste est façonnée pour affronter les brumes pyrénéennes tout en offrant une silhouette d’une distinction rare.",
     "storyText2": "Nous avons sélectionné des laines de bergers pyrénéens et des toiles techniques imperméables d’exception pour façonner ces deux pièces signatures : La Veste des Cimes et Le Manteau Pastorale.",
@@ -22,6 +22,144 @@ export const publishedSiteContent = {
     "contactEmail": "contact@maisondespyrenees.fr",
     "ordersEmail": "contact@maisondespyrenees.fr",
     "instagram": "@maison.des.pyrenees",
+    "gite": {
+      "name": "Le Gîte",
+      "location": "Pyrénées",
+      "tagline": "Une parenthèse au cœur des montagnes.",
+      "heroImage": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format\u0026fit=crop\u0026w=2200\u0026q=85",
+      "intro": {
+        "title": "Un lieu pour ralentir.",
+        "text": "Une maison chaleureuse pensée pour profiter du calme, des paysages et de l’authenticité des Pyrénées."
+      },
+      "gallery": [
+        {
+          "src": "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format\u0026fit=crop\u0026w=1400\u0026q=85",
+          "alt": "Intérieur du gîte"
+        },
+        {
+          "src": "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format\u0026fit=crop\u0026w=1400\u0026q=85",
+          "alt": "Chambre du gîte"
+        },
+        {
+          "src": "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format\u0026fit=crop\u0026w=1400\u0026q=85",
+          "alt": "Salon chaleureux"
+        },
+        {
+          "src": "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format\u0026fit=crop\u0026w=1400\u0026q=85",
+          "alt": "Gîte en montagne"
+        }
+      ],
+      "videoUrl": "",
+      "videoPoster": "",
+      "essentials": [
+        {
+          "value": "6",
+          "label": "Voyageurs"
+        },
+        {
+          "value": "3",
+          "label": "Chambres"
+        },
+        {
+          "value": "2",
+          "label": "Salle de bain"
+        },
+        {
+          "value": "1",
+          "label": "Parking"
+        }
+      ],
+      "bookingText": "Les disponibilités et tarifs sont consultables directement sur nos plateformes partenaires.",
+      "airbnbUrl": "#",
+      "bookingUrl": "#",
+      "nearby": [
+        {
+          "title": "Randonnées",
+          "text": "Sentiers, cols et panoramas à proximité du gîte."
+        },
+        {
+          "title": "Villages",
+          "text": "Marchés, villages de montagne et producteurs locaux."
+        },
+        {
+          "title": "Activités",
+          "text": "Nature, neige, vélo et découvertes selon la saison."
+        }
+      ],
+      "access": {
+        "title": "Venir au gîte",
+        "text": "Les informations pratiques d’accès peuvent être personnalisées depuis l’éditeur."
+      },
+      "modules": [
+        {
+          "id": "gite-hero",
+          "label": "Le gîte — Accueil",
+          "visible": true,
+          "background": {
+            "type": "image",
+            "url": "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format\u0026fit=crop\u0026w=2200\u0026q=85",
+            "overlay": 25
+          }
+        },
+        {
+          "id": "gite-experience",
+          "label": "Le gîte",
+          "visible": true,
+          "background": {
+            "type": "image",
+            "url": "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format\u0026fit=crop\u0026w=1800\u0026q=85",
+            "overlay": 12
+          }
+        },
+        {
+          "id": "gite-gallery",
+          "label": "Galerie",
+          "visible": true,
+          "background": {
+            "type": "image",
+            "url": "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format\u0026fit=crop\u0026w=1800\u0026q=85",
+            "overlay": 10
+          }
+        },
+        {
+          "id": "gite-video",
+          "label": "Vidéo",
+          "visible": true
+        },
+        {
+          "id": "gite-essentials",
+          "label": "Équipements",
+          "visible": true
+        },
+        {
+          "id": "gite-nearby",
+          "label": "La région",
+          "visible": true,
+          "background": {
+            "type": "image",
+            "url": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format\u0026fit=crop\u0026w=1800\u0026q=85",
+            "overlay": 12
+          }
+        },
+        {
+          "id": "gite-stay",
+          "label": "Séjourner",
+          "visible": true
+        },
+        {
+          "id": "gite-access",
+          "label": "Accès",
+          "visible": true
+        }
+      ],
+      "navLabels": {
+        "experience": "Le gîte",
+        "gallery": "Galerie",
+        "video": "Vidéo",
+        "nearby": "La région",
+        "stay": "Séjourner"
+      }
+    },
     "jackets": [
       {
         "id": "veste-des-cimes",
@@ -30,10 +168,10 @@ export const publishedSiteContent = {
         "category": "Haute Montagne \u0026 Élégance",
         "price": 110,
         "currency": "€",
-        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787238367336-Art1.png",
+        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787255862341-Image-1.jpg",
         "gallery": [
-          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787238367336-Art1.png",
-          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787248557990-20260816_124104.jpg"
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787255862341-Image-1.jpg",
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787255871534-Image-2.jpg"
         ],
         "description": "Une veste à la stature majestueuse, tissée en drap de laine anthracite ultra-dense, conçue pour braver le vent des vallées tout en conservant une ligne affûtée.",
         "longDescription": "La Veste des Cimes incarne l’équilibre parfait entre la rigueur de la montagne et la finesse des tailleurs. Ses poches plaquées discrètes et sa doublure thermique en sergé fluide apportent aisance et protection contre le froid d’altitude.",
@@ -93,24 +231,24 @@ export const publishedSiteContent = {
         "hotspots": [
           {
             "id": "hs1-col",
-            "x": 50,
-            "y": 15,
+            "x": 59,
+            "y": 3,
             "title": "Col Officier à Revers",
             "description": "Protection thermique du cou rehaussée d’une bride en cuir pour fermer hermétiquement le col.",
             "category": "cut"
           },
           {
             "id": "hs1-boutons",
-            "x": 50,
-            "y": 28,
+            "x": 45,
+            "y": 56,
             "title": "Boutonnage en Corne Gravée",
             "description": "Chaque bouton est taillé dans la corne naturelle et gravé au laser avec le monogramme de la marque.",
             "category": "hardware"
           },
           {
             "id": "hs1-poche",
-            "x": 54,
-            "y": 75,
+            "x": 59,
+            "y": 76,
             "title": "Poches Soufflet d’Atelier",
             "description": "Grandes poches doublées en flanelle pour garder les mains au chaud lors des balades en altitude.",
             "category": "utility"
@@ -121,14 +259,14 @@ export const publishedSiteContent = {
         "customSpecs": {}
       },
       {
-        "name": "N02",
+        "name": "Veste des Cîmes Enfant",
         "subTitle": "Confection Artisanale des Pyrénées",
-        "category": "Homme \u0026 Femme",
-        "price": 490,
+        "category": "Femme \u0026 Enfant",
+        "price": 60,
         "currency": "€",
-        "heroImage": "https://images.unsplash.com/photo-1544441893-675973e31985?auto=format\u0026fit=crop\u0026q=80\u0026w=1000",
+        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787255936718-Image-3.jpg",
         "gallery": [
-          "https://images.unsplash.com/photo-1544441893-675973e31985?auto=format\u0026fit=crop\u0026q=80\u0026w=1000"
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787255936718-Image-3.jpg"
         ],
         "description": "Veste artisanale d'exception tissée dans les Pyrénées.",
         "longDescription": "Fabriquée selon des savoir-faire d'autrefois en pure laine sélectionnée.",
@@ -144,13 +282,19 @@ export const publishedSiteContent = {
           {
             "name": "Ocre Vignemale",
             "hex": "#8c6b43"
+          },
+          {
+            "name": "Vert des cîmes",
+            "hex": "#526355"
           }
         ],
         "sizes": [
-          "S",
-          "M",
-          "L",
-          "XL"
+          "8",
+          "10",
+          "12",
+          "14",
+          "XS",
+          "S"
         ],
         "isAvailable": true,
         "features": [
@@ -170,17 +314,18 @@ export const publishedSiteContent = {
         },
         "hotspots": [],
         "id": "produit-1787241378430-715p3s",
-        "availabilityStatus": "on-sale"
+        "availabilityStatus": "on-sale",
+        "customSpecs": {}
       },
       {
-        "name": "n°3",
+        "name": "Todebag",
         "subTitle": "Confection Artisanale des Pyrénées",
         "category": "Homme \u0026 Femme",
-        "price": 490,
+        "price": 50,
         "currency": "€",
-        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787252388383-20260816_124059.jpg",
+        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787256106041-Art1.png",
         "gallery": [
-          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787252388383-20260816_124059.jpg",
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787256106041-Art1.png",
           "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787242933243-Art1-2.png"
         ],
         "description": "Veste artisanale d'exception tissée dans les Pyrénées.",
@@ -200,10 +345,7 @@ export const publishedSiteContent = {
           }
         ],
         "sizes": [
-          "S",
-          "M",
-          "L",
-          "XL"
+          "Taille unique"
         ],
         "isAvailable": true,
         "features": [
@@ -226,8 +368,8 @@ export const publishedSiteContent = {
             "id": "hotspot-1787252504808",
             "title": "Nouveau point tet",
             "description": "sdssdsds",
-            "x": 47,
-            "y": 35,
+            "x": 50,
+            "y": 22,
             "category": "fabric"
           }
         ],
@@ -301,11 +443,25 @@ export const publishedSiteContent = {
       "lookbookImageFrameWidth": 60,
       "lookbookImageFrameHeight": 220,
       "sectionBackgroundImages": {
-        "collection": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787253653691-4k-wallpaper-blue-skies-conifers-1526720.webp",
-        "origines": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787258626442-4k-wallpaper-blue-skies-conifers-1526720.webp"
+        "origines": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787258626442-4k-wallpaper-blue-skies-conifers-1526720.webp",
+        "hero": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787294484822-pyrenees_landscape_hero_1785338591988.jpg"
       },
+      "sectionBackgroundMedia": {
+        "hero": {
+          "type": "image",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787294484822-pyrenees_landscape_hero_1785338591988.jpg",
+          "overlay": 0,
+          "objectFit": "cover",
+          "positionX": 50,
+          "positionY": 50
+        }
+      },
+      "siteThemePreset": "pyrenees-noir",
+      "siteBackgroundColor": "#121613",
+      "navBackgroundColor": "#1a1e1b",
+      "navBackgroundOpacity": 25,
       "sectionBackgroundOpacity": {
-        "hero": 75,
+        "hero": 85,
         "collection": 75,
         "origines": 45
       },
@@ -417,22 +573,7 @@ export const publishedSiteContent = {
   },
   "editorConfig": {
     "adminBarPosition": "bottom",
-    "floatingImages": [
-      {
-        "id": "floating-1787160893741-7a0i8v",
-        "section": "hero",
-        "url": "/assets/persistent-media-2.png",
-        "alt": "",
-        "x": 15,
-        "y": 28,
-        "size": 104,
-        "rotate": -18,
-        "opacity": 100,
-        "animation": "float",
-        "mobile": true,
-        "visible": true
-      }
-    ],
+    "floatingImages": [],
     "schemaVersion": 5,
     "blocks": [
       {
@@ -653,6 +794,63 @@ export const publishedSiteContent = {
         "fontFamily": "-apple-system",
         "fontSize": "16px",
         "color": "rgb(163, 176, 162)"
+      },
+      {
+        "id": "hero-designer-location",
+        "type": "text",
+        "section": "hero",
+        "x": 50,
+        "y": 50,
+        "visible": true,
+        "locator": {
+          "tag": "span",
+          "text": "Vallée de Lourdios \u0026 Pic du Midi",
+          "sectionId": "hero",
+          "occurrence": 0
+        },
+        "kind": "text",
+        "text": "ILHET - Vallée d'Aure",
+        "fontFamily": "ui-serif",
+        "fontSize": "12px",
+        "color": "rgb(212, 175, 55)"
+      },
+      {
+        "id": "story-designer-location",
+        "type": "text",
+        "section": "origines",
+        "x": 50,
+        "y": 50,
+        "visible": true,
+        "locator": {
+          "tag": "p",
+          "text": "Vallée de Lourdios \u0026 Pic du Midi",
+          "sectionId": "origines",
+          "occurrence": 0
+        },
+        "kind": "text",
+        "text": "ILHET - Vallée d'Aure",
+        "fontFamily": "-apple-system",
+        "fontSize": "12px",
+        "color": "rgb(163, 177, 165)"
+      },
+      {
+        "id": "vce-ardxk5",
+        "type": "text",
+        "section": "origines",
+        "x": 50,
+        "y": 50,
+        "visible": true,
+        "locator": {
+          "tag": "blockquote",
+          "text": "\"Élégance Champêtre \u0026 Artisanat des Cimes 5\"",
+          "sectionId": "origines",
+          "occurrence": 0
+        },
+        "kind": "text",
+        "text": "- Artisanat local -",
+        "fontFamily": "ui-serif",
+        "fontSize": "14px",
+        "color": "rgb(208, 197, 180)"
       }
     ],
     "editorElements": {
@@ -767,8 +965,32 @@ export const publishedSiteContent = {
         "section": "hero",
         "selector": null,
         "locator": "data-vce-id"
+      },
+      "hero-designer-location": {
+        "id": "hero-designer-location",
+        "type": "text",
+        "kind": "text",
+        "section": "hero",
+        "selector": null,
+        "locator": "data-vce-id"
+      },
+      "story-designer-location": {
+        "id": "story-designer-location",
+        "type": "text",
+        "kind": "text",
+        "section": "origines",
+        "selector": null,
+        "locator": "data-vce-id"
+      },
+      "vce-ardxk5": {
+        "id": "vce-ardxk5",
+        "type": "text",
+        "kind": "text",
+        "section": "origines",
+        "selector": null,
+        "locator": "data-vce-id"
       }
     }
   },
-  "publishedAt": 1787254943436
+  "publishedAt": 1787294488613
 } as const;
