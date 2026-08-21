@@ -192,8 +192,8 @@ export const publishedSiteContent = {
           "id": "gite-block-1787299527579-opaq5p",
           "moduleId": "gite-experience",
           "type": "heading",
-          "x": 17.25,
-          "y": 14.516216287433565,
+          "x": 16.666664817116477,
+          "y": 15.115833048535876,
           "width": 30,
           "height": 18,
           "text": "Nouveau titre",
@@ -204,6 +204,34 @@ export const publishedSiteContent = {
           "align": "left",
           "fontFamily": "display",
           "fontWeight": 500,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true
+        },
+        {
+          "id": "gite-block-1787299625399-2bleoo",
+          "moduleId": "gite-experience",
+          "type": "button",
+          "x": 56,
+          "y": 54,
+          "width": 30,
+          "height": 18,
+          "text": "Réserver",
+          "link": "https://www.geolux.fr/sde65/",
+          "url": "",
+          "fontSize": 18,
+          "color": "#24231f",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
           "lineHeight": 1.45,
           "italic": false,
           "backgroundColor": "",
@@ -1119,5 +1147,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787299610513
+  "publishedAt": 1787299666256
 } as const;
