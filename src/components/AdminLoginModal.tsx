@@ -102,7 +102,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   return (
     <div
       id="admin-login-modal-overlay"
-      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-fadeIn"
+      className="fixed inset-0 z-[10000] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-fadeIn"
     >
       <div
         id="admin-login-modal-box"

@@ -20,7 +20,17 @@ const normalizeConfig = (input?: GiteSiteConfig): GiteSiteConfig => {
   if (!input) return JSON.parse(JSON.stringify(base));
   const legacyIds = new Set(['gite-hero','gite-experience','gite-gallery','gite-video','gite-essentials','gite-nearby','gite-stay','gite-access']);
   const legacy = (input.modules || []).some((m) => legacyIds.has(m.id));
-  if (!legacy) return input;
+  if (!legacy) {
+    // Le bloc Accueil est toujours le premier bloc visuel de la page.
+    // On ne modifie pas l'ordre des autres blocs.
+    const modules = [...(input.modules || [])];
+    const accueilIndex = modules.findIndex((m) => m.id === 'gite-accueil');
+    if (accueilIndex > 0) {
+      const [accueil] = modules.splice(accueilIndex, 1);
+      modules.unshift(accueil);
+    }
+    return { ...input, modules };
+  }
   return {
     ...base,
     name: input.name || base.name,

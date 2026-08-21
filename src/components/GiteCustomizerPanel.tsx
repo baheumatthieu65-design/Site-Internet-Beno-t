@@ -12,10 +12,21 @@ export const GiteCustomizerPanel:React.FC<Props>=({value,onChange})=>{
   const [uploading,setUploading]=useState<string|null>(null);
   const [uploadingNavCta,setUploadingNavCta]=useState(false);
   const c=value||defaultGiteConfig;
-  const modules=c.modules||[];
+  // Accueil est le premier bloc physique de la page Gîte.
+  // Les autres blocs restent librement réordonnables.
+  const rawModules=c.modules||[];
+  const accueil=rawModules.find(m=>m.id==='gite-accueil');
+  const modules=accueil ? [accueil, ...rawModules.filter(m=>m.id!=='gite-accueil')] : rawModules;
   const navOrder=c.navOrder?.length ? c.navOrder : modules.map(m=>m.id);
   const navModules=useMemo(()=>navOrder.map(id=>modules.find(m=>m.id===id)).filter(Boolean) as GiteModuleConfig[],[navOrder,modules]);
   const update=(patch:Partial<GiteSiteConfig>)=>onChange({...c,...patch});
+  const normalizeHex=(value:string)=>{
+    const raw=value.trim().replace(/^#/,'');
+    if(/^[0-9a-fA-F]{6}$/.test(raw)) return `#${raw.toLowerCase()}`;
+    if(/^[0-9a-fA-F]{3}$/.test(raw)) return `#${raw.split('').map(ch=>ch+ch).join('').toLowerCase()}`;
+    return c.navBackgroundColor || '#ffffff';
+  };
+  const updateNavColor=(value:string)=>update({navBackgroundColor:normalizeHex(value)});
   const updateModule=(id:string, patch:Partial<GiteModuleConfig>)=>update({modules:modules.map(m=>m.id===id?{...m,...patch}:m)});
   const addModule=()=>{
     const id=makeId();
@@ -107,7 +118,13 @@ export const GiteCustomizerPanel:React.FC<Props>=({value,onChange})=>{
       <div><h4 className="font-serif text-lg text-[#f3ece0]">Navigation Gîte</h4><p className="text-xs text-[#a3b1a5]">La navigation reprend les blocs présents. Tu peux renommer et déplacer les entrées gauche/droite.</p></div>
       <div className="space-y-2">{navModules.map((m,idx)=><div key={m.id} className="flex items-center gap-2 rounded-lg bg-[#101510] p-2"><span className="flex-1 text-sm text-white">{c.navLabels?.[m.id]||m.label}</span><button type="button" disabled={idx===0} onClick={()=>moveNav(m.id,-1)} className="rounded-lg bg-[#263128] p-2 text-white disabled:opacity-25"><ArrowUp size={14}/></button><button type="button" disabled={idx===navModules.length-1} onClick={()=>moveNav(m.id,1)} className="rounded-lg bg-[#263128] p-2 text-white disabled:opacity-25"><ArrowDown size={14}/></button></div>)}</div>
       <div className="grid md:grid-cols-2 gap-3">
-        <label className="text-xs text-[#a3b1a5]">Couleur de la nav<input type="color" value={c.navBackgroundColor||'#ffffff'} onChange={e=>update({navBackgroundColor:e.target.value})} className="mt-2 h-10 w-full rounded-lg bg-[#101510] border border-[#344237]"/></label>
+        <div className="text-xs text-[#a3b1a5]">
+          <span>Couleur de la nav</span>
+          <div className="mt-2 flex items-center gap-2">
+            <input type="color" value={/^#[0-9a-fA-F]{6}$/.test(c.navBackgroundColor||'') ? c.navBackgroundColor! : '#ffffff'} onChange={e=>updateNavColor(e.target.value)} className="h-10 w-12 shrink-0 rounded-lg bg-[#101510] border border-[#344237] cursor-pointer" title="Choisir la couleur de la barre de navigation"/>
+            <input value={c.navBackgroundColor||'#ffffff'} onChange={e=>update({navBackgroundColor:e.target.value})} onBlur={e=>updateNavColor(e.target.value)} className="h-10 flex-1 rounded-lg bg-[#101510] border border-[#344237] px-3 text-white font-mono text-xs" placeholder="#ffffff" aria-label="Code couleur de la barre de navigation"/>
+          </div>
+        </div>
         <label className="text-xs text-[#a3b1a5]">Opacité de la nav {c.navOpacity??94}%<input type="range" min="0" max="100" value={c.navOpacity??94} onChange={e=>update({navOpacity:Number(e.target.value)})} className="mt-2 w-full accent-[#d4af37]"/></label>
       </div>
       <div className="grid md:grid-cols-2 gap-3">
