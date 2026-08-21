@@ -30,7 +30,19 @@ export const GiteNavigation: React.FC<{
     </div>
     <div className="gite-nav-links">
       {links.map((module) => <button key={module.id} onClick={() => document.getElementById(module.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>{config.navLabels?.[module.id] || module.label}</button>)}
-      {config.navCta?.visible && config.navCta.link && <a className="gite-nav-cta" href={config.navCta.link} target="_blank" rel="noopener noreferrer">{config.navCta.label || 'Réserver'}</a>}
+      {config.navCta?.visible && config.navCta.link && (
+        <a
+          className={`gite-nav-cta${config.navCta.imageUrl ? ' gite-nav-cta-image' : ''}${config.navCta.hoverEffect ? ` hover-${config.navCta.hoverEffect}` : ''}`}
+          href={config.navCta.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={config.navCta.label || 'Réserver'}
+        >
+          {config.navCta.imageUrl ? (
+            <img src={config.navCta.imageUrl} alt={config.navCta.label || 'Réserver'} />
+          ) : (config.navCta.label || 'Réserver')}
+        </a>
+      )}
       <button className="gite-nav-admin" onClick={onAdmin} aria-label={isAdminLoggedIn ? 'Se déconnecter' : 'Administration'} title={isAdminLoggedIn ? 'Se déconnecter' : 'Administration'}>
         {isAdminLoggedIn ? <LogOut size={15}/> : (config.navAdminLabel && config.navAdminLabel !== '⌂' ? config.navAdminLabel : <Settings2 size={15}/>)}
       </button>

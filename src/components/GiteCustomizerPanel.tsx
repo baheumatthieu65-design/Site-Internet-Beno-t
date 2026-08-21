@@ -10,6 +10,7 @@ const makeId = () => `gite-module-${Date.now()}-${Math.random().toString(36).sli
 
 export const GiteCustomizerPanel:React.FC<Props>=({value,onChange})=>{
   const [uploading,setUploading]=useState<string|null>(null);
+  const [uploadingNavCta,setUploadingNavCta]=useState(false);
   const c=value||defaultGiteConfig;
   const modules=c.modules||[];
   const navOrder=c.navOrder?.length ? c.navOrder : modules.map(m=>m.id);
@@ -43,6 +44,18 @@ export const GiteCustomizerPanel:React.FC<Props>=({value,onChange})=>{
     const reordered=list.map(moduleId=>moduleById.get(moduleId)).filter(Boolean) as GiteModuleConfig[];
     update({navOrder:list,modules:reordered});
   };
+  const uploadNavCtaImage=async(file:File)=>{
+    setUploadingNavCta(true);
+    try{
+      const prepared=await prepareImageForUpload(file);
+      const form=new FormData(); form.append('file',prepared);
+      const r=await fetch('/api/site-media',{method:'POST',credentials:'include',body:form});
+      const d=await r.json().catch(()=>null);
+      if(!r.ok||!d?.url) throw new Error(d?.error||`Upload : HTTP ${r.status}`);
+      update({navCta:{...(c.navCta||{label:'Réserver',link:'',visible:true}),imageUrl:String(d.url)}});
+    }catch(e){alert(e instanceof Error?e.message:'Upload impossible.')}finally{setUploadingNavCta(false)}
+  };
+
   const upload=async(id:string,file:File,type:'image'|'video')=>{
     setUploading(id); try{
       const prepared=type==='image'?await prepareImageForUpload(file):file;
@@ -104,6 +117,23 @@ export const GiteCustomizerPanel:React.FC<Props>=({value,onChange})=>{
       <div className="grid md:grid-cols-2 gap-3">
         <label className="text-xs text-[#a3b1a5]">Texte du bouton<input value={c.navCta?.label||'Réserver'} onChange={e=>update({navCta:{...(c.navCta||{label:'Réserver',link:'',visible:true}),label:e.target.value}})} className="mt-2 w-full rounded-lg bg-[#101510] border border-[#344237] px-3 py-2 text-white"/></label>
         <label className="text-xs text-[#a3b1a5]">Lien du bouton<input value={c.navCta?.link||''} onChange={e=>update({navCta:{...(c.navCta||{label:'Réserver',visible:true}),link:e.target.value}})} placeholder="https://..." className="mt-2 w-full rounded-lg bg-[#101510] border border-[#344237] px-3 py-2 text-white"/></label>
+      </div>
+      <div className="grid md:grid-cols-2 gap-3">
+        <div className="rounded-xl border border-[#344237] bg-[#101510] p-3 space-y-2">
+          <div className="text-xs text-[#a3b1a5]">Affichage du bouton</div>
+          <div className="text-[11px] text-[#87968a]">Tu peux garder le bouton texte ou le remplacer par une image.</div>
+          <label className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#536258] bg-[#18201a] px-3 py-2 text-xs text-white">
+            <Upload size={14}/>{uploadingNavCta?'Upload…':'Choisir une image'}
+            <input type="file" accept="image/*" className="hidden" onChange={e=>{const f=e.target.files?.[0];if(f)void uploadNavCtaImage(f)}}/>
+          </label>
+          {c.navCta?.imageUrl && <div className="flex items-center gap-2">
+            <img src={c.navCta.imageUrl} alt="Aperçu bouton" className="h-12 w-24 rounded-lg object-contain bg-white/5 border border-[#344237]"/>
+            <button type="button" onClick={()=>update({navCta:{...(c.navCta||{label:'Réserver',link:'',visible:true}),imageUrl:undefined}})} className="rounded-lg border border-red-900/70 bg-red-950/30 px-3 py-2 text-xs text-red-200">Retirer</button>
+          </div>}
+        </div>
+        <label className="text-xs text-[#a3b1a5]">Effet au survol<select value={c.navCta?.hoverEffect||'none'} onChange={e=>update({navCta:{...(c.navCta||{label:'Réserver',link:'',visible:true}),hoverEffect:e.target.value as any}})} className="mt-2 w-full rounded-lg bg-[#101510] border border-[#344237] px-3 py-2 text-white">
+          <option value="none">Aucun</option><option value="opacity">Opacité</option><option value="scale">Zoom léger</option><option value="brightness">Luminosité</option><option value="grayscale">Niveaux de gris</option><option value="lift">Élévation</option>
+        </select></label>
       </div>
     </div>
   </div>;

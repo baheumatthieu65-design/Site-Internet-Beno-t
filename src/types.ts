@@ -460,6 +460,10 @@ export interface GiteNavCta {
   label: string;
   link: string;
   visible: boolean;
+  /** Remplace le bouton texte par une image dans la navigation. */
+  imageUrl?: string;
+  /** Effet appliqué au survol de l'image. */
+  hoverEffect?: 'none' | 'opacity' | 'scale' | 'brightness' | 'grayscale' | 'lift';
 }
 
 
