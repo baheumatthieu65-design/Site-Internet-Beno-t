@@ -1658,10 +1658,10 @@ export const publishedSiteContent = {
       },
       "gite": {
         "imageUrl": "/assets/persistent-media-2.png",
-        "text": "GÎTE DES\nPYRER",
+        "text": "GÎTE DES\nPYRÈNEES",
         "secondaryText": "Un espace de détente",
         "fontFamily": "sans",
-        "textColor": "#f3ece0",
+        "textColor": "#be9756",
         "textSize": "20px",
         "imageSize": 58,
         "gap": 12,
@@ -2105,5 +2105,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787324294793
+  "publishedAt": 1787324398512
 } as const;
