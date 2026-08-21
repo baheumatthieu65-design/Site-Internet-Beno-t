@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { initialBrandData } from '../data/brandData';
 import { createPortal } from 'react-dom';
 import { JacketModel, Hotspot, ThemeConfig, ProductBlockId } from '../types';
 import {
@@ -34,6 +35,18 @@ import {
   getContainerWidthClass,
 } from '../utils/themeStyles';
 
+const rawProductNameFromId = (id: string) => {
+  const known: Record<string, string> = {
+    'veste-des-cimes': 'La Veste des Cimes',
+    'veste-des-cimes-enfant': 'La Veste des Cimes Enfant',
+    'manteau-pastorale': 'Le Manteau Pastorale',
+  };
+  if (known[id]) return known[id];
+  return String(id || '')
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase()) || 'Article';
+};
+
 interface JacketsShowcaseProps {
   jackets: JacketModel[];
   selectedJacketId: string;
@@ -63,12 +76,50 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   sectionBackgroundOpacity = 100,
   sectionBackgroundMedia,
 }) => {
-  // Les trois statuts restent visibles sur la vitrine ; l'ordre commercial
-  // est En vente → Bientôt disponible → Épuisé.
-  const visibleJackets = sortProductsByAvailability(
-    Array.isArray(jackets) ? jackets : []
-  );
-  const activeJacket = visibleJackets.find((j) => j.id === selectedJacketId) || visibleJackets[0] || jackets[0];
+  // Showcase : les produits épuisés sont masqués. Les autres suivent
+  // l'ordre commercial En vente → Bientôt disponible, puis leur numéro de modèle.
+  const orderedJackets = sortProductsByAvailability(Array.isArray(jackets) ? jackets : []);
+  const visibleJackets = orderedJackets
+    .filter((j) => getProductAvailabilityStatus(j) !== 'sold-out')
+    .sort((a, b) => {
+      const modelNumber = (product: JacketModel) => {
+        const source = `${product.subTitle || ''} ${product.name || ''}`;
+        const match = source.match(/mod[eè]le\s*n[°ºo]?\s*(\d+)/i) || source.match(/n[°ºo]\s*(\d+)/i);
+        return match ? Number(match[1]) : 9999;
+      };
+      const statusRank = (product: JacketModel) => getProductAvailabilityStatus(product) === 'on-sale' ? 0 : 1;
+      return statusRank(a) - statusRank(b) || modelNumber(a) - modelNumber(b);
+    });
+  const activeJacket = visibleJackets.find((j) => j.id === selectedJacketId) || visibleJackets[0] || null;
+
+  const displayProductName = (product: JacketModel) => {
+    const raw = String(product.name || '').trim();
+    const generic = /^(maison\s+mailha(?:gut)?|maison\s+des\s+pyrenees)$/i.test(raw);
+    if (!generic) return raw;
+    const extended = product as JacketModel & { title?: string; productName?: string; displayName?: string; label?: string };
+    const explicit = [extended.title, extended.productName, extended.displayName, extended.label]
+      .map((value) => String(value || '').trim())
+      .find((value) => value && !/^(maison\s+mailha(?:gut)?|maison\s+des\s+pyrenees)$/i.test(value));
+    if (explicit) return explicit;
+    const source = `${product.subTitle || ''} ${product.name || ''}`;
+    const modelMatch = source.match(/mod[eè]le\s*n[°ºo]?\s*(\d+)/i) || source.match(/n[°ºo]\s*(\d+)/i);
+    if (modelMatch) {
+      const modelNumber = Number(modelMatch[1]);
+      const fallbackProduct = (initialBrandData.jackets || []).find((candidate) => {
+        const candidateSource = `${candidate.subTitle || ''} ${candidate.name || ''}`;
+        const candidateMatch = candidateSource.match(/mod[eè]le\s*n[°ºo]?\s*(\d+)/i) || candidateSource.match(/n[°ºo]\s*(\d+)/i);
+        return candidateMatch && Number(candidateMatch[1]) === modelNumber;
+      });
+      if (fallbackProduct?.name) return fallbackProduct.name;
+    }
+    return rawProductNameFromId(product.id);
+  };
+
+  const modelNumberLabel = (product: JacketModel) => {
+    const source = `${product.subTitle || ''} ${product.name || ''}`;
+    const match = source.match(/mod[eè]le\s*n[°ºo]?\s*(\d+)/i) || source.match(/n[°ºo]\s*(\d+)/i);
+    return match ? match[1] : '';
+  };
   const [activeImage, setActiveImage] = useState(activeJacket?.heroImage || '');
   const [selectedColor, setSelectedColor] = useState(activeJacket?.colors[0]?.name || '');
   const [selectedSize, setSelectedSize] = useState(activeJacket?.sizes[1] || 'M');
@@ -477,9 +528,9 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                   }`}
                 >
                   <span className="w-5 h-5 rounded-full bg-black/40 text-[#d4af37] font-serif text-xs flex items-center justify-center font-bold">
-                    N°{idx + 1}
+                    N°{modelNumberLabel(j) || (idx + 1)}
                   </span>
-                  <span>{j.name}</span>
+                  <span>{displayProductName(j)}</span>
                 </button>
               );
             })}
@@ -498,7 +549,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                 <div className="relative h-full w-full flex items-center justify-center overflow-hidden cursor-zoom-in"
                   onClick={() => setIsImageLightboxOpen(true)}
                   title="Cliquer pour agrandir">
-                  <img data-vce-gallery-main="true" data-vce-gallery-product-id={activeJacket.id} src={activeImage} alt={activeJacket.name} className="w-full h-full object-cover object-center transition-all duration-500" />
+                  <img data-vce-gallery-main="true" data-vce-gallery-product-id={activeJacket.id} src={activeImage} alt={displayProductName(activeJacket)} className="w-full h-full object-cover object-center transition-all duration-500" />
                 </div>
                 {activeJacket.hotspots.map((hs) => {
                   const isSelected = activeHotspot?.id === hs.id;
@@ -541,7 +592,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                 <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#354238] pb-4">
                   <div className="min-w-0">
                     <span className="text-[10px] uppercase tracking-[0.2em] text-[#d4af37]">{activeJacket.showcaseEyebrow || activeJacket.category}</span>
-                    <h3 className="font-serif text-2xl sm:text-4xl text-[#f3ece0] font-normal mt-1">{activeJacket.name}</h3>
+                    <h3 className="font-serif text-2xl sm:text-4xl text-[#f3ece0] font-normal mt-1">{displayProductName(activeJacket)}</h3>
                     <p className="text-xs text-[#a8b5a9] mt-1 line-clamp-2">{activeJacket.subTitle || activeJacket.tagline}</p>
                   </div>
                   <div className="text-right shrink-0">
@@ -607,7 +658,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
           <div className="space-y-10 max-w-5xl mx-auto">
             {/* Massive Hero Photo */}
             <div className="relative rounded-3xl overflow-hidden border border-[#3d4c40] bg-[#121613] shadow-2xl h-[480px] sm:h-[600px]">
-              <img src={activeImage} alt={activeJacket.name} className="w-full h-full object-cover object-center" />
+              <img src={activeImage} alt={displayProductName(activeJacket)} className="w-full h-full object-cover object-center" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#121613] via-[#121613]/30 to-transparent" />
               
               <div className="absolute bottom-8 left-6 right-6 sm:left-10 sm:right-10 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
@@ -729,7 +780,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
             <div className={`p-6 rounded-2xl ${cardStyle.card} flex flex-col md:flex-row items-center justify-between gap-6`}>
               <div className="space-y-1">
                 <span className="text-xs uppercase tracking-widest text-[#d4af37]">{activeJacket.category}</span>
-                <h3 className="font-serif text-2xl text-[#f3ece0]">{activeJacket.name}</h3>
+                <h3 className="font-serif text-2xl text-[#f3ece0]">{displayProductName(activeJacket)}</h3>
                 <p className="text-xs text-[#a3b0a2] max-w-xl">{activeJacket.description}</p>
               </div>
               <div className="flex items-center space-x-4">

@@ -55,6 +55,25 @@ const sanitizeHeroEditorConfig = (config: SiteEditorConfig): SiteEditorConfig =>
   ),
 });
 
+const getProductModelNumber = (product: { subTitle?: string; name?: string }, fallback = 9999) => {
+  const source = `${product.subTitle || ''} ${product.name || ''}`;
+  const match = source.match(/mod[eè]le\s*n[°ºo]?\s*(\d+)/i) || source.match(/n[°ºo]\s*(\d+)/i);
+  return match ? Number(match[1]) : fallback;
+};
+
+const getDefaultShowcaseProductId = (products: Array<{ id: string; subTitle?: string; name?: string; isAvailable?: boolean; availabilityStatus?: string }>) => {
+  const visible = products.filter((product) => {
+    const status = product.availabilityStatus || (product.isAvailable === false ? 'sold-out' : 'on-sale');
+    return status !== 'sold-out';
+  });
+  const rank = (product: { availabilityStatus?: string; isAvailable?: boolean }) => {
+    const status = product.availabilityStatus || (product.isAvailable === false ? 'sold-out' : 'on-sale');
+    return status === 'on-sale' ? 0 : status === 'coming-soon' ? 1 : 2;
+  };
+  const ordered = [...visible].sort((a, b) => rank(a) - rank(b) || getProductModelNumber(a) - getProductModelNumber(b));
+  return (ordered[0] || products[0])?.id || '';
+};
+
 type CustomizerTab =
   | 'brand'
   | 'articles'
@@ -100,7 +119,7 @@ export default function App() {
   // ===========================================================================
 
   const [selectedJacketId, setSelectedJacketId] = useState<string>(
-    brandData.jackets?.[0]?.id || ''
+    getDefaultShowcaseProductId(brandData.jackets || [])
   );
 
   // ===========================================================================
@@ -609,7 +628,7 @@ export default function App() {
 
     setBrandData(resetData);
 
-    setSelectedJacketId(resetData.jackets?.[0]?.id || '');
+    setSelectedJacketId(getDefaultShowcaseProductId(resetData.jackets || []));
 
     try {
       localStorage.removeItem('pyrenees_brand_config');
@@ -683,7 +702,7 @@ export default function App() {
           if (currentId && jackets.some((product: { id?: string }) => product.id === currentId)) {
             return currentId;
           }
-          return jackets[0]?.id || currentId;
+          return getDefaultShowcaseProductId(jackets) || currentId;
         });
       }
 
@@ -795,7 +814,7 @@ export default function App() {
           return currentId;
         }
 
-        return products[0]?.id || '';
+        return getDefaultShowcaseProductId(products) || '';
       });
     } catch (error) {
       console.warn(

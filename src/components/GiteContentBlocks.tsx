@@ -88,7 +88,26 @@ export const GiteContentBlocks: React.FC<Props> = ({ moduleId, blocks = [], edit
 
       if (block.type === 'image' && block.url) return <div key={block.id} className="gite-content-block" style={style} {...dragProps}><img src={block.url} alt={block.alt || ''} className="w-full rounded-2xl shadow-2xl border border-black/10" style={{ objectFit: block.objectFit || 'contain', display: 'block', height: block.height ? '100%' : 'auto' }} /></div>;
       if (block.type === 'video' && block.url) return <div key={block.id} className="gite-content-block" style={style} {...dragProps}><video src={block.url} controls playsInline className="w-full h-full rounded-2xl shadow-2xl border border-black/10" /></div>;
-      if (block.type === 'button') return <div key={block.id} className="gite-content-block" style={style} {...dragProps}><a href={block.link || '#'} target="_blank" rel="noopener noreferrer" onClick={(e) => { if (editable) e.preventDefault(); }} className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#24231f] text-white border border-[#8c6e3f] shadow-xl no-underline hover:bg-[#8c6e3f] transition-colors">{block.text || 'Réserver'}</a></div>;
+      if (block.type === 'button') {
+        const imageEnabled = !!(block as any).buttonImageEnabled && !!(block as any).buttonImageUrl;
+        const hoverEffect = (block as any).buttonHoverEffect || 'scale';
+        const hoverClass = hoverEffect === 'opacity'
+          ? 'hover:opacity-70'
+          : hoverEffect === 'scale'
+            ? 'hover:scale-105'
+            : hoverEffect === 'brightness'
+              ? 'hover:brightness-125'
+              : hoverEffect === 'grayscale'
+                ? 'hover:grayscale'
+                : hoverEffect === 'lift'
+                  ? 'hover:-translate-y-1'
+                  : '';
+        return <div key={block.id} className="gite-content-block" style={style} {...dragProps}>
+          <a href={block.link || '#'} target="_blank" rel="noopener noreferrer" onClick={(e) => { if (editable) e.preventDefault(); }} className={`inline-flex items-center justify-center no-underline transition-all duration-200 ${imageEnabled ? hoverClass : 'px-6 py-3 rounded-xl bg-[#24231f] text-white border border-[#8c6e3f] shadow-xl hover:bg-[#8c6e3f]'}`}>
+            {imageEnabled ? <img src={(block as any).buttonImageUrl} alt={block.text || 'Bouton'} className="block max-h-full max-w-full object-contain rounded-xl" draggable={false} /> : (block.text || 'Réserver')}
+          </a>
+        </div>;
+      }
       return <div key={block.id} className="gite-content-block" style={style} {...dragProps}>{block.text || ''}</div>;
     })}
   </>;

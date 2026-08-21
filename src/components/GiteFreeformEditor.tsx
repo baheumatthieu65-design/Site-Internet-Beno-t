@@ -61,6 +61,7 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
   const [selectedModuleId, setSelectedModuleId] = useState(value.modules?.[0]?.id || '');
   const [draggedListId, setDraggedListId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [buttonImageUploading, setButtonImageUploading] = useState(false);
   const blocks = value.contentBlocks || [];
   useEffect(() => { if (value.modules?.length && !value.modules.some((m) => m.id === selectedModuleId)) setSelectedModuleId(value.modules[0].id); }, [value.modules, selectedModuleId]);
   const selected = blocks.find((b) => b.id === selectedId) || null;
@@ -135,6 +136,24 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
     } catch (e) { window.alert(e instanceof Error ? e.message : 'Upload impossible.'); }
   };
 
+  const uploadButtonImage = async (file: File) => {
+    if (!selected || selected.type !== 'button') return;
+    setButtonImageUploading(true);
+    try {
+      const prepared = await prepareImageForUpload(file);
+      const form = new FormData();
+      form.append('file', prepared);
+      const r = await fetch('/api/site-media', { method: 'POST', credentials: 'include', body: form });
+      const d = await r.json().catch(() => null);
+      if (!r.ok || !d?.url) throw new Error(d?.error || `Upload : HTTP ${r.status}`);
+      updateBlock(selected.id, { buttonImageUrl: String(d.url), buttonImageEnabled: true } as any);
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : 'Upload impossible.');
+    } finally {
+      setButtonImageUploading(false);
+    }
+  };
+
   const save = async () => {
     if (!onSave) return;
     setSaving(true);
@@ -185,6 +204,34 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
 
               {(selected.type === 'text' || selected.type === 'heading' || selected.type === 'button') && <label className="text-[11px] text-[#a3b1a5]">Texte<textarea value={selected.text || ''} onChange={e=>updateBlock(selected.id,{text:e.target.value})} rows={3} className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-3 py-2 text-white"/></label>}
               {selected.type === 'button' && <label className="text-[11px] text-[#a3b1a5]">Lien<input value={selected.link || ''} onChange={e=>updateBlock(selected.id,{link:e.target.value})} placeholder="https://..." className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-3 py-2 text-white"/></label>}
+              {selected.type === 'button' && (
+                <div className="rounded-xl border border-[#3d4b40] bg-[#141b16] p-3 space-y-3">
+                  <label className="flex items-center gap-2 text-[11px] text-[#a3b1a5]">
+                    <input type="checkbox" checked={!!(selected as any).buttonImageEnabled} onChange={e=>updateBlock(selected.id,{buttonImageEnabled:e.target.checked} as any)} />
+                    Remplacer le bouton par une image
+                  </label>
+                  <label className="block rounded-lg border border-dashed border-[#536258] p-3 text-center text-xs cursor-pointer">
+                    <input type="file" accept="image/*" className="hidden" onChange={e=>{const f=e.target.files?.[0]; if(f) void uploadButtonImage(f)}}/>
+                    {buttonImageUploading ? 'Import de l’image…' : ((selected as any).buttonImageUrl ? 'Remplacer l’image du bouton' : 'Choisir l’image du bouton')}
+                  </label>
+                  {(selected as any).buttonImageUrl && (
+                    <div className="flex items-center gap-3">
+                      <img src={(selected as any).buttonImageUrl} alt="Aperçu du bouton" className="h-14 w-24 rounded-lg object-contain bg-black/20 border border-[#344237]"/>
+                      <button type="button" onClick={()=>updateBlock(selected.id,{buttonImageUrl:'',buttonImageEnabled:false} as any)} className="rounded-lg border border-red-900/70 bg-red-950/30 px-3 py-2 text-xs text-red-200">Retirer</button>
+                    </div>
+                  )}
+                  <label className="text-[11px] text-[#a3b1a5] block">Effet au survol
+                    <select value={(selected as any).buttonHoverEffect || 'scale'} onChange={e=>updateBlock(selected.id,{buttonHoverEffect:e.target.value} as any)} className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-2 py-2 text-white">
+                      <option value="none">Aucun effet</option>
+                      <option value="opacity">Opacité</option>
+                      <option value="scale">Zoom léger</option>
+                      <option value="brightness">Luminosité</option>
+                      <option value="grayscale">Niveaux de gris</option>
+                      <option value="lift">Élévation</option>
+                    </select>
+                  </label>
+                </div>
+              )}
               {selected.type === 'image' && <label className="block rounded-xl border border-dashed border-[#536258] p-3 text-center text-xs cursor-pointer"><input type="file" accept="image/*" className="hidden" onChange={e=>{const f=e.target.files?.[0]; if(f) void upload('image',f)}}/>Importer une image</label>}
               {selected.type === 'video' && <label className="block rounded-xl border border-dashed border-[#536258] p-3 text-center text-xs cursor-pointer"><input type="file" accept=".mp4,.webm,video/mp4,video/webm" className="hidden" onChange={e=>{const f=e.target.files?.[0]; if(f) void upload('video',f)}}/>Importer une vidéo</label>}
 
