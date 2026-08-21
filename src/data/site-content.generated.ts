@@ -729,6 +729,35 @@ export const publishedSiteContent = {
           "objectFit": "cover",
           "visible": true,
           "autoSize": true
+        },
+        {
+          "id": "gite-block-1787320988721-9yv5i1",
+          "moduleId": "gite-region",
+          "type": "text",
+          "x": 51.927083333333336,
+          "y": 79.75308641975309,
+          "width": 30,
+          "height": 18,
+          "text": "Consulter les disponibilités",
+          "link": "",
+          "url": "",
+          "fontSize": 80,
+          "color": "#000000",
+          "align": "left",
+          "fontFamily": "Dancing Script",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "transparent",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true,
+          "autoSize": true
         }
       ],
       "navBackgroundColor": "#000000",
@@ -1624,5 +1653,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787320985981
+  "publishedAt": 1787321035996
 } as const;
