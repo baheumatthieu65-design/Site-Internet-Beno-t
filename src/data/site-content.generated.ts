@@ -164,8 +164,8 @@ export const publishedSiteContent = {
           "id": "gite-block-1787299500338-81jgno",
           "moduleId": "gite-experience",
           "type": "text",
-          "x": 48,
-          "y": 50,
+          "x": 16.666664817116477,
+          "y": 75.0776788394956,
           "width": 30,
           "height": 18,
           "text": "Test",
@@ -179,6 +179,34 @@ export const publishedSiteContent = {
           "lineHeight": 1.45,
           "italic": false,
           "backgroundColor": "rgba(255,255,255,0.88)",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true
+        },
+        {
+          "id": "gite-block-1787299527579-opaq5p",
+          "moduleId": "gite-experience",
+          "type": "heading",
+          "x": 17.25,
+          "y": 14.516216287433565,
+          "width": 30,
+          "height": 18,
+          "text": "Nouveau titre",
+          "link": "",
+          "url": "",
+          "fontSize": 34,
+          "color": "#aa0004",
+          "align": "left",
+          "fontFamily": "display",
+          "fontWeight": 500,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "",
           "borderColor": "#8c6e3f",
           "borderWidth": 0,
           "borderRadius": 18,
@@ -1091,5 +1119,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787299517700
+  "publishedAt": 1787299610513
 } as const;
