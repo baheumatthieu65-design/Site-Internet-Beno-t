@@ -264,7 +264,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
               </span>
             </div>
             <h3 className="font-serif text-3xl sm:text-4xl text-[#f3ece0] font-normal mt-1">
-              {activeJacket.name}
+              {displayProductName(activeJacket)}
             </h3>
             {activeJacket.tagline && (
               <p className="text-sm text-[#c2a26d] italic font-serif mt-1">
@@ -806,7 +806,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
               <div
                 role="dialog"
                 aria-modal="true"
-                aria-label={`Vue agrandie de ${activeJacket.name}`}
+                aria-label={`Vue agrandie de ${displayProductName(activeJacket)}`}
                 onClick={() => setIsImageLightboxOpen(false)}
                 className="showcase-lightbox fixed inset-0 z-[10000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn cursor-zoom-out"
               >
@@ -816,7 +816,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                 >
                   <img
                     src={activeImage}
-                    alt={`${activeJacket.name} — vue agrandie`}
+                    alt={`${displayProductName(activeJacket)} — vue agrandie`}
                     className="block w-full max-h-[88vh] object-contain"
                   />
                   <button

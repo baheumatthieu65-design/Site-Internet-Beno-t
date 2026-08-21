@@ -1041,8 +1041,15 @@ export default function App() {
   const handleOpenEditor = (
     tab: CustomizerTab = 'theme'
   ) => {
+    // Depuis la page Gîte, l'ouverture du panneau général doit arriver
+    // directement sur son onglet Gîte. La Boutique conserve son onglet
+    // habituel. Un onglet explicitement demandé (sécurité, articles, etc.)
+    // reste prioritaire.
+    const effectiveTab: CustomizerTab =
+      isGitePageOpen && tab === 'theme' ? 'gite' : tab;
+
     if (isAdminLoggedIn) {
-      setCustomizerTab(tab);
+      setCustomizerTab(effectiveTab);
       setIsCustomizerOpen(true);
       return;
     }

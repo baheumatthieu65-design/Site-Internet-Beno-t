@@ -199,6 +199,11 @@ export const SiteVisualEditor: React.FC<Props> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [editorPage, setEditorPage] = useState<'boutique' | 'gite'>(isGitePage ? 'gite' : 'boutique');
+  // Le panneau suit la page actuellement affichée : lorsqu'on passe au Gîte,
+  // son éditeur s'ouvre directement sur l'onglet Gîte au prochain affichage.
+  useEffect(() => {
+    setEditorPage(isGitePage ? 'gite' : 'boutique');
+  }, [isGitePage]);
   const [giteFreeformOpen, setGiteFreeformOpen] = useState(false);
   const [siteEditorMinimized, setSiteEditorMinimized] = useState(false);
   const [panelPosition, setPanelPosition] = useState<{ x: number; y: number } | null>(null);
@@ -824,7 +829,7 @@ export const SiteVisualEditor: React.FC<Props> = ({
               <div className="mt-3 space-y-3">
                 {adminToolbar && <div>{adminToolbar}</div>}
                 {onOpenCustomizer && (
-                  <button type="button" onClick={() => onOpenCustomizer('theme')} className="w-full rounded-xl border border-[#d4af37]/60 bg-[#263129] px-4 py-2.5 text-xs font-semibold text-[#d4af37]">
+                  <button type="button" onClick={() => onOpenCustomizer(isGitePage ? 'gite' : 'theme')} className="w-full rounded-xl border border-[#d4af37]/60 bg-[#263129] px-4 py-2.5 text-xs font-semibold text-[#d4af37]">
                     <Settings2 size={14} className="inline mr-2" /> Personnaliser la Boutique
                   </button>
                 )}
