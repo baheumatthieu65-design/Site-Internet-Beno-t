@@ -499,6 +499,35 @@ export const publishedSiteContent = {
           "visible": true
         },
         {
+          "id": "gite-block-1787320775735-3etfpf",
+          "moduleId": "gite-le-gite",
+          "type": "text",
+          "x": 32.5,
+          "y": 28.965517241379313,
+          "width": 30,
+          "height": 18,
+          "text": "LES ESSENTIELS",
+          "link": "",
+          "url": "",
+          "fontSize": 18,
+          "color": "#000000",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "transparent",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true,
+          "autoSize": true
+        },
+        {
           "id": "gite-block-1787320471167-nwoxst",
           "moduleId": "gite-le-gite",
           "type": "image",
@@ -1479,5 +1508,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787320768723
+  "publishedAt": 1787320809186
 } as const;
