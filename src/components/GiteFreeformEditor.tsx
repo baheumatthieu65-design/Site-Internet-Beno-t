@@ -4,11 +4,6 @@ import { Grip, Image as ImageIcon, Save, Type, Video, X, Link as LinkIcon, Plus,
 import type { GiteContentBlock, GiteContentBlockType, GiteSiteConfig } from '../types';
 import { prepareImageForUpload, uploadBackgroundVideo } from '../utils/mediaUpload';
 
-const moduleOptions = [
-  ['gite-hero','Le gîte — Accueil'],['gite-experience','Le gîte'],['gite-gallery','Galerie'],['gite-video','Vidéo'],
-  ['gite-essentials','Équipements'],['gite-nearby','La région'],['gite-stay','Séjourner'],['gite-access','Accès'],
-] as const;
-
 const makeId = () => `gite-block-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 const newBlock = (type: GiteContentBlockType, moduleId: string): GiteContentBlock => ({
   id: makeId(), moduleId, type, x: 50, y: 50,
@@ -33,9 +28,11 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
   const [dragging, setDragging] = useState(false);
   const dragRef = useRef<{ sx: number; sy: number; ox: number; oy: number; w: number; h: number } | null>(null);
   const [selectedId, setSelectedId] = useState(value.contentBlocks?.[0]?.id || '');
-  const [selectedModuleId, setSelectedModuleId] = useState(moduleOptions[0][0]);
+  const moduleOptions = (value.modules || []).map((m) => [m.id, m.label] as const);
+  const [selectedModuleId, setSelectedModuleId] = useState(value.modules?.[0]?.id || '');
   const [saving, setSaving] = useState(false);
   const blocks = value.contentBlocks || [];
+  useEffect(() => { if (value.modules?.length && !value.modules.some((m) => m.id === selectedModuleId)) setSelectedModuleId(value.modules[0].id); }, [value.modules, selectedModuleId]);
   const selected = blocks.find((b) => b.id === selectedId) || null;
   const moduleBlocks = blocks.filter((b) => b.moduleId === selectedModuleId);
   const typeLabel = (b: GiteContentBlock) => b.type === 'heading' ? 'Titre' : b.type === 'text' ? 'Texte' : b.type === 'image' ? 'Image' : b.type === 'video' ? 'Vidéo' : 'Bouton';

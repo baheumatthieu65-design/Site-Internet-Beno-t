@@ -450,8 +450,17 @@ export interface GiteModuleConfig {
   id: string;
   label: string;
   visible: boolean;
+  width?: number;
+  height?: number;
   background?: BackgroundMedia;
 }
+
+export interface GiteNavCta {
+  label: string;
+  link: string;
+  visible: boolean;
+}
+
 
 export interface GiteSiteConfig {
   name: string;
@@ -470,6 +479,9 @@ export interface GiteSiteConfig {
   access: { title: string; text: string };
   modules: GiteModuleConfig[];
   navLabels?: Record<string, string>;
+  navOrder?: string[];
+  navCta?: GiteNavCta;
+  navAdminLabel?: string;
   /** Zones libres déplaçables de la page Gîte. */
   contentBlocks?: GiteContentBlock[];
 }

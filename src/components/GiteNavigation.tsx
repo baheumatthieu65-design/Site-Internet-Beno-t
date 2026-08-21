@@ -1,15 +1,22 @@
 import React from 'react';
-import { pageConfigs, getVisiblePageNavigation } from '../data/pageConfigs';
-import { BrandConfig } from '../types';
+import { ArrowLeft, Settings2 } from 'lucide-react';
+import { BrandConfig, GiteSiteConfig } from '../types';
 import { LogoBlock } from './LogoBlock';
 
 export const GiteNavigation: React.FC<{
   brandData: BrandConfig;
+  config: GiteSiteConfig;
   onBackToVitrine: () => void;
   onAdmin: () => void;
-  labels?: Record<string,string>;
-}> = ({ brandData, onBackToVitrine, onAdmin, labels = {} }) => {
-  const items = getVisiblePageNavigation(pageConfigs.gite);
+}> = ({ brandData, config, onBackToVitrine, onAdmin }) => {
+  const visibleModules = (config.modules || []).filter((m) => m.visible);
+  const order = config.navOrder?.length ? config.navOrder : visibleModules.map((m) => m.id);
+  const ordered = order
+    .map((id) => visibleModules.find((m) => m.id === id))
+    .filter(Boolean) as typeof visibleModules;
+  const extras = visibleModules.filter((m) => !order.includes(m.id));
+  const links = [...ordered, ...extras];
+
   return <nav className="gite-navigation">
     <div className="gite-navigation-logos">
       <LogoBlock brandData={brandData} kind="boutique" compact onClick={onBackToVitrine} />
@@ -17,8 +24,9 @@ export const GiteNavigation: React.FC<{
       <LogoBlock brandData={brandData} kind="gite" compact />
     </div>
     <div className="gite-nav-links">
-      {items.filter(item => item.kind !== 'home').map(item => { const key = item.id.replace('gite-nav-','').replace(/^experience$/,'experience'); const label = labels[key] || item.label; return <button key={item.id} onClick={() => item.targetModuleId && document.getElementById(item.targetModuleId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>{label}</button>; })}
-      <button className="gite-nav-admin" onClick={onAdmin} aria-label="Administration">⌂</button>
+      {links.map((module) => <button key={module.id} onClick={() => document.getElementById(module.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>{config.navLabels?.[module.id] || module.label}</button>)}
+      {config.navCta?.visible && config.navCta.link && <a className="gite-nav-cta" href={config.navCta.link} target="_blank" rel="noopener noreferrer">{config.navCta.label || 'Réserver'}</a>}
+      <button className="gite-nav-admin" onClick={onAdmin} aria-label="Administration" title="Administration">{config.navAdminLabel && config.navAdminLabel !== '⌂' ? config.navAdminLabel : <Settings2 size={15}/>}</button>
     </div>
   </nav>;
 };
