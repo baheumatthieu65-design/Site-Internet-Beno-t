@@ -88,7 +88,7 @@ export const publishedSiteContent = {
           "height": 880,
           "background": {
             "type": "image",
-            "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787325532550-Acc--s-2.jpg",
+            "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787325712707-Acc--s-2.jpg",
             "overlay": 0
           }
         },
@@ -100,7 +100,7 @@ export const publishedSiteContent = {
           "height": 520,
           "background": {
             "type": "image",
-            "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787325500883-acc--s1.jpg",
+            "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787325698167-acc--s1.jpg",
             "overlay": 0
           }
         }
@@ -2105,5 +2105,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787325535234
+  "publishedAt": 1787325714824
 } as const;
