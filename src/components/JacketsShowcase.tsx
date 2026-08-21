@@ -623,7 +623,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                 <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#354238] pb-4">
                   <div className="min-w-0">
                     <span className="text-[10px] uppercase tracking-[0.2em] text-[#d4af37]">{activeJacket.showcaseEyebrow || activeJacket.category}</span>
-                    <h3 className="font-serif text-2xl sm:text-4xl text-[#f3ece0] font-normal mt-1">{displayProductName(activeJacket)}</h3>
+                    <h3 data-vce-dynamic-product-name="true" className="font-serif text-2xl sm:text-4xl text-[#f3ece0] font-normal mt-1">{displayProductName(activeJacket)}</h3>
                     <p className="text-xs text-[#a8b5a9] mt-1 line-clamp-2">{activeJacket.subTitle || activeJacket.tagline}</p>
                   </div>
                   <div className="text-right shrink-0">
@@ -697,7 +697,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                   <span className="text-xs uppercase tracking-widest text-[#d4af37] font-serif font-semibold">
                     {activeJacket.category}
                   </span>
-                  <h3 className="font-serif text-3xl sm:text-5xl text-[#f3ece0] font-normal mt-1">
+                  <h3 data-vce-dynamic-product-name="true" className="font-serif text-3xl sm:text-5xl text-[#f3ece0] font-normal mt-1">
                     {displayProductName(activeJacket)}
                   </h3>
                   <p className="text-sm text-[#d0c5b4] font-serif italic mt-1">
@@ -811,7 +811,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
             <div className={`p-6 rounded-2xl ${cardStyle.card} flex flex-col md:flex-row items-center justify-between gap-6`}>
               <div className="space-y-1">
                 <span className="text-xs uppercase tracking-widest text-[#d4af37]">{activeJacket.category}</span>
-                <h3 className="font-serif text-2xl text-[#f3ece0]">{displayProductName(activeJacket)}</h3>
+                <h3 data-vce-dynamic-product-name="true" className="font-serif text-2xl text-[#f3ece0]">{displayProductName(activeJacket)}</h3>
                 <p className="text-xs text-[#a3b0a2] max-w-xl">{activeJacket.description}</p>
               </div>
               <div className="flex items-center space-x-4">

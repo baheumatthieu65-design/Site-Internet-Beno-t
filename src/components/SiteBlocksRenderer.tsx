@@ -135,11 +135,23 @@ function applyBlock(block: EditorBlock): void {
   html.style.display = '';
 
   if (block.kind === 'text' && block.text != null) {
-    const current = normalizeText(html.textContent || '');
-    const next = normalizeText(block.text);
+    // Les anciens snapshots de l'éditeur peuvent contenir un bloc texte
+    // générique (« Maison Mailha ») qui ciblait autrefois le premier <h3>
+    // du Showcase. Le nom du produit est maintenant piloté dynamiquement
+    // par son ID : ce vieux bloc ne doit donc jamais remplacer l'intitulé
+    // courant de l'article. On conserve toutefois les éventuels styles
+    // enregistrés sur le bloc.
+    const isGenericBrandLabel = /^(maison\\s+mailha(?:gut)?|maison\\s+des\\s+pyrenees)$/i.test(
+      normalizeText(block.text)
+    );
 
-    if (!sameText(current, next)) {
-      html.textContent = block.text;
+    if (!(element instanceof HTMLElement && element.dataset.vceDynamicProductName === 'true' && isGenericBrandLabel)) {
+      const current = normalizeText(html.textContent || '');
+      const next = normalizeText(block.text);
+
+      if (!sameText(current, next)) {
+        html.textContent = block.text;
+      }
     }
   }
 
