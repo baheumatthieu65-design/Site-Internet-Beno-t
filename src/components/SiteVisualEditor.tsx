@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Check, Image as ImageIcon, Loader2, Move, Save, Settings2, Type, X } from 'lucide-react';
+import { Check, Image as ImageIcon, Loader2, LogOut, Move, Save, Settings2, Type, X } from 'lucide-react';
 import type { BrandConfig, GiteSiteConfig, SectionId } from '../types';
 import { GiteFreeformEditor } from './GiteFreeformEditor';
 import { FloatingMediaManager } from './FloatingMediaManager';
@@ -834,6 +834,13 @@ export const SiteVisualEditor: React.FC<Props> = ({
 
           {message && <div className="rounded-lg bg-[#203428] px-3 py-2 text-xs text-[#cfe0d2]"><Check size={14} className="inline mr-1" />{message}</div>}
           {error && <div className="rounded-lg bg-[#3a2222] px-3 py-2 text-xs text-[#f2caca]">{error}</div>}
+          {onLogout && (
+            <div className="border-t border-[#344139] pt-4">
+              <button type="button" onClick={() => void onLogout()} className="w-full rounded-xl border border-red-900/70 bg-red-950/30 px-4 py-2.5 text-xs font-semibold text-red-200 hover:bg-red-950/50">
+                <LogOut size={14} className="inline mr-2" /> Déconnexion
+              </button>
+            </div>
+          )}
         </div>
       </div>
       )}

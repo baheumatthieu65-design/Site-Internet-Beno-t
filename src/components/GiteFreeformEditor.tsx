@@ -5,6 +5,34 @@ import type { GiteContentBlock, GiteContentBlockType, GiteSiteConfig } from '../
 import { prepareImageForUpload, uploadBackgroundVideo } from '../utils/mediaUpload';
 
 const makeId = () => `gite-block-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+const GITE_FONT_OPTIONS = [
+  ['sans', 'Inter'],
+  ['serif', 'Georgia'],
+  ['display', 'DM Serif Display'],
+  ['elegant', 'Playfair Display'],
+  ['Cormorant Garamond', 'Cormorant Garamond'],
+  ['Libre Baskerville', 'Libre Baskerville'],
+  ['Lora', 'Lora'],
+  ['EB Garamond', 'EB Garamond'],
+  ['Cinzel', 'Cinzel'],
+  ['Bodoni Moda', 'Bodoni Moda'],
+  ['Montserrat', 'Montserrat'],
+  ['Merriweather', 'Merriweather'],
+  ['Raleway', 'Raleway'],
+  ['Nunito Sans', 'Nunito Sans'],
+  ['Source Sans 3', 'Source Sans 3'],
+  ['Great Vibes', 'Great Vibes'],
+  ['Allura', 'Allura'],
+  ['Dancing Script', 'Dancing Script'],
+  ['Parisienne', 'Parisienne'],
+  ['Sacramento', 'Sacramento'],
+  ['Berkshire Swash', 'Berkshire Swash'],
+  ['Tangerine', 'Tangerine'],
+  ['mono', 'Monospace'],
+] as const;
+
+const GITE_FONT_URL = 'https://fonts.googleapis.com/css2?family=Allura&family=Berkshire+Swash&family=Bodoni+Moda:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Dancing+Script:wght@400;500;600;700&family=DM+Serif+Display&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Great+Vibes&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@400;500;600;700&family=Nunito+Sans:wght@400;500;600;700&family=Parisienne&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Raleway:wght@400;500;600;700&family=Sacramento&family=Source+Sans+3:wght@400;500;600;700&family=Tangerine:wght@400;700&display=swap';
 const newBlock = (type: GiteContentBlockType, moduleId: string): GiteContentBlock => ({
   id: makeId(), moduleId, type, x: 50, y: 50,
   width: type === 'video' ? 45 : type === 'image' ? 32 : 30,
@@ -61,6 +89,17 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
     dragRef.current = { sx: e.clientX, sy: e.clientY, ox: r.left, oy: r.top, w: r.width, h: r.height };
     setDragging(true);
   };
+
+  useEffect(() => {
+    const existing = document.querySelector<HTMLLinkElement>('link[data-gite-editor-fonts="true"]');
+    if (existing) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = GITE_FONT_URL;
+    link.dataset.giteEditorFonts = 'true';
+    document.head.appendChild(link);
+    return () => { link.remove(); };
+  }, []);
 
   const update = (patch: Partial<GiteSiteConfig>) => onChange({ ...value, ...patch });
   const updateBlock = (id: string, patch: Partial<GiteContentBlock>) => update({ contentBlocks: blocks.map((b) => b.id === id ? { ...b, ...patch } : b) });
@@ -158,7 +197,7 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
               </div>
 
               {(selected.type === 'text' || selected.type === 'heading' || selected.type === 'button') && <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                <label className="text-[11px] text-[#a3b1a5]">Police<select value={selected.fontFamily || 'sans'} onChange={e=>updateBlock(selected.id,{fontFamily:e.target.value})} className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-2 py-2 text-white"><option value="sans">Sans</option><option value="serif">Serif</option><option value="display">DM Serif Display</option><option value="elegant">Playfair</option><option value="mono">Monospace</option></select></label>
+                <label className="text-[11px] text-[#a3b1a5]">Police<select value={selected.fontFamily || 'sans'} onChange={e=>updateBlock(selected.id,{fontFamily:e.target.value})} className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-2 py-2 text-white">{GITE_FONT_OPTIONS.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
                 <label className="text-[11px] text-[#a3b1a5]">Graisse<select value={selected.fontWeight || 400} onChange={e=>updateBlock(selected.id,{fontWeight:Number(e.target.value)})} className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-2 py-2 text-white"><option value={300}>300</option><option value={400}>400</option><option value={500}>500</option><option value={600}>600</option><option value={700}>700</option></select></label>
                 <label className="text-[11px] text-[#a3b1a5]">Couleur<input type="color" value={selected.color || '#24231f'} onChange={e=>updateBlock(selected.id,{color:e.target.value})} className="mt-1 h-9 w-full bg-transparent"/></label>
               </div>}
@@ -167,6 +206,7 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
                 <label className="text-[11px] text-[#a3b1a5]">Fond<input disabled={selected.backgroundColor === 'transparent'} value={selected.backgroundColor === 'transparent' ? 'Transparent' : (selected.backgroundColor || '')} onChange={e=>updateBlock(selected.id,{backgroundColor:e.target.value})} placeholder="rgba(...)" className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-2 py-2 text-white"/></label>
                 <label className="flex items-center gap-2 text-[11px] text-[#a3b1a5]"><input type="checkbox" checked={selected.backgroundColor !== 'transparent'} onChange={e=>updateBlock(selected.id,{backgroundColor:e.target.checked ? 'rgba(255,255,255,0.88)' : 'transparent'})}/> Fond de zone visible</label>
                 <label className="flex items-center gap-2 text-[11px] text-[#a3b1a5]"><input type="checkbox" checked={(selected.borderWidth ?? 0) > 0} onChange={e=>updateBlock(selected.id,{borderWidth:e.target.checked ? 1 : 0})}/> Afficher le contour</label>
+                <label className="text-[11px] text-[#a3b1a5]">Couleur du contour<input type="color" value={selected.borderColor || '#8c6e3f'} onChange={e=>updateBlock(selected.id,{borderColor:e.target.value})} className="mt-1 h-9 w-full rounded bg-transparent"/></label>
                 <label className="flex items-center gap-2 text-[11px] text-[#a3b1a5]"><input type="checkbox" checked={!!selected.autoSize} onChange={e=>updateBlock(selected.id,{autoSize:e.target.checked})}/> Adapter le contour au texte</label>
                 <label className="text-[11px] text-[#a3b1a5]">Opacité<div className="mt-1 flex items-center gap-2"><input type="range" min={0} max={100} value={selected.opacity ?? 100} onChange={e=>updateBlock(selected.id,{opacity:Number(e.target.value)})} className="w-full accent-[#d4af37]"/><span className="w-10 text-right">{selected.opacity ?? 100}%</span></div></label>
                 <label className="text-[11px] text-[#a3b1a5]">Arrondi<input type="number" min={0} max={80} value={selected.borderRadius ?? 18} onChange={e=>updateBlock(selected.id,{borderRadius:Number(e.target.value)})} className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-2 py-2 text-white"/></label>

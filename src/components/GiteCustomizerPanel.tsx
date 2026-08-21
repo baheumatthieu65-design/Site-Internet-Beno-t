@@ -71,7 +71,16 @@ export const GiteCustomizerPanel:React.FC<Props>=({value,onChange})=>{
             <label className="text-[11px] text-[#a3b1a5]">Largeur {m.width??100}%<input type="range" min="50" max="100" value={m.width??100} onChange={e=>updateModule(m.id,{width:Number(e.target.value)})} className="mt-2 w-full accent-[#d4af37]"/></label>
             <label className="text-[11px] text-[#a3b1a5]">Hauteur {m.height??520}px<input type="range" min="180" max="1800" step="10" value={m.height??520} onChange={e=>updateModule(m.id,{height:Number(e.target.value)})} className="mt-2 w-full accent-[#d4af37]"/></label>
           </div>
-          <div className="grid md:grid-cols-3 gap-3 items-end">
+          <div className="grid md:grid-cols-[110px_1fr_1fr] gap-3 items-end">
+            <div className="h-[74px] w-full overflow-hidden rounded-lg border border-[#344237] bg-[#18201a]">
+              {m.background?.type === 'image' && m.background.url ? (
+                <img src={m.background.url} alt={`Aperçu du fond — ${m.label}`} className="h-full w-full object-cover" />
+              ) : m.background?.type === 'video' && m.background.url ? (
+                <video src={m.background.url} muted playsInline className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full items-center justify-center px-2 text-center text-[10px] text-[#718074]">Aucun fond</div>
+              )}
+            </div>
             <label className="text-[11px] text-[#a3b1a5]">Fond<select value={m.background?.type||'none'} onChange={e=>e.target.value==='none'?updateModule(m.id,{background:undefined}):updateModule(m.id,{background:{type:e.target.value as any,url:m.background?.url||'',overlay:m.background?.overlay??0}})} className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-2 py-2 text-white"><option value="none">Blanc / aucun</option><option value="image">Image</option><option value="video">Vidéo</option></select></label>
             {m.background && <label className="text-[11px] text-[#a3b1a5]">Opacité du voile {m.background.overlay??0}%<input type="range" min="0" max="100" value={m.background.overlay??0} onChange={e=>updateModule(m.id,{background:{...m.background!,overlay:Number(e.target.value)}})} className="mt-2 w-full accent-[#d4af37]"/></label>}
             {m.background && <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#536258] bg-[#18201a] px-3 py-2 text-xs text-white"><Upload size={14}/>{uploading===m.id?'Upload…':'Importer un fond'}<input type="file" accept={m.background.type==='video'?'.mp4,.webm,video/mp4,video/webm':'image/*'} className="hidden" onChange={e=>{const f=e.target.files?.[0];if(f)void upload(m.id,f,m.background!.type as any)}}/></label>}

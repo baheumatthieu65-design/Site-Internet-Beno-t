@@ -74,7 +74,7 @@ export const GiteContentBlocks: React.FC<Props> = ({ moduleId, blocks = [], edit
         transform: `translate(-50%, -50%) rotate(${block.rotation || 0}deg)`,
         cursor: editable ? 'move' : undefined,
         touchAction: editable ? 'none' : undefined,
-        zIndex: 100 + moduleBlocks.findIndex((b) => b.id === block.id),
+        zIndex: 10 + moduleBlocks.findIndex((b) => b.id === block.id),
         outline: 'none',
         whiteSpace: ['text', 'heading'].includes(block.type) ? 'pre-wrap' : undefined,
         overflowWrap: 'anywhere',
