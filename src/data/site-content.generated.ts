@@ -106,8 +106,8 @@ export const publishedSiteContent = {
         }
       ],
       "navLabels": {
-        "gite-accueil": "Accueil",
-        "gite-le-gite": "Le gîte",
+        "gite-accueil": "Accueild",
+        "gite-le-gite": "Le d",
         "gite-region": "La région",
         "gite-sejourner": "Séjourner",
         "gite-acces": "Accès"
@@ -2105,5 +2105,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787323788579
+  "publishedAt": 1787323894091
 } as const;
