@@ -107,11 +107,39 @@ export const publishedSiteContent = {
       "navAdminLabel": "⌂",
       "contentBlocks": [
         {
+          "id": "gite-block-1787303939970-q56xv0",
+          "moduleId": "gite-accueil",
+          "type": "image",
+          "x": 12.44791637767445,
+          "y": 74.52083587646484,
+          "width": 20,
+          "height": 48,
+          "text": "Nouvelle zone de texte",
+          "link": "",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787303962427-Art1.png",
+          "fontSize": 18,
+          "color": "#24231f",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "transparent",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "contain",
+          "visible": true
+        },
+        {
           "id": "gite-block-1787303077623-485fcy",
           "moduleId": "gite-accueil",
           "type": "text",
-          "x": 16.9270827553489,
-          "y": 81.05208587646484,
+          "x": 20.7291672446511,
+          "y": 74.86458587646484,
           "width": 30,
           "height": 18,
           "text": "Le Gîte",
@@ -1039,5 +1067,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787303908275
+  "publishedAt": 1787304006326
 } as const;
