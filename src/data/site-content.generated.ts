@@ -102,16 +102,16 @@ export const publishedSiteContent = {
       "navCta": {
         "label": "Réserver",
         "link": "",
-        "visible": false
+        "visible": true
       },
       "navAdminLabel": "⌂",
       "contentBlocks": [
         {
-          "id": "gite-block-1787302889426-trn6d1",
+          "id": "gite-block-1787303077623-485fcy",
           "moduleId": "gite-accueil",
           "type": "text",
-          "x": 19,
-          "y": 76,
+          "x": 50,
+          "y": 50,
           "width": 30,
           "height": 18,
           "text": "Nouvelle zone de texte",
@@ -1037,5 +1037,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787303054644
+  "publishedAt": 1787303538589
 } as const;
