@@ -130,7 +130,7 @@ export const publishedSiteContent = {
           "id": "gite-block-1787303077623-485fcy",
           "moduleId": "gite-accueil",
           "type": "text",
-          "x": 11.927083333333334,
+          "x": 12,
           "y": 71.875,
           "width": 30,
           "height": 18,
@@ -159,7 +159,7 @@ export const publishedSiteContent = {
           "id": "gite-block-1787318829980-hhzoaf",
           "moduleId": "gite-accueil",
           "type": "text",
-          "x": 8.59375,
+          "x": 8,
           "y": 70.125,
           "width": 30,
           "height": 18,
@@ -188,7 +188,7 @@ export const publishedSiteContent = {
           "id": "gite-block-1787318886775-1k9pkt",
           "moduleId": "gite-accueil",
           "type": "text",
-          "x": 15.625,
+          "x": 15,
           "y": 83.40425531914893,
           "width": 30,
           "height": 18,
@@ -2105,5 +2105,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787324189390
+  "publishedAt": 1787324245359
 } as const;
