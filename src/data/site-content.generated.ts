@@ -194,7 +194,7 @@ export const publishedSiteContent = {
         }
       ],
       "navBackgroundColor": "#afadaf",
-      "navOpacity": 23
+      "navOpacity": 0
     },
     "jackets": [
       {
@@ -1086,5 +1086,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787315699627
+  "publishedAt": 1787315710579
 } as const;
