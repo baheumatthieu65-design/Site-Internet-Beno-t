@@ -28,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
         return {
           allowedContentTypes: ['video/mp4', 'video/webm'],
-          maximumSizeInBytes: 25 * 1024 * 1024,
+          maximumSizeInBytes: 100 * 1024 * 1024,
           addRandomSuffix: true,
           tokenPayload: JSON.stringify({ kind: payload.kind }),
         };

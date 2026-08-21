@@ -28,9 +28,9 @@ import {
 } from './components/SiteVisualEditor';
 import { SiteBlocksRenderer } from './components/SiteBlocksRenderer';
 import GitePage from './components/GitePage';
+import UniverseLanding from './components/UniverseLanding';
 import { LogoEditorModal } from './components/LogoEditorModal';
 import { FloatingMediaLayer } from './components/FloatingMediaLayer';
-import { SiteOrientation } from './components/SiteOrientation';
 import './styles/gite-v48.css';
 import './styles/floating-media.css';
 
@@ -211,8 +211,8 @@ export default function App() {
     useState<CustomizerTab>('theme');
 
   const [activeSection, setActiveSection] = useState('collection');
-  const [isGitePageOpen, setIsGitePageOpen] = useState(false);
-  const [showOrientation, setShowOrientation] = useState(true);
+  const [sitePage, setSitePage] = useState<'home' | 'boutique' | 'gite'>('home');
+  const isGitePageOpen = sitePage === 'gite';
 
   // ===========================================================================
   // SECTION DRAG / REORDER
@@ -1693,15 +1693,18 @@ export default function App() {
     );
   };
 
+  const handleOpenBoutique = () => {
+    setSitePage('boutique');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleOpenGite = () => {
-    setShowOrientation(false);
-    setIsGitePageOpen(true);
+    setSitePage('gite');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleBackToVitrine = () => {
-    setShowOrientation(false);
-    setIsGitePageOpen(false);
+    setSitePage('boutique');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -1719,16 +1722,6 @@ export default function App() {
           </span>
         </div>
       </div>
-    );
-  }
-
-  if (showOrientation && !isGitePageOpen) {
-    return (
-      <SiteOrientation
-        brandData={brandData}
-        onOpenBoutique={() => { setShowOrientation(false); setIsGitePageOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-        onOpenGite={handleOpenGite}
-      />
     );
   }
 
@@ -1795,7 +1788,15 @@ export default function App() {
         />
       )}
 
-      {!isGitePageOpen && (
+      {sitePage === 'home' && (
+        <UniverseLanding
+          brandData={brandData}
+          onOpenBoutique={handleOpenBoutique}
+          onOpenGite={handleOpenGite}
+        />
+      )}
+
+      {sitePage === 'boutique' && (
         <>
           <div className="site-navbar-scale">
             <Navbar

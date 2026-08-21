@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Check, Image as ImageIcon, Loader2, Move, Save, Settings2, Type, X } from 'lucide-react';
-import type { BrandConfig, SectionId } from '../types';
+import { createPortal } from 'react-dom';
+import { Check, Image as ImageIcon, Key, Loader2, LogOut, Move, Save, Settings2, Type, X } from 'lucide-react';
+import type { BrandConfig, GiteSiteConfig, SectionId } from '../types';
+import { GiteFreeformEditor } from './GiteFreeformEditor';
 import { FloatingMediaManager } from './FloatingMediaManager';
 import { prepareImageForUpload } from '../utils/mediaUpload';
 
@@ -52,7 +54,14 @@ interface Props {
   config: SiteEditorConfig;
   onChange: (config: SiteEditorConfig) => void;
   onSave: (nextConfig?: SiteEditorConfig) => Promise<void> | void;
-  onOpenCustomizer?: () => void;
+  onOpenCustomizer?: (tab?: 'theme' | 'gite') => void;
+  onOpenLogoEditor?: () => void;
+  onOpenSecurity?: () => void;
+  isGitePage?: boolean;
+  giteConfig?: GiteSiteConfig;
+  onGiteChange?: (config: GiteSiteConfig) => void;
+  onGiteSave?: (config: GiteSiteConfig) => Promise<void> | void;
+  onLogout?: () => void | Promise<void>;
   adminToolbar?: React.ReactNode;
   floatingMediaOpen?: boolean;
   onToggleFloatingMedia?: () => void;
@@ -177,11 +186,21 @@ export const SiteVisualEditor: React.FC<Props> = ({
   onChange,
   onSave,
   onOpenCustomizer,
+  onOpenLogoEditor,
+  onOpenSecurity,
   adminToolbar,
   floatingMediaOpen = false,
   onToggleFloatingMedia,
+  isGitePage = false,
+  giteConfig,
+  onGiteChange,
+  onGiteSave,
+  onLogout,
 }) => {
   const [open, setOpen] = useState(false);
+  const [editorPage, setEditorPage] = useState<'boutique' | 'gite'>(isGitePage ? 'gite' : 'boutique');
+  const [giteFreeformOpen, setGiteFreeformOpen] = useState(false);
+  const [siteEditorMinimized, setSiteEditorMinimized] = useState(false);
   const [panelPosition, setPanelPosition] = useState<{ x: number; y: number } | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{
@@ -217,6 +236,8 @@ export const SiteVisualEditor: React.FC<Props> = ({
   const [libraryLoading, setLibraryLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [giteButtonUploading, setGiteButtonUploading] = useState(false);
+  const [giteButtonOpen, setGiteButtonOpen] = useState(false);
 
   useEffect(() => {
     const movePanel = (event: PointerEvent) => {
@@ -528,6 +549,40 @@ export const SiteVisualEditor: React.FC<Props> = ({
     setSelected(null);
   };
 
+  const updateGiteNavCta = (patch: Partial<NonNullable<GiteSiteConfig['navCta']>>) => {
+    if (!giteConfig || !onGiteChange) return;
+    onGiteChange({
+      ...giteConfig,
+      navCta: {
+        label: giteConfig.navCta?.label || 'Réserver',
+        link: giteConfig.navCta?.link || '',
+        visible: giteConfig.navCta?.visible ?? true,
+        ...giteConfig.navCta,
+        ...patch,
+      },
+    });
+  };
+
+  const uploadGiteButtonImage = async (file: File) => {
+    if (!giteConfig || !onGiteChange) return;
+    setGiteButtonUploading(true);
+    setError('');
+    try {
+      const prepared = await prepareImageForUpload(file);
+      const form = new FormData();
+      form.append('file', prepared);
+      const response = await fetch('/api/site-media', { method: 'POST', credentials: 'include', body: form });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.url) throw new Error(data?.error || `Upload image : HTTP ${response.status}`);
+      updateGiteNavCta({ imageUrl: String(data.url) });
+      setMessage('Image du bouton enregistrée.');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Upload impossible.');
+    } finally {
+      setGiteButtonUploading(false);
+    }
+  };
+
   const save = async () => {
     setSaving(true);
     setError('');
@@ -549,7 +604,7 @@ export const SiteVisualEditor: React.FC<Props> = ({
         type="button"
         data-vce-ignore="true"
         onClick={() => setOpen(true)}
-        className="fixed right-5 bottom-5 z-[1100] h-14 w-14 rounded-full bg-[#1c241f] text-[#d4af37] shadow-2xl border border-[#4a5a4c] flex items-center justify-center"
+        className="fixed right-5 bottom-5 z-[2147483000] h-14 w-14 rounded-full bg-[#1c241f] text-[#d4af37] shadow-2xl border border-[#4a5a4c] flex items-center justify-center"
         title="Éditeur visuel"
       >
         <Settings2 size={23} />
@@ -557,14 +612,19 @@ export const SiteVisualEditor: React.FC<Props> = ({
     );
   }
 
-  return (
+  return createPortal((
     <>
+      {siteEditorMinimized ? (
+        <button type="button" data-vce-ignore="true" onClick={() => setSiteEditorMinimized(false)} className="fixed right-5 bottom-5 z-[2147483000] h-14 w-14 rounded-full bg-[#1c241f] text-[#d4af37] shadow-2xl border border-[#4a5a4c] flex items-center justify-center" title="Rouvrir l’éditeur du site">
+          <Settings2 size={23} />
+        </button>
+      ) : (
       <div
         ref={panelRef}
         data-vce-panel="true"
         data-vce-ignore="true"
         style={panelPosition ? { left: panelPosition.x, top: panelPosition.y, right: 'auto', bottom: 'auto' } : undefined}
-        className="fixed right-4 bottom-4 z-[1100] w-[min(94vw,440px)] max-h-[88vh] overflow-auto rounded-2xl border border-[#536258] bg-[#111613]/98 text-[#f5eedf] shadow-2xl backdrop-blur"
+        className="fixed right-4 bottom-4 z-[2147483000] w-[min(94vw,440px)] max-h-[88vh] overflow-auto rounded-2xl border border-[#536258] bg-[#111613]/98 text-[#f5eedf] shadow-2xl backdrop-blur"
       >
         <div
           onPointerDown={startPanelDrag}
@@ -580,24 +640,13 @@ export const SiteVisualEditor: React.FC<Props> = ({
               </div>
             </div>
 
-            {onOpenCustomizer && (
-              <button
-                type="button"
-                onClick={onOpenCustomizer}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#d4af37]/70 bg-[#263129] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#d4af37] hover:bg-[#334236]"
-              >
-                <Settings2 size={13} />
-                Personnaliser
-              </button>
-            )}
           </div>
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="p-2 shrink-0"
-          >
-            <X size={18} />
-          </button>
+          <div className="flex items-center gap-1">
+            {giteFreeformOpen && <button type="button" onClick={() => setSiteEditorMinimized(true)} className="rounded-lg border border-[#455248] px-2 py-1.5 text-[10px] text-[#c4ceb8] hover:border-[#d4af37] hover:text-[#d4af37]">Réduire</button>}
+            <button type="button" onClick={() => setOpen(false)} className="p-2 shrink-0">
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         <div className="p-4 space-y-4">
@@ -765,12 +814,60 @@ export const SiteVisualEditor: React.FC<Props> = ({
             </div>
           )}
 
-          {adminToolbar && (
-            <div className="border-t border-[#344139] pt-4">
-              <div className="mb-2 text-xs text-[#87968a]">Barre d’administration</div>
-              {adminToolbar}
+          <div className="border-t border-[#344139] pt-4">
+            <div className="grid grid-cols-2 gap-2 rounded-xl bg-[#0d120f] p-1 border border-[#344139]">
+              <button type="button" onClick={() => setEditorPage('boutique')} className={`rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider ${editorPage === 'boutique' ? 'bg-[#d4af37] text-[#111612]' : 'text-[#a3b1a5] hover:text-white'}`}>🛍️ Boutique</button>
+              <button type="button" onClick={() => setEditorPage('gite')} className={`rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider ${editorPage === 'gite' ? 'bg-[#d4af37] text-[#111612]' : 'text-[#a3b1a5] hover:text-white'}`}>🏔️ Gîte</button>
             </div>
-          )}
+
+            {editorPage === 'boutique' && (
+              <div className="mt-3 space-y-3">
+                {adminToolbar && <div>{adminToolbar}</div>}
+                {onOpenCustomizer && (
+                  <button type="button" onClick={() => onOpenCustomizer('theme')} className="w-full rounded-xl border border-[#d4af37]/60 bg-[#263129] px-4 py-2.5 text-xs font-semibold text-[#d4af37]">
+                    <Settings2 size={14} className="inline mr-2" /> Personnaliser la Boutique
+                  </button>
+                )}
+              </div>
+            )}
+
+            {editorPage === 'gite' && (
+              <div className="mt-3 space-y-3">
+                <button type="button" onClick={() => { setGiteFreeformOpen(true); setSiteEditorMinimized(true); }} disabled={!giteConfig || !onGiteChange} className="w-full rounded-xl bg-[#d4af37] px-4 py-3 text-sm font-semibold text-[#111612] disabled:opacity-40">＋ Ouvrir l’éditeur des zones libres</button>
+                <button type="button" onClick={() => onOpenCustomizer?.('gite')} className="w-full rounded-xl border border-[#536258] bg-[#263129] px-4 py-3 text-xs font-semibold text-[#e7dfd1]">⚙ Personnalisation complète du Gîte</button>
+
+                <button type="button" onClick={onToggleFloatingMedia} className={`w-full rounded-xl border px-4 py-2.5 text-xs font-semibold ${floatingMediaOpen ? 'border-[#d4af37] bg-[#d4af37] text-[#111612]' : 'border-[#536258] bg-[#263129] text-[#e7dfd1]'}`}>
+                  <ImageIcon size={14} className="inline mr-2" /> Images flottantes
+                </button>
+
+                {onOpenLogoEditor && <button type="button" onClick={onOpenLogoEditor} className="w-full rounded-xl border border-[#536258] bg-[#263129] px-4 py-2.5 text-xs font-semibold text-[#e7dfd1]">
+                  <ImageIcon size={14} className="inline mr-2" /> Modifier les logos
+                </button>}
+                {onOpenSecurity && <button type="button" onClick={onOpenSecurity} className="w-full rounded-xl border border-[#536258] bg-[#263129] px-4 py-2.5 text-xs font-semibold text-[#e7dfd1]">
+                  <Key size={14} className="inline mr-2" /> Sécurité
+                </button>}
+
+                {giteConfig && onGiteChange && (
+                  <div className="rounded-xl border border-[#536258] bg-[#18201a] p-3 space-y-3">
+                    <button type="button" onClick={() => setGiteButtonOpen(v => !v)} className="w-full text-left text-xs font-semibold text-[#d4af37]">🖼️ Bouton image de la nav {giteButtonOpen ? '▴' : '▾'}</button>
+                    {giteButtonOpen && (
+                      <>
+                        <label className="block cursor-pointer rounded-lg border border-dashed border-[#536258] p-3 text-center text-xs text-[#e7dfd1]">
+                          <input type="file" accept="image/*" className="hidden" onChange={e => { const file=e.target.files?.[0]; if(file) void uploadGiteButtonImage(file); }} />
+                          {giteButtonUploading ? 'Import…' : (giteConfig.navCta?.imageUrl ? 'Remplacer l’image' : 'Choisir une image')}
+                        </label>
+                        <input value={giteConfig.navCta?.link || ''} onChange={e=>updateGiteNavCta({link:e.target.value})} placeholder="https://..." className="w-full rounded-lg bg-[#101510] border border-[#344237] px-3 py-2 text-xs text-white" />
+                        <select value={giteConfig.navCta?.hoverEffect || 'none'} onChange={e=>updateGiteNavCta({hoverEffect:e.target.value as any})} className="w-full rounded-lg bg-[#101510] border border-[#344237] px-3 py-2 text-xs text-white">
+                          <option value="none">Aucun effet</option><option value="opacity">Opacité</option><option value="scale">Zoom léger</option><option value="brightness">Luminosité</option><option value="grayscale">Niveaux de gris</option><option value="lift">Élévation</option>
+                        </select>
+                        {giteConfig.navCta?.imageUrl && <div className="flex items-center gap-2"><img src={giteConfig.navCta.imageUrl} alt="Bouton image" className="h-12 w-24 rounded-lg object-contain bg-white/5"/><button type="button" onClick={()=>updateGiteNavCta({imageUrl:undefined})} className="rounded-lg border border-red-900/70 bg-red-950/30 px-3 py-2 text-xs text-red-200">Retirer</button></div>}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {floatingMediaOpen && (
             <div data-floating-editor-section="true" className="border-t border-[#344139] pt-4">
@@ -798,9 +895,27 @@ export const SiteVisualEditor: React.FC<Props> = ({
 
           {message && <div className="rounded-lg bg-[#203428] px-3 py-2 text-xs text-[#cfe0d2]"><Check size={14} className="inline mr-1" />{message}</div>}
           {error && <div className="rounded-lg bg-[#3a2222] px-3 py-2 text-xs text-[#f2caca]">{error}</div>}
+          {onLogout && (
+            <div className="border-t border-[#344139] pt-4">
+              <button type="button" onClick={() => void onLogout()} className="w-full rounded-xl border border-red-900/70 bg-red-950/30 px-4 py-2.5 text-xs font-semibold text-red-200 hover:bg-red-950/50">
+                <LogOut size={14} className="inline mr-2" /> Déconnexion
+              </button>
+            </div>
+          )}
         </div>
       </div>
-    </>
+      )}
+      {giteFreeformOpen && giteConfig && onGiteChange && (
+        <GiteFreeformEditor
+          value={giteConfig}
+          onChange={onGiteChange}
+          onSave={onGiteSave}
+          onLogout={onLogout}
+          onClose={() => { setGiteFreeformOpen(false); setSiteEditorMinimized(false); }}
+        />
+      )}
+    </>),
+    document.body,
   );
 };
 

@@ -10,7 +10,7 @@ export const publishedSiteContent = {
     "accentColor": "#4A5D4E",
     "foundingYear": "2025",
     "designerLocation": "Vallée de Lourdios \u0026 Pic du Midi",
-    "heroBgImage": "/assets/pyrenees_landscape_hero_1785338591988-pbnVVBN-.jpg",
+    "heroBgImage": "",
     "storyTitle": "Aux origines de la Maison",
     "storyText1": "Pensée entre pâturages verdoyants et sommets acérés, notre maison fait le pari d’un luxe brut et authentique. Chaque veste est façonnée pour affronter les brumes pyrénéennes tout en offrant une silhouette d’une distinction rare.",
     "storyText2": "Nous avons sélectionné des laines de bergers pyrénéens et des toiles techniques imperméables d’exception pour façonner ces deux pièces signatures : La Veste des Cimes et Le Manteau Pastorale.",
@@ -25,140 +25,176 @@ export const publishedSiteContent = {
     "gite": {
       "name": "Le Gîte",
       "location": "Pyrénées",
-      "tagline": "Une parenthèse au cœur des montagnes.",
-      "heroImage": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format\u0026fit=crop\u0026w=2200\u0026q=85",
+      "tagline": "",
+      "heroImage": "",
       "intro": {
-        "title": "Un lieu pour ralentir.",
-        "text": "Une maison chaleureuse pensée pour profiter du calme, des paysages et de l’authenticité des Pyrénées."
+        "title": "",
+        "text": ""
       },
-      "gallery": [
-        {
-          "src": "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format\u0026fit=crop\u0026w=1400\u0026q=85",
-          "alt": "Intérieur du gîte"
-        },
-        {
-          "src": "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format\u0026fit=crop\u0026w=1400\u0026q=85",
-          "alt": "Chambre du gîte"
-        },
-        {
-          "src": "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format\u0026fit=crop\u0026w=1400\u0026q=85",
-          "alt": "Salon chaleureux"
-        },
-        {
-          "src": "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format\u0026fit=crop\u0026w=1400\u0026q=85",
-          "alt": "Gîte en montagne"
-        }
-      ],
+      "gallery": [],
       "videoUrl": "",
       "videoPoster": "",
-      "essentials": [
-        {
-          "value": "6",
-          "label": "Voyageurs"
-        },
-        {
-          "value": "3",
-          "label": "Chambres"
-        },
-        {
-          "value": "2",
-          "label": "Salle de bain"
-        },
-        {
-          "value": "1",
-          "label": "Parking"
-        }
-      ],
-      "bookingText": "Les disponibilités et tarifs sont consultables directement sur nos plateformes partenaires.",
-      "airbnbUrl": "#",
-      "bookingUrl": "#",
-      "nearby": [
-        {
-          "title": "Randonnées",
-          "text": "Sentiers, cols et panoramas à proximité du gîte."
-        },
-        {
-          "title": "Villages",
-          "text": "Marchés, villages de montagne et producteurs locaux."
-        },
-        {
-          "title": "Activités",
-          "text": "Nature, neige, vélo et découvertes selon la saison."
-        }
-      ],
+      "essentials": [],
+      "bookingText": "",
+      "airbnbUrl": "",
+      "bookingUrl": "",
+      "nearby": [],
       "access": {
-        "title": "Venir au gîte",
-        "text": "Les informations pratiques d’accès peuvent être personnalisées depuis l’éditeur."
+        "title": "",
+        "text": ""
       },
       "modules": [
         {
-          "id": "gite-hero",
-          "label": "Le gîte — Accueil",
+          "id": "gite-accueil",
+          "label": "Accueil",
           "visible": true,
+          "width": 100,
+          "height": 800,
           "background": {
             "type": "image",
-            "url": "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format\u0026fit=crop\u0026w=2200\u0026q=85",
+            "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787303018866-kalen-emsley-Bkci_8qcdvQ-unsplash.webp",
             "overlay": 25
           }
         },
         {
-          "id": "gite-experience",
+          "id": "gite-le-gite",
           "label": "Le gîte",
           "visible": true,
-          "background": {
-            "type": "image",
-            "url": "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format\u0026fit=crop\u0026w=1800\u0026q=85",
-            "overlay": 12
-          }
+          "width": 100,
+          "height": 520
         },
         {
-          "id": "gite-gallery",
-          "label": "Galerie",
-          "visible": true,
-          "background": {
-            "type": "image",
-            "url": "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format\u0026fit=crop\u0026w=1800\u0026q=85",
-            "overlay": 10
-          }
-        },
-        {
-          "id": "gite-video",
-          "label": "Vidéo",
-          "visible": true
-        },
-        {
-          "id": "gite-essentials",
-          "label": "Équipements",
-          "visible": true
-        },
-        {
-          "id": "gite-nearby",
+          "id": "gite-region",
           "label": "La région",
           "visible": true,
-          "background": {
-            "type": "image",
-            "url": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format\u0026fit=crop\u0026w=1800\u0026q=85",
-            "overlay": 12
-          }
+          "width": 100,
+          "height": 520
         },
         {
-          "id": "gite-stay",
+          "id": "gite-sejourner",
           "label": "Séjourner",
-          "visible": true
+          "visible": true,
+          "width": 100,
+          "height": 520
         },
         {
-          "id": "gite-access",
+          "id": "gite-acces",
           "label": "Accès",
-          "visible": true
+          "visible": true,
+          "width": 100,
+          "height": 520
         }
       ],
       "navLabels": {
-        "experience": "Le gîte",
-        "gallery": "Galerie",
-        "video": "Vidéo",
-        "nearby": "La région",
-        "stay": "Séjourner"
-      }
+        "gite-accueil": "Accueil",
+        "gite-le-gite": "Le gîte",
+        "gite-region": "La région",
+        "gite-sejourner": "Séjourner",
+        "gite-acces": "Accès"
+      },
+      "navOrder": [
+        "gite-accueil",
+        "gite-le-gite",
+        "gite-region",
+        "gite-sejourner",
+        "gite-acces"
+      ],
+      "navCta": {
+        "label": "Réserver",
+        "link": "",
+        "visible": true
+      },
+      "navAdminLabel": "⌂",
+      "contentBlocks": [
+        {
+          "id": "gite-block-1787303077623-485fcy",
+          "moduleId": "gite-accueil",
+          "type": "text",
+          "x": 20.7291672446511,
+          "y": 74.86458587646484,
+          "width": 30,
+          "height": 18,
+          "text": "Le Gîte",
+          "link": "",
+          "url": "",
+          "fontSize": 70,
+          "color": "#ffffff",
+          "align": "left",
+          "fontFamily": "display",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "transparent",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true
+        },
+        {
+          "id": "gite-block-1787304121004-b1n56m",
+          "moduleId": "gite-accueil",
+          "type": "button",
+          "x": 27.708333730697632,
+          "y": 72.54582977294922,
+          "width": 8,
+          "height": 10,
+          "text": "",
+          "link": "https://www.airbnb.fr/?c=.pi0.pk90572135_4063331735\u0026gclsrc=aw.ds\u0026\u0026c=.pi0.pk90572135_4063331735\u0026localized_ghost=true\u0026gad_source=1\u0026gad_campaignid=90572135\u0026gclid=CjwKCAjw7p_UBhBlEiwAhpIs77A2PVrzzeYuiMgDKx-Njkje5b79dNA8vM4-4zdnb1Q9nFPqxkx0MhoC_70QAvD_BwE",
+          "url": "",
+          "fontSize": 18,
+          "color": "#24231f",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "transparent",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true,
+          "buttonImageUrl": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787308430125-AirBnb.png",
+          "buttonImageEnabled": true
+        },
+        {
+          "id": "gite-block-1787304469172-08tmq3",
+          "moduleId": "gite-le-gite",
+          "type": "video",
+          "x": 49,
+          "y": 27,
+          "width": 49,
+          "height": 52,
+          "text": "Nouvelle zone de texte",
+          "link": "",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/section-background-1787304476009-test-jHMPxKjviKjbooxiKnAUjCPL8Y861i.mp4",
+          "fontSize": 18,
+          "color": "#24231f",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "rgba(255,255,255,0.88)",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true
+        }
+      ],
+      "navBackgroundColor": "#558ed5",
+      "navOpacity": 64
     },
     "jackets": [
       {
@@ -1061,5 +1097,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787295196315
+  "publishedAt": 1787308535177
 } as const;

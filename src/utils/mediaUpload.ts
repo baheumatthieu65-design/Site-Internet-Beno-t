@@ -48,22 +48,11 @@ export async function prepareImageForUpload(file: File, maxBytes = MAX_UPLOAD_BY
 }
 
 
-const MAX_BACKGROUND_VIDEO_BYTES = 25 * 1024 * 1024;
+const MAX_BACKGROUND_VIDEO_BYTES = 100 * 1024 * 1024;
 
 export async function uploadBackgroundVideo(file: File): Promise<string> {
   if (!file.type.startsWith('video/')) throw new Error('Veuillez sélectionner une vidéo MP4 ou WebM.');
-  if (file.size > MAX_BACKGROUND_VIDEO_BYTES) throw new Error('La vidéo est trop volumineuse. Utilisez une vidéo de fond de 25 Mo maximum.');
-  const objectUrl = URL.createObjectURL(file);
-  try {
-    const duration = await new Promise<number>((resolve, reject) => {
-      const video = document.createElement('video');
-      video.preload = 'metadata';
-      video.onloadedmetadata = () => { URL.revokeObjectURL(video.src); const value = Number(video.duration); if (!Number.isFinite(value) || value <= 0) reject(new Error('Durée de vidéo illisible.')); else resolve(value); };
-      video.onerror = () => { URL.revokeObjectURL(video.src); reject(new Error('Impossible de lire cette vidéo.')); };
-      video.src = objectUrl;
-    });
-    if (duration > 10.5) throw new Error('La vidéo de fond doit durer environ 10 secondes maximum.');
-  } finally { URL.revokeObjectURL(objectUrl); }
+  if (file.size > MAX_BACKGROUND_VIDEO_BYTES) throw new Error('La vidéo est trop volumineuse. Utilisez une vidéo de 100 Mo maximum.');
   const result = await upload(`section-background-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '-')}`, file, { access: 'public', handleUploadUrl: '/api/site-media-upload', clientPayload: JSON.stringify({ kind: 'section-background-video' }) });
   return result.url;
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { JacketModel, ThemeConfig, ComparisonCriterion } from '../types';
 import { Scale, ArrowRight, Edit3 } from 'lucide-react';
+import { getProductAvailabilityStatus } from '../utils/productStatus';
 import {
   getButtonClasses,
   getButtonInlineStyle,
@@ -50,6 +51,21 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
   const criteria = theme?.comparisonCriteria && theme.comparisonCriteria.length > 0
     ? theme.comparisonCriteria
     : DEFAULT_CRITERIA;
+
+  const comparisonJackets = [...jackets]
+    .filter((j) => getProductAvailabilityStatus(j) !== 'sold-out')
+    .sort((a, b) => {
+      const numberOf = (j: JacketModel) => {
+        const match = `${j.subTitle || ''} ${j.name || ''}`.match(/(?:Modèle|Modele|N°|No\.?)[^0-9]{0,8}(\d+)/i);
+        return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER;
+      };
+      return numberOf(a) - numberOf(b);
+    });
+
+  const getModelNumber = (j: JacketModel, fallback: number) => {
+    const match = `${j.subTitle || ''} ${j.name || ''}`.match(/(?:Modèle|Modele|N°|No\.?)[^0-9]{0,8}(\d+)/i);
+    return match ? Number(match[1]) : fallback;
+  };
 
   const getCriterionValue = (crit: ComparisonCriterion, j: JacketModel) => {
     switch (crit.key) {
@@ -113,10 +129,10 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
                 <th className="py-6 px-4 text-xs uppercase tracking-widest text-[#a3b1a5] w-1/4">
                   Caractéristiques
                 </th>
-                {jackets.map((j, idx) => (
+                {comparisonJackets.map((j, idx) => (
                   <th key={j.id} className={`py-6 px-6 text-center ${cardStyle.card} rounded-t-2xl`}>
                     <span className="text-[10px] uppercase tracking-widest text-[#d4af37] font-serif font-bold block">
-                      Modèle N°{idx + 1}
+                      Modèle N°{getModelNumber(j, idx + 1)}
                     </span>
                     <h3 className="font-serif text-xl font-bold text-[#f3ece0] mt-1 truncate">
                       {j.name}
@@ -134,7 +150,7 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
                   <td className="py-4 px-4 text-xs uppercase tracking-wider font-semibold text-[#a3b1a5]">
                     {crit.label}
                   </td>
-                  {jackets.map((j) => (
+                  {comparisonJackets.map((j) => (
                     <td key={j.id} className="py-4 px-6 text-sm text-[#e2d5c3] text-center bg-[#171e19]/40">
                       {getCriterionValue(crit, j)}
                     </td>
@@ -143,14 +159,14 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
               ))}
               <tr>
                 <td className="py-6 px-4"></td>
-                {jackets.map((j, idx) => (
+                {comparisonJackets.map((j, idx) => (
                   <td key={j.id} className="py-6 px-6 text-center bg-[#171e19]/60 rounded-b-2xl">
                     <button
                       onClick={() => onOpenInquiry(j.id)}
                 style={buttonInlineStyle}
                       className={`w-full py-3 px-4 text-xs uppercase tracking-widest flex items-center justify-center space-x-2 ${primaryBtnClass}`}
                     >
-                      <span>{orderText} N°{idx + 1}</span>
+                      <span>{orderText} N°{getModelNumber(j, idx + 1)}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   </td>

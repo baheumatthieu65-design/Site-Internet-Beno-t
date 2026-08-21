@@ -37,7 +37,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const allJackets = brandData.jackets && brandData.jackets.length > 0 ? brandData.jackets : [];
   // Le Hero suit le même ordre commercial que les autres modules :
   // En vente → Bientôt disponible → Épuisé. Les trois statuts restent visibles.
-  const jackets = sortProductsByAvailability(allJackets);
+  const jackets = sortProductsByAvailability(allJackets).filter((j) => getProductAvailabilityStatus(j) !== 'sold-out');
   const theme = brandData.theme;
 
   // Le Hero utilise exactement la même source que le Lookbook :
