@@ -502,7 +502,7 @@ export const publishedSiteContent = {
           "id": "gite-block-1787320775735-3etfpf",
           "moduleId": "gite-le-gite",
           "type": "text",
-          "x": 24,
+          "x": 23,
           "y": 28.965517241379313,
           "width": 30,
           "height": 18,
@@ -2003,5 +2003,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787323190985
+  "publishedAt": 1787323214819
 } as const;
