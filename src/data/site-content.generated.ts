@@ -905,6 +905,35 @@ export const publishedSiteContent = {
           "objectFit": "cover",
           "visible": true,
           "autoSize": true
+        },
+        {
+          "id": "gite-block-1787321413880-2ymkti",
+          "moduleId": "gite-acces",
+          "type": "text",
+          "x": 29.6875,
+          "y": 53.26923076923077,
+          "width": 30,
+          "height": 18,
+          "text": "adresse",
+          "link": "",
+          "url": "",
+          "fontSize": 18,
+          "color": "#24231f",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "transparent",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true,
+          "autoSize": true
         }
       ],
       "navBackgroundColor": "#000000",
@@ -1800,5 +1829,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787321411608
+  "publishedAt": 1787321441908
 } as const;
