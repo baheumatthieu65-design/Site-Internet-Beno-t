@@ -454,6 +454,35 @@ export const publishedSiteContent = {
           "objectFit": "cover",
           "visible": true,
           "autoSize": true
+        },
+        {
+          "id": "gite-block-1787320016089-k95hg6",
+          "moduleId": "gite-sejourner",
+          "type": "text",
+          "x": 29.427083333333332,
+          "y": 89.43396226415095,
+          "width": 30,
+          "height": 18,
+          "text": "Un lieu pour ralentir.",
+          "link": "",
+          "url": "",
+          "fontSize": 46,
+          "color": "#000000",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "transparent",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true,
+          "autoSize": true
         }
       ],
       "navBackgroundColor": "#000000",
@@ -1349,5 +1378,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787320008706
+  "publishedAt": 1787320067611
 } as const;
