@@ -255,8 +255,8 @@ export const publishedSiteContent = {
           "id": "gite-block-1787318968407-5kw0gh",
           "moduleId": "gite-accueil",
           "type": "button",
-          "x": 20.104166666666668,
-          "y": 84.7872340425532,
+          "x": 21,
+          "y": 85,
           "width": 8,
           "height": 11,
           "text": "Réserver",
@@ -1176,5 +1176,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787319100520
+  "publishedAt": 1787319114279
 } as const;
