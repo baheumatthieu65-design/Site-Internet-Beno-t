@@ -476,8 +476,8 @@ export const publishedSiteContent = {
           "type": "video",
           "x": 50,
           "y": 16,
-          "width": 49,
-          "height": 37,
+          "width": 48,
+          "height": 33,
           "text": "Nouvelle zone de texte",
           "link": "",
           "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/section-background-1787320142540-test-g86LA4gfdHHLU5moFVyezZLlJpgnF8.mp4",
@@ -488,7 +488,7 @@ export const publishedSiteContent = {
           "fontWeight": 400,
           "lineHeight": 1.45,
           "italic": false,
-          "backgroundColor": "rgba(255,255,255,0.88)",
+          "backgroundColor": "transparent",
           "borderColor": "#8c6e3f",
           "borderWidth": 0,
           "borderRadius": 18,
@@ -1392,5 +1392,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787320414057
+  "publishedAt": 1787320431964
 } as const;
