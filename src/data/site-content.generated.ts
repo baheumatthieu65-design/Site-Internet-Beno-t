@@ -64,15 +64,15 @@ export const publishedSiteContent = {
           "height": 690
         },
         {
-          "id": "gite-region",
-          "label": "La région",
+          "id": "gite-sejourner",
+          "label": "Séjourner",
           "visible": true,
           "width": 100,
           "height": 520
         },
         {
-          "id": "gite-sejourner",
-          "label": "Séjourner",
+          "id": "gite-region",
+          "label": "La région",
           "visible": true,
           "width": 100,
           "height": 520
@@ -95,8 +95,8 @@ export const publishedSiteContent = {
       "navOrder": [
         "gite-accueil",
         "gite-le-gite",
-        "gite-region",
         "gite-sejourner",
+        "gite-region",
         "gite-acces"
       ],
       "navCta": {
@@ -282,6 +282,33 @@ export const publishedSiteContent = {
           "buttonImageUrl": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787319038241-Booking.png",
           "buttonImageEnabled": true,
           "autoSize": false
+        },
+        {
+          "id": "gite-block-1787319271954-mxrw2w",
+          "moduleId": "gite-sejourner",
+          "type": "image",
+          "x": 29.114583333333332,
+          "y": 85.76923076923076,
+          "width": 32,
+          "text": "Nouvelle zone de texte",
+          "link": "",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787319288178-andrea-davis-nbI8gqbBaHo-unsplash.webp",
+          "fontSize": 18,
+          "color": "#24231f",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "rgba(255,255,255,0.88)",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "contain",
+          "visible": true
         }
       ],
       "navBackgroundColor": "#000000",
@@ -1177,5 +1204,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787319253981
+  "publishedAt": 1787319303332
 } as const;
