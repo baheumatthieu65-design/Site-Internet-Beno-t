@@ -161,15 +161,15 @@ export const publishedSiteContent = {
       },
       "contentBlocks": [
         {
-          "id": "gite-block-1787300777646-91kj1c",
+          "id": "gite-block-1787301611351-bo4jrp",
           "moduleId": "gite-hero",
-          "type": "button",
-          "x": 50,
+          "type": "text",
+          "x": 24,
           "y": 50,
-          "width": 30,
+          "width": 23,
           "height": 18,
-          "text": "Réserver",
-          "link": "https://www.geolux.fr/sde65/",
+          "text": "Le Gîte",
+          "link": "",
           "url": "",
           "fontSize": 18,
           "color": "#24231f",
@@ -1091,5 +1091,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787300827647
+  "publishedAt": 1787301627784
 } as const;
