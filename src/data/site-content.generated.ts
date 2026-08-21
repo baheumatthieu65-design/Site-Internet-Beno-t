@@ -168,9 +168,9 @@ export const publishedSiteContent = {
           "type": "button",
           "x": 47.03125,
           "y": 12.645833969116211,
-          "width": 30,
-          "height": 18,
-          "text": "Air BNB",
+          "width": 8,
+          "height": 10,
+          "text": "",
           "link": "https://www.airbnb.fr/?c=.pi0.pk90572135_4063331735\u0026gclsrc=aw.ds\u0026\u0026c=.pi0.pk90572135_4063331735\u0026localized_ghost=true\u0026gad_source=1\u0026gad_campaignid=90572135\u0026gclid=CjwKCAjw7p_UBhBlEiwAhpIs77A2PVrzzeYuiMgDKx-Njkje5b79dNA8vM4-4zdnb1Q9nFPqxkx0MhoC_70QAvD_BwE",
           "url": "",
           "fontSize": 18,
@@ -188,7 +188,9 @@ export const publishedSiteContent = {
           "opacity": 100,
           "rotation": 0,
           "objectFit": "cover",
-          "visible": true
+          "visible": true,
+          "buttonImageUrl": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787308430125-AirBnb.png",
+          "buttonImageEnabled": true
         },
         {
           "id": "gite-block-1787304161889-gfv42n",
@@ -1150,5 +1152,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787304536510
+  "publishedAt": 1787308509340
 } as const;
