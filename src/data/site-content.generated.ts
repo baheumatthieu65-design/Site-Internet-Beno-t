@@ -534,12 +534,12 @@ export const publishedSiteContent = {
       "lookbookImageFrameHeight": 220,
       "sectionBackgroundImages": {
         "origines": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787258626442-4k-wallpaper-blue-skies-conifers-1526720.webp",
-        "hero": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787313318819-denys-nevozhai-z0nVqfrOqWA-unsplash.jpg"
+        "hero": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787315389264-ChatGPT-Image-21-ao--t-2026--14_28_34.png"
       },
       "sectionBackgroundMedia": {
         "hero": {
           "type": "image",
-          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787313318819-denys-nevozhai-z0nVqfrOqWA-unsplash.jpg",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787315389264-ChatGPT-Image-21-ao--t-2026--14_28_34.png",
           "overlay": 0,
           "objectFit": "cover",
           "positionX": 50,
@@ -1086,5 +1086,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787315259163
+  "publishedAt": 1787315403677
 } as const;
