@@ -13,7 +13,7 @@ const makeId = () => `gite-block-${Date.now()}-${Math.random().toString(36).slic
 const newBlock = (type: GiteContentBlockType, moduleId: string): GiteContentBlock => ({
   id: makeId(), moduleId, type, x: 50, y: 50,
   width: type === 'video' ? 45 : type === 'image' ? 32 : 30,
-  height: type === 'video' ? 30 : type === 'image' ? 28 : 18,
+  height: type === 'video' ? 30 : type === 'image' ? undefined : 18,
   text: type === 'button' ? 'Réserver' : type === 'heading' ? 'Nouveau titre' : 'Nouvelle zone de texte',
   link: '', url: '', fontSize: type === 'heading' ? 34 : 18, color: '#24231f', align: 'left',
   fontFamily: type === 'heading' ? 'display' : 'sans', fontWeight: type === 'heading' ? 500 : 400,
@@ -38,6 +38,8 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
   const blocks = value.contentBlocks || [];
   const selected = blocks.find((b) => b.id === selectedId) || null;
   const moduleBlocks = blocks.filter((b) => b.moduleId === selectedModuleId);
+  const typeLabel = (b: GiteContentBlock) => b.type === 'heading' ? 'Titre' : b.type === 'text' ? 'Texte' : b.type === 'image' ? 'Image' : b.type === 'video' ? 'Vidéo' : 'Bouton';
+  const previewLabel = (b: GiteContentBlock) => { const raw = b.text || (b.type === 'image' ? 'Image importée' : b.type === 'video' ? 'Vidéo importée' : ''); return `${typeLabel(b)}${raw ? ` — ${raw.slice(0, 28)}${raw.length > 28 ? '…' : ''}` : ''}`; };
 
   useEffect(() => {
     const move = (e: PointerEvent) => {
@@ -80,7 +82,7 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
         if (!r.ok || !d?.url) throw new Error(d?.error || `Upload : HTTP ${r.status}`);
         url = String(d.url);
       }
-      updateBlock(selected.id, { url });
+      updateBlock(selected.id, { url, ...(type === 'image' ? { height: undefined, objectFit: 'contain' as const } : {}) });
     } catch (e) { window.alert(e instanceof Error ? e.message : 'Upload impossible.'); }
   };
 
@@ -110,7 +112,7 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
               ))}
               <div className="border-t border-[#344139] pt-2 mt-2">
                 <div className="px-2 pb-1 text-[10px] uppercase tracking-[.16em] text-[#87968a]">Éléments</div>
-                {moduleBlocks.map((b, i) => <button key={b.id} type="button" onClick={() => setSelectedId(b.id)} className={`w-full rounded-lg px-3 py-2 text-left text-xs ${b.id === selectedId ? 'bg-[#d4af37] text-[#111612]' : 'bg-[#1b241d] text-[#c5d0c6]'}`}>{i + 1}. {b.type === 'heading' ? 'Titre' : b.type === 'text' ? 'Texte' : b.type === 'image' ? 'Image' : b.type === 'video' ? 'Vidéo' : 'Bouton'}</button>)}
+                {moduleBlocks.map((b, i) => <button key={b.id} type="button" onClick={() => setSelectedId(b.id)} className={`w-full rounded-lg px-3 py-2 text-left text-xs ${b.id === selectedId ? 'bg-[#d4af37] text-[#111612]' : 'bg-[#1b241d] text-[#c5d0c6]'}`} title={b.text || typeLabel(b)}>{i + 1}. {previewLabel(b)}</button>)}
                 {!moduleBlocks.length && <div className="px-2 text-[11px] text-[#7f9382]">Aucun élément dans ce bloc.</div>}
               </div>
             </aside>
@@ -133,8 +135,12 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
               {selected.type === 'image' && <label className="block rounded-xl border border-dashed border-[#536258] p-3 text-center text-xs cursor-pointer"><input type="file" accept="image/*" className="hidden" onChange={e=>{const f=e.target.files?.[0]; if(f) void upload('image',f)}}/>Importer une image</label>}
               {selected.type === 'video' && <label className="block rounded-xl border border-dashed border-[#536258] p-3 text-center text-xs cursor-pointer"><input type="file" accept=".mp4,.webm,video/mp4,video/webm" className="hidden" onChange={e=>{const f=e.target.files?.[0]; if(f) void upload('video',f)}}/>Importer une vidéo</label>}
 
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {([['X %','x',0,100],['Y %','y',0,100],['Largeur %','width',8,95],['Hauteur %','height',10,95],['Rotation °','rotation',-180,180],['Taille px','fontSize',10,160]] as const).map(([label,key,min,max]) => <label key={key} className="text-[11px] text-[#a3b1a5]">{label}<input type="number" min={min} max={max} value={(selected as any)[key] ?? (key==='height'?18:0)} onChange={e=>updateBlock(selected.id,{[key]:Number(e.target.value)} as any)} className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-2 py-2 text-white"/></label>)}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {([['X %','x',0,100],['Y %','y',0,100],['Largeur %','width',8,95],['Hauteur %','height',10,95]] as const).map(([label,key,min,max]) => {
+                  const current = (selected as any)[key] ?? (key === 'height' && selected.type === 'image' ? 0 : key === 'height' ? 18 : 50);
+                  return <label key={key} className="text-[11px] text-[#a3b1a5]">{label}<div className="mt-1 flex items-center gap-2"><input type="range" min={min} max={max} value={current} onChange={e=>updateBlock(selected.id,{[key]:Number(e.target.value)} as any)} className="w-full accent-[#d4af37]"/><input type="number" min={min} max={max} value={current} onChange={e=>updateBlock(selected.id,{[key]:Number(e.target.value)} as any)} className="w-16 rounded-lg bg-[#18201a] border border-[#344237] px-2 py-2 text-white"/></div></label>;
+                })}
+                {([['Rotation °','rotation',-180,180],['Taille px','fontSize',10,160]] as const).map(([label,key,min,max]) => <label key={key} className="text-[11px] text-[#a3b1a5]">{label}<input type="number" min={min} max={max} value={(selected as any)[key] ?? (key === 'fontSize' ? 18 : 0)} onChange={e=>updateBlock(selected.id,{[key]:Number(e.target.value)} as any)} className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-2 py-2 text-white"/></label>)}
               </div>
 
               {(selected.type === 'text' || selected.type === 'heading' || selected.type === 'button') && <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -145,7 +151,7 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                 <label className="text-[11px] text-[#a3b1a5]">Fond<input value={selected.backgroundColor || ''} onChange={e=>updateBlock(selected.id,{backgroundColor:e.target.value})} placeholder="rgba(...)" className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-2 py-2 text-white"/></label>
-                <label className="text-[11px] text-[#a3b1a5]">Opacité<input type="number" min={0} max={100} value={selected.opacity ?? 100} onChange={e=>updateBlock(selected.id,{opacity:Number(e.target.value)})} className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-2 py-2 text-white"/></label>
+                <label className="text-[11px] text-[#a3b1a5]">Opacité<div className="mt-1 flex items-center gap-2"><input type="range" min={0} max={100} value={selected.opacity ?? 100} onChange={e=>updateBlock(selected.id,{opacity:Number(e.target.value)})} className="w-full accent-[#d4af37]"/><span className="w-10 text-right">{selected.opacity ?? 100}%</span></div></label>
                 <label className="text-[11px] text-[#a3b1a5]">Arrondi<input type="number" min={0} max={80} value={selected.borderRadius ?? 18} onChange={e=>updateBlock(selected.id,{borderRadius:Number(e.target.value)})} className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-2 py-2 text-white"/></label>
               </div>
 

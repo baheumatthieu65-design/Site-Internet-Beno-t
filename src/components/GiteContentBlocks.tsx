@@ -62,7 +62,7 @@ export const GiteContentBlocks: React.FC<Props> = ({ moduleId, blocks = [], edit
         cursor: editable ? 'move' : undefined,
         touchAction: editable ? 'none' : undefined,
         zIndex: editable ? 70 : 30,
-        outline: editable ? '1px dashed rgba(212,175,55,.65)' : undefined,
+        outline: 'none',
       };
       const dragProps = editable ? {
         onPointerDown: (e: React.PointerEvent<HTMLDivElement>) => startDrag(e, block),
@@ -72,9 +72,9 @@ export const GiteContentBlocks: React.FC<Props> = ({ moduleId, blocks = [], edit
         onClick: editable ? (e: React.MouseEvent<HTMLDivElement>) => { e.preventDefault(); } : undefined,
       } : {};
 
-      if (block.type === 'image' && block.url) return <div key={block.id} className="gite-content-block" style={style} {...dragProps}><img src={block.url} alt={block.alt || ''} className="w-full h-full rounded-2xl shadow-2xl border border-black/10" style={{ objectFit: block.objectFit || 'cover', display: 'block' }} /></div>;
+      if (block.type === 'image' && block.url) return <div key={block.id} className="gite-content-block" style={style} {...dragProps}><img src={block.url} alt={block.alt || ''} className="w-full rounded-2xl shadow-2xl border border-black/10" style={{ objectFit: block.objectFit || 'contain', display: 'block', height: block.height ? '100%' : 'auto' }} /></div>;
       if (block.type === 'video' && block.url) return <div key={block.id} className="gite-content-block" style={style} {...dragProps}><video src={block.url} controls playsInline className="w-full h-full rounded-2xl shadow-2xl border border-black/10" /></div>;
-      if (block.type === 'button') return <div key={block.id} className="gite-content-block" style={style} {...dragProps}><a href={block.link || '#'} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#24231f] text-white border border-[#8c6e3f] shadow-xl no-underline hover:bg-[#8c6e3f] transition-colors">{block.text || 'Réserver'}</a></div>;
+      if (block.type === 'button') return <div key={block.id} className="gite-content-block" style={style} {...dragProps}><a href={block.link || '#'} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-[#24231f] text-white border border-[#8c6e3f] shadow-xl no-underline hover:bg-[#8c6e3f] transition-colors">{block.text || 'Réserver'}</a></div>;
       return <div key={block.id} className="gite-content-block" style={style} {...dragProps}>{block.text || ''}</div>;
     })}
   </>;

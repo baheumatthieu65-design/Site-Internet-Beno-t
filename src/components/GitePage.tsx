@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef } from "react";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { defaultGiteConfig } from "../data/giteConfig";
 import { GiteNavigation } from "./GiteNavigation";
-import { BrandConfig, GiteContentBlock, GiteSiteConfig } from "../types";
+import { BrandConfig, GiteContentBlock, GiteModuleConfig, GiteSiteConfig } from "../types";
 import { FloatingMediaLayer } from "./FloatingMediaLayer";
 import { GiteContentBlocks } from "./GiteContentBlocks";
 import type { FloatingMediaItem } from "../data/floatingMedia";
@@ -58,9 +59,6 @@ export const GitePage:React.FC<{
   onGiteChange?:(config:GiteSiteConfig)=>void;
 }>=({brandData,onBackToVitrine,onAdmin,floatingImages=[],editable=false,onGiteChange})=>{
   const c = brandData.gite || defaultGiteConfig;
-  const module = (id:string)=>c.modules?.find(m=>m.id===id);
-  const visible=(id:string)=>module(id)?.visible!==false;
-  const nav={...defaultGiteConfig.navLabels,...c.navLabels};
   const migratedRef = useRef(false);
   const contentBlocks = useMemo(() => c.contentBlocks || [], [c.contentBlocks]);
 
@@ -74,21 +72,61 @@ export const GitePage:React.FC<{
     onGiteChange({ ...c, contentBlocks: [...existing, ...missing] });
   }, [editable, onGiteChange, c, contentBlocks]);
 
-  const updateBlocks = (blocks:GiteContentBlock[]) => onGiteChange?.({ ...c, contentBlocks: blocks });
   const blocks = contentBlocks.length ? contentBlocks : legacyTextBlocks(c);
+  const updateBlocks = (next:GiteContentBlock[]) => onGiteChange?.({ ...c, contentBlocks: next });
+  const visible = (id:string) => c.modules?.find(m=>m.id===id)?.visible !== false;
+
+  const moveModule = (id:string, direction:-1|1) => {
+    if (!onGiteChange) return;
+    const modules = [...c.modules];
+    const index = modules.findIndex(m=>m.id===id);
+    const nextIndex = index + direction;
+    if (index < 0 || nextIndex < 0 || nextIndex >= modules.length) return;
+    [modules[index], modules[nextIndex]] = [modules[nextIndex], modules[index]];
+    onGiteChange({...c, modules});
+  };
+
+  const renderEditorControls = (module:GiteModuleConfig, index:number) => editable ? (
+    <div className="absolute right-4 top-4 z-[85] flex items-center gap-1 rounded-xl border border-[#d4af37]/70 bg-[#101510]/90 p-1.5 shadow-xl backdrop-blur" data-vce-ignore="true">
+      <span className="px-2 text-[10px] uppercase tracking-[.12em] text-[#d4af37]">{module.label}</span>
+      <button type="button" disabled={index===0} onClick={()=>moveModule(module.id,-1)} className="rounded-lg p-2 text-[#f4ead9] hover:bg-[#29332b] disabled:opacity-25" title="Monter le bloc"><ArrowUp size={15}/></button>
+      <button type="button" disabled={index===c.modules.length-1} onClick={()=>moveModule(module.id,1)} className="rounded-lg p-2 text-[#f4ead9] hover:bg-[#29332b] disabled:opacity-25" title="Descendre le bloc"><ArrowDown size={15}/></button>
+    </div>
+  ) : null;
 
   const renderBlocks = (moduleId: string) => <GiteContentBlocks moduleId={moduleId} blocks={blocks} editable={editable} onChange={updateBlocks}/>;
 
+  const renderModule = (module:GiteModuleConfig, index:number) => {
+    if (!module.visible) return null;
+    const common = (children:React.ReactNode, className:string) => <section id={module.id} className={`${className} relative`} style={mediaStyle(module.background)}>{<ModuleBackground background={module.background}/>}<FloatingMediaLayer sectionId={module.id} items={floatingImages}/>{renderEditorControls(module,index)}{renderBlocks(module.id)}{children}</section>;
+    switch(module.id) {
+      case 'gite-hero':
+        return <section id="gite-hero" className="gite-hero relative" style={mediaStyle(module.background)}><ModuleBackground background={module.background}/><FloatingMediaLayer sectionId="gite-hero" items={floatingImages}/>{renderEditorControls(module,index)}{renderBlocks('gite-hero')}<img src={c.heroImage} alt={c.name}/></section>;
+      case 'gite-experience':
+        return common(null,'gite-section gite-section-media');
+      case 'gite-gallery':
+        return common(<div className="gite-gallery">{c.gallery.map(i=><img key={i.src} src={i.src} alt={i.alt}/>)}</div>,'gite-section gite-section-media');
+      case 'gite-video':
+        return common(c.videoUrl ? <video controls playsInline poster={c.videoPoster||undefined}><source src={c.videoUrl}/></video> : null,'gite-video');
+      case 'gite-essentials':
+        return common(<div className="gite-essentials">{c.essentials.map((_,i)=><div className="gite-card" key={i} aria-hidden="true" />)}</div>,'gite-section gite-section-media');
+      case 'gite-nearby':
+        return common(<div className="gite-nearby">{c.nearby.map((_,i)=><article key={i} aria-hidden="true" />)}</div>,'gite-section gite-section-media');
+      case 'gite-stay':
+        return common(null,'gite-section gite-stay');
+      case 'gite-access':
+        return common(null,'gite-section gite-section-media');
+      default:
+        return null;
+    }
+  };
+
+  const orderedModules = c.modules?.length ? c.modules : defaultGiteConfig.modules;
+  const nav={...defaultGiteConfig.navLabels,...c.navLabels};
+
   return <main className="gite-page">
     <GiteNavigation brandData={brandData} onBackToVitrine={onBackToVitrine} onAdmin={onAdmin} labels={nav}/>
-    {visible('gite-hero') && <section id="gite-hero" className="gite-hero" style={mediaStyle(module('gite-hero')?.background)}><ModuleBackground background={module('gite-hero')?.background}/><FloatingMediaLayer sectionId="gite-hero" items={floatingImages}/>{renderBlocks('gite-hero')}<img src={c.heroImage} alt={c.name}/></section>}
-    {visible('gite-experience') && <section id="gite-experience" className="gite-section gite-section-media" style={{position:"relative",...mediaStyle(module('gite-experience')?.background)}}><ModuleBackground background={module('gite-experience')?.background}/><FloatingMediaLayer sectionId="gite-experience" items={floatingImages}/>{renderBlocks('gite-experience')}</section>}
-    {visible('gite-gallery') && <section id="gite-gallery" className="gite-section gite-section-media" style={{position:"relative",...mediaStyle(module('gite-gallery')?.background)}}><ModuleBackground background={module('gite-gallery')?.background}/><FloatingMediaLayer sectionId="gite-gallery" items={floatingImages}/>{renderBlocks('gite-gallery')}<div className="gite-gallery">{c.gallery.map(i=><img key={i.src} src={i.src} alt={i.alt}/>)}</div></section>}
-    {visible('gite-video') && c.videoUrl && <section id="gite-video" className="gite-video" style={{position:"relative",...mediaStyle(module('gite-video')?.background)}}><ModuleBackground background={module('gite-video')?.background}/><FloatingMediaLayer sectionId="gite-video" items={floatingImages}/>{renderBlocks('gite-video')}<video controls playsInline poster={c.videoPoster||undefined}><source src={c.videoUrl}/></video></section>}
-    {visible('gite-essentials') && <section id="gite-essentials" className="gite-section gite-section-media" style={{position:"relative",...mediaStyle(module('gite-essentials')?.background)}}><ModuleBackground background={module('gite-essentials')?.background}/><FloatingMediaLayer sectionId="gite-essentials" items={floatingImages}/>{renderBlocks('gite-essentials')}<div className="gite-essentials">{c.essentials.map((_,i)=><div className="gite-card" key={i} aria-hidden="true" />)}</div></section>}
-    {visible('gite-nearby') && <section id="gite-nearby" className="gite-section gite-section-media" style={{position:"relative",...mediaStyle(module('gite-nearby')?.background)}}><ModuleBackground background={module('gite-nearby')?.background}/><FloatingMediaLayer sectionId="gite-nearby" items={floatingImages}/>{renderBlocks('gite-nearby')}<div className="gite-nearby">{c.nearby.map((_,i)=><article key={i} aria-hidden="true" />)}</div></section>}
-    {visible('gite-stay') && <section id="gite-stay" className="gite-section gite-stay" style={{position:"relative",...mediaStyle(module('gite-stay')?.background)}}><ModuleBackground background={module('gite-stay')?.background}/><FloatingMediaLayer sectionId="gite-stay" items={floatingImages}/>{renderBlocks('gite-stay')}</section>}
-    {visible('gite-access') && <section id="gite-access" className="gite-section gite-section-media" style={{position:"relative",...mediaStyle(module('gite-access')?.background)}}><ModuleBackground background={module('gite-access')?.background}/><FloatingMediaLayer sectionId="gite-access" items={floatingImages}/>{renderBlocks('gite-access')}</section>}
-  </main>
+    {orderedModules.map((module,index)=>renderModule(module,index))}
+  </main>;
 };
 export default GitePage;
