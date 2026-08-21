@@ -161,6 +161,61 @@ export const publishedSiteContent = {
           "rotation": 0,
           "objectFit": "cover",
           "visible": true
+        },
+        {
+          "id": "gite-block-1787304121004-b1n56m",
+          "moduleId": "gite-accueil",
+          "type": "button",
+          "x": 47.03125,
+          "y": 12.645833969116211,
+          "width": 30,
+          "height": 18,
+          "text": "Air BNB",
+          "link": "https://www.airbnb.fr/?c=.pi0.pk90572135_4063331735\u0026gclsrc=aw.ds\u0026\u0026c=.pi0.pk90572135_4063331735\u0026localized_ghost=true\u0026gad_source=1\u0026gad_campaignid=90572135\u0026gclid=CjwKCAjw7p_UBhBlEiwAhpIs77A2PVrzzeYuiMgDKx-Njkje5b79dNA8vM4-4zdnb1Q9nFPqxkx0MhoC_70QAvD_BwE",
+          "url": "",
+          "fontSize": 18,
+          "color": "#24231f",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "transparent",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true
+        },
+        {
+          "id": "gite-block-1787304161889-gfv42n",
+          "moduleId": "gite-accueil",
+          "type": "image",
+          "x": 40.9375,
+          "y": 21.01041603088379,
+          "width": 32,
+          "text": "Nouvelle zone de texte",
+          "link": "",
+          "url": "",
+          "fontSize": 18,
+          "color": "#24231f",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "rgba(255,255,255,0.88)",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true
         }
       ],
       "navBackgroundColor": "#558ed5",
@@ -1067,5 +1122,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787304060515
+  "publishedAt": 1787304170357
 } as const;
