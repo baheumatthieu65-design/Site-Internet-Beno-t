@@ -769,7 +769,7 @@ export const publishedSiteContent = {
           "text": "Consulter les disponibilités",
           "link": "",
           "url": "",
-          "fontSize": 76,
+          "fontSize": 61,
           "color": "#000000",
           "align": "left",
           "fontFamily": "Dancing Script",
@@ -2133,5 +2133,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787329069350
+  "publishedAt": 1787344985480
 } as const;
