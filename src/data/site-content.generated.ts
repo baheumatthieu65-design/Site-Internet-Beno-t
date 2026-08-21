@@ -25,170 +25,82 @@ export const publishedSiteContent = {
     "gite": {
       "name": "Le Gîte",
       "location": "Pyrénées",
-      "tagline": "Une parenthèse au cœur des montagnes.",
-      "heroImage": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format\u0026fit=crop\u0026w=2200\u0026q=85",
+      "tagline": "",
+      "heroImage": "",
       "intro": {
-        "title": "Un lieu pour ralentir.",
-        "text": "Une maison chaleureuse pensée pour profiter du calme, des paysages et de l’authenticité des Pyrénées."
+        "title": "",
+        "text": ""
       },
-      "gallery": [
-        {
-          "src": "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format\u0026fit=crop\u0026w=1400\u0026q=85",
-          "alt": "Intérieur du gîte"
-        },
-        {
-          "src": "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format\u0026fit=crop\u0026w=1400\u0026q=85",
-          "alt": "Chambre du gîte"
-        },
-        {
-          "src": "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format\u0026fit=crop\u0026w=1400\u0026q=85",
-          "alt": "Salon chaleureux"
-        },
-        {
-          "src": "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format\u0026fit=crop\u0026w=1400\u0026q=85",
-          "alt": "Gîte en montagne"
-        }
-      ],
+      "gallery": [],
       "videoUrl": "",
       "videoPoster": "",
-      "essentials": [
-        {
-          "value": "6",
-          "label": "Voyageurs"
-        },
-        {
-          "value": "3",
-          "label": "Chambres"
-        },
-        {
-          "value": "2",
-          "label": "Salle de bain"
-        },
-        {
-          "value": "1",
-          "label": "Parking"
-        }
-      ],
-      "bookingText": "Les disponibilités et tarifs sont consultables directement sur nos plateformes partenaires.",
-      "airbnbUrl": "#",
-      "bookingUrl": "#",
-      "nearby": [
-        {
-          "title": "Randonnées",
-          "text": "Sentiers, cols et panoramas à proximité du gîte."
-        },
-        {
-          "title": "Villages",
-          "text": "Marchés, villages de montagne et producteurs locaux."
-        },
-        {
-          "title": "Activités",
-          "text": "Nature, neige, vélo et découvertes selon la saison."
-        }
-      ],
+      "essentials": [],
+      "bookingText": "",
+      "airbnbUrl": "",
+      "bookingUrl": "",
+      "nearby": [],
       "access": {
-        "title": "Venir au gîte",
-        "text": "Les informations pratiques d’accès peuvent être personnalisées depuis l’éditeur."
+        "title": "",
+        "text": ""
       },
       "modules": [
         {
-          "id": "gite-experience",
+          "id": "gite-le-gite",
           "label": "Le gîte",
           "visible": true,
-          "background": {
-            "type": "image",
-            "url": "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format\u0026fit=crop\u0026w=1800\u0026q=85",
-            "overlay": 12
-          }
+          "width": 100,
+          "height": 520
         },
         {
-          "id": "gite-hero",
-          "label": "Le gîte — Accueil",
+          "id": "gite-accueil",
+          "label": "Accueil",
           "visible": true,
-          "background": {
-            "type": "image",
-            "url": "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format\u0026fit=crop\u0026w=2200\u0026q=85",
-            "overlay": 25
-          }
+          "width": 100,
+          "height": 520
         },
         {
-          "id": "gite-gallery",
-          "label": "Galerie",
-          "visible": true,
-          "background": {
-            "type": "image",
-            "url": "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format\u0026fit=crop\u0026w=1800\u0026q=85",
-            "overlay": 10
-          }
-        },
-        {
-          "id": "gite-video",
-          "label": "Vidéo",
-          "visible": true
-        },
-        {
-          "id": "gite-essentials",
-          "label": "Équipements",
-          "visible": true
-        },
-        {
-          "id": "gite-nearby",
+          "id": "gite-region",
           "label": "La région",
           "visible": true,
-          "background": {
-            "type": "image",
-            "url": "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format\u0026fit=crop\u0026w=1800\u0026q=85",
-            "overlay": 12
-          }
+          "width": 100,
+          "height": 520
         },
         {
-          "id": "gite-stay",
+          "id": "gite-sejourner",
           "label": "Séjourner",
-          "visible": true
+          "visible": true,
+          "width": 100,
+          "height": 520
         },
         {
-          "id": "gite-access",
+          "id": "gite-acces",
           "label": "Accès",
-          "visible": true
+          "visible": true,
+          "width": 100,
+          "height": 520
         }
       ],
       "navLabels": {
-        "experience": "Le gîte",
-        "gallery": "Galerie",
-        "video": "Vidéo",
-        "nearby": "La région",
-        "stay": "Séjourner"
+        "gite-accueil": "Accueil",
+        "gite-le-gite": "Le gîte",
+        "gite-region": "La région",
+        "gite-sejourner": "Séjourner",
+        "gite-acces": "Accès"
       },
-      "contentBlocks": [
-        {
-          "id": "gite-block-1787300777646-91kj1c",
-          "moduleId": "gite-hero",
-          "type": "button",
-          "x": 50,
-          "y": 50,
-          "width": 30,
-          "height": 18,
-          "text": "Réserver",
-          "link": "https://www.geolux.fr/sde65/",
-          "url": "",
-          "fontSize": 18,
-          "color": "#24231f",
-          "align": "left",
-          "fontFamily": "sans",
-          "fontWeight": 400,
-          "lineHeight": 1.45,
-          "italic": false,
-          "backgroundColor": "rgba(255,255,255,0.88)",
-          "borderColor": "#8c6e3f",
-          "borderWidth": 0,
-          "borderRadius": 18,
-          "padding": 12,
-          "opacity": 100,
-          "rotation": 0,
-          "objectFit": "cover",
-          "visible": true
-        }
-      ]
+      "navOrder": [
+        "gite-le-gite",
+        "gite-accueil",
+        "gite-region",
+        "gite-sejourner",
+        "gite-acces"
+      ],
+      "navCta": {
+        "label": "Réserver",
+        "link": "",
+        "visible": false
+      },
+      "navAdminLabel": "⌂",
+      "contentBlocks": []
     },
     "jackets": [
       {
@@ -1091,5 +1003,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787302059516
+  "publishedAt": 1787302749618
 } as const;
