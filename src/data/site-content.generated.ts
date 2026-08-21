@@ -61,14 +61,14 @@ export const publishedSiteContent = {
           "label": "Le gîte",
           "visible": true,
           "width": 100,
-          "height": 690
+          "height": 610
         },
         {
           "id": "gite-sejourner",
           "label": "Séjourner",
           "visible": true,
           "width": 100,
-          "height": 520
+          "height": 910
         },
         {
           "id": "gite-region",
@@ -1204,5 +1204,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787319303332
+  "publishedAt": 1787319312232
 } as const;
