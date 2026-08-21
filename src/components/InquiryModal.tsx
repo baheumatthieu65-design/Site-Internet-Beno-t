@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { JacketModel } from '../types';
 import { createOrder, OrderItem } from '../utils/orderStorage';
 import {
@@ -44,6 +43,8 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
   preselectedSize,
   ordersEmail = 'contact@maisondespyrenees.fr',
 }) => {
+  if (!isOpen) return null;
+
   const validJackets = Array.isArray(jackets) ? jackets.filter((j) => j.isAvailable !== false) : [];
   const defaultJacket = validJackets.find((j) => j.id === preselectedJacketId) || validJackets[0];
 
@@ -138,8 +139,6 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
 
   const primaryCurrency = validJackets[0]?.currency || '€';
 
-  if (!isOpen) return null;
-
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -221,11 +220,10 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
     }
   };
 
-  return createPortal((
-
+  return (
     <div
       id="order-modal-overlay"
-      className="fixed inset-0 z-[40000] bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fadeIn"
+      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fadeIn"
     >
       <div
         id="order-modal-container"
@@ -652,5 +650,5 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
         )}
       </div>
     </div>
-  ), document.body);
+  );
 };

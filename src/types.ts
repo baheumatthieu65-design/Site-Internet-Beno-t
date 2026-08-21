@@ -443,29 +443,18 @@ export interface GiteContentBlock {
   opacity?: number;
   rotation?: number;
   objectFit?: 'cover' | 'contain';
-  visible: boolean;
   autoSize?: boolean;
+  buttonImageUrl?: string;
+  buttonImageEnabled?: boolean;
+  visible: boolean;
 }
 
 export interface GiteModuleConfig {
   id: string;
   label: string;
   visible: boolean;
-  width?: number;
-  height?: number;
   background?: BackgroundMedia;
 }
-
-export interface GiteNavCta {
-  label: string;
-  link: string;
-  visible: boolean;
-  /** Remplace le bouton texte par une image dans la navigation. */
-  imageUrl?: string;
-  /** Effet appliqué au survol de l'image. */
-  hoverEffect?: 'none' | 'opacity' | 'scale' | 'brightness' | 'grayscale' | 'lift';
-}
-
 
 export interface GiteSiteConfig {
   name: string;
@@ -484,11 +473,6 @@ export interface GiteSiteConfig {
   access: { title: string; text: string };
   modules: GiteModuleConfig[];
   navLabels?: Record<string, string>;
-  navOrder?: string[];
-  navCta?: GiteNavCta;
-  navAdminLabel?: string;
-  navBackgroundColor?: string;
-  navOpacity?: number;
   /** Zones libres déplaçables de la page Gîte. */
   contentBlocks?: GiteContentBlock[];
 }

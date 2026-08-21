@@ -1,140 +1,98 @@
-import React, { useMemo, useState } from 'react';
-import type { GiteModuleConfig, GiteSiteConfig } from '../types';
+import React, { useState } from 'react';
+import type { GiteContentBlock, GiteContentBlockType, GiteSiteConfig } from '../types';
 import { defaultGiteConfig } from '../data/giteConfig';
-import { prepareImageForUpload } from '../utils/mediaUpload';
-import { ArrowDown, ArrowUp, Plus, Trash2, Upload } from 'lucide-react';
+import { prepareImageForUpload, uploadBackgroundVideo } from '../utils/mediaUpload';
 
 interface Props { value?: GiteSiteConfig; onChange:(value:GiteSiteConfig)=>void; }
 const panel='p-5 rounded-2xl bg-[#18201a] border border-[#3b4b3e] space-y-4';
-const makeId = () => `gite-module-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+const moduleOptions = [
+  ['gite-hero','Le gîte — Accueil'],['gite-experience','Le gîte'],['gite-gallery','Galerie'],['gite-video','Vidéo'],
+  ['gite-essentials','Équipements'],['gite-nearby','La région'],['gite-stay','Séjourner'],['gite-access','Accès'],
+] as const;
+const makeId=()=>`gite-block-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+const newBlock=(type:GiteContentBlockType,moduleId:string):GiteContentBlock=>({id:makeId(),moduleId,type,x:50,y:50,width:type==='video'?45:type==='image'?32:30,height:type==='video'?30:type==='image'?28:undefined,text:type==='button'?'Réserver':type==='heading'?'Nouveau titre':'Nouvelle zone de texte',link:'',url:'',fontSize:type==='heading'?34:18,color:'#24231f',align:'left',fontFamily:type==='heading'?'display':'sans',fontWeight:type==='heading'?500:400,lineHeight:1.45,italic:false,backgroundColor:'rgba(255,255,255,0.88)',borderColor:'#8c6e3f',borderWidth:0,borderRadius:18,padding:12,opacity:100,rotation:0,objectFit:'cover',visible:true});
 
 export const GiteCustomizerPanel:React.FC<Props>=({value,onChange})=>{
   const [uploading,setUploading]=useState<string|null>(null);
-  const [uploadingNavCta,setUploadingNavCta]=useState(false);
+  const [creatorOpen,setCreatorOpen]=useState(false);
+  const [creatorType,setCreatorType]=useState<GiteContentBlockType>('text');
+  const [creatorModule,setCreatorModule]=useState('gite-experience');
   const c=value||defaultGiteConfig;
-  const modules=c.modules||[];
-  const navOrder=c.navOrder?.length ? c.navOrder : modules.map(m=>m.id);
-  const navModules=useMemo(()=>navOrder.map(id=>modules.find(m=>m.id===id)).filter(Boolean) as GiteModuleConfig[],[navOrder,modules]);
+  const blocks=c.contentBlocks||[];
   const update=(patch:Partial<GiteSiteConfig>)=>onChange({...c,...patch});
-  const updateModule=(id:string, patch:Partial<GiteModuleConfig>)=>update({modules:modules.map(m=>m.id===id?{...m,...patch}:m)});
-  const addModule=()=>{
-    const id=makeId();
-    const label=`Bloc ${modules.length+1}`;
-    const m:GiteModuleConfig={id,label,visible:true,width:100,height:520};
-    update({modules:[...modules,m],navOrder:[...(c.navOrder||modules.map(x=>x.id)),id],navLabels:{...(c.navLabels||{}),[id]:label}});
-  };
-  const removeModule=(id:string)=>{
-    if(modules.length<=1){ alert('Le Gîte doit conserver au moins un bloc.'); return; }
-    update({
-      modules:modules.filter(m=>m.id!==id),
-      navOrder:(c.navOrder||modules.map(m=>m.id)).filter(x=>x!==id),
-      navLabels:Object.fromEntries(Object.entries(c.navLabels||{}).filter(([k])=>k!==id)),
-      contentBlocks:(c.contentBlocks||[]).filter(b=>b.moduleId!==id),
-    });
-  };
-  const moveModule=(index:number,direction:-1|1)=>{
-    const next=index+direction; if(next<0||next>=modules.length)return;
-    const list=[...modules]; [list[index],list[next]]=[list[next],list[index]];
-    update({modules:list,navOrder:list.map(m=>m.id)});
-  };
-  const moveNav=(id:string,direction:-1|1)=>{
-    const list=[...navOrder]; const index=list.indexOf(id); const next=index+direction; if(index<0||next<0||next>=list.length)return;
-    [list[index],list[next]]=[list[next],list[index]];
-    const moduleById=new Map(modules.map(m=>[m.id,m]));
-    const reordered=list.map(moduleId=>moduleById.get(moduleId)).filter(Boolean) as GiteModuleConfig[];
-    update({navOrder:list,modules:reordered});
-  };
-  const uploadNavCtaImage=async(file:File)=>{
-    setUploadingNavCta(true);
-    try{
-      const prepared=await prepareImageForUpload(file);
-      const form=new FormData(); form.append('file',prepared);
-      const r=await fetch('/api/site-media',{method:'POST',credentials:'include',body:form});
-      const d=await r.json().catch(()=>null);
-      if(!r.ok||!d?.url) throw new Error(d?.error||`Upload : HTTP ${r.status}`);
-      update({navCta:{...(c.navCta||{label:'Réserver',link:'',visible:true}),imageUrl:String(d.url)}});
-    }catch(e){alert(e instanceof Error?e.message:'Upload impossible.')}finally{setUploadingNavCta(false)}
-  };
-
+  const updateModule=(id:string, patch:any)=>update({modules:c.modules.map(m=>m.id===id?{...m,...patch}:m)});
+  const updateBlock=(id:string,patch:Partial<GiteContentBlock>)=>update({contentBlocks:blocks.map(b=>b.id===id?{...b,...patch}:b)});
+  const addBlock=(type:GiteContentBlockType,moduleId='gite-experience')=>update({contentBlocks:[...blocks,newBlock(type,moduleId)]});
+  const createFromToolbar=()=>{ addBlock(creatorType, creatorModule); setCreatorOpen(false); };
+  const removeBlock=(id:string)=>update({contentBlocks:blocks.filter(b=>b.id!==id)});
   const upload=async(id:string,file:File,type:'image'|'video')=>{
     setUploading(id); try{
       const prepared=type==='image'?await prepareImageForUpload(file):file;
-      if(type==='video' && file.size>100*1024*1024) throw new Error('Vidéo trop lourde : 100 Mo maximum.');
       const form=new FormData(); form.append('file',prepared);
       const r=await fetch('/api/site-media',{method:'POST',credentials:'include',body:form});
       const d=await r.json().catch(()=>null); if(!r.ok||!d?.url) throw new Error(d?.error||`Upload : HTTP ${r.status}`);
-      const current=modules.find(m=>m.id===id)?.background;
-      updateModule(id,{background:{type,url:String(d.url),overlay:current?.overlay??0}});
+      const current=c.modules.find(m=>m.id===id)?.background;
+      updateModule(id,{background:{type,url:String(d.url),overlay:current?.overlay??20}});
+    }catch(e){alert(e instanceof Error?e.message:'Upload impossible.')}finally{setUploading(null)}
+  };
+  const uploadBlockVideo=async(block:GiteContentBlock,file:File)=>{
+    setUploading(block.id); try{
+      const url=await uploadBackgroundVideo(file);
+      updateBlock(block.id,{url});
+    }catch(e){alert(e instanceof Error?e.message:'Upload impossible.')}finally{setUploading(null)}
+  };
+  const uploadBlockImage=async(block:GiteContentBlock,file:File)=>{
+    setUploading(block.id); try{
+      const prepared=await prepareImageForUpload(file);
+      const form=new FormData(); form.append('file',prepared);
+      const r=await fetch('/api/site-media',{method:'POST',credentials:'include',body:form});
+      const d=await r.json().catch(()=>null); if(!r.ok||!d?.url) throw new Error(d?.error||`Upload : HTTP ${r.status}`);
+      updateBlock(block.id,{url:String(d.url)});
     }catch(e){alert(e instanceof Error?e.message:'Upload impossible.')}finally{setUploading(null)}
   };
 
   return <div className="space-y-6">
-    <div className={panel}>
-      <div><h4 className="font-serif text-lg text-[#f3ece0]">Page Gîte — canevas libre</h4><p className="text-xs text-[#a3b1a5]">La page démarre volontairement blanche. Crée tes textes, images, vidéos et boutons depuis l’éditeur des zones libres.</p></div>
-      <div className="rounded-xl border border-[#536258] bg-[#101510] p-4 text-xs text-[#a3b1a5]">Aucun contenu texte, galerie ou vidéo principal n’est imposé par le Gîte. Les éléments sont créés librement dans les blocs.</div>
+    <div className={panel}><div><h4 className="font-serif text-lg text-[#f3ece0]">Page Gîte — contenus</h4><p className="text-xs text-[#a3b1a5]">Configuration indépendante de la Boutique. Les zones libres ci-dessous peuvent être ajoutées, déplacées et modifiées par module.</p></div>
+      <div className="grid md:grid-cols-2 gap-4">{([['name','Nom du gîte'],['location','Lieu / région'],['tagline','Accroche'] ] as const).map(([k,l])=><label key={k} className="text-xs text-[#a3b1a5]">{l}<input value={(c as any)[k]||''} onChange={e=>update({[k]:e.target.value} as any)} className="mt-2 w-full bg-[#101510] border border-[#344237] rounded-xl px-3 py-2 text-white"/></label>)}</div>
+      <label className="text-xs text-[#a3b1a5] block">Image principale du gîte<input value={c.heroImage} onChange={e=>update({heroImage:e.target.value})} className="mt-2 w-full bg-[#101510] border border-[#344237] rounded-xl px-3 py-2 text-white"/></label>
+      <div className="grid md:grid-cols-2 gap-4"><label className="text-xs text-[#a3b1a5]">Titre « Le gîte »<input value={c.intro.title} onChange={e=>update({intro:{...c.intro,title:e.target.value}})} className="mt-2 w-full bg-[#101510] border border-[#344237] rounded-xl px-3 py-2 text-white"/></label><label className="text-xs text-[#a3b1a5]">Texte « Le gîte »<textarea value={c.intro.text} onChange={e=>update({intro:{...c.intro,text:e.target.value}})} className="mt-2 w-full bg-[#101510] border border-[#344237] rounded-xl px-3 py-2 text-white min-h-24"/></label></div>
     </div>
 
-    <div className={panel}>
-      <div className="flex items-center justify-between gap-3"><div><h4 className="font-serif text-lg text-[#f3ece0]">Blocs de la page</h4><p className="text-xs text-[#a3b1a5]">Ajoute, supprime, monte/descends et règle la largeur/hauteur de chaque bloc.</p></div><button type="button" onClick={addModule} className="inline-flex items-center gap-2 rounded-xl bg-[#d4af37] px-4 py-2 text-xs font-semibold text-[#111612]"><Plus size={15}/> Ajouter un bloc</button></div>
-      <div className="space-y-3">
-        {modules.map((m,idx)=><div key={m.id} className="rounded-xl border border-[#344237] bg-[#101510] p-4 space-y-3">
-          <div className="flex items-center gap-2"><input value={m.label} onChange={e=>{const label=e.target.value;updateModule(m.id,{label});update({navLabels:{...(c.navLabels||{}),[m.id]:label}})}} className="flex-1 rounded-lg bg-[#18201a] border border-[#344237] px-3 py-2 text-sm font-semibold text-white"/><button type="button" disabled={idx===0} onClick={()=>moveModule(idx,-1)} className="rounded-lg bg-[#263128] p-2 text-white disabled:opacity-25"><ArrowUp size={15}/></button><button type="button" disabled={idx===modules.length-1} onClick={()=>moveModule(idx,1)} className="rounded-lg bg-[#263128] p-2 text-white disabled:opacity-25"><ArrowDown size={15}/></button><button type="button" onClick={()=>removeModule(m.id)} className="rounded-lg border border-red-900/70 bg-red-950/30 p-2 text-red-300"><Trash2 size={15}/></button></div>
-          <div className="grid md:grid-cols-3 gap-3">
-            <label className="text-[11px] text-[#a3b1a5]">Visible<select value={m.visible?'yes':'no'} onChange={e=>updateModule(m.id,{visible:e.target.value==='yes'})} className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-2 py-2 text-white"><option value="yes">Oui</option><option value="no">Non</option></select></label>
-            <label className="text-[11px] text-[#a3b1a5]">Largeur {m.width??100}%<input type="range" min="50" max="100" value={m.width??100} onChange={e=>updateModule(m.id,{width:Number(e.target.value)})} className="mt-2 w-full accent-[#d4af37]"/></label>
-            <label className="text-[11px] text-[#a3b1a5]">Hauteur {m.height??520}px<input type="range" min="180" max="1800" step="10" value={m.height??520} onChange={e=>updateModule(m.id,{height:Number(e.target.value)})} className="mt-2 w-full accent-[#d4af37]"/></label>
-          </div>
-          <div className="grid md:grid-cols-[110px_1fr_1fr] gap-3 items-end">
-            <div className="h-[74px] w-full overflow-hidden rounded-lg border border-[#344237] bg-[#18201a]">
-              {m.background?.type === 'image' && m.background.url ? (
-                <img src={m.background.url} alt={`Aperçu du fond — ${m.label}`} className="h-full w-full object-cover" />
-              ) : m.background?.type === 'video' && m.background.url ? (
-                <video src={m.background.url} muted playsInline className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full items-center justify-center px-2 text-center text-[10px] text-[#718074]">Aucun fond</div>
-              )}
-            </div>
-            <label className="text-[11px] text-[#a3b1a5]">Fond<select value={m.background?.type||'none'} onChange={e=>e.target.value==='none'?updateModule(m.id,{background:undefined}):updateModule(m.id,{background:{type:e.target.value as any,url:m.background?.url||'',overlay:m.background?.overlay??0}})} className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-2 py-2 text-white"><option value="none">Blanc / aucun</option><option value="image">Image</option><option value="video">Vidéo</option></select></label>
-            {m.background && <label className="text-[11px] text-[#a3b1a5]">Opacité du voile {m.background.overlay??0}%<input type="range" min="0" max="100" value={m.background.overlay??0} onChange={e=>updateModule(m.id,{background:{...m.background!,overlay:Number(e.target.value)}})} className="mt-2 w-full accent-[#d4af37]"/></label>}
-            {m.background && <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#536258] bg-[#18201a] px-3 py-2 text-xs text-white"><Upload size={14}/>{uploading===m.id?'Upload…':'Importer un fond'}<input type="file" accept={m.background.type==='video'?'.mp4,.webm,video/mp4,video/webm':'image/*'} className="hidden" onChange={e=>{const f=e.target.files?.[0];if(f)void upload(m.id,f,m.background!.type as any)}}/></label>}
-          </div>
-          {m.background && <input value={m.background.url} onChange={e=>updateModule(m.id,{background:{...m.background!,url:e.target.value}})} placeholder="URL du fond (facultatif)" className="w-full rounded-lg bg-[#18201a] border border-[#344237] px-3 py-2 text-xs text-white"/>}
-        </div>)}
-      </div>
-    </div>
-
-    <div className={panel}>
-      <div><h4 className="font-serif text-lg text-[#f3ece0]">Navigation Gîte</h4><p className="text-xs text-[#a3b1a5]">La navigation reprend les blocs présents. Tu peux renommer et déplacer les entrées gauche/droite.</p></div>
-      <div className="space-y-2">{navModules.map((m,idx)=><div key={m.id} className="flex items-center gap-2 rounded-lg bg-[#101510] p-2"><span className="flex-1 text-sm text-white">{c.navLabels?.[m.id]||m.label}</span><button type="button" disabled={idx===0} onClick={()=>moveNav(m.id,-1)} className="rounded-lg bg-[#263128] p-2 text-white disabled:opacity-25"><ArrowUp size={14}/></button><button type="button" disabled={idx===navModules.length-1} onClick={()=>moveNav(m.id,1)} className="rounded-lg bg-[#263128] p-2 text-white disabled:opacity-25"><ArrowDown size={14}/></button></div>)}</div>
-      <div className="grid md:grid-cols-2 gap-3">
-        <label className="text-xs text-[#a3b1a5]">Couleur de la nav<input type="color" value={c.navBackgroundColor||'#ffffff'} onChange={e=>update({navBackgroundColor:e.target.value})} className="mt-2 h-10 w-full rounded-lg bg-[#101510] border border-[#344237]"/></label>
-        <label className="text-xs text-[#a3b1a5]">Opacité de la nav {c.navOpacity??94}%<input type="range" min="0" max="100" value={c.navOpacity??94} onChange={e=>update({navOpacity:Number(e.target.value)})} className="mt-2 w-full accent-[#d4af37]"/></label>
-      </div>
-      <div className="grid md:grid-cols-2 gap-3">
-        <label className="text-xs text-[#a3b1a5]">Texte du bouton admin<input value={c.navAdminLabel||'⌂'} onChange={e=>update({navAdminLabel:e.target.value})} className="mt-2 w-full rounded-lg bg-[#101510] border border-[#344237] px-3 py-2 text-white"/></label>
-        <label className="text-xs text-[#a3b1a5] flex items-center gap-2 pt-6"><input type="checkbox" checked={!!c.navCta?.visible} onChange={e=>update({navCta:{...(c.navCta||{label:'Réserver',link:''}),visible:e.target.checked}})}/> Afficher un bouton</label>
-      </div>
-      <div className="grid md:grid-cols-2 gap-3">
-        <label className="text-xs text-[#a3b1a5]">Texte du bouton<input value={c.navCta?.label||'Réserver'} onChange={e=>update({navCta:{...(c.navCta||{label:'Réserver',link:'',visible:true}),label:e.target.value}})} className="mt-2 w-full rounded-lg bg-[#101510] border border-[#344237] px-3 py-2 text-white"/></label>
-        <label className="text-xs text-[#a3b1a5]">Lien du bouton<input value={c.navCta?.link||''} onChange={e=>update({navCta:{...(c.navCta||{label:'Réserver',visible:true}),link:e.target.value}})} placeholder="https://..." className="mt-2 w-full rounded-lg bg-[#101510] border border-[#344237] px-3 py-2 text-white"/></label>
-      </div>
-      <div className="grid md:grid-cols-2 gap-3">
-        <div className="rounded-xl border border-[#344237] bg-[#101510] p-3 space-y-2">
-          <div className="text-xs text-[#a3b1a5]">Affichage du bouton</div>
-          <div className="text-[11px] text-[#87968a]">Tu peux garder le bouton texte ou le remplacer par une image.</div>
-          <label className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#536258] bg-[#18201a] px-3 py-2 text-xs text-white">
-            <Upload size={14}/>{uploadingNavCta?'Upload…':'Choisir une image'}
-            <input type="file" accept="image/*" className="hidden" onChange={e=>{const f=e.target.files?.[0];if(f)void uploadNavCtaImage(f)}}/>
-          </label>
-          {c.navCta?.imageUrl && <div className="flex items-center gap-2">
-            <img src={c.navCta.imageUrl} alt="Aperçu bouton" className="h-12 w-24 rounded-lg object-contain bg-white/5 border border-[#344237]"/>
-            <button type="button" onClick={()=>update({navCta:{...(c.navCta||{label:'Réserver',link:'',visible:true}),imageUrl:undefined}})} className="rounded-lg border border-red-900/70 bg-red-950/30 px-3 py-2 text-xs text-red-200">Retirer</button>
-          </div>}
+    <div className={panel}><div className="flex items-center justify-between gap-3"><div><h4 className="font-serif text-lg text-[#f3ece0]">Zones libres déplaçables du Gîte</h4><p className="text-xs text-[#a3b1a5]">Crée des bulles indépendantes dans n'importe quel bloc : texte, titre, image, vidéo ou bouton. Position X/Y, taille, rotation, couleurs, police et styles sont personnalisables.</p></div><button onClick={()=>setCreatorOpen(v=>!v)} className="px-4 py-2.5 rounded-xl bg-[#d4af37] text-[#111612] text-xs font-bold shadow-lg hover:bg-[#e2c45b]">＋ Créer une zone libre</button></div>
+      {creatorOpen&&<div className="bg-[#101510] border border-[#d4af37]/50 rounded-2xl p-4 grid md:grid-cols-3 gap-3 items-end"><label className="text-xs text-[#a3b1a5]">Type<select value={creatorType} onChange={e=>setCreatorType(e.target.value as GiteContentBlockType)} className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white"><option value="text">Zone de texte</option><option value="heading">Titre</option><option value="image">Image</option><option value="video">Vidéo</option><option value="button">Bouton</option></select></label><label className="text-xs text-[#a3b1a5]">Bloc de la page<select value={creatorModule} onChange={e=>setCreatorModule(e.target.value)} className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white">{moduleOptions.map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label><button onClick={createFromToolbar} className="px-3 py-2 rounded-lg bg-[#263128] text-[#d4af37] border border-[#536654]">Créer l'élément</button></div>}
+      <div className="flex flex-wrap gap-2"><button onClick={()=>addBlock('heading')} className="px-3 py-2 rounded-lg bg-[#263128] text-white text-xs">+ Titre rapide</button><button onClick={()=>addBlock('text')} className="px-3 py-2 rounded-lg bg-[#263128] text-white text-xs">+ Texte rapide</button><button onClick={()=>addBlock('image')} className="px-3 py-2 rounded-lg bg-[#263128] text-white text-xs">+ Image rapide</button><button onClick={()=>addBlock('video')} className="px-3 py-2 rounded-lg bg-[#263128] text-white text-xs">+ Vidéo rapide</button><button onClick={()=>addBlock('button')} className="px-3 py-2 rounded-lg bg-[#263128] text-[#d4af37] text-xs">+ Bouton rapide</button><button onClick={()=>{const b=newBlock('button','gite-stay');b.text='Airbnb';b.link=c.airbnbUrl;update({contentBlocks:[...blocks,b]})}} className="px-3 py-2 rounded-lg bg-[#263128] text-[#d4af37] text-xs">+ Airbnb</button><button onClick={()=>{const b=newBlock('button','gite-stay');b.text='Booking.com';b.link=c.bookingUrl;update({contentBlocks:[...blocks,b]})}} className="px-3 py-2 rounded-lg bg-[#263128] text-[#d4af37] text-xs">+ Booking</button></div>
+      <div className="space-y-3">{blocks.length===0&&<div className="text-xs text-[#7f9382] border border-dashed border-[#3b4b3e] rounded-xl p-4">Aucune zone libre. Ajoute un titre, un texte, une vidéo ou un bouton.</div>}
+      {blocks.map((b,index)=><div key={b.id} className="bg-[#101510] rounded-xl p-4 border border-[#344237] space-y-3">
+        <div className="flex items-center justify-between gap-3"><strong className="text-white text-sm">{b.type==='heading'?'Titre':b.type==='text'?'Zone de texte':b.type==='image'?'Image':b.type==='video'?'Bloc vidéo':'Bouton'} #{index+1}</strong><button onClick={()=>removeBlock(b.id)} className="text-red-300 text-xs">Supprimer</button></div>
+        <div className="grid md:grid-cols-2 gap-3"><label className="text-xs text-[#a3b1a5]">Bloc / module<select value={b.moduleId} onChange={e=>updateBlock(b.id,{moduleId:e.target.value})} className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white">{moduleOptions.map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label><label className="text-xs text-[#a3b1a5] flex items-end gap-2 pb-2"><input type="checkbox" checked={b.visible} onChange={e=>updateBlock(b.id,{visible:e.target.checked})}/> Visible</label></div>
+        {b.type!=='video'&&b.type!=='image'&&<label className="text-xs text-[#a3b1a5] block">{b.type==='button'?'Texte du bouton':'Texte'}<textarea value={b.text||''} onChange={e=>updateBlock(b.id,{text:e.target.value})} className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white min-h-20"/></label>}
+        {b.type==='image'&&<><input type="file" accept="image/*" onChange={e=>{const f=e.target.files?.[0];if(f) void uploadBlockImage(b,f)}} className="text-xs text-[#a3b1a5]"/><input value={b.url||''} onChange={e=>updateBlock(b.id,{url:e.target.value})} placeholder="URL de l'image" className="w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white text-xs"/>{b.url&&<img src={b.url} alt="" className="w-full max-h-40 rounded-lg object-cover"/>}<label className="text-xs text-[#a3b1a5] block">Texte alternatif<input value={b.alt||''} onChange={e=>updateBlock(b.id,{alt:e.target.value})} className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white"/></label></>}
+        {b.type==='button'&&<label className="text-xs text-[#a3b1a5] block">Lien Booking / Airbnb / autre URL<input value={b.link||''} onChange={e=>updateBlock(b.id,{link:e.target.value})} placeholder="https://..." className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white"/></label>}
+        {b.type==='video'&&<><input type="file" accept=".mp4,.webm,video/mp4,video/webm" onChange={e=>{const f=e.target.files?.[0];if(f) void uploadBlockVideo(b,f)}} className="text-xs text-[#a3b1a5]"/><input value={b.url||''} onChange={e=>updateBlock(b.id,{url:e.target.value})} placeholder="URL vidéo" className="w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white text-xs"/>{b.url&&<video src={b.url} controls className="w-full max-h-40 rounded-lg object-cover"/>}</>}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <label className="text-xs text-[#a3b1a5]">X %<input type="number" min="0" max="100" value={b.x} onChange={e=>updateBlock(b.id,{x:Number(e.target.value)})} className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white"/><input type="range" min="0" max="100" value={b.x} onChange={e=>updateBlock(b.id,{x:Number(e.target.value)})} className="w-full"/></label>
+          <label className="text-xs text-[#a3b1a5]">Y %<input type="number" min="0" max="100" value={b.y} onChange={e=>updateBlock(b.id,{y:Number(e.target.value)})} className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white"/><input type="range" min="0" max="100" value={b.y} onChange={e=>updateBlock(b.id,{y:Number(e.target.value)})} className="w-full"/></label>
+          <label className="text-xs text-[#a3b1a5]">Largeur %<input type="number" min="8" max="95" value={b.width} onChange={e=>updateBlock(b.id,{width:Number(e.target.value)})} className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white"/></label>
+          <label className="text-xs text-[#a3b1a5]">Hauteur %<input type="number" min="10" max="95" value={b.height||30} onChange={e=>updateBlock(b.id,{height:Number(e.target.value)})} className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white"/></label>
+          <label className="text-xs text-[#a3b1a5]">Rotation °<input type="number" min="-180" max="180" value={b.rotation||0} onChange={e=>updateBlock(b.id,{rotation:Number(e.target.value)})} className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white"/></label>
+          <label className="text-xs text-[#a3b1a5]">Taille px<input type="number" min="10" max="160" value={b.fontSize||18} onChange={e=>updateBlock(b.id,{fontSize:Number(e.target.value)})} className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white"/></label>
+          <label className="text-xs text-[#a3b1a5]">Police<select value={b.fontFamily||'sans'} onChange={e=>updateBlock(b.id,{fontFamily:e.target.value})} className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white"><option value="sans">Sans</option><option value="serif">Serif</option><option value="display">DM Serif Display</option><option value="elegant">Playfair</option><option value="mono">Monospace</option></select></label>
+          <label className="text-xs text-[#a3b1a5]">Graisse<select value={b.fontWeight||400} onChange={e=>updateBlock(b.id,{fontWeight:Number(e.target.value)})} className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white"><option value={300}>300</option><option value={400}>400</option><option value={500}>500</option><option value={600}>600</option><option value={700}>700</option></select></label>
+          <label className="text-xs text-[#a3b1a5]">Interligne<input type="number" min="0.8" max="2.5" step="0.05" value={b.lineHeight||1.45} onChange={e=>updateBlock(b.id,{lineHeight:Number(e.target.value)})} className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white"/></label>
+          <label className="text-xs text-[#a3b1a5]">Couleur texte<input type="color" value={b.color||'#24231f'} onChange={e=>updateBlock(b.id,{color:e.target.value})} className="mt-2 h-9 w-full bg-transparent"/></label>
+          <label className="text-xs text-[#a3b1a5]">Fond<input type="text" value={b.backgroundColor||''} onChange={e=>updateBlock(b.id,{backgroundColor:e.target.value})} placeholder="rgba(255,255,255,.85)" className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white"/></label>
+          <label className="text-xs text-[#a3b1a5]">Opacité %<input type="number" min="0" max="100" value={b.opacity??100} onChange={e=>updateBlock(b.id,{opacity:Number(e.target.value)})} className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white"/></label>
+          <label className="text-xs text-[#a3b1a5]">Rayon px<input type="number" min="0" max="80" value={b.borderRadius??18} onChange={e=>updateBlock(b.id,{borderRadius:Number(e.target.value)})} className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white"/></label>
+          <label className="text-xs text-[#a3b1a5] flex items-center gap-2 pt-6"><input type="checkbox" checked={!!b.italic} onChange={e=>updateBlock(b.id,{italic:e.target.checked})}/> Italique</label>
+          {b.type==='image'&&<label className="text-xs text-[#a3b1a5]">Affichage image<select value={b.objectFit||'cover'} onChange={e=>updateBlock(b.id,{objectFit:e.target.value as 'cover'|'contain'})} className="mt-2 w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white"><option value="cover">Remplir</option><option value="contain">Contenir</option></select></label>}
         </div>
-        <label className="text-xs text-[#a3b1a5]">Effet au survol<select value={c.navCta?.hoverEffect||'none'} onChange={e=>update({navCta:{...(c.navCta||{label:'Réserver',link:'',visible:true}),hoverEffect:e.target.value as any}})} className="mt-2 w-full rounded-lg bg-[#101510] border border-[#344237] px-3 py-2 text-white">
-          <option value="none">Aucun</option><option value="opacity">Opacité</option><option value="scale">Zoom léger</option><option value="brightness">Luminosité</option><option value="grayscale">Niveaux de gris</option><option value="lift">Élévation</option>
-        </select></label>
-      </div>
+      </div>)}</div>
     </div>
+
+    <div className={panel}><h4 className="font-serif text-lg text-[#f3ece0]">Galerie & vidéo principale</h4><div className="grid md:grid-cols-2 gap-4">{c.gallery.map((g,i)=><div key={i} className="bg-[#101510] rounded-xl p-3 space-y-2"><img src={g.src} alt="" className="w-full h-28 object-cover rounded-lg"/><input value={g.src} onChange={e=>{const gallery=[...c.gallery];gallery[i]={...gallery[i],src:e.target.value};update({gallery})}} className="w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white text-xs"/><input value={g.alt} onChange={e=>{const gallery=[...c.gallery];gallery[i]={...gallery[i],alt:e.target.value};update({gallery})}} className="w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white text-xs"/></div>)}</div><label className="text-xs text-[#a3b1a5] block">URL vidéo (MP4/WebM)<input value={c.videoUrl||''} onChange={e=>update({videoUrl:e.target.value})} className="mt-2 w-full bg-[#101510] border border-[#344237] rounded-xl px-3 py-2 text-white"/></label></div>
+
+    <div className={panel}><h4 className="font-serif text-lg text-[#f3ece0]">Ordre, visibilité & fonds des modules</h4>{c.modules.map((m,idx)=><div key={m.id} className="bg-[#101510] rounded-xl p-4 space-y-3"><div className="flex items-center justify-between"><strong className="text-white text-sm">{m.label}</strong><label className="text-xs text-[#a3b1a5] flex gap-2 items-center"><input type="checkbox" checked={m.visible} onChange={e=>updateModule(m.id,{visible:e.target.checked})}/> Visible</label></div><div className="grid md:grid-cols-3 gap-3"><button disabled={idx===0} onClick={()=>{const modules=[...c.modules];[modules[idx-1],modules[idx]]=[modules[idx],modules[idx-1]];update({modules})}} className="px-3 py-2 rounded-lg bg-[#263128] text-white disabled:opacity-30">↑ Monter</button><button disabled={idx===c.modules.length-1} onClick={()=>{const modules=[...c.modules];[modules[idx+1],modules[idx]]=[modules[idx],modules[idx+1]];update({modules})}} className="px-3 py-2 rounded-lg bg-[#263128] text-white disabled:opacity-30">↓ Descendre</button><select value={m.background?.type||'none'} onChange={e=>e.target.value==='none'?updateModule(m.id,{background:undefined}):updateModule(m.id,{background:{type:e.target.value,url:m.background?.url||'',overlay:m.background?.overlay??20}})} className="bg-[#18201a] text-white rounded-lg px-2"><option value="none">Sans fond</option><option value="image">Image</option><option value="video">Vidéo</option></select></div>{m.background&&<><div className="flex gap-3 items-center"><input type="file" accept={m.background.type==='video'?'.mp4,.webm,video/mp4,video/webm':'image/*'} onChange={e=>{const f=e.target.files?.[0];if(f) void upload(m.id,f,m.background!.type as any)}} className="text-xs text-[#a3b1a5]"/><span className="text-xs text-[#a3b1a5]">{uploading===m.id?'Upload…':'Importer depuis le PC'}</span></div><input value={m.background.url} onChange={e=>updateModule(m.id,{background:{...m.background!,url:e.target.value}})} placeholder="URL du média" className="w-full bg-[#18201a] border border-[#344237] rounded-lg px-2 py-2 text-white text-xs"/><label className="text-xs text-[#a3b1a5]">Opacité du voile : {m.background.overlay??20}%<input type="range" min="0" max="100" value={m.background.overlay??20} onChange={e=>updateModule(m.id,{background:{...m.background!,overlay:Number(e.target.value)}})} className="w-full"/></label>{m.background.url&&m.background.type==='image'&&<img src={m.background.url} alt="Aperçu" className="w-full h-24 object-cover rounded-lg"/>}{m.background.url&&m.background.type==='video'&&<video src={m.background.url} muted controls className="w-full h-24 object-cover rounded-lg"/>}</>}</div>)}</div>
+
+    <div className={panel}><h4 className="font-serif text-lg text-[#f3ece0]">Navigation Gîte</h4><div className="grid md:grid-cols-2 gap-3">{(['experience','gallery','video','nearby','stay'] as const).map(k=><label key={k} className="text-xs text-[#a3b1a5]">{k}<input value={c.navLabels?.[k]||''} onChange={e=>update({navLabels:{...(c.navLabels||{}),[k]:e.target.value}})} className="mt-2 w-full bg-[#101510] border border-[#344237] rounded-xl px-3 py-2 text-white"/></label>)}</div></div>
   </div>;
 };

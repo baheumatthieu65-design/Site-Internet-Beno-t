@@ -30,6 +30,7 @@ import { SiteBlocksRenderer } from './components/SiteBlocksRenderer';
 import GitePage from './components/GitePage';
 import { LogoEditorModal } from './components/LogoEditorModal';
 import { FloatingMediaLayer } from './components/FloatingMediaLayer';
+import { SiteOrientation } from './components/SiteOrientation';
 import './styles/gite-v48.css';
 import './styles/floating-media.css';
 
@@ -211,6 +212,7 @@ export default function App() {
 
   const [activeSection, setActiveSection] = useState('collection');
   const [isGitePageOpen, setIsGitePageOpen] = useState(false);
+  const [showOrientation, setShowOrientation] = useState(true);
 
   // ===========================================================================
   // SECTION DRAG / REORDER
@@ -1692,11 +1694,13 @@ export default function App() {
   };
 
   const handleOpenGite = () => {
+    setShowOrientation(false);
     setIsGitePageOpen(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleBackToVitrine = () => {
+    setShowOrientation(false);
     setIsGitePageOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -1715,6 +1719,16 @@ export default function App() {
           </span>
         </div>
       </div>
+    );
+  }
+
+  if (showOrientation && !isGitePageOpen) {
+    return (
+      <SiteOrientation
+        brandData={brandData}
+        onOpenBoutique={() => { setShowOrientation(false); setIsGitePageOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+        onOpenGite={handleOpenGite}
+      />
     );
   }
 

@@ -22,11 +22,14 @@ const boutiqueModules: ModuleOption[] = [
 ];
 
 const giteModules: ModuleOption[] = [
-  { id: "gite-accueil", label: "Gîte — Accueil", group: "gite" },
-  { id: "gite-le-gite", label: "Gîte — Le gîte", group: "gite" },
-  { id: "gite-region", label: "Gîte — La région", group: "gite" },
-  { id: "gite-sejourner", label: "Gîte — Séjourner", group: "gite" },
-  { id: "gite-acces", label: "Gîte — Accès", group: "gite" },
+  { id: "gite-hero", label: "Gîte — Accueil", group: "gite" },
+  { id: "gite-experience", label: "Gîte — Présentation", group: "gite" },
+  { id: "gite-gallery", label: "Gîte — Galerie photos", group: "gite" },
+  { id: "gite-video", label: "Gîte — Vidéo", group: "gite" },
+  { id: "gite-essentials", label: "Gîte — Équipements", group: "gite" },
+  { id: "gite-nearby", label: "Gîte — Aux alentours", group: "gite" },
+  { id: "gite-stay", label: "Gîte — Séjourner / Airbnb / Booking", group: "gite" },
+  { id: "gite-access", label: "Gîte — Accès", group: "gite" },
 ];
 
 const fallbackSections = [...boutiqueModules, ...giteModules];
