@@ -131,13 +131,13 @@ export const publishedSiteContent = {
           "moduleId": "gite-accueil",
           "type": "text",
           "x": 12,
-          "y": 71.875,
+          "y": 72,
           "width": 30,
-          "height": 18,
+          "height": 19,
           "text": "Le Gîte",
           "link": "",
           "url": "",
-          "fontSize": 70,
+          "fontSize": 77,
           "color": "#ffffff",
           "align": "left",
           "fontFamily": "display",
@@ -160,7 +160,7 @@ export const publishedSiteContent = {
           "moduleId": "gite-accueil",
           "type": "text",
           "x": 8,
-          "y": 70.125,
+          "y": 70,
           "width": 30,
           "height": 18,
           "text": "Pyrénées",
@@ -2105,5 +2105,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787324245359
+  "publishedAt": 1787324276559
 } as const;
