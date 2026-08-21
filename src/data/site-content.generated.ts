@@ -68,7 +68,7 @@ export const publishedSiteContent = {
           "label": "Séjourner",
           "visible": true,
           "width": 100,
-          "height": 910
+          "height": 1180
         },
         {
           "id": "gite-region",
@@ -287,8 +287,8 @@ export const publishedSiteContent = {
           "id": "gite-block-1787319271954-mxrw2w",
           "moduleId": "gite-sejourner",
           "type": "image",
-          "x": 28.020833333333332,
-          "y": 50.65934065934066,
+          "x": 46.61458333333333,
+          "y": 29.120879120879124,
           "width": 32,
           "text": "Nouvelle zone de texte",
           "link": "",
@@ -1204,5 +1204,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787319344721
+  "publishedAt": 1787319358447
 } as const;
