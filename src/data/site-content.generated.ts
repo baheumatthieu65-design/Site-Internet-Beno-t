@@ -650,8 +650,8 @@ export const publishedSiteContent = {
       },
       "gite": {
         "imageUrl": "/assets/persistent-media-2.png",
-        "text": "GÎTE DES\nPYR",
-        "secondaryText": "Test 4",
+        "text": "GÎTE DES\nPYRER",
+        "secondaryText": "Un espace de détente",
         "fontFamily": "sans",
         "textColor": "#f3ece0",
         "textSize": "20px",
@@ -1097,5 +1097,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787308535177
+  "publishedAt": 1787311216220
 } as const;
