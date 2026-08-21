@@ -1658,10 +1658,10 @@ export const publishedSiteContent = {
       },
       "gite": {
         "imageUrl": "/assets/persistent-media-2.png",
-        "text": "GÎTE DES\nPYRÈNEES",
+        "text": "GÎTE DES PYRÈNEES\n",
         "secondaryText": "Un espace de détente",
         "fontFamily": "sans",
-        "textColor": "#be9756",
+        "textColor": "#ffffff",
         "textSize": "20px",
         "imageSize": 58,
         "gap": 12,
@@ -2105,5 +2105,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787324423008
+  "publishedAt": 1787324436922
 } as const;
