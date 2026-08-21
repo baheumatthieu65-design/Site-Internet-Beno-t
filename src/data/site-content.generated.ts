@@ -847,6 +847,34 @@ export const publishedSiteContent = {
           "visible": true,
           "buttonImageUrl": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787321177911-Booking.png",
           "buttonImageEnabled": true
+        },
+        {
+          "id": "gite-block-1787321338984-ri3ye9",
+          "moduleId": "gite-acces",
+          "type": "text",
+          "x": 50,
+          "y": 50,
+          "width": 30,
+          "height": 18,
+          "text": "ACCES",
+          "link": "",
+          "url": "",
+          "fontSize": 18,
+          "color": "#24231f",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "rgba(255,255,255,0.88)",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true
         }
       ],
       "navBackgroundColor": "#000000",
@@ -1742,5 +1770,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787321268216
+  "publishedAt": 1787321360676
 } as const;
