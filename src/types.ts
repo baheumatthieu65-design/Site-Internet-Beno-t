@@ -444,6 +444,7 @@ export interface GiteContentBlock {
   rotation?: number;
   objectFit?: 'cover' | 'contain';
   visible: boolean;
+  autoSize?: boolean;
 }
 
 export interface GiteModuleConfig {
@@ -482,6 +483,8 @@ export interface GiteSiteConfig {
   navOrder?: string[];
   navCta?: GiteNavCta;
   navAdminLabel?: string;
+  navBackgroundColor?: string;
+  navOpacity?: number;
   /** Zones libres déplaçables de la page Gîte. */
   contentBlocks?: GiteContentBlock[];
 }

@@ -38,10 +38,12 @@ export const GitePage:React.FC<{
   brandData:BrandConfig;
   onBackToVitrine:()=>void;
   onAdmin:()=>void;
+  onLogout?:()=>void | Promise<void>;
+  isAdminLoggedIn?:boolean;
   floatingImages?:FloatingMediaItem[];
   editable?:boolean;
   onGiteChange?:(config:GiteSiteConfig)=>void;
-}>=({brandData,onBackToVitrine,onAdmin,floatingImages=[],editable=false,onGiteChange})=>{
+}>=({brandData,onBackToVitrine,onAdmin,onLogout,isAdminLoggedIn=false,floatingImages=[],editable=false,onGiteChange})=>{
   const c = normalizeConfig(brandData.gite);
   const blocks = c.contentBlocks || [];
   const updateBlocks = (next:GiteSiteConfig['contentBlocks']) => onGiteChange?.({ ...c, contentBlocks: next });
@@ -76,7 +78,7 @@ export const GitePage:React.FC<{
   };
 
   return <main className="gite-page">
-    <GiteNavigation brandData={brandData} config={c} onBackToVitrine={onBackToVitrine} onAdmin={onAdmin}/>
+    <GiteNavigation brandData={brandData} config={c} onBackToVitrine={onBackToVitrine} onAdmin={onAdmin} isAdminLoggedIn={isAdminLoggedIn}/>
     <div className="gite-page-canvas">{c.modules?.map((module,index)=>renderModule(module,index))}</div>
   </main>;
 };

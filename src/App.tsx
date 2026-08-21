@@ -1731,6 +1731,7 @@ export default function App() {
           isGitePage={isGitePageOpen}
           giteConfig={brandData.gite}
           onGiteChange={(gite) => setBrandData((current) => ({ ...current, gite }))}
+          onLogout={handleLogout}
           onGiteSave={async (gite) => {
             const next = { ...brandData, gite };
             setBrandData(next);
@@ -1784,13 +1785,12 @@ export default function App() {
         <GitePage
           brandData={brandData}
           onBackToVitrine={handleBackToVitrine}
-          onAdmin={() => handleOpenEditor('gite')}
+          onAdmin={() => { if (isAdminLoggedIn) { void handleLogout(); } else { handleOpenEditor('gite'); } }}
+          onLogout={handleLogout}
+          isAdminLoggedIn={isAdminLoggedIn}
           floatingImages={siteEditorConfig.floatingImages}
           editable={isAdminLoggedIn}
-          onContentBlocksChange={(blocks: GiteContentBlock[]) => setBrandData((current) => ({
-            ...current,
-            gite: current.gite ? { ...current.gite, contentBlocks: blocks } : current.gite,
-          }))}
+          onGiteChange={(gite) => setBrandData((current) => ({ ...current, gite }))}
         />
       )}
 

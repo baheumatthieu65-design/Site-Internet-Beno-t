@@ -85,6 +85,10 @@ export const GiteCustomizerPanel:React.FC<Props>=({value,onChange})=>{
       <div><h4 className="font-serif text-lg text-[#f3ece0]">Navigation Gîte</h4><p className="text-xs text-[#a3b1a5]">La navigation reprend les blocs présents. Tu peux renommer et déplacer les entrées gauche/droite.</p></div>
       <div className="space-y-2">{navModules.map((m,idx)=><div key={m.id} className="flex items-center gap-2 rounded-lg bg-[#101510] p-2"><span className="flex-1 text-sm text-white">{c.navLabels?.[m.id]||m.label}</span><button type="button" disabled={idx===0} onClick={()=>moveNav(m.id,-1)} className="rounded-lg bg-[#263128] p-2 text-white disabled:opacity-25"><ArrowUp size={14}/></button><button type="button" disabled={idx===navModules.length-1} onClick={()=>moveNav(m.id,1)} className="rounded-lg bg-[#263128] p-2 text-white disabled:opacity-25"><ArrowDown size={14}/></button></div>)}</div>
       <div className="grid md:grid-cols-2 gap-3">
+        <label className="text-xs text-[#a3b1a5]">Couleur de la nav<input type="color" value={c.navBackgroundColor||'#ffffff'} onChange={e=>update({navBackgroundColor:e.target.value})} className="mt-2 h-10 w-full rounded-lg bg-[#101510] border border-[#344237]"/></label>
+        <label className="text-xs text-[#a3b1a5]">Opacité de la nav {c.navOpacity??94}%<input type="range" min="0" max="100" value={c.navOpacity??94} onChange={e=>update({navOpacity:Number(e.target.value)})} className="mt-2 w-full accent-[#d4af37]"/></label>
+      </div>
+      <div className="grid md:grid-cols-2 gap-3">
         <label className="text-xs text-[#a3b1a5]">Texte du bouton admin<input value={c.navAdminLabel||'⌂'} onChange={e=>update({navAdminLabel:e.target.value})} className="mt-2 w-full rounded-lg bg-[#101510] border border-[#344237] px-3 py-2 text-white"/></label>
         <label className="text-xs text-[#a3b1a5] flex items-center gap-2 pt-6"><input type="checkbox" checked={!!c.navCta?.visible} onChange={e=>update({navCta:{...(c.navCta||{label:'Réserver',link:''}),visible:e.target.checked}})}/> Afficher un bouton</label>
       </div>

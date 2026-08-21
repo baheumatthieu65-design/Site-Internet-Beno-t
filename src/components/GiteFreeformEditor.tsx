@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Grip, Image as ImageIcon, Save, Type, Video, X, Link as LinkIcon, Plus, Trash2 } from 'lucide-react';
+import { Grip, Image as ImageIcon, Save, Type, Video, X, Link as LinkIcon, Plus, Trash2, LogOut } from 'lucide-react';
 import type { GiteContentBlock, GiteContentBlockType, GiteSiteConfig } from '../types';
 import { prepareImageForUpload, uploadBackgroundVideo } from '../utils/mediaUpload';
 
@@ -21,15 +21,17 @@ interface Props {
   onChange: (value: GiteSiteConfig) => void;
   onSave?: (value: GiteSiteConfig) => Promise<void> | void;
   onClose: () => void;
+  onLogout?: () => void | Promise<void>;
 }
 
-export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, onClose }) => {
+export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, onClose, onLogout }) => {
   const [position, setPosition] = useState({ x: Math.max(16, window.innerWidth - 500), y: 120 });
   const [dragging, setDragging] = useState(false);
   const dragRef = useRef<{ sx: number; sy: number; ox: number; oy: number; w: number; h: number } | null>(null);
   const [selectedId, setSelectedId] = useState(value.contentBlocks?.[0]?.id || '');
   const moduleOptions = (value.modules || []).map((m) => [m.id, m.label] as const);
   const [selectedModuleId, setSelectedModuleId] = useState(value.modules?.[0]?.id || '');
+  const [draggedListId, setDraggedListId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const blocks = value.contentBlocks || [];
   useEffect(() => { if (value.modules?.length && !value.modules.some((m) => m.id === selectedModuleId)) setSelectedModuleId(value.modules[0].id); }, [value.modules, selectedModuleId]);
@@ -62,6 +64,17 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
 
   const update = (patch: Partial<GiteSiteConfig>) => onChange({ ...value, ...patch });
   const updateBlock = (id: string, patch: Partial<GiteContentBlock>) => update({ contentBlocks: blocks.map((b) => b.id === id ? { ...b, ...patch } : b) });
+  const reorderInModule = (sourceId: string, targetId: string) => {
+    if (sourceId === targetId) return;
+    const sourceIndex = blocks.findIndex((b) => b.id === sourceId);
+    const targetIndex = blocks.findIndex((b) => b.id === targetId);
+    if (sourceIndex < 0 || targetIndex < 0) return;
+    const next = [...blocks];
+    const [moved] = next.splice(sourceIndex, 1);
+    const insertAt = next.findIndex((b) => b.id === targetId);
+    next.splice(insertAt < 0 ? targetIndex : insertAt, 0, moved);
+    update({ contentBlocks: next });
+  };
   const add = (type: GiteContentBlockType) => { const b = newBlock(type, selectedModuleId); update({ contentBlocks: [...blocks, b] }); setSelectedId(b.id); };
   const selectModule = (id: string) => { setSelectedModuleId(id); const first = blocks.find((b) => b.moduleId === id); setSelectedId(first?.id || ''); };
   const remove = (id: string) => { const next = blocks.filter((b) => b.id !== id); update({ contentBlocks: next }); setSelectedId(next[0]?.id || ''); };
@@ -99,6 +112,7 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
           <div className="flex items-center gap-3"><Grip size={17} className="text-[#87968a]"/><div><div className="text-sm font-semibold">Zones libres du Gîte</div><div className="text-[10px] uppercase tracking-[.16em] text-[#87968a]">Modification en direct sur la page</div></div></div>
           <div className="flex items-center gap-2">
             {onSave && <button type="button" onClick={() => void save()} disabled={saving} className="inline-flex items-center gap-1.5 rounded-lg border border-[#d4af37] bg-[#d4af37] px-3 py-2 text-xs font-semibold text-[#111612] disabled:opacity-60"><Save size={14}/>{saving ? 'Enregistrement…' : 'Enregistrer'}</button>}
+            {onLogout && <button type="button" onClick={() => void onLogout()} className="inline-flex items-center gap-1.5 rounded-lg border border-red-800/70 bg-red-950/30 px-3 py-2 text-xs text-red-200"><LogOut size={14}/>Sortir</button>}
             <button type="button" onClick={onClose} className="p-2" aria-label="Fermer"><X size={18}/></button>
           </div>
         </div>
@@ -112,7 +126,7 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
               ))}
               <div className="border-t border-[#344139] pt-2 mt-2">
                 <div className="px-2 pb-1 text-[10px] uppercase tracking-[.16em] text-[#87968a]">Éléments</div>
-                {moduleBlocks.map((b, i) => <button key={b.id} type="button" onClick={() => setSelectedId(b.id)} className={`w-full rounded-lg px-3 py-2 text-left text-xs ${b.id === selectedId ? 'bg-[#d4af37] text-[#111612]' : 'bg-[#1b241d] text-[#c5d0c6]'}`} title={b.text || typeLabel(b)}>{i + 1}. {previewLabel(b)}</button>)}
+                {moduleBlocks.map((b, i) => <button key={b.id} type="button" draggable onDragStart={() => setDraggedListId(b.id)} onDragOver={(e) => e.preventDefault()} onDrop={() => { if (draggedListId) reorderInModule(draggedListId, b.id); setDraggedListId(null); }} onDragEnd={() => setDraggedListId(null)} onClick={() => setSelectedId(b.id)} className={`w-full rounded-lg px-3 py-2 text-left text-xs cursor-grab active:cursor-grabbing ${b.id === selectedId ? 'bg-[#d4af37] text-[#111612]' : 'bg-[#1b241d] text-[#c5d0c6]'}`} title={b.text || typeLabel(b)}>{i + 1}. {previewLabel(b)}</button>)}
                 {!moduleBlocks.length && <div className="px-2 text-[11px] text-[#7f9382]">Aucun élément dans ce bloc.</div>}
               </div>
             </aside>
@@ -150,7 +164,10 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
               </div>}
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                <label className="text-[11px] text-[#a3b1a5]">Fond<input value={selected.backgroundColor || ''} onChange={e=>updateBlock(selected.id,{backgroundColor:e.target.value})} placeholder="rgba(...)" className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-2 py-2 text-white"/></label>
+                <label className="text-[11px] text-[#a3b1a5]">Fond<input disabled={selected.backgroundColor === 'transparent'} value={selected.backgroundColor === 'transparent' ? 'Transparent' : (selected.backgroundColor || '')} onChange={e=>updateBlock(selected.id,{backgroundColor:e.target.value})} placeholder="rgba(...)" className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-2 py-2 text-white"/></label>
+                <label className="flex items-center gap-2 text-[11px] text-[#a3b1a5]"><input type="checkbox" checked={selected.backgroundColor !== 'transparent'} onChange={e=>updateBlock(selected.id,{backgroundColor:e.target.checked ? 'rgba(255,255,255,0.88)' : 'transparent'})}/> Fond de zone visible</label>
+                <label className="flex items-center gap-2 text-[11px] text-[#a3b1a5]"><input type="checkbox" checked={(selected.borderWidth ?? 0) > 0} onChange={e=>updateBlock(selected.id,{borderWidth:e.target.checked ? 1 : 0})}/> Afficher le contour</label>
+                <label className="flex items-center gap-2 text-[11px] text-[#a3b1a5]"><input type="checkbox" checked={!!selected.autoSize} onChange={e=>updateBlock(selected.id,{autoSize:e.target.checked})}/> Adapter le contour au texte</label>
                 <label className="text-[11px] text-[#a3b1a5]">Opacité<div className="mt-1 flex items-center gap-2"><input type="range" min={0} max={100} value={selected.opacity ?? 100} onChange={e=>updateBlock(selected.id,{opacity:Number(e.target.value)})} className="w-full accent-[#d4af37]"/><span className="w-10 text-right">{selected.opacity ?? 100}%</span></div></label>
                 <label className="text-[11px] text-[#a3b1a5]">Arrondi<input type="number" min={0} max={80} value={selected.borderRadius ?? 18} onChange={e=>updateBlock(selected.id,{borderRadius:Number(e.target.value)})} className="mt-1 w-full rounded-lg bg-[#18201a] border border-[#344237] px-2 py-2 text-white"/></label>
               </div>

@@ -59,6 +59,7 @@ interface Props {
   giteConfig?: GiteSiteConfig;
   onGiteChange?: (config: GiteSiteConfig) => void;
   onGiteSave?: (config: GiteSiteConfig) => Promise<void> | void;
+  onLogout?: () => void | Promise<void>;
   adminToolbar?: React.ReactNode;
   floatingMediaOpen?: boolean;
   onToggleFloatingMedia?: () => void;
@@ -190,6 +191,7 @@ export const SiteVisualEditor: React.FC<Props> = ({
   giteConfig,
   onGiteChange,
   onGiteSave,
+  onLogout,
 }) => {
   const [open, setOpen] = useState(false);
   const [editorPage, setEditorPage] = useState<'boutique' | 'gite'>(isGitePage ? 'gite' : 'boutique');
@@ -840,6 +842,7 @@ export const SiteVisualEditor: React.FC<Props> = ({
           value={giteConfig}
           onChange={onGiteChange}
           onSave={onGiteSave}
+          onLogout={onLogout}
           onClose={() => { setGiteFreeformOpen(false); setSiteEditorMinimized(false); }}
         />
       )}
