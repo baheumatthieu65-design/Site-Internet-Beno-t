@@ -700,6 +700,35 @@ export const publishedSiteContent = {
           "objectFit": "cover",
           "visible": true,
           "autoSize": true
+        },
+        {
+          "id": "gite-block-1787320964459-1lwx83",
+          "moduleId": "gite-region",
+          "type": "text",
+          "x": 50.416666666666664,
+          "y": 75.06172839506173,
+          "width": 30,
+          "height": 18,
+          "text": "SÉJOURNER",
+          "link": "",
+          "url": "",
+          "fontSize": 18,
+          "color": "#000000",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "transparent",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true,
+          "autoSize": true
         }
       ],
       "navBackgroundColor": "#000000",
@@ -1595,5 +1624,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787320959628
+  "publishedAt": 1787320985981
 } as const;
