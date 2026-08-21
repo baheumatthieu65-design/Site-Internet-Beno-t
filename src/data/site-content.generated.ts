@@ -168,9 +168,9 @@ export const publishedSiteContent = {
           "id": "gite-block-1787304469172-08tmq3",
           "moduleId": "gite-le-gite",
           "type": "video",
-          "x": 49,
-          "y": 27,
-          "width": 49,
+          "x": 48,
+          "y": 31,
+          "width": 48,
           "height": 57,
           "text": "Nouvelle zone de texte",
           "link": "",
@@ -1177,5 +1177,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787319204348
+  "publishedAt": 1787319252201
 } as const;
