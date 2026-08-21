@@ -102,7 +102,7 @@ export const publishedSiteContent = {
       "navCta": {
         "label": "Réserver",
         "link": "",
-        "visible": true
+        "visible": false
       },
       "navAdminLabel": "⌂",
       "contentBlocks": [
@@ -194,7 +194,7 @@ export const publishedSiteContent = {
         }
       ],
       "navBackgroundColor": "#000000",
-      "navOpacity": 20
+      "navOpacity": 10
     },
     "jackets": [
       {
@@ -1086,5 +1086,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787316867642
+  "publishedAt": 1787316892340
 } as const;
