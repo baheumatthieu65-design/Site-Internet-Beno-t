@@ -85,14 +85,24 @@ export const publishedSiteContent = {
           "label": "La région",
           "visible": true,
           "width": 100,
-          "height": 520
+          "height": 520,
+          "background": {
+            "type": "image",
+            "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787320405397-Sans-titre-1.jpg",
+            "overlay": 0
+          }
         },
         {
           "id": "gite-acces",
           "label": "Accès",
           "visible": true,
           "width": 100,
-          "height": 520
+          "height": 520,
+          "background": {
+            "type": "image",
+            "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787320412325-Sans-titre-1.jpg",
+            "overlay": 0
+          }
         }
       ],
       "navLabels": {
@@ -1382,5 +1392,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787320391816
+  "publishedAt": 1787320414057
 } as const;
