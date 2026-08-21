@@ -792,13 +792,13 @@ export const publishedSiteContent = {
           "moduleId": "gite-region",
           "type": "text",
           "x": 50.78125,
-          "y": 87.8409090909091,
+          "y": 88,
           "width": 30,
-          "height": 18,
+          "height": 20,
           "text": "Les disponibilités et tarifs sont consultables directement sur nos plateformes partenaires.",
           "link": "",
           "url": "",
-          "fontSize": 18,
+          "fontSize": 16,
           "color": "#000000",
           "align": "left",
           "fontFamily": "sans",
@@ -2133,5 +2133,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787345011203
+  "publishedAt": 1787345026824
 } as const;
