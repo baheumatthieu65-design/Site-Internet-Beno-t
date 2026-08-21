@@ -534,12 +534,12 @@ export const publishedSiteContent = {
       "lookbookImageFrameHeight": 220,
       "sectionBackgroundImages": {
         "origines": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787258626442-4k-wallpaper-blue-skies-conifers-1526720.webp",
-        "hero": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787294484822-pyrenees_landscape_hero_1785338591988.jpg"
+        "hero": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787313318819-denys-nevozhai-z0nVqfrOqWA-unsplash.jpg"
       },
       "sectionBackgroundMedia": {
         "hero": {
           "type": "image",
-          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787294484822-pyrenees_landscape_hero_1785338591988.jpg",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787313318819-denys-nevozhai-z0nVqfrOqWA-unsplash.jpg",
           "overlay": 0,
           "objectFit": "cover",
           "positionX": 50,
@@ -1097,5 +1097,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787311216220
+  "publishedAt": 1787313320776
 } as const;
