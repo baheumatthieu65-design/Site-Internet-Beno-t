@@ -52,7 +52,7 @@ export const publishedSiteContent = {
           "height": 800,
           "background": {
             "type": "image",
-            "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787303018866-kalen-emsley-Bkci_8qcdvQ-unsplash.webp",
+            "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787315639131-ChatGPT-Image-21-ao--t-2026--14_33_09.webp",
             "overlay": 25
           }
         },
@@ -193,8 +193,8 @@ export const publishedSiteContent = {
           "visible": true
         }
       ],
-      "navBackgroundColor": "#558ed5",
-      "navOpacity": 64
+      "navBackgroundColor": "#000000",
+      "navOpacity": 20
     },
     "jackets": [
       {
@@ -290,8 +290,8 @@ export const publishedSiteContent = {
             "category": "utility"
           }
         ],
-        "isAvailable": false,
-        "availabilityStatus": "sold-out",
+        "isAvailable": true,
+        "availabilityStatus": "on-sale",
         "customSpecs": {}
       },
       {
@@ -359,10 +359,10 @@ export const publishedSiteContent = {
         "category": "Homme \u0026 Femme",
         "price": 50,
         "currency": "€",
-        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787256106041-Art1.png",
+        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787315218449-ChatGPT-Image-21-ao--t-2026--14_26_45.webp",
         "gallery": [
-          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787256106041-Art1.png",
-          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787242933243-Art1-2.png"
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787315218449-ChatGPT-Image-21-ao--t-2026--14_26_45.webp",
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787315239178-20260816_124113.jpg"
         ],
         "description": "Veste artisanale d'exception tissée dans les Pyrénées.",
         "longDescription": "Fabriquée selon des savoir-faire d'autrefois en pure laine sélectionnée.",
@@ -404,8 +404,8 @@ export const publishedSiteContent = {
             "id": "hotspot-1787252504808",
             "title": "Nouveau point tet",
             "description": "sdssdsds",
-            "x": 50,
-            "y": 22,
+            "x": 48,
+            "y": 32,
             "category": "fabric"
           }
         ],
@@ -446,8 +446,8 @@ export const publishedSiteContent = {
           "XL",
           "test"
         ],
-        "isAvailable": true,
-        "availabilityStatus": "on-sale",
+        "isAvailable": false,
+        "availabilityStatus": "sold-out",
         "features": [
           {
             "iconName": "Shield",
@@ -534,12 +534,12 @@ export const publishedSiteContent = {
       "lookbookImageFrameHeight": 220,
       "sectionBackgroundImages": {
         "origines": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787258626442-4k-wallpaper-blue-skies-conifers-1526720.webp",
-        "hero": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787294484822-pyrenees_landscape_hero_1785338591988.jpg"
+        "hero": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787315389264-ChatGPT-Image-21-ao--t-2026--14_28_34.png"
       },
       "sectionBackgroundMedia": {
         "hero": {
           "type": "image",
-          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787294484822-pyrenees_landscape_hero_1785338591988.jpg",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787315389264-ChatGPT-Image-21-ao--t-2026--14_28_34.png",
           "overlay": 0,
           "objectFit": "cover",
           "positionX": 50,
@@ -583,6 +583,10 @@ export const publishedSiteContent = {
       "workshopButtonText": "Prendre Rendez-vous à l'Atelier",
       "heroBadgeText": "Édition Limitée des Pyrénées",
       "heroTitlePrefix": "Maison Mailhagut",
+      "landingBoutiqueKicker": "MAISON MAILHAGUT",
+      "landingBoutiqueTitle": "La Boutique",
+      "landingGiteKicker": "PYRÉNÉES",
+      "landingGiteTitle": "Le Gîte",
       "comparisonCriteria": [
         {
           "id": "crit_category",
@@ -650,8 +654,8 @@ export const publishedSiteContent = {
       },
       "gite": {
         "imageUrl": "/assets/persistent-media-2.png",
-        "text": "GÎTE DES\nPYR",
-        "secondaryText": "Test 4",
+        "text": "GÎTE DES\nPYRER",
+        "secondaryText": "Un espace de détente",
         "fontFamily": "sans",
         "textColor": "#f3ece0",
         "textSize": "20px",
@@ -663,22 +667,7 @@ export const publishedSiteContent = {
   },
   "editorConfig": {
     "adminBarPosition": "bottom",
-    "floatingImages": [
-      {
-        "id": "floating-1787294749227-welt8u",
-        "section": "hero",
-        "url": "/assets/persistent-media-2.png",
-        "alt": "",
-        "x": 20,
-        "y": 32,
-        "size": 101,
-        "rotate": -18,
-        "opacity": 100,
-        "animation": "float",
-        "mobile": true,
-        "visible": true
-      }
-    ],
+    "floatingImages": [],
     "schemaVersion": 5,
     "blocks": [
       {
@@ -1097,5 +1086,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787308535177
+  "publishedAt": 1787316867642
 } as const;
