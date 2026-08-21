@@ -107,34 +107,6 @@ export const publishedSiteContent = {
       "navAdminLabel": "⌂",
       "contentBlocks": [
         {
-          "id": "gite-block-1787303939970-q56xv0",
-          "moduleId": "gite-accueil",
-          "type": "image",
-          "x": 12.44791637767445,
-          "y": 74.52083587646484,
-          "width": 20,
-          "height": 48,
-          "text": "Nouvelle zone de texte",
-          "link": "",
-          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787303962427-Art1.png",
-          "fontSize": 18,
-          "color": "#24231f",
-          "align": "left",
-          "fontFamily": "sans",
-          "fontWeight": 400,
-          "lineHeight": 1.45,
-          "italic": false,
-          "backgroundColor": "transparent",
-          "borderColor": "#8c6e3f",
-          "borderWidth": 0,
-          "borderRadius": 18,
-          "padding": 12,
-          "opacity": 100,
-          "rotation": 0,
-          "objectFit": "contain",
-          "visible": true
-        },
-        {
           "id": "gite-block-1787303077623-485fcy",
           "moduleId": "gite-accueil",
           "type": "text",
@@ -166,8 +138,8 @@ export const publishedSiteContent = {
           "id": "gite-block-1787304121004-b1n56m",
           "moduleId": "gite-accueil",
           "type": "button",
-          "x": 47.03125,
-          "y": 12.645833969116211,
+          "x": 27.708333730697632,
+          "y": 72.54582977294922,
           "width": 8,
           "height": 10,
           "text": "",
@@ -191,33 +163,6 @@ export const publishedSiteContent = {
           "visible": true,
           "buttonImageUrl": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787308430125-AirBnb.png",
           "buttonImageEnabled": true
-        },
-        {
-          "id": "gite-block-1787304161889-gfv42n",
-          "moduleId": "gite-accueil",
-          "type": "image",
-          "x": 40.9375,
-          "y": 21.01041603088379,
-          "width": 32,
-          "text": "Nouvelle zone de texte",
-          "link": "",
-          "url": "",
-          "fontSize": 18,
-          "color": "#24231f",
-          "align": "left",
-          "fontFamily": "sans",
-          "fontWeight": 400,
-          "lineHeight": 1.45,
-          "italic": false,
-          "backgroundColor": "rgba(255,255,255,0.88)",
-          "borderColor": "#8c6e3f",
-          "borderWidth": 0,
-          "borderRadius": 18,
-          "padding": 12,
-          "opacity": 100,
-          "rotation": 0,
-          "objectFit": "cover",
-          "visible": true
         },
         {
           "id": "gite-block-1787304469172-08tmq3",
@@ -1152,5 +1097,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787308509340
+  "publishedAt": 1787308535177
 } as const;
