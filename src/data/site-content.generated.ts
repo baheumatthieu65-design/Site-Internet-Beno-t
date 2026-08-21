@@ -170,35 +170,6 @@ export const publishedSiteContent = {
           "autoSize": true
         },
         {
-          "id": "gite-block-1787304469172-08tmq3",
-          "moduleId": "gite-le-gite",
-          "type": "video",
-          "x": 48,
-          "y": 31,
-          "width": 48,
-          "height": 57,
-          "text": "Nouvelle zone de texte",
-          "link": "",
-          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/section-background-1787319176828-test-qFiRi6B7U2jVKy4bZbGRU23ATb7Fzk.mp4",
-          "fontSize": 18,
-          "color": "#24231f",
-          "align": "left",
-          "fontFamily": "sans",
-          "fontWeight": 400,
-          "lineHeight": 1.45,
-          "italic": false,
-          "backgroundColor": "rgba(255,255,255,0.88)",
-          "borderColor": "#8c6e3f",
-          "borderWidth": 0,
-          "borderRadius": 18,
-          "padding": 12,
-          "opacity": 100,
-          "rotation": 0,
-          "objectFit": "cover",
-          "visible": true,
-          "autoSize": false
-        },
-        {
           "id": "gite-block-1787318886775-1k9pkt",
           "moduleId": "gite-accueil",
           "type": "text",
@@ -483,6 +454,34 @@ export const publishedSiteContent = {
           "objectFit": "cover",
           "visible": true,
           "autoSize": true
+        },
+        {
+          "id": "gite-block-1787320132284-wz0v2m",
+          "moduleId": "gite-region",
+          "type": "video",
+          "x": 50,
+          "y": 16,
+          "width": 49,
+          "height": 37,
+          "text": "Nouvelle zone de texte",
+          "link": "",
+          "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/section-background-1787320142540-test-g86LA4gfdHHLU5moFVyezZLlJpgnF8.mp4",
+          "fontSize": 18,
+          "color": "#24231f",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "rgba(255,255,255,0.88)",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true
         }
       ],
       "navBackgroundColor": "#000000",
@@ -1378,5 +1377,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787320067611
+  "publishedAt": 1787320184501
 } as const;
