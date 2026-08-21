@@ -100,7 +100,36 @@ export const publishedSiteContent = {
         "visible": false
       },
       "navAdminLabel": "⌂",
-      "contentBlocks": []
+      "contentBlocks": [
+        {
+          "id": "gite-block-1787302889426-trn6d1",
+          "moduleId": "gite-accueil",
+          "type": "text",
+          "x": 50,
+          "y": 50,
+          "width": 30,
+          "height": 18,
+          "text": "Nouvelle zone de texte",
+          "link": "",
+          "url": "",
+          "fontSize": 18,
+          "color": "#24231f",
+          "align": "left",
+          "fontFamily": "sans",
+          "fontWeight": 400,
+          "lineHeight": 1.45,
+          "italic": false,
+          "backgroundColor": "rgba(255,255,255,0.88)",
+          "borderColor": "#8c6e3f",
+          "borderWidth": 0,
+          "borderRadius": 18,
+          "padding": 12,
+          "opacity": 100,
+          "rotation": 0,
+          "objectFit": "cover",
+          "visible": true
+        }
+      ]
     },
     "jackets": [
       {
@@ -1003,5 +1032,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787302768089
+  "publishedAt": 1787302900319
 } as const;
