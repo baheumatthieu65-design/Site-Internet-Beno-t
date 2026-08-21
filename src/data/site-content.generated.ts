@@ -376,6 +376,60 @@ export const publishedSiteContent = {
         "id": "produit-1787242939553-ezbmjg",
         "availabilityStatus": "on-sale",
         "customSpecs": {}
+      },
+      {
+        "name": "test",
+        "subTitle": "Confection Artisanale des Pyrénées",
+        "category": "Homme \u0026 Femme",
+        "price": 490,
+        "currency": "€",
+        "heroImage": "https://images.unsplash.com/photo-1544441893-675973e31985?auto=format\u0026fit=crop\u0026q=80\u0026w=1000",
+        "gallery": [
+          "https://images.unsplash.com/photo-1544441893-675973e31985?auto=format\u0026fit=crop\u0026q=80\u0026w=1000"
+        ],
+        "description": "Veste artisanale d'exception tissée dans les Pyrénées.",
+        "longDescription": "Fabriquée selon des savoir-faire d'autrefois en pure laine sélectionnée.",
+        "tagline": "L'élégance des cimes",
+        "fabrics": [
+          "Laine des Pyrénées 100% naturelle"
+        ],
+        "colors": [
+          {
+            "name": "Gris Aspe",
+            "hex": "#4a524b"
+          },
+          {
+            "name": "Ocre Vignemale",
+            "hex": "#8c6b43"
+          }
+        ],
+        "sizes": [
+          "S",
+          "M",
+          "L",
+          "XL",
+          "test"
+        ],
+        "isAvailable": true,
+        "availabilityStatus": "on-sale",
+        "features": [
+          {
+            "iconName": "Shield",
+            "title": "Coupe-Vent",
+            "desc": "Protection thermique haute montagne"
+          }
+        ],
+        "specs": {
+          "weight": "850g",
+          "waterResistance": "Déperlante",
+          "warmthRating": "Très élevée",
+          "fitType": "Ajustée",
+          "origin": "Atelier Pyrénées, France",
+          "care": "Lavage délicat à la main ou nettoyage à sec"
+        },
+        "hotspots": [],
+        "customSpecs": {},
+        "id": "produit-1787294817714-0t3rcd"
       }
     ],
     "theme": {
@@ -573,7 +627,22 @@ export const publishedSiteContent = {
   },
   "editorConfig": {
     "adminBarPosition": "bottom",
-    "floatingImages": [],
+    "floatingImages": [
+      {
+        "id": "floating-1787294749227-welt8u",
+        "section": "hero",
+        "url": "/assets/persistent-media-2.png",
+        "alt": "",
+        "x": 20,
+        "y": 32,
+        "size": 101,
+        "rotate": -18,
+        "opacity": 100,
+        "animation": "float",
+        "mobile": true,
+        "visible": true
+      }
+    ],
     "schemaVersion": 5,
     "blocks": [
       {
@@ -992,5 +1061,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787294663840
+  "publishedAt": 1787294820887
 } as const;
