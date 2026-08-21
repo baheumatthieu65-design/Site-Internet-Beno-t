@@ -763,7 +763,7 @@ export const publishedSiteContent = {
           "moduleId": "gite-region",
           "type": "text",
           "x": 51.145833333333336,
-          "y": 74.43181818181817,
+          "y": 76,
           "width": 30,
           "height": 18,
           "text": "Consulter les disponibilités",
@@ -2133,5 +2133,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787344985480
+  "publishedAt": 1787345011203
 } as const;
