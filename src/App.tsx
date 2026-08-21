@@ -1775,7 +1775,7 @@ export default function App() {
         <GitePage
           brandData={brandData}
           onBackToVitrine={handleBackToVitrine}
-          onAdmin={() => handleOpenEditor('theme')}
+          onAdmin={() => handleOpenEditor('gite')}
           floatingImages={siteEditorConfig.floatingImages}
         />
       )}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   BrandConfig,
   JacketModel,
@@ -107,8 +108,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   onRefreshProducts,
   initialTab = 'theme',
 }) => {
-  if (!isOpen) return null;
-
   const [formData, setFormData] = useState<BrandConfig>(() => {
     const copy = JSON.parse(JSON.stringify(brandData));
     if (!copy.theme) {
@@ -198,6 +197,22 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     }
   }, [initialTab]);
 
+  const [editorScope, setEditorScope] = useState<'boutique' | 'gite'>(() => initialTab === 'gite' ? 'gite' : 'boutique');
+
+  useEffect(() => {
+    if (initialTab === 'gite') setEditorScope('gite');
+    else if (initialTab && initialTab !== 'gite') setEditorScope('boutique');
+  }, [initialTab]);
+
+  useEffect(() => {
+    if (editorScope === 'gite') setActiveTab('gite');
+    else if (activeTab === 'gite') setActiveTab('theme');
+  }, [editorScope]);
+
+  const [newCriterionLabel, setNewCriterionLabel] = useState('');
+
+  if (!isOpen) return null;
+
   const currentTheme = formData.theme || defaultThemeConfig;
 
   const updateTheme = (fields: Partial<ThemeConfig>) => {
@@ -220,8 +235,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     { id: 'crit_care', label: 'Entretien', key: 'care' },
     { id: 'crit_price', label: 'Prix public', key: 'price' },
   ];
-
-  const [newCriterionLabel, setNewCriterionLabel] = useState('');
 
   const activeCriteria = currentTheme.comparisonCriteria && currentTheme.comparisonCriteria.length > 0
     ? currentTheme.comparisonCriteria
@@ -893,8 +906,8 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   const previewSecBtnClasses = getButtonClasses(currentTheme, 'secondary');
   const previewCard = getCardClasses(currentTheme);
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
+  return createPortal((
+    <div className="fixed inset-0 z-[50000] overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
       <div className="relative w-full max-w-6xl bg-[#141a15] border border-[#3b473e] rounded-3xl shadow-2xl overflow-hidden text-[#e2d5c3] flex flex-col max-h-[92vh]">
         {/* Modal Top Header */}
         <div className="px-6 py-4 bg-[#18201a] border-b border-[#2b372d] flex items-center justify-between flex-shrink-0">
@@ -910,7 +923,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                 </span>
               </h3>
               <p className="text-xs text-[#a3b1a5]">
-                Modifiez en direct vos articles (ajout/suppression), emplacements des objets, textes, modules et boutons.
+                Éditez séparément la Boutique ou le Gîte : contenus, modules, médias, textes, boutons et mise en page.
               </p>
             </div>
           </div>
@@ -934,111 +947,48 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           </div>
         </div>
 
+        {/* Sélecteur d'univers : Boutique / Gîte. Chaque page garde son propre éditeur. */}
+        <div className="flex items-center justify-center gap-2 px-4 py-3 bg-[#0d120e] border-b border-[#2a362c] flex-shrink-0">
+          <button type="button" onClick={() => setEditorScope('boutique')}
+            className={`px-6 py-2 rounded-xl text-xs uppercase tracking-[0.14em] font-bold border transition-all ${editorScope === 'boutique' ? 'bg-[#d4af37] text-[#111612] border-[#d4af37] shadow-lg' : 'bg-[#18201a] text-[#9eb0a0] border-[#344437] hover:border-[#d4af37]'}`}>
+            🛍️ Boutique
+          </button>
+          <button type="button" onClick={() => setEditorScope('gite')}
+            className={`px-6 py-2 rounded-xl text-xs uppercase tracking-[0.14em] font-bold border transition-all ${editorScope === 'gite' ? 'bg-[#d4af37] text-[#111612] border-[#d4af37] shadow-lg' : 'bg-[#18201a] text-[#9eb0a0] border-[#344437] hover:border-[#d4af37]'}`}>
+            🏔️ Gîte
+          </button>
+        </div>
+
         {/* Navigation Tabs */}
         <div className="flex overflow-x-auto border-b border-[#2a362c] bg-[#111612] px-4 py-2 space-x-1 flex-shrink-0">
-          <button
-            type="button"
-            onClick={() => setActiveTab('theme')}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'theme'
-                ? 'bg-[#29362c] text-[#d4af37] border border-[#d4af37]/60 shadow'
-                : 'text-[#9eb0a0] hover:text-[#f3ece0] hover:bg-[#1a211c]'
-            }`}
-          >
-            <Palette className="w-4 h-4 text-[#d4af37]" />
-            <span>1. Styles de Boutons & Cartes</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('gite')}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'gite'
-                ? 'bg-[#29362c] text-[#d4af37] border border-[#d4af37]/60 shadow'
-                : 'text-[#9eb0a0] hover:text-[#f3ece0] hover:bg-[#1a211c]'
-            }`}
-          >
-            <Globe className="w-4 h-4 text-[#d4af37]" />
-            <span>Page Gîte</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('layouts')}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'layouts'
-                ? 'bg-[#29362c] text-[#d4af37] border border-[#d4af37]/60 shadow'
-                : 'text-[#9eb0a0] hover:text-[#f3ece0] hover:bg-[#1a211c]'
-            }`}
-          >
-            <Layers className="w-4 h-4 text-[#b89f74]" />
-            <span>2. Formats & Emplacements des Blocs</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('articles')}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'articles'
-                ? 'bg-[#29362c] text-[#d4af37] border border-[#d4af37]/60 shadow'
-                : 'text-[#9eb0a0] hover:text-[#f3ece0] hover:bg-[#1a211c]'
-            }`}
-          >
-            <Tag className="w-4 h-4 text-[#d4af37]" />
-            <span>3. Catalogue</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('labels')}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'labels'
-                ? 'bg-[#29362c] text-[#d4af37] border border-[#d4af37]/60 shadow'
-                : 'text-[#9eb0a0] hover:text-[#f3ece0] hover:bg-[#1a211c]'
-            }`}
-          >
-            <Type className="w-4 h-4 text-[#b89f74]" />
-            <span>4. Barre de navigation</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('brand')}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'brand'
-                ? 'bg-[#29362c] text-[#d4af37] border border-[#d4af37]/60 shadow'
-                : 'text-[#9eb0a0] hover:text-[#f3ece0] hover:bg-[#1a211c]'
-            }`}
-          >
-            <Sparkles className="w-4 h-4 text-[#b89f74]" />
-            <span>5. Identité & Terroir</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('security')}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'security'
-                ? 'bg-[#29362c] text-[#d4af37] border border-[#d4af37]/60 shadow'
-                : 'text-[#9eb0a0] hover:text-[#f3ece0] hover:bg-[#1a211c]'
-            }`}
-          >
-            <Key className="w-4 h-4 text-[#a3b1a5]" />
-            <span>6. Sécurité & Emails</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('github')}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'github'
-                ? 'bg-[#29362c] text-[#d4af37] border border-[#d4af37]/60 shadow'
-                : 'text-[#9eb0a0] hover:text-[#f3ece0] hover:bg-[#1a211c]'
-            }`}
-          >
-            <GitBranch className="w-4 h-4 text-[#d4af37]" />
-            <span>7. GitHub & Déploiement</span>
-          </button>
+          {editorScope === 'boutique' && (
+            <>
+              {[
+                ['theme', <Palette className="w-4 h-4 text-[#d4af37]" />, '1. Styles de Boutons & Cartes'],
+                ['layouts', <Layers className="w-4 h-4 text-[#b89f74]" />, '2. Formats & Emplacements des Blocs'],
+                ['articles', <Tag className="w-4 h-4 text-[#d4af37]" />, '3. Catalogue'],
+                ['labels', <Type className="w-4 h-4 text-[#b89f74]" />, '4. Barre de navigation'],
+                ['brand', <Sparkles className="w-4 h-4 text-[#b89f74]" />, '5. Identité & Terroir'],
+                ['security', <Key className="w-4 h-4 text-[#a3b1a5]" />, '6. Sécurité & Emails'],
+                ['github', <GitBranch className="w-4 h-4 text-[#d4af37]" />, '7. GitHub & Déploiement'],
+              ].map(([tab, icon, label]) => (
+                <button key={String(tab)} type="button" onClick={() => setActiveTab(tab as any)}
+                  className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all whitespace-nowrap cursor-pointer ${
+                    activeTab === tab ? 'bg-[#29362c] text-[#d4af37] border border-[#d4af37]/60 shadow' : 'text-[#9eb0a0] hover:text-[#f3ece0] hover:bg-[#1a211c]'
+                  }`}>
+                  {icon}
+                  <span>{label}</span>
+                </button>
+              ))}
+            </>
+          )}
+          {editorScope === 'gite' && (
+            <button type="button" onClick={() => setActiveTab('gite')}
+              className="flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold whitespace-nowrap bg-[#29362c] text-[#d4af37] border border-[#d4af37]/60 shadow cursor-pointer">
+              <Globe className="w-4 h-4 text-[#d4af37]" />
+              <span>Page Gîte</span>
+            </button>
+          )}
         </div>
 
         {/* Scrollable Form Body */}
@@ -2154,5 +2104,5 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
 
       </div>
     </div>
-  );
+  ), document.body);
 };
