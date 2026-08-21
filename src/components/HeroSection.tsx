@@ -2,6 +2,7 @@ import React from 'react';
 import { BrandConfig } from '../types';
 import { Mountain, ArrowDown, Sparkles, Shield, Compass, ChevronRight, Edit3, Layers, Plus } from 'lucide-react';
 import { getProductAvailabilityStatus, getProductStatusLabel } from '../utils/productStatus';
+import { sortProductsByAvailability } from '../utils/productOrdering';
 import {
   getButtonClasses,
   getButtonInlineStyle,
@@ -33,7 +34,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   sectionBackgroundOpacity = 100,
   sectionBackgroundMediaType,
 }) => {
-  const jackets = brandData.jackets && brandData.jackets.length > 0 ? brandData.jackets : [];
+  const allJackets = brandData.jackets && brandData.jackets.length > 0 ? brandData.jackets : [];
+  // Le Hero suit le même ordre commercial que les autres modules :
+  // En vente → Bientôt disponible → Épuisé. Les trois statuts restent visibles.
+  const jackets = sortProductsByAvailability(allJackets);
   const theme = brandData.theme;
 
   // Le Hero utilise exactement la même source que le Lookbook :
@@ -227,6 +231,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   className="px-4 py-2 rounded-xl bg-[#1b221d]/80 border border-[#38473b] hover:border-[#d4af37] text-xs text-[#e2d5c3] flex items-center space-x-2 transition-all hover:scale-105"
                 >
                   <span className="text-[#d4af37] font-serif font-bold">N°{idx + 1}</span>
+                  <span
+                    aria-label={getProductStatusLabel(j)}
+                    title={getProductStatusLabel(j)}
+                    className={`w-2.5 h-2.5 rounded-full border border-white/60 shadow-sm shrink-0 ${
+                      getProductAvailabilityStatus(j) === 'on-sale'
+                        ? 'bg-emerald-500'
+                        : getProductAvailabilityStatus(j) === 'sold-out'
+                          ? 'bg-red-500'
+                          : 'bg-amber-400'
+                    }`}
+                  />
                   <span>{j.name} — {j.price} {j.currency}</span>
                 </button>
               ))}

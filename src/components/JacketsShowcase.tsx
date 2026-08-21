@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { JacketModel, Hotspot, ThemeConfig, ProductBlockId } from '../types';
 import {
   Check,
@@ -62,10 +63,10 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   sectionBackgroundOpacity = 100,
   sectionBackgroundMedia,
 }) => {
+  // Les trois statuts restent visibles sur la vitrine ; l'ordre commercial
+  // est En vente → Bientôt disponible → Épuisé.
   const visibleJackets = sortProductsByAvailability(
-    Array.isArray(jackets)
-      ? jackets.filter((j) => isAdminLoggedIn || j.isAvailable !== false)
-      : []
+    Array.isArray(jackets) ? jackets : []
   );
   const activeJacket = visibleJackets.find((j) => j.id === selectedJacketId) || visibleJackets[0] || jackets[0];
   const [activeImage, setActiveImage] = useState(activeJacket?.heroImage || '');
@@ -746,34 +747,37 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
         )}
 
         {/* Lightbox Showcase : même comportement d'agrandissement que le Lookbook. */}
-        {isImageLightboxOpen && activeImage && (
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label={`Vue agrandie de ${activeJacket.name}`}
-            onClick={() => setIsImageLightboxOpen(false)}
-            className="showcase-lightbox fixed inset-0 z-[1200] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn cursor-zoom-out"
-          >
-            <div
-              className="relative w-full max-w-6xl max-h-[92vh] rounded-2xl overflow-hidden border border-[#d4af37] bg-[#111612] shadow-2xl"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <img
-                src={activeImage}
-                alt={`${activeJacket.name} — vue agrandie`}
-                className="block w-full max-h-[88vh] object-contain"
-              />
-              <button
-                type="button"
+        {isImageLightboxOpen && activeImage && typeof document !== 'undefined'
+          ? createPortal(
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label={`Vue agrandie de ${activeJacket.name}`}
                 onClick={() => setIsImageLightboxOpen(false)}
-                className="absolute top-4 right-4 bg-black/80 text-white px-3 py-2 rounded-full font-bold hover:bg-[#d4af37] hover:text-black transition-colors"
-                aria-label="Fermer l'image agrandie"
+                className="showcase-lightbox fixed inset-0 z-[10000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn cursor-zoom-out"
               >
-                ✕
-              </button>
-            </div>
-          </div>
-        )}
+                <div
+                  className="relative w-full max-w-6xl max-h-[92vh] rounded-2xl overflow-hidden border border-[#d4af37] bg-[#111612] shadow-2xl"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <img
+                    src={activeImage}
+                    alt={`${activeJacket.name} — vue agrandie`}
+                    className="block w-full max-h-[88vh] object-contain"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setIsImageLightboxOpen(false)}
+                    className="absolute top-4 right-4 z-10 bg-black/80 text-white px-3 py-2 rounded-full font-bold hover:bg-[#d4af37] hover:text-black transition-colors"
+                    aria-label="Fermer l'image agrandie"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>,
+              document.body
+            )
+          : null}
       </div>
     </section>
   );

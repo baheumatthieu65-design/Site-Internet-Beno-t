@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { JacketModel, ThemeConfig } from '../types';
 import { Camera, Eye, Sparkles, ZoomIn, Edit3 } from 'lucide-react';
 import { sortProductsByAvailability } from '../utils/productOrdering';
@@ -127,22 +128,32 @@ export const LookbookGallery: React.FC<LookbookGalleryProps> = ({
       </div>
 
       {/* Lightbox Modal */}
-      {selectedImage && (
-        <div
-          onClick={() => setSelectedImage(null)}
-          className="lookbook-lightbox fixed inset-0 z-[1200] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn"
-        >
-          <div className="relative max-w-4xl max-h-[90vh] rounded-2xl overflow-hidden border border-[#d4af37]">
-            <img src={selectedImage} alt="Lookbook Full" className="max-w-full max-h-[85vh] object-contain" />
-            <button
+      {selectedImage && typeof document !== 'undefined'
+        ? createPortal(
+            <div
               onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 bg-black/80 text-white p-2 rounded-full font-bold hover:bg-[#d4af37] hover:text-black transition-colors"
+              className="lookbook-lightbox fixed inset-0 z-[10000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Image Lookbook agrandie"
             >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
+              <div
+                className="relative max-w-4xl max-h-[90vh] rounded-2xl overflow-hidden border border-[#d4af37]"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <img src={selectedImage} alt="Lookbook Full" className="max-w-full max-h-[85vh] object-contain" />
+                <button
+                  onClick={() => setSelectedImage(null)}
+                  className="absolute top-4 right-4 z-10 bg-black/80 text-white p-2 rounded-full font-bold hover:bg-[#d4af37] hover:text-black transition-colors"
+                  aria-label="Fermer l'image agrandie"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </section>
   );
 };

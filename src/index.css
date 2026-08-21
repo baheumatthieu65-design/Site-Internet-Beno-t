@@ -21,5 +21,5 @@
 .site-section-custom-background .site-section-content > section, .site-section-custom-background .site-section-content > footer { background-color: transparent !important; background-image: none !important; }
 /* Les médias flottants restent sous la barre de navigation fixe. */
 .floating-media, .floating-module-image { z-index: 30 !important; }
-/* Les lightboxes passent au-dessus de la navigation. */
-.showcase-lightbox, .lookbook-lightbox { z-index: 1200 !important; }
+/* Les lightboxes sont portées par document.body via React Portal : elles restent au-dessus de la nav. */
+.showcase-lightbox, .lookbook-lightbox { z-index: 10000 !important; position: fixed !important; }
