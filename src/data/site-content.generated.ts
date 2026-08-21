@@ -290,8 +290,8 @@ export const publishedSiteContent = {
             "category": "utility"
           }
         ],
-        "isAvailable": false,
-        "availabilityStatus": "sold-out",
+        "isAvailable": true,
+        "availabilityStatus": "on-sale",
         "customSpecs": {}
       },
       {
@@ -383,7 +383,7 @@ export const publishedSiteContent = {
         "sizes": [
           "Taille unique"
         ],
-        "isAvailable": true,
+        "isAvailable": false,
         "features": [
           {
             "iconName": "Shield",
@@ -410,7 +410,7 @@ export const publishedSiteContent = {
           }
         ],
         "id": "produit-1787242939553-ezbmjg",
-        "availabilityStatus": "on-sale",
+        "availabilityStatus": "coming-soon",
         "customSpecs": {}
       },
       {
@@ -446,8 +446,8 @@ export const publishedSiteContent = {
           "XL",
           "test"
         ],
-        "isAvailable": true,
-        "availabilityStatus": "on-sale",
+        "isAvailable": false,
+        "availabilityStatus": "sold-out",
         "features": [
           {
             "iconName": "Shield",
@@ -1097,5 +1097,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787313320776
+  "publishedAt": 1787313939919
 } as const;
