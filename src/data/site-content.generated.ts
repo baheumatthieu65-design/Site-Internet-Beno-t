@@ -453,7 +453,7 @@ export const publishedSiteContent = {
           "link": "",
           "url": "",
           "fontSize": 62,
-          "color": "#000000",
+          "color": "#f2f2f2",
           "align": "left",
           "fontFamily": "Great Vibes",
           "fontWeight": 400,
@@ -2133,5 +2133,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787345026824
+  "publishedAt": 1787345070673
 } as const;
