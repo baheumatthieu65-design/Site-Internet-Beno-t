@@ -123,15 +123,8 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     if (!Array.isArray(copy.jackets)) {
       copy.jackets = [];
     }
-    const legacyGiteIds = new Set(['gite-hero','gite-experience','gite-gallery','gite-video','gite-essentials','gite-nearby','gite-stay','gite-access']);
-    if (!copy.gite || !Array.isArray(copy.gite.modules) || copy.gite.modules.some((m: any) => legacyGiteIds.has(m?.id))) {
+    if (!copy.gite) {
       copy.gite = JSON.parse(JSON.stringify(defaultGiteConfig));
-    } else {
-      copy.gite.navOrder = Array.isArray(copy.gite.navOrder) ? copy.gite.navOrder : copy.gite.modules.map((m: any) => m.id);
-      copy.gite.navLabels = { ...(copy.gite.navLabels || {}) };
-      copy.gite.navCta = copy.gite.navCta || { label: 'Réserver', link: '', visible: false };
-      copy.gite.navAdminLabel = copy.gite.navAdminLabel || '⌂';
-      copy.gite.contentBlocks = Array.isArray(copy.gite.contentBlocks) ? copy.gite.contentBlocks : [];
     }
     return copy;
   });
@@ -901,7 +894,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   const previewCard = getCardClasses(currentTheme);
 
   return (
-    <div className="fixed inset-0 z-[2147483200] overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
       <div className="relative w-full max-w-6xl bg-[#141a15] border border-[#3b473e] rounded-3xl shadow-2xl overflow-hidden text-[#e2d5c3] flex flex-col max-h-[92vh]">
         {/* Modal Top Header */}
         <div className="px-6 py-4 bg-[#18201a] border-b border-[#2b372d] flex items-center justify-between flex-shrink-0">
@@ -958,19 +951,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
 
           <button
             type="button"
-            onClick={() => setActiveTab('gite')}
-            className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'gite'
-                ? 'bg-[#29362c] text-[#d4af37] border border-[#d4af37]/60 shadow'
-                : 'text-[#9eb0a0] hover:text-[#f3ece0] hover:bg-[#1a211c]'
-            }`}
-          >
-            <Globe className="w-4 h-4 text-[#d4af37]" />
-            <span>Page Gîte</span>
-          </button>
-
-          <button
-            type="button"
             onClick={() => setActiveTab('layouts')}
             className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all whitespace-nowrap cursor-pointer ${
               activeTab === 'layouts'
@@ -1006,6 +986,19 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           >
             <Type className="w-4 h-4 text-[#b89f74]" />
             <span>4. Barre de navigation</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('gite')}
+            className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'gite'
+                ? 'bg-[#29362c] text-[#d4af37] border border-[#d4af37]/60 shadow'
+                : 'text-[#9eb0a0] hover:text-[#f3ece0] hover:bg-[#1a211c]'
+            }`}
+          >
+            <Globe className="w-4 h-4 text-[#d4af37]" />
+            <span>Page Gîte</span>
           </button>
 
           <button

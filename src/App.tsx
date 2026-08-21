@@ -1725,7 +1725,9 @@ export default function App() {
           onSave={async (nextConfig) => {
             await handleSaveVisualEditor(nextConfig);
           }}
-          onOpenCustomizer={() => handleOpenEditor('theme')}
+          onOpenCustomizer={(tab) => handleOpenEditor(tab === 'gite' ? 'gite' : 'theme')}
+          onOpenLogoEditor={() => setIsLogoEditorOpen(true)}
+          onOpenSecurity={handleOpenSecurity}
           floatingMediaOpen={isFloatingMediaOpen}
           onToggleFloatingMedia={() => setIsFloatingMediaOpen((current) => !current)}
           isGitePage={isGitePageOpen}
