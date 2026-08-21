@@ -76,7 +76,7 @@ export const publishedSiteContent = {
           "height": 580,
           "background": {
             "type": "image",
-            "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787320280353-istockphoto-2177833057-1024x1024.jpg",
+            "url": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787320384013-Sans-titre-1.jpg",
             "overlay": 17
           }
         },
@@ -1382,5 +1382,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787320291865
+  "publishedAt": 1787320385876
 } as const;
