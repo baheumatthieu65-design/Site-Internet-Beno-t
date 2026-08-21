@@ -110,8 +110,8 @@ export const publishedSiteContent = {
           "id": "gite-block-1787302889426-trn6d1",
           "moduleId": "gite-accueil",
           "type": "text",
-          "x": 50,
-          "y": 50,
+          "x": 19,
+          "y": 76,
           "width": 30,
           "height": 18,
           "text": "Nouvelle zone de texte",
@@ -1037,5 +1037,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787303031808
+  "publishedAt": 1787303054644
 } as const;
