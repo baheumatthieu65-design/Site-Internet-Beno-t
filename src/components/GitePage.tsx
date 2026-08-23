@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { defaultGiteConfig } from "../data/giteConfig";
 import { GiteNavigation } from "./GiteNavigation";
@@ -56,6 +56,33 @@ export const GitePage:React.FC<{
 }>=({brandData,onBackToVitrine,onAdmin,onLogout,isAdminLoggedIn=false,floatingImages=[],editable=false,onGiteChange})=>{
   const c = normalizeConfig(brandData.gite);
   const blocks = c.contentBlocks || [];
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+  const [giteScale, setGiteScale] = useState(1);
+  const [canvasHeight, setCanvasHeight] = useState(0);
+
+  // The Gîte is authored on one stable desktop canvas. On smaller screens
+  // we scale that canvas as a whole instead of reflowing its contents.
+  // This keeps percentage positions, image sizes and text wrapping identical
+  // to the desktop layout while still fitting the complete page on mobile.
+  useEffect(() => {
+    const updateScale = () => {
+      const viewportWidth = Math.max(1, window.innerWidth);
+      setGiteScale(Math.min(1, viewportWidth / 1200));
+    };
+    updateScale();
+    window.addEventListener('resize', updateScale, { passive: true });
+    return () => window.removeEventListener('resize', updateScale);
+  }, []);
+
+  useEffect(() => {
+    const element = canvasRef.current;
+    if (!element) return;
+    const updateHeight = () => setCanvasHeight(element.scrollHeight);
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [c.modules, blocks, floatingImages]);
   const updateBlocks = (next:GiteSiteConfig['contentBlocks']) => onGiteChange?.({ ...c, contentBlocks: next });
   const moveModule = (id:string, direction:-1|1) => {
     if (!onGiteChange) return;
@@ -89,7 +116,21 @@ export const GitePage:React.FC<{
 
   return <main className="gite-page">
     <GiteNavigation brandData={brandData} config={c} onBackToVitrine={onBackToVitrine} onAdmin={onAdmin} isAdminLoggedIn={isAdminLoggedIn}/>
-    <div className="gite-page-canvas">{c.modules?.map((module,index)=>renderModule(module,index))}</div>
+    <div
+      className="gite-page-scale-shell"
+      style={{ height: canvasHeight ? `${Math.ceil(canvasHeight * giteScale)}px` : undefined }}
+    >
+      <div
+        ref={canvasRef}
+        className="gite-page-canvas"
+        style={{
+          width: '1200px',
+          transform: `translateX(-50%) scale(${giteScale})`,
+        }}
+      >
+        {c.modules?.map((module,index)=>renderModule(module,index))}
+      </div>
+    </div>
   </main>;
 };
 export default GitePage;
