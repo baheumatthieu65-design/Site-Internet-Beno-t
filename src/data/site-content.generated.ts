@@ -1701,13 +1701,13 @@ export const publishedSiteContent = {
     "adminBarPosition": "bottom",
     "floatingImages": [
       {
-        "id": "floating-1787323418609-3a7jxz",
+        "id": "floating-1787513263526-zqay9n",
         "section": "gite-acces",
         "url": "",
         "alt": "",
-        "x": 69,
+        "x": 72,
         "y": 50,
-        "size": 589,
+        "size": 562,
         "rotate": 0,
         "opacity": 100,
         "animation": "float",
@@ -2133,5 +2133,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787513231206
+  "publishedAt": 1787513286568
 } as const;
