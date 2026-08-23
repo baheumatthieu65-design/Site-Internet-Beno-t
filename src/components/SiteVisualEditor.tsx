@@ -894,6 +894,7 @@ export const SiteVisualEditor: React.FC<Props> = ({
               <FloatingMediaManager
                 config={config}
                 onChange={onChange}
+                onSave={onSave}
               />
             </div>
           )}

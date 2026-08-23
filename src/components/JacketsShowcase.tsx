@@ -291,7 +291,7 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
                 Sur Commande
               </span>
             </div>
-            <h3 className="font-serif text-3xl sm:text-4xl text-[#f3ece0] font-normal mt-1">
+            <h3 data-vce-dynamic-product-name="true" className="font-serif text-3xl sm:text-4xl text-[#f3ece0] font-normal mt-1">
               {displayProductName(activeJacket)}
             </h3>
             {activeJacket.tagline && (

@@ -1,6 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import type { GiteContentBlock } from '../types';
 
+
+const GITE_FONT_URL = 'https://fonts.googleapis.com/css2?family=Allura&family=Berkshire+Swash&family=Bodoni+Moda:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Dancing+Script:wght@400;500;600;700&family=DM+Serif+Display&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Great+Vibes&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Merriweather:wght@400;700&family=Montserrat:wght@400;500;600;700&family=Nunito+Sans:wght@400;500;600;700&family=Parisienne&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Raleway:wght@400;500;600;700&family=Sacramento&family=Source+Sans+3:wght@400;500;600;700&family=Tangerine:wght@400;700&display=swap';
+
 const fontMap: Record<string, string> = {
   sans: 'Inter, ui-sans-serif, system-ui, sans-serif',
   serif: 'Georgia, Cambria, "Times New Roman", serif',
@@ -20,6 +23,15 @@ export const GiteContentBlocks: React.FC<Props> = ({ moduleId, blocks = [], edit
   const dragRef = useRef<{ id: string; rect: DOMRect } | null>(null);
   const blocksRef = useRef(blocks);
   const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    if (document.querySelector('link[data-gite-content-fonts="true"]')) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = GITE_FONT_URL;
+    link.dataset.giteContentFonts = 'true';
+    document.head.appendChild(link);
+  }, []);
   blocksRef.current = blocks;
   onChangeRef.current = onChange;
 

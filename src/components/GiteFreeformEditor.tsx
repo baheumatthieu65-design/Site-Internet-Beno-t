@@ -61,6 +61,8 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
   const [selectedModuleId, setSelectedModuleId] = useState(value.modules?.[0]?.id || '');
   const [draggedListId, setDraggedListId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const latestValueRef = useRef<GiteSiteConfig>(value);
+  useEffect(() => { latestValueRef.current = value; }, [value]);
   const [buttonImageUploading, setButtonImageUploading] = useState(false);
   const blocks = value.contentBlocks || [];
   useEffect(() => { if (value.modules?.length && !value.modules.some((m) => m.id === selectedModuleId)) setSelectedModuleId(value.modules[0].id); }, [value.modules, selectedModuleId]);
@@ -102,7 +104,11 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
     return () => { link.remove(); };
   }, []);
 
-  const update = (patch: Partial<GiteSiteConfig>) => onChange({ ...value, ...patch });
+  const update = (patch: Partial<GiteSiteConfig>) => {
+    const next = { ...latestValueRef.current, ...patch };
+    latestValueRef.current = next;
+    onChange(next);
+  };
   const updateBlock = (id: string, patch: Partial<GiteContentBlock>) => update({ contentBlocks: blocks.map((b) => b.id === id ? { ...b, ...patch } : b) });
   const reorderInModule = (sourceId: string, targetId: string) => {
     if (sourceId === targetId) return;
@@ -157,7 +163,7 @@ export const GiteFreeformEditor: React.FC<Props> = ({ value, onChange, onSave, o
   const save = async () => {
     if (!onSave) return;
     setSaving(true);
-    try { await onSave(value); } finally { setSaving(false); }
+    try { await onSave(latestValueRef.current); } finally { setSaving(false); }
   };
 
   return createPortal(

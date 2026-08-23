@@ -141,11 +141,11 @@ function applyBlock(block: EditorBlock): void {
     // par son ID : ce vieux bloc ne doit donc jamais remplacer l'intitulé
     // courant de l'article. On conserve toutefois les éventuels styles
     // enregistrés sur le bloc.
-    const isGenericBrandLabel = /^(maison\\s+mailha(?:gut)?|maison\\s+des\\s+pyrenees)$/i.test(
+    const isGenericBrandLabel = /^(maison\s+mailha(?:gut)?|maison\s+des\s+pyrenees)$/i.test(
       normalizeText(block.text)
     );
 
-    if (!(element instanceof HTMLElement && element.dataset.vceDynamicProductName === 'true' && isGenericBrandLabel)) {
+    if (!(element instanceof HTMLElement && (element.dataset.vceDynamicProductName === 'true' || element.closest('[data-vce-dynamic-product-name="true"]')) && isGenericBrandLabel)) {
       const current = normalizeText(html.textContent || '');
       const next = normalizeText(block.text);
 

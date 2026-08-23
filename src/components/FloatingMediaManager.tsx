@@ -4,6 +4,7 @@ import type { FloatingMediaItem } from "../data/floatingMedia";
 type Props = {
   config: any;
   onChange: (next: any) => void;
+  onSave?: (next: any) => Promise<void> | void;
 };
 
 type ModuleOption = {
@@ -58,7 +59,7 @@ const createItem = (section: string): FloatingMediaItem => ({
   visible: true,
 });
 
-export const FloatingMediaManager: React.FC<Props> = ({ config, onChange }) => {
+export const FloatingMediaManager: React.FC<Props> = ({ config, onChange, onSave }) => {
   const items: FloatingMediaItem[] = config?.floatingImages ?? [];
   const [draftModule, setDraftModule] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(true);
@@ -115,8 +116,13 @@ export const FloatingMediaManager: React.FC<Props> = ({ config, onChange }) => {
     });
   };
 
-  const saveChanges = () => {
-    setSavedSnapshot(JSON.stringify(items));
+  const saveChanges = async () => {
+    try {
+      if (onSave) await onSave(config);
+      setSavedSnapshot(JSON.stringify(items));
+    } catch {
+      // Le parent affiche déjà son erreur d'enregistrement.
+    }
   };
 
   const scrollToItem = (id: string) => {
