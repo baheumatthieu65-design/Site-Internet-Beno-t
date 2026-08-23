@@ -445,15 +445,15 @@ export const publishedSiteContent = {
           "id": "gite-block-1787320016089-k95hg6",
           "moduleId": "gite-sejourner",
           "type": "text",
-          "x": 26,
-          "y": 89.33962264150944,
+          "x": 27.395832538604736,
+          "y": 82.21698113207547,
           "width": 30,
           "height": 18,
           "text": "Un lieu pour ralentir.",
           "link": "",
           "url": "",
-          "fontSize": 62,
-          "color": "#f2f2f2",
+          "fontSize": 46,
+          "color": "#000000",
           "align": "left",
           "fontFamily": "Great Vibes",
           "fontWeight": 400,
@@ -2133,5 +2133,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787345210942
+  "publishedAt": 1787512267045
 } as const;
