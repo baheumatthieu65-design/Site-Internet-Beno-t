@@ -387,8 +387,8 @@ export const publishedSiteContent = {
           "id": "gite-block-1787319834810-i7pabf",
           "moduleId": "gite-sejourner",
           "type": "text",
-          "x": 23,
-          "y": 5.09433962264151,
+          "x": 24.583333730697632,
+          "y": 12.798741178692513,
           "width": 34,
           "height": 10,
           "text": "LE GÎTE EN IMAGES",
@@ -416,8 +416,8 @@ export const publishedSiteContent = {
           "id": "gite-block-1787319925497-8hkoz3",
           "moduleId": "gite-sejourner",
           "type": "text",
-          "x": 21,
-          "y": 8.018867924528301,
+          "x": 22.135416666666664,
+          "y": 15.36478006614829,
           "width": 30,
           "height": 18,
           "text": "______",
@@ -2133,5 +2133,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787512267045
+  "publishedAt": 1787512293825
 } as const;
