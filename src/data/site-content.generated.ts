@@ -1581,7 +1581,7 @@ export const publishedSiteContent = {
       "siteThemePreset": "pyrenees-noir",
       "siteBackgroundColor": "#121613",
       "navBackgroundColor": "#1a1e1b",
-      "navBackgroundOpacity": 25,
+      "navBackgroundOpacity": 35,
       "sectionBackgroundOpacity": {
         "hero": 85,
         "collection": 75,
@@ -2133,5 +2133,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787512449101
+  "publishedAt": 1787512697375
 } as const;
