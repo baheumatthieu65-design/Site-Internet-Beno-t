@@ -762,9 +762,9 @@ export const publishedSiteContent = {
           "id": "gite-block-1787320988721-9yv5i1",
           "moduleId": "gite-region",
           "type": "text",
-          "x": 51.145833333333336,
-          "y": 76,
-          "width": 30,
+          "x": 55.7812492052714,
+          "y": 76.07386155561967,
+          "width": 48,
           "height": 18,
           "text": "Consulter les disponibilités",
           "link": "",
@@ -785,7 +785,7 @@ export const publishedSiteContent = {
           "rotation": 0,
           "objectFit": "cover",
           "visible": true,
-          "autoSize": true
+          "autoSize": false
         },
         {
           "id": "gite-block-1787321051397-r5ljwb",
@@ -2133,5 +2133,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787512293825
+  "publishedAt": 1787512370522
 } as const;
