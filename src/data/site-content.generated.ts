@@ -1503,7 +1503,7 @@ export const publishedSiteContent = {
         "name": "Tapis de yoga",
         "subTitle": "Confection Artisanale des Pyrénées",
         "category": "Homme \u0026 Femme",
-        "price": 490,
+        "price": 2,
         "currency": "€",
         "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787937521251-Tapis-de-yoga.png",
         "gallery": [
@@ -1542,8 +1542,8 @@ export const publishedSiteContent = {
             "id": "hotspot-1787937686191",
             "title": "Nouveau point",
             "description": "teatetattateatae",
-            "x": 44,
-            "y": 43,
+            "x": 40,
+            "y": 41,
             "category": "fabric"
           }
         ],
@@ -2190,5 +2190,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787937707771
+  "publishedAt": 1787937749282
 } as const;
