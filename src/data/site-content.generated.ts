@@ -1498,6 +1498,48 @@ export const publishedSiteContent = {
         "hotspots": [],
         "customSpecs": {},
         "id": "produit-1787294817714-0t3rcd"
+      },
+      {
+        "name": "Tapis de yoga",
+        "subTitle": "Confection Artisanale des Pyrénées",
+        "category": "Homme \u0026 Femme",
+        "price": 490,
+        "currency": "€",
+        "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787937521251-Tapis-de-yoga.png",
+        "gallery": [
+          "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787937521251-Tapis-de-yoga.png"
+        ],
+        "description": "Veste artisanale d'exception tissée dans les Pyrénées.",
+        "longDescription": "Fabriquée selon des savoir-faire d'autrefois en pure laine sélectionnée.",
+        "tagline": "L'élégance des cimes",
+        "fabrics": [
+          "Laine des Pyrénées 100% naturelle"
+        ],
+        "colors": [
+          {
+            "name": "Gris Aspe",
+            "hex": "#4a524b"
+          },
+          {
+            "name": "Ocre Vignemale",
+            "hex": "#8c6b43"
+          }
+        ],
+        "sizes": [],
+        "isAvailable": false,
+        "availabilityStatus": "coming-soon",
+        "features": [],
+        "specs": {
+          "weight": "850g",
+          "waterResistance": "Déperlante",
+          "warmthRating": "Très élevée",
+          "fitType": "Ajustée",
+          "origin": "Atelier Pyrénées, France",
+          "care": "Lavage délicat à la main ou nettoyage à sec"
+        },
+        "hotspots": [],
+        "customSpecs": {},
+        "id": "produit-1787937546249-yac3yh"
       }
     ],
     "theme": {
@@ -2133,5 +2175,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787937448436
+  "publishedAt": 1787937553397
 } as const;
