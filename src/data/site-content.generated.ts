@@ -1526,8 +1526,8 @@ export const publishedSiteContent = {
           }
         ],
         "sizes": [],
-        "isAvailable": false,
-        "availabilityStatus": "coming-soon",
+        "isAvailable": true,
+        "availabilityStatus": "on-sale",
         "features": [],
         "specs": {
           "weight": "850g",
@@ -2175,5 +2175,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787937553397
+  "publishedAt": 1787937581469
 } as const;
