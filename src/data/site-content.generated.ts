@@ -1643,7 +1643,6 @@ export const publishedSiteContent = {
       "lookbookProductIds": [
         "produit-1787937546249-yac3yh",
         "veste-des-cimes",
-        "produit-1787294817714-0t3rcd",
         "produit-1787241378430-715p3s",
         "produit-1787242939553-ezbmjg"
       ],
@@ -2189,5 +2188,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787937940442
+  "publishedAt": 1787937968814
 } as const;
