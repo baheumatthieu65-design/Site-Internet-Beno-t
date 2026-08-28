@@ -1537,7 +1537,16 @@ export const publishedSiteContent = {
           "origin": "Atelier Pyrénées, France",
           "care": "Lavage délicat à la main ou nettoyage à sec"
         },
-        "hotspots": [],
+        "hotspots": [
+          {
+            "id": "hotspot-1787937686191",
+            "title": "Nouveau point",
+            "description": "teatetattateatae",
+            "x": 44,
+            "y": 43,
+            "category": "fabric"
+          }
+        ],
         "customSpecs": {},
         "id": "produit-1787937546249-yac3yh"
       }
@@ -1632,7 +1641,13 @@ export const publishedSiteContent = {
       "sectionWidthPercent": {
         "collection": 110
       },
-      "lookbookProductIds": [],
+      "lookbookProductIds": [
+        "produit-1787937546249-yac3yh",
+        "veste-des-cimes",
+        "produit-1787294817714-0t3rcd",
+        "produit-1787241378430-715p3s",
+        "produit-1787242939553-ezbmjg"
+      ],
       "productBlocksOrder": [
         "title-price",
         "colors",
@@ -2175,5 +2190,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787937581469
+  "publishedAt": 1787937707771
 } as const;
