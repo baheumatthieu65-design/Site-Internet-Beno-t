@@ -1502,14 +1502,14 @@ export const publishedSiteContent = {
       {
         "name": "Tapis de yoga",
         "subTitle": "Confection Artisanale des Pyrénées",
-        "category": "Homme \u0026 Femme",
-        "price": 2,
+        "category": "Sport",
+        "price": 180,
         "currency": "€",
         "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787937521251-Tapis-de-yoga.png",
         "gallery": [
           "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787937521251-Tapis-de-yoga.png"
         ],
-        "description": "Veste artisanale d'exception tissée dans les Pyrénées.",
+        "description": "Tapis de yoga en laine des pyrénées",
         "longDescription": "Fabriquée selon des savoir-faire d'autrefois en pure laine sélectionnée.",
         "tagline": "L'élégance des cimes",
         "fabrics": [
@@ -1518,11 +1518,7 @@ export const publishedSiteContent = {
         "colors": [
           {
             "name": "Gris Aspe",
-            "hex": "#4a524b"
-          },
-          {
-            "name": "Ocre Vignemale",
-            "hex": "#8c6b43"
+            "hex": "#e8f7b5"
           }
         ],
         "sizes": [],
@@ -1548,7 +1544,8 @@ export const publishedSiteContent = {
           }
         ],
         "customSpecs": {},
-        "id": "produit-1787937546249-yac3yh"
+        "id": "produit-1787937546249-yac3yh",
+        "showcaseEyebrow": "Un moment de détente encré dans les traditions"
       }
     ],
     "theme": {
@@ -2190,5 +2187,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787937749282
+  "publishedAt": 1787937867181
 } as const;
