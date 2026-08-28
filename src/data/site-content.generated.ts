@@ -1521,7 +1521,9 @@ export const publishedSiteContent = {
             "hex": "#e8f7b5"
           }
         ],
-        "sizes": [],
+        "sizes": [
+          "Taille unique"
+        ],
         "isAvailable": true,
         "availabilityStatus": "on-sale",
         "features": [],
@@ -2187,5 +2189,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787937897863
+  "publishedAt": 1787937940442
 } as const;
