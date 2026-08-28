@@ -1890,7 +1890,7 @@ export const publishedSiteContent = {
         "selector": "[data-vce-hero-line=\"2\"]",
         "kind": "text",
         "text": "Thème Champêtre \u0026 Élégance",
-        "fontFamily": "ui-serif",
+        "fontFamily": "Bonheur Royale",
         "fontSize": "60px",
         "color": "rgb(245, 238, 223)",
         "locator": {
@@ -2008,7 +2008,7 @@ export const publishedSiteContent = {
         "text": "ILHET - Vallée d'Aure",
         "fontFamily": "ui-serif",
         "fontSize": "12px",
-        "color": "rgb(212, 175, 55)"
+        "color": "#f5eedf"
       },
       {
         "id": "story-designer-location",
@@ -2188,5 +2188,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1787938017103
+  "publishedAt": 1787938162183
 } as const;
