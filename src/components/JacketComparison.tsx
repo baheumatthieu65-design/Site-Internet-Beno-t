@@ -59,12 +59,12 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
     ? theme.comparisonCriteria
     : DEFAULT_CRITERIA;
 
-  const categories = getCatalogCategories(jackets);
+  const categories = getCatalogCategories(jackets, theme?.catalogCategories || []);
   const activeCategory = categories.some((type) => type.id === selectedCategory)
     ? selectedCategory
     : categories[0]?.id || '';
   const counts = categories.reduce<Record<string, number>>((acc, type) => {
-    acc[type.id] = jackets.filter((product) => String(product.category || '').trim() === type.id).length;
+    acc[type.id] = jackets.filter((product) => String(product.category || '').trim() === type.id && getProductAvailabilityStatus(product) !== 'sold-out').length;
     return acc;
   }, {});
 

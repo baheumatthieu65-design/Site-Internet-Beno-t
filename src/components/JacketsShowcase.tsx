@@ -90,12 +90,13 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
     ? selectedCategory
     : categories[0]?.id || '';
   const counts = categories.reduce<Record<string, number>>((acc, type) => {
-    acc[type.id] = (Array.isArray(jackets) ? jackets : []).filter((product) => String(product.category || '').trim() === type.id).length;
+    acc[type.id] = (Array.isArray(jackets) ? jackets : []).filter((product) => String(product.category || '').trim() === type.id && getProductAvailabilityStatus(product) !== 'sold-out').length;
     return acc;
   }, {});
 
   const orderedJackets = sortProductsByAvailability(Array.isArray(jackets) ? jackets : [])
-    .filter((product) => String(product.category || '').trim() === activeCategory);
+    .filter((product) => String(product.category || '').trim() === activeCategory)
+    .filter((product) => getProductAvailabilityStatus(product) !== 'sold-out');
   const visibleJackets = orderedJackets
     .sort((a, b) => {
       const modelNumber = (product: JacketModel) => {

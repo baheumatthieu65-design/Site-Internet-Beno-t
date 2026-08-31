@@ -46,7 +46,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     ? selectedCategory
     : categories[0]?.id || '';
   const counts = categories.reduce<Record<string, number>>((acc, type) => {
-    acc[type.id] = allJackets.filter((product) => String(product.category || '').trim() === type.id).length;
+    acc[type.id] = allJackets.filter((product) => String(product.category || '').trim() === type.id && getProductAvailabilityStatus(product) !== 'sold-out').length;
     return acc;
   }, {});
   // Le Hero suit le même ordre commercial que les autres modules :
@@ -86,17 +86,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const titlePrefix = theme?.heroTitlePrefix || 'Thème Champêtre & Élégance';
   const orderText = theme?.orderButtonText || 'Commander';
   const discoverText = theme?.discoverButtonText || 'Découvrir';
-
-  const renderCategoryTabs = () => (
-    <div className="mt-5 w-full">
-      <CreationTypeTabs
-        types={categories}
-        selectedCategory={activeCategory}
-        onSelect={onSelectCategory}
-        counts={counts}
-      />
-    </div>
-  );
 
   const renderBadge = () => {
     if (badgePosition === 'hidden') return null;
@@ -228,7 +217,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               </p>
             )}
 
-            {renderCategoryTabs()}
+            <div className="mt-6 sm:mt-8">
+              <CreationTypeTabs
+                types={categories}
+                selectedCategory={activeCategory}
+                onSelect={onSelectCategory}
+                counts={counts}
+              />
+            </div>
 
             {/* CTA Buttons */}
             <div className={`pt-6 flex flex-wrap items-center ${buttonAlignClass} gap-4`}>
@@ -299,7 +295,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 </p>
               )}
 
-              {renderCategoryTabs()}
+              <div className="mt-6 sm:mt-8">
+                <CreationTypeTabs
+                  types={categories}
+                  selectedCategory={activeCategory}
+                  onSelect={onSelectCategory}
+                  counts={counts}
+                />
+              </div>
 
               <div className={`pt-3 flex flex-wrap items-center gap-3 ${buttonAlignClass}`}>
                 <button
@@ -397,7 +400,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 </p>
               )}
 
-              {renderCategoryTabs()}
+            <div className="mt-6 sm:mt-8">
+              <CreationTypeTabs
+                types={categories}
+                selectedCategory={activeCategory}
+                onSelect={onSelectCategory}
+                counts={counts}
+              />
+            </div>
+
             </div>
 
             {/* Dynamic Jackets Display Cards in Hero */}
@@ -484,7 +495,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </div>
           <div className="flex items-center space-x-2">
             <Sparkles className="w-4 h-4 text-[#c2a26d]" />
-            <span>{jackets.length} Pièces Signatures sur Mesure</span>
+            <span>{jackets.length} Pièces {getCategoryLabel(activeCategory)}</span>
           </div>
         </div>
       </div>

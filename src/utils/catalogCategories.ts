@@ -6,24 +6,30 @@ export interface CatalogCategory {
 }
 
 /**
- * Les onglets publics de la boutique sont directement dérivés du champ
- * `category` déjà présent sur chaque article du catalogue.
- * Aucune seconde donnée de typologie n'est stockée.
+ * Les onglets publics de la boutique utilisent le champ `category` des articles.
+ * Les catégories créées dans le paramétrage sont conservées même lorsqu'elles
+ * n'ont encore aucun article associé.
  */
-export const getCatalogCategories = (products: JacketModel[], configuredCategories: string[] = []): CatalogCategory[] => {
+export const getCatalogCategories = (
+  products: JacketModel[],
+  configuredCategories: string[] = [],
+): CatalogCategory[] => {
   const seen = new Map<string, CatalogCategory>();
+
   for (const configured of Array.isArray(configuredCategories) ? configuredCategories : []) {
     const label = String(configured || '').trim();
     if (!label) continue;
     const key = label.toLocaleLowerCase();
     if (!seen.has(key)) seen.set(key, { id: label, label });
   }
+
   for (const product of Array.isArray(products) ? products : []) {
     const label = String(product?.category || '').trim();
     if (!label) continue;
     const key = label.toLocaleLowerCase();
     if (!seen.has(key)) seen.set(key, { id: label, label });
   }
+
   return Array.from(seen.values());
 };
 

@@ -150,7 +150,7 @@ export const LogoEditorModal: React.FC<Props> = ({ isOpen, brandData, onClose, o
   const save = () => { onSave(draft); onClose(); };
 
   return (
-    <div className="fixed inset-0 z-[80] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[2147483647] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
       <div className="w-full max-w-4xl max-h-[92vh] overflow-y-auto bg-[#141a15] border border-[#3b473e] rounded-3xl shadow-2xl text-[#e2d5c3]">
         <div className="sticky top-0 z-10 px-6 py-4 bg-[#18201a] border-b border-[#2b372d] flex items-center justify-between">
           <div><h2 className="font-serif text-xl text-[#f3ece0]">Logos Boutique & Gîte</h2><p className="text-xs text-[#8f9f91] mt-1">Les deux blocs sont indépendants et réutilisés sur les pages.</p></div>
