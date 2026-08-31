@@ -373,7 +373,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
             <button
               type="button"
               onClick={handleAddStatus}
-              className="px-4 py-2.5 rounded-xl bg-[#28362b] border border-[#d4af37] text-[#d4af37] hover:bg-[#344638] text-xs font-bold uppercase tracking-wider flex items-center space-x-1.5 cursor-pointer whitespace-nowrap"
+              className="h-[46px] px-4 py-2.5 rounded-xl bg-[#28362b] border border-[#d4af37] text-[#d4af37] hover:bg-[#344638] text-xs font-bold uppercase tracking-wider flex items-center space-x-1.5 cursor-pointer whitespace-nowrap"
             >
               <Plus className="w-4 h-4" />
               <span>Ajouter au Menu Déroulant</span>
