@@ -6,6 +6,7 @@ import verify from '../../server/admin/verify.js';
 import orders from '../../server/admin/orders.js';
 import products from '../../server/admin/products.js';
 import ordersReport from '../../server/admin/orders-report.js';
+import orderEmail from '../../server/admin/order-email.js';
 
 const handlers: Record<string, (req: any, res: any) => unknown | Promise<unknown>> = {
   login,
@@ -15,6 +16,7 @@ const handlers: Record<string, (req: any, res: any) => unknown | Promise<unknown
   orders,
   products,
   'orders-report': ordersReport,
+  'order-email': orderEmail,
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

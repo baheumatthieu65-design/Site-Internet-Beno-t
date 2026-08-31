@@ -123,6 +123,14 @@ export default async function handler(
     publishedAt: Number(body.config.publishedAt) || Date.now(),
   };
 
+  // L’adresse de réception des commandes est gérée par l’endpoint
+  // administrateur sécurisé. Un enregistrement général du site ne doit
+  // jamais pouvoir revenir à une ancienne valeur.
+  const storedOrderEmail = await redis.get<string>('mdp_order_notification_email');
+  if (typeof storedOrderEmail === 'string' && storedOrderEmail.trim()) {
+    config.ordersEmail = storedOrderEmail.trim();
+  }
+
   await redis.set(KEY, config);
 
   return json(res, 200, {

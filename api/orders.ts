@@ -3,6 +3,7 @@ import {
   getOrdersFromDB,
   saveOrdersToDB,
   sendOrderEmailNotification,
+  getOrderNotificationEmail,
 } from './_helpers.js';
 
 export default async function handler(
@@ -302,8 +303,7 @@ export default async function handler(
         'Demande',
 
       recipientEmail:
-        process.env.ADMIN_EMAIL ||
-        '',
+        await getOrderNotificationEmail(),
 
       generatedEmail: {
         subject:

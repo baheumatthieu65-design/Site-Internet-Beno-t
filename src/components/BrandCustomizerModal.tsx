@@ -173,6 +173,11 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [securityMessage, setSecurityMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [orderEmailDraft, setOrderEmailDraft] = useState('');
+  const [orderEmailCode, setOrderEmailCode] = useState('');
+  const [orderEmailSendConfirmation, setOrderEmailSendConfirmation] = useState(true);
+  const [orderEmailSaving, setOrderEmailSaving] = useState(false);
+  const [orderEmailMessage, setOrderEmailMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [draggedNavId, setDraggedNavId] = useState<NavigationId | null>(null);
   const [dragOverNavId, setDragOverNavId] = useState<NavigationId | null>(null);
@@ -189,6 +194,21 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     const creds = getStoredCredentials();
     setAdminUsername(creds.username);
     setAdminEmail(creds.email && !creds.email.includes('baheu.matthieu65') ? creds.email : 'contact@maisondespyrenees.fr');
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setOrderEmailMessage(null);
+    setOrderEmailCode('');
+    fetch('/api/admin/order-email', { method: 'GET', credentials: 'include', cache: 'no-store', headers: { Accept: 'application/json' } })
+      .then(async (response) => {
+        const data = await response.json().catch(() => null);
+        if (response.ok && data?.success && data.email) {
+          setOrderEmailDraft(String(data.email));
+          setFormData((prev) => ({ ...prev, ordersEmail: String(data.email) }));
+        }
+      })
+      .catch(() => {});
   }, [isOpen]);
 
   useEffect(() => {
@@ -793,6 +813,42 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     updateTheme({ lookbookProductIds: next });
   };
 
+
+  const handleChangeOrderEmail = async () => {
+    const nextEmail = orderEmailDraft.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/i.test(nextEmail)) {
+      setOrderEmailMessage({ type: 'error', text: 'Veuillez saisir une adresse email valide.' });
+      return;
+    }
+    const currentEmail = String(formData.ordersEmail || '').trim();
+    if (currentEmail && currentEmail.toLowerCase() === nextEmail.toLowerCase()) {
+      setOrderEmailMessage({ type: 'success', text: 'Cette adresse est déjà configurée.' });
+      return;
+    }
+    const confirmed = window.confirm(`Confirmer le changement de l’adresse de réception ?\n\nAncienne : ${currentEmail || 'adresse actuelle'}\nNouvelle : ${nextEmail}\n\nOK = continuer / Annuler = ne rien modifier.`);
+    if (!confirmed) return;
+    if (!orderEmailCode.trim()) {
+      setOrderEmailMessage({ type: 'error', text: 'Entrez le code administrateur pour valider ce changement.' });
+      return;
+    }
+    setOrderEmailSaving(true);
+    setOrderEmailMessage(null);
+    try {
+      const response = await fetch('/api/admin/order-email', {
+        method: 'PUT', credentials: 'include', cache: 'no-store',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ email: nextEmail, code: orderEmailCode.trim(), sendConfirmation: orderEmailSendConfirmation }),
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || data?.success !== true) throw new Error(data?.message || `Erreur serveur (${response.status}).`);
+      setOrderEmailDraft(nextEmail);
+      setOrderEmailCode('');
+      setFormData((prev) => ({ ...prev, ordersEmail: nextEmail }));
+      setOrderEmailMessage({ type: 'success', text: data.message || 'Adresse de réception modifiée.' });
+    } catch (error: any) {
+      setOrderEmailMessage({ type: 'error', text: error?.message || 'Impossible de modifier l’adresse de réception.' });
+    } finally { setOrderEmailSaving(false); }
+  };
 
   // Save & Security Handlers
   const handleSave = (e?: React.FormEvent) => {
@@ -2129,34 +2185,28 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
               </div>
 
               {/* Destination Email for Orders */}
-              <div className="p-6 rounded-2xl bg-[#1a221c] border border-[#3b4b3e] space-y-3">
+              <div className="p-6 rounded-2xl bg-[#1a221c] border border-[#3b4b3e] space-y-4">
                 <div className="flex items-center space-x-2 text-[#d4af37]">
                   <ShoppingBag className="w-5 h-5" />
-                  <h4 className="font-serif text-base font-bold text-[#f3ece0]">
-                    Email Destinataire des Commandes & Réservations Clients
-                  </h4>
+                  <h4 className="font-serif text-base font-bold text-[#f3ece0]">Adresse de réception des commandes & réservations</h4>
                 </div>
-                <p className="text-xs text-[#a3b1a5]">
-                  Adresse recevant les notifications de commande envoyées depuis le site :
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 max-w-xl">
-                  <input
-                    type="email"
-                    value={formData.ordersEmail || ''}
-                    onChange={(e) => handleChangeBrand('ordersEmail', e.target.value)}
-                    placeholder="contact@maisondespyrenees.fr"
-                    className="flex-1 bg-[#121613] border border-[#435747] text-sm text-[#f3ece0] px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      alert(`Les réservations et commandes seront expédiées à ${formData.ordersEmail || 'l\'adresse par défaut'}.`);
-                    }}
-                    className="px-4 py-2.5 bg-[#253227] text-xs text-[#d4af37] border border-[#445847] hover:border-[#d4af37] rounded-xl cursor-pointer"
-                  >
-                    Vérifier
-                  </button>
+                <p className="text-xs text-[#a3b1a5]">Cette adresse reçoit les commandes, réservations et demandes sur mesure. Toute modification exige le code administrateur.</p>
+                {orderEmailMessage && <div className={`p-3 rounded-xl text-xs border ${orderEmailMessage.type === 'success' ? 'bg-emerald-950/50 border-emerald-700 text-emerald-200' : 'bg-red-950/50 border-red-700 text-red-200'}`}>{orderEmailMessage.text}</div>}
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-3 max-w-3xl">
+                  <input type="email" value={orderEmailDraft || formData.ordersEmail || ''} onChange={(e) => setOrderEmailDraft(e.target.value)} placeholder="obiones@hotmail.fr" className="w-full bg-[#121613] border border-[#435747] text-sm text-[#f3ece0] px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" />
+                  <button type="button" disabled={orderEmailSaving} onClick={handleChangeOrderEmail} className="px-5 py-2.5 bg-[#253227] text-xs text-[#d4af37] border border-[#d4af37] hover:bg-[#344638] rounded-xl cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">{orderEmailSaving ? 'VALIDATION…' : 'MODIFIER L’ADRESSE'}</button>
                 </div>
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 max-w-3xl items-end">
+                  <div>
+                    <label className="block text-[11px] uppercase tracking-widest text-[#a3b1a5] mb-1.5">Code administrateur</label>
+                    <input type="password" value={orderEmailCode} onChange={(e) => setOrderEmailCode(e.target.value)} placeholder="Code admin requis" autoComplete="off" className="w-full bg-[#121613] border border-[#435747] text-sm text-[#f3ece0] px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" />
+                  </div>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => setOrderEmailSendConfirmation(true)} className={`px-4 py-2.5 rounded-xl text-[11px] uppercase font-bold border ${orderEmailSendConfirmation ? 'border-[#d4af37] text-[#d4af37] bg-[#253227]' : 'border-[#435747] text-[#a3b1a5]'}`}>Mail : OUI</button>
+                    <button type="button" onClick={() => setOrderEmailSendConfirmation(false)} className={`px-4 py-2.5 rounded-xl text-[11px] uppercase font-bold border ${!orderEmailSendConfirmation ? 'border-[#d4af37] text-[#d4af37] bg-[#253227]' : 'border-[#435747] text-[#a3b1a5]'}`}>NON</button>
+                  </div>
+                </div>
+                <p className="text-[11px] text-[#7f8d82]">Si « Mail : OUI » est sélectionné, un email de confirmation est envoyé à l’ancienne et à la nouvelle adresse après validation.</p>
               </div>
 
               {/* Export / Import */}

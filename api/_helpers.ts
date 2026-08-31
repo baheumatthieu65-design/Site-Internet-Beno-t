@@ -444,6 +444,35 @@ export const saveOrdersToDB =
   };
 
 // ============================================================
+// DESTINATAIRE DES COMMANDES
+// ============================================================
+
+const ORDER_EMAIL_KEY = 'mdp_order_notification_email';
+
+export const getOrderNotificationEmail = async (): Promise<string> => {
+  const redis = getRedisClient();
+  if (redis) {
+    try {
+      const stored = await redis.get<string>(ORDER_EMAIL_KEY);
+      if (typeof stored === 'string' && stored.trim()) return stored.trim();
+    } catch (error) {
+      console.error('Erreur lecture email commandes Redis:', error);
+    }
+  }
+
+  return String(process.env.ADMIN_EMAIL || 'contact@maisondespyrenees.fr').trim();
+};
+
+export const saveOrderNotificationEmail = async (email: string): Promise<void> => {
+  const cleanEmail = email.trim();
+  const redis = getRedisClient();
+  if (redis) {
+    await redis.set(ORDER_EMAIL_KEY, cleanEmail);
+    return;
+  }
+};
+
+// ============================================================
 // EMAIL RESEND
 // ============================================================
 
@@ -471,7 +500,7 @@ export const sendOrderEmailNotification =
     message?: string;
   }> => {
     const adminEmail =
-      process.env.ADMIN_EMAIL;
+      await getOrderNotificationEmail();
 
     const resendApiKey =
       process.env.RESEND_API_KEY;
