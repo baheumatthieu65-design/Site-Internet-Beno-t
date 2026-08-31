@@ -85,56 +85,110 @@ const escapeHtml = (value: string): string =>
 
 const getBrandName = async (): Promise<string> => {
   const redis = getRedisClient();
-  if (!redis) return 'Maison des Pyrénées';
+  if (!redis) return 'Maison Mailhagut';
 
   try {
     const config = await redis.get<any>('mdp_site_config');
-    return (
-      String(config?.brandName || 'Maison des Pyrénées').trim() ||
-      'Maison des Pyrénées'
-    );
+    const logoText = config?.logos?.boutique?.text;
+
+    if (typeof logoText === 'string' && logoText.trim()) {
+      return logoText.trim().replace(/\s*\n\s*/g, ' ');
+    }
+
+    return String(config?.brandName || 'Maison Mailhagut').trim() || 'Maison Mailhagut';
   } catch {
-    return 'Maison des Pyrénées';
+    return 'Maison Mailhagut';
   }
 };
 
-export const renderEmailTemplate = (
+const buildArticlesTable = (
+  items: Array<{
+    jacketName: string;
+    color: string;
+    size: string;
+    quantity: number;
+    unitPrice: number;
+    totalPrice: number;
+    imageUrl?: string;
+  }>,
+  currency: string
+): string => {
+  if (!items.length) {
+    return '<span style="font-family:Arial,sans-serif;font-size:13px;">Aucun article.</span>';
+  }
+
+  const rows = items.map((item) => {
+    const safeImageUrl = item.imageUrl
+      ? escapeHtml(item.imageUrl)
+      : '';
+
+    const imageHtml = safeImageUrl
+      ? `<img src="${safeImageUrl}" alt="${escapeHtml(item.jacketName)}" width="52" height="52" style="display:block;width:52px;height:52px;object-fit:cover;border:0;border-radius:5px;" />`
+      : `<div style="width:52px;height:52px;line-height:52px;text-align:center;background:#f2f2f2;color:#777;border-radius:5px;">—</div>`;
+
+    return `<tr>
+      <td style="padding:4px 6px;border:1px solid #d9d9d9;text-align:center;width:64px;height:60px;vertical-align:middle;">${imageHtml}</td>
+      <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:center;vertical-align:middle;">${item.quantity}</td>
+      <td style="padding:4px 7px;border:1px solid #d9d9d9;vertical-align:middle;">${escapeHtml(item.jacketName)}</td>
+      <td style="padding:4px 7px;border:1px solid #d9d9d9;vertical-align:middle;">${escapeHtml(item.color)}</td>
+      <td style="padding:4px 7px;border:1px solid #d9d9d9;vertical-align:middle;">${escapeHtml(item.size)}</td>
+      <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:right;white-space:nowrap;vertical-align:middle;">${item.totalPrice} ${escapeHtml(currency)}</td>
+    </tr>`;
+  }).join('');
+
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;border-spacing:0;margin:0;padding:0;font-family:Arial,sans-serif;font-size:13px;line-height:1.2;">
+    <thead>
+      <tr>
+        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:center;">Image de l'article</th>
+        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:center;">Nombre</th>
+        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Nom de l'article</th>
+        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Couleur</th>
+        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Taille</th>
+        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:right;">Coût</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+};
+
+const renderTemplate = (
   template: EmailTemplate,
   values: Record<string, string>
-): EmailTemplate => {
-  const replaceTokens = (input: string) =>
+): { subject: string; body: string } => {
+  const replace = (input: string) =>
     input.replace(
       /{{\s*([a-zA-Z0-9_]+)\s*}}/g,
       (_, token: string) => values[token] ?? ''
     );
 
   return {
-    subject: replaceTokens(template.subject),
-    body: replaceTokens(template.body),
+    subject: replace(template.subject),
+    body: template.body,
   };
 };
 
-const renderBodyWithArticleTable = (
-  templateBody: string,
+const renderHtmlBody = (
+  body: string,
   values: Record<string, string>,
-  articleTable: string
+  articlesTable: string
 ): string => {
-  const token = /{{\s*articles\s*}}/g;
-  const parts = templateBody.split(token);
+  const articleToken = /{{\s*articles\s*}}/g;
+  const parts = body.split(articleToken);
 
-  return parts
-    .map((part, index) => {
-      const replaced = part.replace(
-        /{{\s*([a-zA-Z0-9_]+)\s*}}/g,
-        (_, name: string) => values[name] ?? ''
-      );
+  return parts.map((part, index) => {
+    const replaced = part.replace(
+      /{{\s*([a-zA-Z0-9_]+)\s*}}/g,
+      (_, token: string) => values[token] ?? ''
+    );
 
-      const html = replaced.replace(/\r?\n/g, '<br>');
-      return index === 0
-        ? html.replace(/(?:<br>\s*)+$/g, '')
-        : `<div style="margin:0;padding:0;">${html.replace(/^(?:<br>\s*)+/g, '')}</div>`;
-    })
-    .join(articleTable);
+    const html = replaced.replace(/\r?\n/g, '<br>');
+
+    if (index === 0) {
+      return html.replace(/(?:<br>\s*)+$/g, '');
+    }
+
+    return `<div style="margin:0;padding:0;">${html.replace(/^(?:<br>\s*)+/g, '')}</div>`;
+  }).join(articlesTable);
 };
 
 export const sendTemplatedOrderEmail = async (orderData: {
@@ -152,6 +206,7 @@ export const sendTemplatedOrderEmail = async (orderData: {
     quantity: number;
     unitPrice: number;
     totalPrice: number;
+    imageUrl?: string;
   }>;
   totalPrice: number;
   currency: string;
@@ -160,8 +215,13 @@ export const sendTemplatedOrderEmail = async (orderData: {
   const resendApiKey = process.env.RESEND_API_KEY;
   const adminEmail = await getOrderNotificationEmail();
 
-  if (!adminEmail) return { sent: false, message: 'Adresse de réception des commandes non configurée.' };
-  if (!resendApiKey) return { sent: false, message: 'RESEND_API_KEY non configuré sur Vercel.' };
+  if (!adminEmail) {
+    return { sent: false, message: 'Adresse de réception des commandes non configurée.' };
+  }
+
+  if (!resendApiKey) {
+    return { sent: false, message: 'RESEND_API_KEY non configuré sur Vercel.' };
+  }
 
   const templates = await getEmailTemplates();
   const brandName = await getBrandName();
@@ -173,15 +233,6 @@ export const sendTemplatedOrderEmail = async (orderData: {
   const type = appointment
     ? 'Demande de rendez-vous atelier'
     : orderData.orderTypeLabel || 'Commande';
-
-  const articles = orderData.items.length
-    ? orderData.items
-        .map(
-          (item) =>
-            `- ${item.quantity}x ${item.jacketName} (${item.color}, ${item.size}) — ${item.totalPrice} ${orderData.currency}`
-        )
-        .join('\n')
-    : 'Aucun — demande de rendez-vous atelier';
 
   const values = {
     marque: escapeHtml(brandName),
@@ -201,27 +252,26 @@ export const sendTemplatedOrderEmail = async (orderData: {
     ? templates.appointment
     : templates.order;
 
-  const rendered = {
-    subject: selectedTemplate.subject.replace(
-      /{{\s*([a-zA-Z0-9_]+)\s*}}/g,
-      (_, name: string) => values[name] ?? ''
-    ),
-    body: selectedTemplate.body,
-  };
-
-  const htmlBodyContent = renderBodyWithArticleTable(
-    rendered.body,
-    values,
-    articles
-  );
+  const rendered = renderTemplate(selectedTemplate, values);
+  const articlesTable = buildArticlesTable(orderData.items, orderData.currency);
 
   const htmlBody =
     `<div style="font-family:Arial,sans-serif;line-height:1.45;margin:0;padding:0;">` +
-    htmlBodyContent +
+    renderHtmlBody(rendered.body, values, articlesTable) +
     `</div>`;
 
+  const textBody = rendered.body.replace(
+    /{{\s*articles\s*}}/g,
+    orderData.items.length
+      ? orderData.items.map(
+          (item) =>
+            `- ${item.quantity}x ${item.jacketName} (${item.color}, ${item.size}) — ${item.totalPrice} ${orderData.currency}`
+        ).join('\n')
+      : 'Aucun article — demande de rendez-vous atelier'
+  );
+
   const fromEmail =
-    process.env.EMAIL_FROM || 'Maison des Pyrénées <onboarding@resend.dev>';
+    process.env.EMAIL_FROM || 'Maison Mailhagut <onboarding@resend.dev>';
 
   try {
     const response = await fetch('https://api.resend.com/emails', {
@@ -235,12 +285,16 @@ export const sendTemplatedOrderEmail = async (orderData: {
         to: [adminEmail],
         subject: rendered.subject,
         html: htmlBody,
-        text: rendered.body,
+        text: textBody,
       }),
     });
 
     if (response.ok) {
-      return { sent: true, subject: rendered.subject, body: rendered.body };
+      return {
+        sent: true,
+        subject: rendered.subject,
+        body: rendered.body,
+      };
     }
 
     const errorText = await response.text().catch(() => '');
