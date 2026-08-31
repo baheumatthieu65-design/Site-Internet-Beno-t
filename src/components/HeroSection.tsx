@@ -195,15 +195,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         {/* Top Heritage Badge */}
         {badgePosition === 'top' && renderBadge()}
 
-        <div className="mt-8">
-          <CreationTypeTabs
-            types={categories}
-            selectedCategory={activeCategory}
-            onSelect={onSelectCategory}
-            counts={counts}
-          />
-        </div>
-
         {/* LAYOUT VARIANT: CENTERED MINIMAL */}
         {layout === 'centered-minimal' ? (
           <div className={`${textAlignClass} max-w-4xl mx-auto space-y-6`}>
@@ -225,6 +216,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 {brandData.subtitle}
               </p>
             )}
+
+            <div className="mt-6 sm:mt-8">
+              <CreationTypeTabs
+                types={categories}
+                selectedCategory={activeCategory}
+                onSelect={onSelectCategory}
+                counts={counts}
+              />
+            </div>
 
             {/* CTA Buttons */}
             <div className={`pt-6 flex flex-wrap items-center ${buttonAlignClass} gap-4`}>
@@ -294,6 +294,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   {brandData.subtitle}
                 </p>
               )}
+
+              <div className="mt-6 sm:mt-8">
+                <CreationTypeTabs
+                  types={categories}
+                  selectedCategory={activeCategory}
+                  onSelect={onSelectCategory}
+                  counts={counts}
+                />
+              </div>
 
               <div className={`pt-3 flex flex-wrap items-center gap-3 ${buttonAlignClass}`}>
                 <button
@@ -390,6 +399,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   {brandData.subtitle}
                 </p>
               )}
+
+            <div className="mt-6 sm:mt-8">
+              <CreationTypeTabs
+                types={categories}
+                selectedCategory={activeCategory}
+                onSelect={onSelectCategory}
+                counts={counts}
+              />
+            </div>
+
             </div>
 
             {/* Dynamic Jackets Display Cards in Hero */}
@@ -476,7 +495,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </div>
           <div className="flex items-center space-x-2">
             <Sparkles className="w-4 h-4 text-[#c2a26d]" />
-            <span>{jackets.length} Pièces Signatures sur Mesure</span>
+            <span>{jackets.length} Pièces {getCategoryLabel(activeCategory)}</span>
           </div>
         </div>
       </div>
