@@ -161,6 +161,8 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     return 'theme';
   };
 
+  const [expandedBoutiqueTextId, setExpandedBoutiqueTextId] = useState<string | null>(null);
+
   const [activeTab, setActiveTab] = useState<'landing' | 'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite' | 'boutique-text'>(
     getInitialTab()
   );
@@ -249,10 +251,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
       { id: 'hero-brand-name', label: 'Nom de marque Hero', group: 'Hero', section: 'hero', defaultText: String(formData.brandName || '') },
       { id: 'hero-tagline', label: 'Accroche Hero', group: 'Hero', section: 'hero', defaultText: String(formData.tagline || '') },
       { id: 'hero-subtitle', label: 'Sous-titre Hero', group: 'Hero', section: 'hero', defaultText: String(formData.subtitle || '') },
-      { id: 'hero-order-button-text', label: 'Bouton Commander Hero', group: 'Hero', section: 'hero', defaultText: String(formData.theme?.orderButtonText || 'Commander') },
-      { id: 'hero-discover-button-text', label: 'Bouton Découvrir Hero', group: 'Hero', section: 'hero', defaultText: String(formData.theme?.discoverButtonText || 'Découvrir') },
-      { id: 'hero-discover-button-context', label: 'Contexte dynamique du bouton', group: 'Hero', section: 'hero', defaultText: 'La collection — nombre et catégorie automatiques', editable: false, automatic: true },
-      { id: 'navbar-order-button-text', label: 'Bouton Commander navigation', group: 'Navigation', section: 'hero', defaultText: String(formData.theme?.orderButtonText || 'Commander') },
       { id: 'story-title', label: 'Titre Récit & Terroir', group: 'Récit & terroir', section: 'origines', defaultText: String(formData.storyTitle || '') },
       { id: 'story-designer-location', label: 'Localisation Récit', group: 'Récit & terroir', section: 'origines', defaultText: String(formData.designerLocation || '') },
       { id: 'story-text-1', label: 'Texte principal du récit', group: 'Récit & terroir', section: 'origines', defaultText: String(formData.storyText1 || '') },
@@ -270,7 +268,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
         { id: `product-${product.id}-name`, label: `${product.name || product.id} — nom`, group: 'Articles / cartes boutique', section: 'hero' as const, defaultText: String(product.name || ''), editable: false, automatic: true },
         { id: `product-${product.id}-description`, label: `${product.name || product.id} — description`, group: 'Articles / cartes boutique', section: 'hero' as const, defaultText: String(product.description || ''), editable: false, automatic: true },
         { id: `product-${product.id}-price`, label: `${product.name || product.id} — prix`, group: 'Articles / cartes boutique', section: 'hero' as const, defaultText: `${product.price ?? ''} ${product.currency || '€'}`, editable: false, automatic: true },
-        { id: `product-${product.id}-discover`, label: `${product.name || product.id} — action`, group: 'Articles / cartes boutique', section: 'hero' as const, defaultText: String(formData.theme?.discoverButtonText || 'Découvrir'), editable: false, automatic: true },
       ]),
     ];
     return items;
@@ -1326,15 +1323,14 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           {/* TAB 1: THEME & BUTTONS PRESETS                            */}
           {/* ========================================================= */}
           {activeTab === 'boutique-text' && (
-            <div className="space-y-7 animate-fadeIn">
-              <div className="rounded-2xl border border-[#3c4c3f] bg-[#1a221c] p-5 space-y-2">
-                <h4 className="font-serif text-xl text-[#f3ece0] font-semibold flex items-center gap-2">
+            <div className="space-y-4 animate-fadeIn">
+              <div className="rounded-2xl border border-[#3c4c3f] bg-[#1a221c] px-4 py-3">
+                <h4 className="font-serif text-lg text-[#f3ece0] font-semibold flex items-center gap-2">
                   <Type className="w-5 h-5 text-[#d4af37]" /> Texte de la page boutique
                 </h4>
-                <p className="text-xs leading-relaxed text-[#aeb9ae]">
-                  Tous les textes identifiés par un ID stable sont regroupés ici. Les modifications sont enregistrées comme des overrides liés à l’ID : elles ne cassent plus les données dynamiques du catalogue.
+                <p className="text-[11px] leading-relaxed text-[#aeb9ae] mt-1">
+                  Cliquez sur un texte pour ouvrir ses réglages. Les textes automatiques peuvent être stylisés mais leur contenu reste protégé.
                 </p>
-                <p className="text-[11px] text-[#87968a]">Conseil : utilisez les retours à la ligne directement dans le champ texte. Ils seront conservés à l’affichage.</p>
               </div>
 
               {!siteEditorConfig || !onSiteEditorConfigChange ? (
@@ -1343,62 +1339,104 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                 </div>
               ) : (
                 Array.from(new Set(boutiqueTextCatalog.map((item) => item.group))).map((group) => (
-                  <div key={group} className="rounded-2xl border border-[#334036] bg-[#151b17] p-4 space-y-4">
-                    <div className="text-xs uppercase tracking-[.16em] text-[#d4af37] font-semibold">{group}</div>
+                  <div key={group} className="rounded-2xl border border-[#334036] bg-[#151b17] p-3 space-y-2">
+                    <div className="px-1 text-[10px] uppercase tracking-[.16em] text-[#d4af37] font-semibold">{group}</div>
                     {boutiqueTextCatalog.filter((item) => item.group === group).map((item) => {
                       const block = getBoutiqueBlock(item);
                       const overridden = (siteEditorConfig.blocks || []).some((candidate) => candidate.id === item.id && candidate.kind === 'text');
                       const value = block.text ?? item.defaultText;
+                      const expanded = expandedBoutiqueTextId === item.id;
+
                       return (
-                        <div key={item.id} className="rounded-xl border border-[#303d33] bg-[#111613] p-4 space-y-3">
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <div className="text-sm font-medium text-[#f3ece0]">{item.label}</div>
-                              <div className="text-[10px] text-[#718073] mt-1 font-mono">ID : {item.id}</div>
+                        <div key={item.id} className="rounded-xl border border-[#303d33] bg-[#111613] overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => setExpandedBoutiqueTextId(expanded ? null : item.id)}
+                            className="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-[#182019] transition-colors"
+                          >
+                            <div className="min-w-0">
+                              <div className="text-xs font-medium text-[#f3ece0] truncate">{item.label}</div>
+                              <div className="text-[9px] text-[#68776c] mt-0.5 font-mono truncate">
+                                {item.id}
+                              </div>
                             </div>
-                            {item.automatic ? <span className="text-[10px] uppercase tracking-wider text-[#8fa096] border border-[#455248] rounded-full px-2 py-1">Automatique / catalogue</span> : overridden && <span className="text-[10px] uppercase tracking-wider text-[#d4af37] border border-[#d4af37]/40 rounded-full px-2 py-1">Personnalisé</span>}
-                          </div>
-
-                          <textarea
-                            value={value}
-                            rows={Math.min(8, Math.max(2, String(value).split('\n').length + 1))}
-                            onChange={(e) => updateBoutiqueText(item, { text: e.target.value, whiteSpace: 'pre-wrap' })}
-                            disabled={item.editable === false}
-                            className="w-full min-h-[72px] resize-y rounded-xl bg-[#1b231e] border border-[#455248] px-3 py-2.5 text-sm text-white outline-none focus:border-[#d4af37]"
-                            placeholder={item.defaultText}
-                          />
-
-                          <div className="grid grid-cols-2 gap-3">
-                            <label className="text-xs text-[#a3b1a5]">Police
-                              <select value={block.fontFamily || 'Playfair Display'} onChange={(e) => updateBoutiqueText(item, { fontFamily: e.target.value })}
-                                disabled={item.editable === false} className="mt-1 w-full rounded-lg bg-[#1b231e] border border-[#455248] px-2.5 py-2 text-sm" style={{fontFamily:block.fontFamily || 'Playfair Display'}}>
-                                {['Playfair Display','Cormorant Garamond','Bodoni Moda','Cinzel','Libre Baskerville','EB Garamond','Lora','DM Serif Display','Great Vibes','Allura','Alex Brush','Ballet','Berkshire Swash','Bonheur Royale','Clicker Script','Dancing Script','Italianno','Lovers Quarrel','Mrs Saint Delafield','Parisienne','Pinyon Script','Sacramento','Tangerine','Qwigley','Lavishly Yours','Mea Culpa','Ms Madi','WindSong','Water Brush','Inter','Montserrat','Arial'].map((fontName) => <option key={fontName} value={fontName} style={{fontFamily:fontName}}>{fontName}</option>)}
-                              </select>
-                            </label>
-                            <label className="text-xs text-[#a3b1a5]">Taille
-                              <select value={block.fontSize || 'inherit'} onChange={(e) => updateBoutiqueText(item, { fontSize: e.target.value === 'inherit' ? undefined : e.target.value })}
-                                disabled={item.editable === false} className="mt-1 w-full rounded-lg bg-[#1b231e] border border-[#455248] px-2.5 py-2 text-sm">
-                                <option value="inherit">Taille actuelle</option><option value="12px">12 px</option><option value="14px">14 px</option><option value="16px">16 px</option><option value="18px">18 px</option><option value="20px">20 px</option><option value="24px">24 px</option><option value="28px">28 px</option><option value="32px">32 px</option><option value="36px">36 px</option><option value="42px">42 px</option><option value="48px">48 px</option><option value="56px">56 px</option><option value="64px">64 px</option><option value="72px">72 px</option>
-                              </select>
-                            </label>
-                          </div>
-
-                          <div className="flex flex-wrap gap-2">
-                            <button type="button" disabled={item.editable === false} onClick={() => updateBoutiqueText(item, { fontWeight: block.fontWeight === '700' ? undefined : '700' })} className={`rounded-lg border px-3 py-2 text-sm font-bold ${block.fontWeight === '700' ? 'border-[#d4af37] bg-[#29362c] text-[#d4af37]' : 'border-[#455248] text-[#d8dfd7]'}`}>G</button>
-                            <button type="button" disabled={item.editable === false} onClick={() => updateBoutiqueText(item, { fontStyle: block.fontStyle === 'italic' ? undefined : 'italic' })} className={`rounded-lg border px-3 py-2 text-sm italic ${block.fontStyle === 'italic' ? 'border-[#d4af37] bg-[#29362c] text-[#d4af37]' : 'border-[#455248] text-[#d8dfd7]'}`}>I</button>
-                            <button type="button" disabled={item.editable === false} onClick={() => updateBoutiqueText(item, { textDecoration: block.textDecoration === 'underline' ? undefined : 'underline' })} className={`rounded-lg border px-3 py-2 text-sm underline ${block.textDecoration === 'underline' ? 'border-[#d4af37] bg-[#29362c] text-[#d4af37]' : 'border-[#455248] text-[#d8dfd7]'}`}>S</button>
-                            <label className="inline-flex items-center gap-2 rounded-lg border border-[#455248] px-3 py-2 text-xs text-[#d8dfd7]">Couleur
-                              <input type="color" value={/^#[0-9a-f]{6}$/i.test(block.color || '') ? block.color! : '#F5EEDF'} onChange={(e) => updateBoutiqueText(item, { color: e.target.value })}
-                                disabled={item.editable === false} className="h-6 w-8 rounded bg-transparent" />
-                            </label>
-                            <div className="flex items-center gap-1.5 rounded-lg border border-[#455248] px-2 py-1.5">
-                              {['#F5EEDF','#D4AF37','#C2A26D','#A3B1A5','#B8C5BA','#D0C5B4','#8FA096','#E2D5C3','#FFFFFF','#111613','#5C7A62','#8C6D3F'].map((swatch) => (
-                                <button key={swatch} type="button" disabled={item.editable === false} title={swatch} onClick={() => updateBoutiqueText(item, { color: swatch })} className="h-5 w-5 rounded-full border border-white/20 disabled:opacity-40" style={{ backgroundColor: swatch }} />
-                              ))}
+                            <div className="flex items-center gap-2 shrink-0">
+                              {item.automatic && (
+                                <span className="text-[9px] uppercase tracking-wider text-[#8fa096] border border-[#455248] rounded-full px-2 py-0.5">
+                                  Automatique
+                                </span>
+                              )}
+                              {overridden && (
+                                <span className="text-[9px] uppercase tracking-wider text-[#d4af37] border border-[#d4af37]/40 rounded-full px-2 py-0.5">
+                                  Personnalisé
+                                </span>
+                              )}
+                              <span className="text-[#9eb0a0] text-xs">{expanded ? '−' : '+'}</span>
                             </div>
-                            <button type="button" disabled={item.editable === false} onClick={() => updateBoutiqueText(item, { whiteSpace: block.whiteSpace === 'pre-wrap' ? undefined : 'pre-wrap' })} className={`rounded-lg border px-3 py-2 text-xs ${block.whiteSpace === 'pre-wrap' ? 'border-[#d4af37] bg-[#29362c] text-[#d4af37]' : 'border-[#455248] text-[#d8dfd7]'}`}>↵ Retours à la ligne</button>
-                            <button type="button" onClick={() => removeBoutiqueTextOverride(item)} disabled={!overridden} className="rounded-lg border border-[#455248] px-3 py-2 text-xs text-[#aeb9ae] disabled:opacity-40">Réinitialiser</button>
-                          </div>
+                          </button>
+
+                          {expanded && (
+                            <div className="border-t border-[#303d33] px-3 py-3 space-y-3">
+                              {item.editable === false ? (
+                                <div className="rounded-lg border border-[#303d33] bg-[#171e19] px-3 py-2">
+                                  <div className="text-[9px] uppercase tracking-wider text-[#68776c] mb-1">Texte protégé</div>
+                                  <div
+                                    className="text-xs text-[#d8dfd7] whitespace-pre-wrap break-words"
+                                    style={{
+                                      fontFamily: block.fontFamily,
+                                      fontSize: block.fontSize,
+                                      color: block.color,
+                                      fontWeight: block.fontWeight,
+                                      fontStyle: block.fontStyle,
+                                      textDecoration: block.textDecoration,
+                                    }}
+                                  >
+                                    {value}
+                                  </div>
+                                </div>
+                              ) : (
+                                <textarea
+                                  value={value}
+                                  rows={Math.min(5, Math.max(2, String(value).split('\n').length))}
+                                  onChange={(e) => updateBoutiqueText(item, { text: e.target.value, whiteSpace: 'pre-wrap' })}
+                                  className="w-full min-h-[60px] resize-y rounded-lg bg-[#1b231e] border border-[#455248] px-3 py-2 text-xs text-white outline-none focus:border-[#d4af37]"
+                                  placeholder={item.defaultText}
+                                />
+                              )}
+
+                              <div className="grid grid-cols-2 gap-2">
+                                <label className="text-[10px] text-[#a3b1a5]">Police
+                                  <select value={block.fontFamily || 'Playfair Display'} onChange={(e) => updateBoutiqueText(item, { fontFamily: e.target.value })}
+                                    className="mt-1 w-full rounded-lg bg-[#1b231e] border border-[#455248] px-2 py-1.5 text-xs" style={{fontFamily:block.fontFamily || 'Playfair Display'}}>
+                                    {['Playfair Display','Cormorant Garamond','Bodoni Moda','Cinzel','Libre Baskerville','EB Garamond','Lora','DM Serif Display','Great Vibes','Allura','Alex Brush','Ballet','Berkshire Swash','Bonheur Royale','Clicker Script','Dancing Script','Italianno','Lovers Quarrel','Mrs Saint Delafield','Parisienne','Pinyon Script','Sacramento','Tangerine','Qwigley','Lavishly Yours','Mea Culpa','Ms Madi','WindSong','Water Brush','Inter','Montserrat','Arial'].map((fontName) => <option key={fontName} value={fontName} style={{fontFamily:fontName}}>{fontName}</option>)}
+                                  </select>
+                                </label>
+                                <label className="text-[10px] text-[#a3b1a5]">Taille
+                                  <select value={block.fontSize || 'inherit'} onChange={(e) => updateBoutiqueText(item, { fontSize: e.target.value === 'inherit' ? undefined : e.target.value })}
+                                    className="mt-1 w-full rounded-lg bg-[#1b231e] border border-[#455248] px-2 py-1.5 text-xs">
+                                    <option value="inherit">Taille actuelle</option><option value="12px">12 px</option><option value="14px">14 px</option><option value="16px">16 px</option><option value="18px">18 px</option><option value="20px">20 px</option><option value="24px">24 px</option><option value="28px">28 px</option><option value="32px">32 px</option><option value="36px">36 px</option><option value="42px">42 px</option><option value="48px">48 px</option><option value="56px">56 px</option><option value="64px">64 px</option><option value="72px">72 px</option>
+                                  </select>
+                                </label>
+                              </div>
+
+                              <div className="flex flex-wrap gap-1.5">
+                                <button type="button" onClick={() => updateBoutiqueText(item, { fontWeight: block.fontWeight === '700' ? undefined : '700' })} className={`rounded-lg border px-2.5 py-1.5 text-xs font-bold ${block.fontWeight === '700' ? 'border-[#d4af37] bg-[#29362c] text-[#d4af37]' : 'border-[#455248] text-[#d8dfd7]'}`}>G</button>
+                                <button type="button" onClick={() => updateBoutiqueText(item, { fontStyle: block.fontStyle === 'italic' ? undefined : 'italic' })} className={`rounded-lg border px-2.5 py-1.5 text-xs italic ${block.fontStyle === 'italic' ? 'border-[#d4af37] bg-[#29362c] text-[#d4af37]' : 'border-[#455248] text-[#d8dfd7]'}`}>I</button>
+                                <button type="button" onClick={() => updateBoutiqueText(item, { textDecoration: block.textDecoration === 'underline' ? undefined : 'underline' })} className={`rounded-lg border px-2.5 py-1.5 text-xs underline ${block.textDecoration === 'underline' ? 'border-[#d4af37] bg-[#29362c] text-[#d4af37]' : 'border-[#455248] text-[#d8dfd7]'}`}>S</button>
+                                <label className="inline-flex items-center gap-1.5 rounded-lg border border-[#455248] px-2.5 py-1.5 text-[10px] text-[#d8dfd7]">Couleur
+                                  <input type="color" value={/^#[0-9a-f]{6}$/i.test(block.color || '') ? block.color! : '#F5EEDF'} onChange={(e) => updateBoutiqueText(item, { color: e.target.value })}
+                                    className="h-5 w-7 rounded bg-transparent" />
+                                </label>
+                                <div className="flex items-center gap-1 rounded-lg border border-[#455248] px-2 py-1.5">
+                                  {['#F5EEDF','#D4AF37','#C2A26D','#A3B1A5','#B8C5BA','#D0C5B4','#8FA096','#E2D5C3','#FFFFFF','#111613','#5C7A62','#8C6D3F'].map((swatch) => (
+                                    <button key={swatch} type="button" title={swatch} onClick={() => updateBoutiqueText(item, { color: swatch })} className="h-4 w-4 rounded-full border border-white/20" style={{ backgroundColor: swatch }} />
+                                  ))}
+                                </div>
+                                <button type="button" onClick={() => updateBoutiqueText(item, { whiteSpace: block.whiteSpace === 'pre-wrap' ? undefined : 'pre-wrap' })} className={`rounded-lg border px-2.5 py-1.5 text-[10px] ${block.whiteSpace === 'pre-wrap' ? 'border-[#d4af37] bg-[#29362c] text-[#d4af37]' : 'border-[#455248] text-[#d8dfd7]'}`}>↵ Retours</button>
+                                <button type="button" onClick={() => removeBoutiqueTextOverride(item)} disabled={!overridden} className="rounded-lg border border-[#455248] px-2.5 py-1.5 text-[10px] text-[#aeb9ae] disabled:opacity-40">Réinitialiser</button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
