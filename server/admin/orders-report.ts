@@ -34,39 +34,18 @@ export default async function handler(req: any, res: any) {
 
     const allOrders = await getOrdersFromDB();
     const allProducts = await getProductsFromDB();
-    const productFinancials = new Map<string, { adminCost: number; adminRevenue: number; adminProfit: number }>();
-    (Array.isArray(allProducts) ? allProducts : []).forEach((product: any) => {
-      if (!product?.id) return;
-      productFinancials.set(String(product.id), {
-        adminCost: Number.isFinite(Number(product.adminCost)) ? Number(product.adminCost) : 0,
-        adminRevenue: Number.isFinite(Number(product.adminRevenue)) ? Number(product.adminRevenue) : Number(product.price) || 0,
-        adminProfit: Number.isFinite(Number(product.adminProfit)) ? Number(product.adminProfit) : 0,
-      });
-    });
-
-    const getItemFinancials = (item: any) => {
-      const fallback = productFinancials.get(String(item?.jacketId || ''));
-      return {
-        adminRevenue: Number.isFinite(Number(item?.adminRevenue))
-          ? Number(item.adminRevenue)
-          : (fallback?.adminRevenue ?? (Number.isFinite(Number(item?.unitPrice)) ? Number(item?.unitPrice) : 0)),
-        adminProfit: Number.isFinite(Number(item?.adminProfit))
-          ? Number(item.adminProfit)
-          : (fallback?.adminProfit ?? 0),
-      };
+    const productById = new Map(allProducts.map((p: any) => [String(p.id), p]));
+    const productByName = new Map(allProducts.map((p: any) => [String(p.name || '').trim().toLocaleLowerCase(), p]));
+    const financeForItem = (item: any) => {
+      const product = productById.get(String(item?.jacketId)) || productByName.get(String(item?.jacketName || '').trim().toLocaleLowerCase());
+      const quantity = Math.max(0, Number(item?.quantity || 0));
+      const unitTtc = Number(item?.unitPrice ?? 0) || 0;
+      const vatRate = Math.max(0, Number(product?.adminVatRate ?? 20) || 0);
+      const unitHt = vatRate > 0 ? unitTtc / (1 + vatRate / 100) : unitTtc;
+      const costUnit = Math.max(0, Number(product?.adminCost ?? 0) || 0);
+      return { quantity, cost: costUnit * quantity, caTtc: unitTtc * quantity, caHt: unitHt * quantity, vat: (unitTtc - unitHt) * quantity, profit: (unitHt - costUnit) * quantity, vatRate };
     };
-
-    const getOrderFinancials = (order: any) =>
-      (Array.isArray(order.items) ? order.items : []).reduce(
-        (acc: { revenue: number; profit: number }, item: any) => {
-          const financials = getItemFinancials(item);
-          const quantity = Number(item.quantity) || 0;
-          acc.revenue += financials.adminRevenue * quantity;
-          acc.profit += financials.adminProfit * quantity;
-          return acc;
-        },
-        { revenue: 0, profit: 0 }
-      );
+    const financeForOrder = (order: any) => (Array.isArray(order.items) ? order.items : []).reduce((acc: any, item: any) => { const f = financeForItem(item); return { cost: acc.cost + f.cost, caTtc: acc.caTtc + f.caTtc, caHt: acc.caHt + f.caHt, vat: acc.vat + f.vat, profit: acc.profit + f.profit }; }, { cost: 0, caTtc: 0, caHt: 0, vat: 0, profit: 0 });
     const ids = Array.isArray(body.orderIds) ? new Set(body.orderIds.map(String)) : null;
     const status = body.status && body.status !== 'all' ? String(body.status) : null;
     const orderType = body.orderType && body.orderType !== 'all' ? String(body.orderType) : 'all';
@@ -103,16 +82,11 @@ export default async function handler(req: any, res: any) {
     }, { demande: 0, priseEnCompte: 0, passees: 0, annulees: 0 });
 
     const remaining = totals.demande + totals.priseEnCompte;
-    const financialTotals = filtered.reduce(
-      (acc: { revenue: number; profit: number }, order: any) => {
-        if (order.status === 'Commande annulée') return acc;
-        const financials = getOrderFinancials(order);
-        acc.revenue += financials.revenue;
-        acc.profit += financials.profit;
-        return acc;
-      },
-      { revenue: 0, profit: 0 }
-    );
+    const financeTotals = filtered.reduce((acc: any, order: any) => {
+      if (order.status === 'Commande annulée') return acc;
+      const f = financeForOrder(order);
+      return { cost: acc.cost + f.cost, caTtc: acc.caTtc + f.caTtc, caHt: acc.caHt + f.caHt, vat: acc.vat + f.vat, profit: acc.profit + f.profit };
+    }, { cost: 0, caTtc: 0, caHt: 0, vat: 0, profit: 0 });
     const subject = `[RAPPORT] Commandes & rendez-vous — ${filtered.length} élément(s)`;
     const typeLabel = orderType === 'orders' ? 'Commandes uniquement' : orderType === 'appointments' ? 'Rendez-vous atelier uniquement' : 'Commandes + rendez-vous';
     const filterLabel = [typeLabel, status ? `État : ${status}` : 'Tous les états', periodMode !== 'all' ? `Période : ${periodValue}` : 'Toutes les périodes', query ? `Recherche : ${query}` : ''].filter(Boolean).join(' • ');
@@ -123,8 +97,11 @@ export default async function handler(req: any, res: any) {
       `Commandes passées : ${totals.passees.toLocaleString('fr-FR')} €`,
       `Annulées : ${totals.annulees.toLocaleString('fr-FR')} €`,
       `Reste à traiter : ${remaining.toLocaleString('fr-FR')} €`,
-      `Chiffre d'affaires : ${financialTotals.revenue.toLocaleString('fr-FR')} €`,
-      `Bénéfice : ${financialTotals.profit.toLocaleString('fr-FR')} €`, '',
+      `CA TTC : ${financeTotals.caTtc.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`,
+      `CA HT : ${financeTotals.caHt.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`,
+      `TVA : ${financeTotals.vat.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`,
+      `Coût fabrication HT : ${financeTotals.cost.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`,
+      `Bénéfice HT : ${financeTotals.profit.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`, '',
       ...filtered.map((order: any) => `${order.id} — ${order.status} — ${order.totalPrice || 0} ${order.currency || '€'} — ${order.clientName || 'Donnée protégée'}`),
     ].join('\n');
     const rows = filtered.map((order: any) => {
@@ -135,27 +112,25 @@ export default async function handler(req: any, res: any) {
             const image = imageUrl
               ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.jacketName || 'Article')}" width="52" height="52" style="display:block;width:52px;height:52px;object-fit:cover;border-radius:5px;" />`
               : `<div style="width:52px;height:52px;line-height:52px;text-align:center;background:#f2f2f2;color:#777;border-radius:5px;">—</div>`;
-            const financials = getItemFinancials(item);
-            const quantity = Number(item.quantity) || 0;
-            const lineCost = financials.adminCost * quantity;
-            const lineRevenue = financials.adminRevenue * quantity;
-            const lineProfit = financials.adminProfit * quantity;
+            const finance = financeForItem(item);
             return `<tr>
               <td style="padding:4px 6px;border:1px solid #d9d9d9;text-align:center;vertical-align:middle;">${image}</td>
               <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:center;white-space:nowrap;">${escapeHtml(item.quantity || 0)}</td>
               <td style="padding:4px 7px;border:1px solid #d9d9d9;">${escapeHtml(item.jacketName || '')}</td>
               <td style="padding:4px 7px;border:1px solid #d9d9d9;">${escapeHtml(item.color || '')}</td>
               <td style="padding:4px 7px;border:1px solid #d9d9d9;">${escapeHtml(item.size || '')}</td>
-              <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:right;white-space:nowrap;">${lineCost.toLocaleString('fr-FR')} ${escapeHtml(order.currency || '€')}</td>
-              <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:right;white-space:nowrap;">${lineRevenue.toLocaleString('fr-FR')} ${escapeHtml(order.currency || '€')}</td>
-              <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:right;white-space:nowrap;">${lineProfit.toLocaleString('fr-FR')} ${escapeHtml(order.currency || '€')}</td>
+              <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:right;white-space:nowrap;">${finance.caTtc.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</td>
+              <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:right;white-space:nowrap;">${finance.caHt.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</td>
+              <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:right;white-space:nowrap;">${finance.cost.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</td>
+              <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:right;white-space:nowrap;">${finance.vat.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</td>
+              <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:right;white-space:nowrap;">${finance.profit.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</td>
             </tr>`;
           }).join('')
-        : `<tr><td colspan="8" style="padding:8px;border:1px solid #d9d9d9;text-align:center;">Demande de rendez-vous atelier — aucun article</td></tr>`;
+        : `<tr><td colspan="10" style="padding:8px;border:1px solid #d9d9d9;text-align:center;">Demande de rendez-vous atelier — aucun article</td></tr>`;
 
       return `<tr>
-        <td colspan="8" style="padding:7px 8px;border:1px solid #d9d9d9;background:#f8f8f8;font-weight:bold;">
-          ${escapeHtml(order.id)} — ${escapeHtml(order.clientName || '')} — ${escapeHtml(order.clientEmail || '')} — ${escapeHtml(order.clientPhone || 'Téléphone non renseigné')} — ${escapeHtml(order.date || '')}
+        <td colspan="10" style="padding:7px 8px;border:1px solid #d9d9d9;background:#f8f8f8;font-weight:bold;">
+          ${escapeHtml(order.id)} — ${escapeHtml(order.clientName || '')} — ${escapeHtml(order.clientEmail || '')} — ${escapeHtml(order.clientPhone || '')} — ${escapeHtml(order.date || '')}
         </td>
       </tr>${articleRows}`;
     }).join('');
@@ -169,8 +144,11 @@ export default async function handler(req: any, res: any) {
         <li>Commandes passées : <strong>${totals.passees.toLocaleString('fr-FR')} €</strong></li>
         <li>Annulées : <strong>${totals.annulees.toLocaleString('fr-FR')} €</strong></li>
         <li>Reste à traiter : <strong>${remaining.toLocaleString('fr-FR')} €</strong></li>
-        <li>Chiffre d'affaires : <strong>${financialTotals.revenue.toLocaleString('fr-FR')} €</strong></li>
-        <li>Bénéfice : <strong>${financialTotals.profit.toLocaleString('fr-FR')} €</strong></li>
+        <li>CA TTC : <strong>${financeTotals.caTtc.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</strong></li>
+        <li>CA HT : <strong>${financeTotals.caHt.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</strong></li>
+        <li>TVA : <strong>${financeTotals.vat.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</strong></li>
+        <li>Coût fabrication HT : <strong>${financeTotals.cost.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</strong></li>
+        <li>Bénéfice HT : <strong>${financeTotals.profit.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €</strong></li>
       </ul>
       <table cellpadding="0" cellspacing="0" border="0" style="width:auto;max-width:100%;border-collapse:collapse;border-spacing:0;margin:10px 0;font-family:Arial,sans-serif;font-size:13px;">
         <thead><tr>
@@ -179,9 +157,11 @@ export default async function handler(req: any, res: any) {
           <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Nom de l'article</th>
           <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Couleur</th>
           <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Taille</th>
-          <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:right;">Coût</th>
-          <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:right;">CA</th>
-          <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:right;">Bénéfice</th>
+          <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:right;">CA TTC</th>
+          <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:right;">CA HT</th>
+          <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:right;">Coût HT</th>
+          <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:right;">TVA</th>
+          <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:right;">Bénéfice HT</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>

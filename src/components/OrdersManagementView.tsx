@@ -7,6 +7,7 @@ import {
   addCustomStatus,
   removeCustomStatus,
 } from '../utils/orderStorage';
+import { JacketModel } from '../types';
 import {
   ShoppingBag,
   Clock,
@@ -43,6 +44,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
   reportEmail = 'baheu.matthieu65@gmail.com',
 }) => {
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
+  const [adminProducts, setAdminProducts] = useState<JacketModel[]>([]);
   const [availableStatuses, setAvailableStatuses] = useState<string[]>([]);
   const [newStatusInput, setNewStatusInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -61,7 +63,20 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
   const [brandName, setBrandName] = useState('Maison Mailhagut');
   const [replyPreviewOrder, setReplyPreviewOrder] = useState<CustomerOrder | null>(null);
   const [replyMailClient, setReplyMailClient] = useState<'gmail' | 'outlook' | 'yahoo' | 'default'>('gmail');
-  const [adminProductFinancials, setAdminProductFinancials] = useState<Record<string, { adminCost: number; adminRevenue: number; adminProfit: number }>>({});
+
+  useEffect(() => {
+    const loadAdminProducts = async () => {
+      try {
+        const response = await fetch('/api/admin/products', { credentials: 'include', cache: 'no-store' });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (data?.success && Array.isArray(data.products)) setAdminProducts(data.products);
+      } catch (error) {
+        console.warn('Impossible de charger les données financières des articles :', error);
+      }
+    };
+    void loadAdminProducts();
+  }, []);
 
   useEffect(() => {
     const loadCustomerReplyTemplate = async () => {
@@ -99,57 +114,6 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
 
     void loadCustomerReplyTemplate();
   }, []);
-
-  useEffect(() => {
-    const loadAdminProductFinancials = async () => {
-      try {
-        const response = await fetch('/api/admin/products', { credentials: 'include', cache: 'no-store' });
-        if (!response.ok) return;
-        const data = await response.json();
-        const products = Array.isArray(data?.products) ? data.products : [];
-        const next: Record<string, { adminCost: number; adminRevenue: number; adminProfit: number }> = {};
-        products.forEach((product: any) => {
-          if (!product?.id) return;
-          next[String(product.id)] = {
-            adminCost: Number.isFinite(Number(product.adminCost)) ? Number(product.adminCost) : 0,
-            adminRevenue: Number.isFinite(Number(product.adminRevenue)) ? Number(product.adminRevenue) : Number(product.price) || 0,
-            adminProfit: Number.isFinite(Number(product.adminProfit)) ? Number(product.adminProfit) : 0,
-          };
-        });
-        setAdminProductFinancials(next);
-      } catch (error) {
-        console.warn('Impossible de charger les données financières administrateur :', error);
-      }
-    };
-    void loadAdminProductFinancials();
-  }, []);
-
-  const getItemFinancials = (item: any) => {
-    const fallback = adminProductFinancials[String(item?.jacketId || '')];
-    return {
-      adminCost: Number.isFinite(Number(item?.adminCost))
-        ? Number(item.adminCost)
-        : (fallback?.adminCost ?? 0),
-      adminRevenue: Number.isFinite(Number(item?.adminRevenue))
-        ? Number(item.adminRevenue)
-        : (fallback?.adminRevenue ?? (Number.isFinite(Number(item?.unitPrice)) ? Number(item?.unitPrice) : 0)),
-      adminProfit: Number.isFinite(Number(item?.adminProfit))
-        ? Number(item.adminProfit)
-        : (fallback?.adminProfit ?? 0),
-    };
-  };
-
-  const getOrderFinancials = (order: CustomerOrder) =>
-    (order.items || []).reduce(
-      (acc, item) => {
-        const financials = getItemFinancials(item);
-        const quantity = Number(item.quantity || 0);
-        acc.revenue += financials.adminRevenue * quantity;
-        acc.profit += financials.adminProfit * quantity;
-        return acc;
-      },
-      { revenue: 0, profit: 0 }
-    );
 
   const escapeHtml = (value: string) =>
     value
@@ -428,6 +392,37 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
     return dateSort === 'newest' ? -diff : diff;
   });
 
+  const getProductFinance = (item: any) => {
+    const product = adminProducts.find((p) => String(p.id) === String(item?.jacketId))
+      || adminProducts.find((p) => String(p.name || '').trim().toLocaleLowerCase() === String(item?.jacketName || '').trim().toLocaleLowerCase());
+    const ttcUnit = Number(item?.unitPrice ?? 0) || 0;
+    const vatRate = Math.max(0, Number(product?.adminVatRate ?? 20) || 0);
+    const htUnit = vatRate > 0 ? ttcUnit / (1 + vatRate / 100) : ttcUnit;
+    const vatUnit = ttcUnit - htUnit;
+    const quantity = Math.max(0, Number(item?.quantity ?? 0) || 0);
+    const costUnit = Math.max(0, Number(product?.adminCost ?? 0) || 0);
+    return {
+      quantity,
+      cost: costUnit * quantity,
+      caTtc: ttcUnit * quantity,
+      caHt: htUnit * quantity,
+      vat: vatUnit * quantity,
+      profit: (htUnit - costUnit) * quantity,
+    };
+  };
+
+  const getOrderFinance = (order: CustomerOrder) =>
+    (order.items || []).reduce((acc, item) => {
+      const f = getProductFinance(item);
+      return { cost: acc.cost + f.cost, caTtc: acc.caTtc + f.caTtc, caHt: acc.caHt + f.caHt, vat: acc.vat + f.vat, profit: acc.profit + f.profit };
+    }, { cost: 0, caTtc: 0, caHt: 0, vat: 0, profit: 0 });
+
+  const financeTotals = filteredOrders.reduce((acc, order) => {
+    if (order.status === 'Commande annulée') return acc;
+    const f = getOrderFinance(order);
+    return { cost: acc.cost + f.cost, caTtc: acc.caTtc + f.caTtc, caHt: acc.caHt + f.caHt, vat: acc.vat + f.vat, profit: acc.profit + f.profit };
+  }, { cost: 0, caTtc: 0, caHt: 0, vat: 0, profit: 0 });
+
   const sumByStatus = (status: string) =>
     filteredOrders.reduce((total, order) => total + (order.status === status ? Number(order.totalPrice) || 0 : 0), 0);
   const demandeTotal = sumByStatus('Demande');
@@ -439,16 +434,6 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
     return total + (Number(order.totalPrice) || 0);
   }, 0);
   const activeTotal = filteredOrders.reduce((total, order) => total + (order.status === 'Commande annulée' ? 0 : Number(order.totalPrice) || 0), 0);
-  const filteredFinancialTotals = filteredOrders.reduce(
-    (acc, order) => {
-      if (order.status === 'Commande annulée') return acc;
-      const financials = getOrderFinancials(order);
-      acc.revenue += financials.revenue;
-      acc.profit += financials.profit;
-      return acc;
-    },
-    { revenue: 0, profit: 0 }
-  );
 
   // Status color badge map
   const getStatusBadgeStyle = (st: string) => {
@@ -521,15 +506,19 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
           ))}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-          <div className="rounded-xl bg-[#121613] border border-[#2e3b30] px-3 py-2">
-            <span className="text-[9px] uppercase tracking-wider text-[#8f9d91] block">Chiffre d'affaires — sélection</span>
-            <strong className="text-sm font-mono text-[#d4af37]">{filteredFinancialTotals.revenue.toLocaleString('fr-FR')} €</strong>
-          </div>
-          <div className="rounded-xl bg-[#121613] border border-[#2e3b30] px-3 py-2">
-            <span className="text-[9px] uppercase tracking-wider text-[#8f9d91] block">Bénéfice — sélection</span>
-            <strong className="text-sm font-mono text-emerald-300">{filteredFinancialTotals.profit.toLocaleString('fr-FR')} €</strong>
-          </div>
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 pt-1">
+          {[
+            ['CA TTC', financeTotals.caTtc, 'text-[#f3ece0]'],
+            ['CA HT', financeTotals.caHt, 'text-[#f3ece0]'],
+            ['TVA', financeTotals.vat, 'text-[#d4af37]'],
+            ['Coût fabrication HT', financeTotals.cost, 'text-amber-300'],
+            ['Bénéfice HT', financeTotals.profit, financeTotals.profit >= 0 ? 'text-emerald-300' : 'text-red-300'],
+          ].map(([label, value, color]) => (
+            <div key={String(label)} className="rounded-xl bg-[#121613] border border-[#2e3b30] px-3 py-2">
+              <span className="text-[9px] uppercase tracking-wider text-[#8f9d91] block">{label}</span>
+              <strong className={`text-sm font-mono ${String(color)}`}>{Number(value).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</strong>
+            </div>
+          ))}
         </div>
 
         {/* ----------------------------------------------------------------- */}
@@ -835,20 +824,26 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
                       <span className="text-xs uppercase tracking-widest font-bold text-[#d4af37] font-serif">
                         Détail des Articles ({order.totalQuantity} pièces)
                       </span>
-                      <div className="text-right">
-                        <span className="font-serif text-sm font-bold text-[#f3ece0] block">
-                          Total : {order.totalPrice} {order.currency || '€'}
-                        </span>
-                        {(() => {
-                          const financials = getOrderFinancials(order);
-                          return (
-                            <span className="text-[10px] text-[#a3b1a5] block mt-0.5">
-                              CA : {financials.revenue.toLocaleString('fr-FR')} {order.currency || '€'} · Bénéfice : {financials.profit.toLocaleString('fr-FR')} {order.currency || '€'}
-                            </span>
-                          );
-                        })()}
-                      </div>
+                      <span className="font-serif text-sm font-bold text-[#f3ece0]">
+                        Total : {order.totalPrice} {order.currency || '€'}
+                      </span>
                     </div>
+
+                    {order.items?.length > 0 && (() => {
+                      const finance = getOrderFinance(order);
+                      return (
+                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 my-2">
+                          {[
+                            ['CA TTC', finance.caTtc], ['CA HT', finance.caHt], ['TVA', finance.vat], ['Coût HT', finance.cost], ['Bénéfice HT', finance.profit],
+                          ].map(([label, value]) => (
+                            <div key={String(label)} className="rounded-lg bg-[#121613] border border-[#2d3a2f] px-2 py-1.5">
+                              <span className="block text-[8px] uppercase tracking-wider text-[#8f9d91]">{label}</span>
+                              <strong className={`text-[11px] font-mono ${String(label) === 'Bénéfice HT' && Number(value) < 0 ? 'text-red-300' : 'text-[#f3ece0]'}`}>{Number(value).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</strong>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
 
                     <div className="space-y-1.5">
                       {order.items.map((item, iIdx) => (
@@ -863,20 +858,9 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
                             </span>
                           </div>
                           <div className="text-right pl-3 flex-shrink-0">
-                            {(() => {
-                              const financials = getItemFinancials(item);
-                              const quantity = Number(item.quantity || 0);
-                              return (
-                                <>
-                                  <span className="font-mono text-white font-bold block">
-                                    {item.quantity} × {item.unitPrice} € = {item.totalPrice} €
-                                  </span>
-                                  <span className="text-[10px] text-[#a3b1a5] block">
-                                    CA {(financials.adminRevenue * quantity).toLocaleString('fr-FR')} {order.currency || '€'} · Bénéfice {(financials.adminProfit * quantity).toLocaleString('fr-FR')} {order.currency || '€'}
-                                  </span>
-                                </>
-                              );
-                            })()}
+                            <span className="font-mono text-white font-bold block">
+                              {item.quantity} × {item.unitPrice} € = {item.totalPrice} €
+                            </span>
                           </div>
                         </div>
                       ))}

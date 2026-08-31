@@ -316,11 +316,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       price: 490,
       currency: '€',
       adminCost: 0,
-      adminRevenue: 490,
-      adminProfit: 0,
-      adminCost: 0,
-      adminRevenue: 490,
-      adminProfit: 490,
+      adminVatRate: 20,
       heroImage: 'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&q=80&w=1000',
       gallery: [
         'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&q=80&w=1000',
@@ -737,183 +733,81 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                   <p className="text-[10px] text-[#718073] mt-2">Coche une seule catégorie. Elle détermine directement l’onglet public de l’article dans le Hero, le Showcase et le tableau comparatif. Les catégories se gèrent juste au-dessus dans « Paramétrage du catalogue ».</p>
                 </div>
 
-                <div className="md:col-span-2 rounded-2xl bg-[#111612] border border-[#2e3b30] overflow-hidden">
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-[#2e3b30]">
+                <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#2e3b30] space-y-4">
+                  <div className="flex items-start justify-between gap-3">
                     <div>
-                      <div className="text-sm font-bold text-[#f3ece0]">Images de l'article</div>
-                      <div className="text-[11px] text-[#a3b1a5]">L'image principale reste toujours la première image affichée sur le site.</div>
+                      <span className="font-bold text-[#d4af37] block">Données financières internes — Administration</span>
+                      <span className="text-[10px] text-[#8f9d91]">Le prix saisi est TTC. Le coût est votre coût de fabrication HT. Le CA HT, la TVA et le bénéfice HT sont calculés automatiquement.</span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleAddSecondaryImage}
-                      className="px-3 py-2 rounded-xl border border-[#d4af37] text-[#d4af37] text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      Ajouter une image
-                    </button>
+                    <DollarSign className="w-4 h-4 text-[#d4af37] shrink-0" />
                   </div>
 
-                  <div className="grid grid-cols-2 border-b border-[#2e3b30]">
-                    <button
-                      type="button"
-                      onClick={() => setImageTab('primary')}
-                      className={`px-4 py-3 text-xs font-bold ${imageTab === 'primary' ? 'text-[#d4af37] bg-[#1c281e] border-b-2 border-[#d4af37]' : 'text-[#a3b1a5]'}`}
-                    >
-                      Image principale
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setImageTab('secondary')}
-                      className={`px-4 py-3 text-xs font-bold ${imageTab === 'secondary' ? 'text-[#d4af37] bg-[#1c281e] border-b-2 border-[#d4af37]' : 'text-[#a3b1a5]'}`}
-                    >
-                      Images secondaires ({getSecondaryImages(editingProduct).length})
-                    </button>
-                  </div>
-
-                  <div className="p-4 space-y-4">
-                    {imageTab === 'primary' ? (
-                      <>
-                        <div className="flex flex-col md:flex-row gap-3">
-                          <input
-                            type="text"
-                            value={editingProduct.heroImage || ''}
-                            onChange={(e) => handleHeroImageChange(e.target.value)}
-                            placeholder="URL de l'image principale..."
-                            className="flex-1 bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                          />
-                          <label className="px-4 py-2.5 rounded-xl border border-[#d4af37] text-[#d4af37] font-bold text-[11px] uppercase tracking-wider cursor-pointer flex items-center justify-center gap-2">
-                            <ImageIcon className="w-4 h-4" />
-                            <span>{uploadingImage === 'primary' ? 'Import...' : 'Importer depuis mon PC'}</span>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              disabled={uploadingImage === 'primary'}
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) void uploadProductImage(file, 'primary');
-                                e.currentTarget.value = '';
-                              }}
-                            />
-                          </label>
-                        </div>
-                        <div className="h-48 rounded-xl bg-[#0b0f0c] border border-[#273429] flex items-center justify-center overflow-hidden">
-                          {editingProduct.heroImage ? (
-                            <img src={editingProduct.heroImage} alt={editingProduct.name || 'Image principale'} className="max-h-full max-w-full object-contain" referrerPolicy="no-referrer" />
-                          ) : (
-                            <span className="text-xs text-[#647266]">Aucune image principale</span>
-                          )}
-                        </div>
-                        <p className="text-[10px] text-[#7d8c7f]">Cette image est utilisée en priorité dans les cartes, le showcase et le lookbook.</p>
-                      </>
-                    ) : (
-                      <div className="space-y-3">
-                        {getSecondaryImages(editingProduct).map((imgUrl, idx) => (
-                          <div key={`${idx}-${imgUrl}`} className="p-3 rounded-xl bg-[#121613] border border-[#2e3b30] space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-bold text-[#d4af37]">Image secondaire {idx + 1}</span>
-                              <button type="button" onClick={() => handleDeleteSecondaryImage(idx)} className="text-red-300 hover:text-red-200 text-[11px] flex items-center gap-1 cursor-pointer">
-                                <Trash2 className="w-3.5 h-3.5" /> Supprimer
-                              </button>
-                            </div>
-                            <div className="flex flex-col md:flex-row gap-3">
-                              <input
-                                type="text"
-                                value={imgUrl}
-                                onChange={(e) => handleSecondaryImageChange(idx, e.target.value)}
-                                placeholder="URL de l'image secondaire..."
-                                className="flex-1 bg-[#0d120e] border border-[#38483b] text-white px-3 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                              />
-                              <label className="px-4 py-2.5 rounded-xl border border-[#38483b] text-[#d4af37] font-bold text-[11px] uppercase tracking-wider cursor-pointer flex items-center justify-center gap-2">
-                                <ImageIcon className="w-4 h-4" />
-                                <span>{uploadingImage === idx ? 'Import...' : 'Importer depuis mon PC'}</span>
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  disabled={uploadingImage === idx}
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) void uploadProductImage(file, idx);
-                                    e.currentTarget.value = '';
-                                  }}
-                                />
-                              </label>
-                            </div>
-                            <div className="h-32 rounded-xl bg-[#0b0f0c] border border-[#273429] flex items-center justify-center overflow-hidden">
-                              {imgUrl ? <img src={imgUrl} alt={`Image secondaire ${idx + 1}`} className="max-h-full max-w-full object-contain" referrerPolicy="no-referrer" /> : <span className="text-xs text-[#647266]">Aucune image</span>}
-                            </div>
-                          </div>
-                        ))}
-                        {getSecondaryImages(editingProduct).length === 0 && (
-                          <div className="py-8 text-center text-xs text-[#7d8c7f] border border-dashed border-[#374739] rounded-xl">Aucune image secondaire. Utilisez « Ajouter une image ».</div>
-                        )}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-[#a3b1a5] mb-1">Coût de création HT</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={editingProduct.adminCost ?? 0}
+                          onChange={(e) => updateEditingProduct({ adminCost: Number(e.target.value) })}
+                          className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                        />
+                        <span className="text-xs text-[#a3b1a5]">{editingProduct.currency || '€'}</span>
                       </div>
-                    )}
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-[#a3b1a5] mb-1">TVA</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.1"
+                          value={editingProduct.adminVatRate ?? 20}
+                          onChange={(e) => updateEditingProduct({ adminVatRate: Number(e.target.value) })}
+                          className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                        />
+                        <span className="text-xs text-[#a3b1a5]">%</span>
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl border border-[#354238] bg-[#182019] px-3 py-2.5">
+                      <span className="block text-[10px] uppercase tracking-wider text-[#a3b1a5]">Prix TTC</span>
+                      <strong className="block text-[#f3ece0] mt-1">
+                        {Number(editingProduct.price ?? 0).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {editingProduct.currency || '€'}
+                      </strong>
+                    </div>
                   </div>
-                </div>
 
-                <div className="md:col-span-2">
-                  <label className="block text-[#a3b1a5] font-semibold mb-1">Slogan (Tagline)</label>
-                  <input
-                    type="text"
-                    value={editingProduct.tagline || ''}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, tagline: e.target.value })}
-                    placeholder="ex: Une armure de douceur contre les grands froids"
-                    className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-[#a3b1a5] font-semibold mb-1">Description Courte</label>
-                  <textarea
-                    rows={2}
-                    value={editingProduct.description || ''}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
-                    className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-[#a3b1a5] font-semibold mb-1">Description Complète</label>
-                  <textarea
-                    rows={3}
-                    value={editingProduct.longDescription || ''}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, longDescription: e.target.value })}
-                    className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[#a3b1a5] font-semibold mb-1">Tailles disponibles (séparées par virgule)</label>
-                  <input
-                    type="text"
-                    value={editingProduct.sizes?.join(', ') || ''}
-                    onChange={(e) =>
-                      setEditingProduct({
-                        ...editingProduct,
-                        sizes: e.target.value.split(',').map((s) => s.trim()).filter(Boolean),
-                      })
-                    }
-                    placeholder="XS, S, M, L, XL, XXL"
-                    className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[#a3b1a5] font-semibold mb-1">Matières & Étoffes (séparées par virgule)</label>
-                  <input
-                    type="text"
-                    value={editingProduct.fabrics?.join(', ') || ''}
-                    onChange={(e) =>
-                      setEditingProduct({
-                        ...editingProduct,
-                        fabrics: e.target.value.split(',').map((s) => s.trim()).filter(Boolean),
-                      })
-                    }
-                    placeholder="Laine des Pyrénées, Cuir de bovin"
-                    className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                  />
+                  {(() => {
+                    const ttc = Number(editingProduct.price ?? 0) || 0;
+                    const vatRate = Math.max(0, Number(editingProduct.adminVatRate ?? 20) || 0);
+                    const ht = vatRate > 0 ? ttc / (1 + vatRate / 100) : ttc;
+                    const vat = ttc - ht;
+                    const cost = Math.max(0, Number(editingProduct.adminCost ?? 0) || 0);
+                    const profit = ht - cost;
+                    const money = (value: number) => `${value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${editingProduct.currency || '€'}`;
+                    return (
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div className="rounded-xl border border-[#354238] bg-[#182019] px-3 py-2">
+                          <span className="block text-[10px] uppercase tracking-wider text-[#a3b1a5]">CA HT unitaire</span>
+                          <strong className="block text-[#f3ece0] mt-1">{money(ht)}</strong>
+                        </div>
+                        <div className="rounded-xl border border-[#354238] bg-[#182019] px-3 py-2">
+                          <span className="block text-[10px] uppercase tracking-wider text-[#a3b1a5]">TVA collectée</span>
+                          <strong className="block text-[#d4af37] mt-1">{money(vat)}</strong>
+                        </div>
+                        <div className={`rounded-xl border px-3 py-2 ${profit >= 0 ? 'border-[#354238] bg-[#182019]' : 'border-red-900/60 bg-red-950/20'}`}>
+                          <span className="block text-[10px] uppercase tracking-wider text-[#a3b1a5]">Bénéfice HT unitaire</span>
+                          <strong className={`block mt-1 ${profit >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>{money(profit)}</strong>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  <p className="text-[10px] text-[#7f8d82]">Formule : Prix TTC ÷ (1 + TVA) = CA HT. TVA = TTC − HT. Bénéfice HT = CA HT − coût de fabrication HT.</p>
                 </div>
 
                 <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#273429] space-y-4">
@@ -1126,15 +1020,30 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                           <p className="text-xs text-[#a3b1a5] line-clamp-1">{p.subTitle}</p>
                         </div>
 
-                        <div className="flex items-center justify-between pt-1 border-t border-[#253227] text-xs">
-                          <span className="font-serif text-lg font-bold text-[#d4af37]">
-                            {p.price} {p.currency || '€'}
-                          </span>
-                          <span className="text-[10px] text-[#a3b1a5] text-right">
-                            Coût {Number(p.adminCost ?? 0).toLocaleString('fr-FR')} {p.currency || '€'} ·
-                            CA {Number(p.adminRevenue ?? p.price ?? 0).toLocaleString('fr-FR')} {p.currency || '€'} ·
-                            Bénéfice {Number(p.adminProfit ?? 0).toLocaleString('fr-FR')} {p.currency || '€'}
-                          </span>
+                        <div className="pt-2 border-t border-[#253227] text-xs space-y-1.5">
+                          {(() => {
+                            const ttc = Number(p.price ?? 0) || 0;
+                            const vatRate = Math.max(0, Number(p.adminVatRate ?? 20) || 0);
+                            const ht = vatRate > 0 ? ttc / (1 + vatRate / 100) : ttc;
+                            const vat = ttc - ht;
+                            const cost = Math.max(0, Number(p.adminCost ?? 0) || 0);
+                            const profit = ht - cost;
+                            const money = (value: number) => `${value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${p.currency || '€'}`;
+                            return (
+                              <>
+                                <div className="flex items-baseline justify-between gap-3">
+                                  <span className="font-serif text-lg font-bold text-[#d4af37] whitespace-nowrap">{money(ttc)}</span>
+                                  <span className="text-[10px] text-[#a3b1a5] text-right whitespace-nowrap">TTC · TVA {vatRate}%</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px] text-[#a3b1a5]">
+                                  <span>Coût HT <strong className="text-[#f3ece0]">{money(cost)}</strong></span>
+                                  <span>CA HT <strong className="text-[#f3ece0]">{money(ht)}</strong></span>
+                                  <span>TVA <strong className="text-[#d4af37]">{money(vat)}</strong></span>
+                                  <span>Bénéfice HT <strong className={profit >= 0 ? 'text-emerald-300' : 'text-red-300'}>{money(profit)}</strong></span>
+                                </div>
+                              </>
+                            );
+                          })()}
                           <span className="text-[11px] text-[#a3b1a5]">
                             {p.sizes?.length || 0} taille(s) | {p.colors?.length || 0} nuance(s)
                           </span>

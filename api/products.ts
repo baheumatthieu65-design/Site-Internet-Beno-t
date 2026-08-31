@@ -16,7 +16,6 @@ const normalizeProductImages = (product: any) => {
   );
 
   const publicProduct = { ...product };
-  delete publicProduct.adminCost;
   delete publicProduct.adminRevenue;
   delete publicProduct.adminProfit;
 
