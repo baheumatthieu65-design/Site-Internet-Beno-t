@@ -120,7 +120,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
       copy.theme.navOrder = ['collection', 'comparatif', 'origines', 'lookbook', 'contact'];
     }
     if (!copy.ordersEmail) {
-      copy.ordersEmail = 'contact@maisondespyrenees.fr';
+      copy.ordersEmail = 'baheu.matthieu65@gmail.com';
     }
     if (!Array.isArray(copy.jackets)) {
       copy.jackets = [];
@@ -193,7 +193,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   useEffect(() => {
     const creds = getStoredCredentials();
     setAdminUsername(creds.username);
-    setAdminEmail(creds.email && !creds.email.includes('baheu.matthieu65') ? creds.email : 'contact@maisondespyrenees.fr');
+    setAdminEmail(creds.email || 'baheu.matthieu65@gmail.com');
   }, [isOpen]);
 
   useEffect(() => {
@@ -899,7 +899,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
 
     saveAdminCredentials({
       username: adminUsername.trim() || 'admin',
-      email: adminEmail.trim() || 'contact@maisondespyrenees.fr',
+      email: adminEmail.trim() || 'baheu.matthieu65@gmail.com',
       lastUpdated: new Date().toISOString(),
     });
 
@@ -2112,7 +2112,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                         required
                         value={adminEmail}
                         onChange={(e) => setAdminEmail(e.target.value)}
-                        placeholder="contact@maisondespyrenees.fr"
+                        placeholder="baheu.matthieu65@gmail.com"
                         className="w-full bg-[#121613] border border-[#d4af37]/60 text-sm text-[#f3ece0] px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
                       />
                     </div>
@@ -2193,7 +2193,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                 <p className="text-xs text-[#a3b1a5]">Cette adresse reçoit les commandes, réservations et demandes sur mesure. Toute modification exige le code administrateur.</p>
                 {orderEmailMessage && <div className={`p-3 rounded-xl text-xs border ${orderEmailMessage.type === 'success' ? 'bg-emerald-950/50 border-emerald-700 text-emerald-200' : 'bg-red-950/50 border-red-700 text-red-200'}`}>{orderEmailMessage.text}</div>}
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-3 max-w-3xl">
-                  <input type="email" value={orderEmailDraft || formData.ordersEmail || ''} onChange={(e) => setOrderEmailDraft(e.target.value)} placeholder="obiones@hotmail.fr" className="w-full bg-[#121613] border border-[#435747] text-sm text-[#f3ece0] px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" />
+                  <input type="email" value={orderEmailDraft || formData.ordersEmail || ''} onChange={(e) => setOrderEmailDraft(e.target.value)} placeholder="baheu.matthieu65@gmail.com" className="w-full bg-[#121613] border border-[#435747] text-sm text-[#f3ece0] px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]" />
                   <button type="button" disabled={orderEmailSaving} onClick={handleChangeOrderEmail} className="px-5 py-2.5 bg-[#253227] text-xs text-[#d4af37] border border-[#d4af37] hover:bg-[#344638] rounded-xl cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">{orderEmailSaving ? 'VALIDATION…' : 'MODIFIER L’ADRESSE'}</button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 max-w-3xl items-end">

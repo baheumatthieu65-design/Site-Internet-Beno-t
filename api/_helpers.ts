@@ -460,7 +460,7 @@ export const getOrderNotificationEmail = async (): Promise<string> => {
     }
   }
 
-  return String(process.env.ADMIN_EMAIL || 'contact@maisondespyrenees.fr').trim();
+  return String(process.env.ADMIN_EMAIL || 'baheu.matthieu65@gmail.com').trim();
 };
 
 export const saveOrderNotificationEmail = async (email: string): Promise<void> => {
