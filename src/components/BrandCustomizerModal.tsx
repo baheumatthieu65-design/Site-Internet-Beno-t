@@ -73,6 +73,7 @@ import { AdminProductModal } from './AdminProductModal';
 import { getStoredCredentials, saveAdminCredentials, resetPasswordServer, maskEmail, AdminCredentials } from '../utils/auth';
 import { prepareImageForUpload, uploadBackgroundVideo } from '../utils/mediaUpload';
 import { defaultGiteConfig } from '../data/giteConfig';
+import { getCatalogCategories } from '../utils/catalogCategories';
 import { GiteCustomizerPanel } from './GiteCustomizerPanel';
 
 interface BrandCustomizerModalProps {
