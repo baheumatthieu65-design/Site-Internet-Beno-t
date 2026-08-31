@@ -315,6 +315,12 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       category: categoryOptions[0] || (products || []).map((product) => String(product.category || '').trim()).find(Boolean) || 'Signatures',
       price: 490,
       currency: '€',
+      adminCost: 0,
+      adminRevenue: 490,
+      adminProfit: 0,
+      adminCost: 0,
+      adminRevenue: 490,
+      adminProfit: 490,
       heroImage: 'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&q=80&w=1000',
       gallery: [
         'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&q=80&w=1000',
@@ -579,6 +585,9 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                   />
                 </div>
 
+                
+
+
                 <div>
                   <label className="block text-[#a3b1a5] font-semibold mb-1">Sous-Titre</label>
                   <input
@@ -624,6 +633,60 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                       <option value="£">£ (GBP)</option>
                     </select>
                   </div>
+                </div>
+
+<div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#6b5a24] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-bold text-[#d4af37] block">Données financières internes — Administration</span>
+                      <span className="text-[10px] text-[#8f9d91]">Ces montants sont réservés à l’administration et servent aux commandes et aux rapports.</span>
+                    </div>
+                    <DollarSign className="w-4 h-4 text-[#d4af37]" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-[#a3b1a5] mb-1">Coût de création de l’article</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={editingProduct.adminCost ?? 0}
+                          onChange={(e) => setEditingProduct({ ...editingProduct, adminCost: Number(e.target.value) })}
+                          className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                        />
+                        <span className="text-xs text-[#a3b1a5]">{editingProduct.currency || '€'}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-[#a3b1a5] mb-1">Chiffre d'affaires unitaire</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={editingProduct.adminRevenue ?? editingProduct.price ?? 0}
+                          onChange={(e) => setEditingProduct({ ...editingProduct, adminRevenue: Number(e.target.value) })}
+                          className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                        />
+                        <span className="text-xs text-[#a3b1a5]">{editingProduct.currency || '€'}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-[#a3b1a5] mb-1">Bénéfice unitaire</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={editingProduct.adminProfit ?? 0}
+                          onChange={(e) => setEditingProduct({ ...editingProduct, adminProfit: Number(e.target.value) })}
+                          className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                        />
+                        <span className="text-xs text-[#a3b1a5]">{editingProduct.currency || '€'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-[#7f8d82]">Ces montants sont réservés à l’administration. Le coût de création correspond à votre coût réel de fabrication ; le CA et le bénéfice sont enregistrés par article.</p>
                 </div>
 
                 <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#273429] space-y-3">
@@ -1066,6 +1129,11 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                         <div className="flex items-center justify-between pt-1 border-t border-[#253227] text-xs">
                           <span className="font-serif text-lg font-bold text-[#d4af37]">
                             {p.price} {p.currency || '€'}
+                          </span>
+                          <span className="text-[10px] text-[#a3b1a5] text-right">
+                            Coût {Number(p.adminCost ?? 0).toLocaleString('fr-FR')} {p.currency || '€'} ·
+                            CA {Number(p.adminRevenue ?? p.price ?? 0).toLocaleString('fr-FR')} {p.currency || '€'} ·
+                            Bénéfice {Number(p.adminProfit ?? 0).toLocaleString('fr-FR')} {p.currency || '€'}
                           </span>
                           <span className="text-[11px] text-[#a3b1a5]">
                             {p.sizes?.length || 0} taille(s) | {p.colors?.length || 0} nuance(s)
