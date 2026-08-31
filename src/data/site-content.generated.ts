@@ -20,7 +20,7 @@ export const publishedSiteContent = {
       "Chic champêtre \u0026 raffinement intemporel"
     ],
     "contactEmail": "contact@maisondespyrenees.fr",
-    "ordersEmail": "obiones@hotmail.fr",
+    "ordersEmail": "baheu.matthieu65@gmail.com",
     "instagram": "@maison.des.pyrenees",
     "gite": {
       "name": "Le Gîte",
@@ -1324,7 +1324,9 @@ export const publishedSiteContent = {
         ],
         "isAvailable": true,
         "availabilityStatus": "on-sale",
-        "customSpecs": {}
+        "customSpecs": {},
+        "adminCost": 85,
+        "adminProfit": 25
       },
       {
         "name": "Veste des Cîmes Enfant",
@@ -1383,7 +1385,9 @@ export const publishedSiteContent = {
         "hotspots": [],
         "id": "produit-1787241378430-715p3s",
         "availabilityStatus": "on-sale",
-        "customSpecs": {}
+        "customSpecs": {},
+        "adminCost": 50,
+        "adminProfit": 10
       },
       {
         "name": "Todebag",
@@ -1443,7 +1447,9 @@ export const publishedSiteContent = {
         ],
         "id": "produit-1787242939553-ezbmjg",
         "availabilityStatus": "on-sale",
-        "customSpecs": {}
+        "customSpecs": {},
+        "adminProfit": 10,
+        "adminCost": 40
       },
       {
         "name": "test",
@@ -1547,7 +1553,9 @@ export const publishedSiteContent = {
         ],
         "customSpecs": {},
         "id": "produit-1787937546249-yac3yh",
-        "showcaseEyebrow": "Un moment de détente encré dans les traditions"
+        "showcaseEyebrow": "Un moment de détente encré dans les traditions",
+        "adminCost": 150,
+        "adminProfit": 30
       }
     ],
     "theme": {
@@ -2204,5 +2212,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1788200784476
+  "publishedAt": 1788205526533
 } as const;
