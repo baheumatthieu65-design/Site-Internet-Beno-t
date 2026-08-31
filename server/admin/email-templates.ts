@@ -12,10 +12,7 @@ import {
 function json(res: any, status: number, data: unknown) {
   return res
     .status(status)
-    .setHeader(
-      'Cache-Control',
-      'no-store, no-cache, must-revalidate'
-    )
+    .setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
     .json(data);
 }
 

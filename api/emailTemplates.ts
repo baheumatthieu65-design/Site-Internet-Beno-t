@@ -16,10 +16,10 @@ const KEY = 'mdp_email_templates_v1';
 
 export const DEFAULT_EMAIL_TEMPLATES: EmailTemplates = {
   order: {
-    subject: '[{{marque}}] Nouvelle {{type}} — {{reference}} — {{nom}}',
+    subject: '[{{marque}}] Nouvelle commande — {{reference}} — {{nom}}',
     body: `Bonjour,
 
-Une nouvelle {{type}} a été reçue sur le site {{marque}}.
+Une nouvelle commande a été reçue sur le site {{marque}}.
 
 Référence : {{reference}}
 Date : {{date}}
@@ -133,28 +133,12 @@ export const sendTemplatedOrderEmail = async (orderData: {
   totalPrice: number;
   currency: string;
   formattedDate: string;
-}): Promise<{
-  sent: boolean;
-  message?: string;
-  subject?: string;
-  body?: string;
-}> => {
+}): Promise<{ sent: boolean; message?: string; subject?: string; body?: string }> => {
   const resendApiKey = process.env.RESEND_API_KEY;
   const adminEmail = await getOrderNotificationEmail();
 
-  if (!adminEmail) {
-    return {
-      sent: false,
-      message: 'Adresse de réception des commandes non configurée.',
-    };
-  }
-
-  if (!resendApiKey) {
-    return {
-      sent: false,
-      message: 'RESEND_API_KEY non configuré sur Vercel.',
-    };
-  }
+  if (!adminEmail) return { sent: false, message: 'Adresse de réception des commandes non configurée.' };
+  if (!resendApiKey) return { sent: false, message: 'RESEND_API_KEY non configuré sur Vercel.' };
 
   const templates = await getEmailTemplates();
   const brandName = await getBrandName();
@@ -176,30 +160,27 @@ export const sendTemplatedOrderEmail = async (orderData: {
         .join('\n')
     : 'Aucun — demande de rendez-vous atelier';
 
-  const values: Record<string, string> = {
-    marque: brandName,
-    reference: orderData.id,
-    date: orderData.formattedDate,
-    civilite: orderData.salutation || 'Autre',
-    nom: orderData.clientName,
-    email: orderData.clientEmail,
-    telephone: orderData.clientPhone || 'Non renseigné',
-    remarques: orderData.clientNotes || 'Aucune',
-    type,
-    articles,
-    total: String(orderData.totalPrice),
-    devise: orderData.currency,
-  };
-
   const rendered = renderEmailTemplate(
     appointment ? templates.appointment : templates.order,
-    values
+    {
+      marque: brandName,
+      reference: orderData.id,
+      date: orderData.formattedDate,
+      civilite: orderData.salutation || 'Autre',
+      nom: orderData.clientName,
+      email: orderData.clientEmail,
+      telephone: orderData.clientPhone || 'Non renseigné',
+      remarques: orderData.clientNotes || 'Aucune',
+      type,
+      articles,
+      total: String(orderData.totalPrice),
+      devise: orderData.currency,
+    }
   );
 
   const htmlBody = `<div style="font-family:Arial,sans-serif;white-space:pre-wrap;line-height:1.55">${escapeHtml(rendered.body)}</div>`;
   const fromEmail =
-    process.env.EMAIL_FROM ||
-    'Maison des Pyrénées <onboarding@resend.dev>';
+    process.env.EMAIL_FROM || 'Maison des Pyrénées <onboarding@resend.dev>';
 
   try {
     const response = await fetch('https://api.resend.com/emails', {
@@ -218,12 +199,11 @@ export const sendTemplatedOrderEmail = async (orderData: {
     });
 
     if (response.ok) {
-      return {
-        sent: true,
-        subject: rendered.subject,
-        body: rendered.body,
-      };
+      return { sent: true, subject: rendered.subject, body: rendered.body };
     }
+
+    const errorText = await response.text().catch(() => '');
+    console.error('[RESEND ERROR]', response.status, errorText);
 
     return {
       sent: false,
@@ -234,8 +214,7 @@ export const sendTemplatedOrderEmail = async (orderData: {
   } catch (error: any) {
     return {
       sent: false,
-      message:
-        error?.message || "Erreur lors de l'envoi de l'email.",
+      message: error?.message || "Erreur lors de l'envoi de l'email.",
       subject: rendered.subject,
       body: rendered.body,
     };

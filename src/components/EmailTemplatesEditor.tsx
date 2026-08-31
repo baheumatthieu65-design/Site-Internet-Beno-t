@@ -1,25 +1,18 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { FileText, Save, RotateCcw, Copy, CheckCircle2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { FileText, Save, RotateCcw, Copy, Check } from 'lucide-react';
 
-type Template = {
-  subject: string;
-  body: string;
-};
+type Template = { subject: string; body: string };
+type Templates = { order: Template; appointment: Template };
 
-type Templates = {
-  order: Template;
-  appointment: Template;
-};
-
-const DEFAULT_TOKENS = [
+const TOKENS = [
   ['{{civilite}}', 'Monsieur / Madame / Autre'],
-  ['{{nom}}', 'Nom & prénom'],
+  ['{{nom}}', 'Nom et prénom'],
   ['{{telephone}}', 'Téléphone'],
   ['{{email}}', 'Adresse email'],
   ['{{remarques}}', 'Remarques'],
   ['{{date}}', 'Date et heure'],
-  ['{{reference}}', 'Référence'],
-  ['{{marque}}', 'Nom de marque'],
+  ['{{reference}}', 'Référence de commande'],
+  ['{{marque}}', 'Nom de la marque configurée'],
   ['{{type}}', 'Type de demande'],
   ['{{articles}}', 'Liste des articles'],
   ['{{total}}', 'Total'],
@@ -29,19 +22,18 @@ const DEFAULT_TOKENS = [
 export const EmailTemplatesEditor: React.FC = () => {
   const [templates, setTemplates] = useState<Templates | null>(null);
   const [active, setActive] = useState<'order' | 'appointment'>('order');
-  const [adminCode, setAdminCode] = useState('');
+  const [code, setCode] = useState('');
   const [message, setMessage] = useState('');
-  const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState('');
 
   const load = async () => {
-    const response = await fetch(`/api/admin/email-templates?ts=${Date.now()}`, {
+    const response = await fetch('/api/admin/email-templates', {
       credentials: 'include',
       cache: 'no-store',
     });
     const data = await response.json();
     if (!response.ok || !data?.success) {
-      throw new Error(data?.message || 'Impossible de charger les templates.');
+      throw new Error(data?.message || 'Impossible de charger les modèles.');
     }
     setTemplates(data.templates);
   };
@@ -50,87 +42,71 @@ export const EmailTemplatesEditor: React.FC = () => {
     void load().catch((error) => setMessage(error.message));
   }, []);
 
-  const current = useMemo(
-    () => templates?.[active] || { subject: '', body: '' },
-    [templates, active]
-  );
+  const current = templates?.[active];
 
-  const updateCurrent = (patch: Partial<Template>) => {
-    setTemplates((previous) =>
-      previous
-        ? {
-            ...previous,
-            [active]: { ...previous[active], ...patch },
-          }
-        : previous
-    );
+  const update = (patch: Partial<Template>) => {
+    if (!templates) return;
+    setTemplates({
+      ...templates,
+      [active]: { ...templates[active], ...patch },
+    });
   };
 
-  const insertToken = async (token: string) => {
-    try {
-      await navigator.clipboard.writeText(token);
-      setCopied(token);
-      window.setTimeout(() => setCopied(''), 1500);
-    } catch {
-      setCopied(token);
-    }
+  const copyToken = async (token: string) => {
+    await navigator.clipboard.writeText(token);
+    setCopied(token);
+    window.setTimeout(() => setCopied(''), 1200);
   };
 
   const save = async () => {
-    if (!templates || !adminCode.trim()) {
+    if (!templates) return;
+    if (!code.trim()) {
       setMessage('Saisissez le code administrateur pour enregistrer.');
       return;
     }
 
-    setSaving(true);
-    setMessage('');
+    setMessage('Enregistrement...');
 
     try {
       const response = await fetch('/api/admin/email-templates', {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code: adminCode,
-          templates,
-        }),
+        body: JSON.stringify({ code, templates }),
       });
 
       const data = await response.json();
+
       if (!response.ok || !data?.success) {
         throw new Error(data?.message || 'Enregistrement impossible.');
       }
 
       setTemplates(data.templates);
-      setMessage('Templates enregistrés avec succès.');
+      setMessage('Modèle(s) enregistré(s) avec succès.');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Erreur.');
-    } finally {
-      setSaving(false);
     }
   };
 
-  if (!templates) {
+  if (!templates || !current) {
     return (
-      <section className="p-5 rounded-3xl bg-[#1a221c] border border-[#3b4b3e]">
-        <p className="text-xs text-[#a3b1a5]">
-          Chargement des modèles d’e-mails…
-        </p>
+      <section className="rounded-2xl border border-[#3b4b3e] bg-[#171f19] p-5">
+        <p className="text-xs text-[#a3b1a5]">Chargement des modèles d’e-mails…</p>
       </section>
     );
   }
 
   return (
-    <section className="p-5 sm:p-6 rounded-3xl bg-[#1a221c] border border-[#3b4b3e] space-y-5 shadow-xl">
+    <section className="rounded-2xl border border-[#3b4b3e] bg-[#171f19] p-5 space-y-4">
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-xl bg-[#253227] text-[#d4af37]">
-          <FileText className="w-5 h-5" />
+        <div className="rounded-xl bg-[#253227] p-2 text-[#d4af37]">
+          <FileText className="h-5 w-5" />
         </div>
         <div>
-          <h3 className="font-serif text-lg font-bold text-[#f3ece0]">
-            Modèles des e-mails de notification
-          </h3>
-          <p className="text-xs text-[#a3b1a5]">
+          <h4 className="font-serif text-lg font-bold text-[#f3ece0]">
+            Personnalisation des e-mails
+          </h4>
+          <p className="text-xs text-[#9eaa9f]">
             Modifiez séparément le mail de commande et le mail de rendez-vous atelier.
           </p>
         </div>
@@ -142,8 +118,8 @@ export const EmailTemplatesEditor: React.FC = () => {
           onClick={() => setActive('order')}
           className={`rounded-xl border px-3 py-2 text-xs font-bold ${
             active === 'order'
-              ? 'bg-[#d4af37] text-[#121613] border-[#d4af37]'
-              : 'bg-[#121613] text-[#a3b1a5] border-[#38483b]'
+              ? 'border-[#d4af37] bg-[#d4af37] text-[#121613]'
+              : 'border-[#39493d] bg-[#121613] text-[#a3b1a5]'
           }`}
         >
           Mail de commande
@@ -153,8 +129,8 @@ export const EmailTemplatesEditor: React.FC = () => {
           onClick={() => setActive('appointment')}
           className={`rounded-xl border px-3 py-2 text-xs font-bold ${
             active === 'appointment'
-              ? 'bg-[#d4af37] text-[#121613] border-[#d4af37]'
-              : 'bg-[#121613] text-[#a3b1a5] border-[#38483b]'
+              ? 'border-[#d4af37] bg-[#d4af37] text-[#121613]'
+              : 'border-[#39493d] bg-[#121613] text-[#a3b1a5]'
           }`}
         >
           Mail de rendez-vous atelier
@@ -162,86 +138,78 @@ export const EmailTemplatesEditor: React.FC = () => {
       </div>
 
       <div>
-        <label className="block text-[10px] uppercase tracking-wider text-[#a3b1a5] mb-1">
-          Objet
+        <label className="mb-1 block text-[10px] uppercase tracking-widest text-[#a3b1a5]">
+          Objet du mail
         </label>
         <input
           value={current.subject}
-          onChange={(event) => updateCurrent({ subject: event.target.value })}
-          className="w-full bg-[#121613] border border-[#38483b] text-[#f3ece0] text-sm rounded-xl px-3 py-2.5 outline-none focus:border-[#d4af37]"
+          onChange={(e) => update({ subject: e.target.value })}
+          className="w-full rounded-xl border border-[#39493d] bg-[#101511] px-3 py-2.5 text-sm text-[#f3ece0] outline-none focus:border-[#d4af37]"
         />
       </div>
 
       <div>
-        <label className="block text-[10px] uppercase tracking-wider text-[#a3b1a5] mb-1">
+        <label className="mb-1 block text-[10px] uppercase tracking-widest text-[#a3b1a5]">
           Corps du mail
         </label>
         <textarea
           value={current.body}
-          onChange={(event) => updateCurrent({ body: event.target.value })}
-          rows={14}
-          className="w-full bg-[#121613] border border-[#38483b] text-[#f3ece0] text-xs rounded-xl px-3 py-3 outline-none focus:border-[#d4af37] font-mono"
+          onChange={(e) => update({ body: e.target.value })}
+          rows={15}
+          className="w-full resize-y rounded-xl border border-[#39493d] bg-[#101511] px-3 py-3 font-mono text-xs leading-5 text-[#f3ece0] outline-none focus:border-[#d4af37]"
         />
       </div>
 
-      <div className="p-4 rounded-2xl bg-[#121613] border border-[#2e3c30]">
-        <div className="text-[10px] uppercase tracking-wider text-[#d4af37] font-bold mb-2">
+      <div className="rounded-xl border border-[#2f3d32] bg-[#101511] p-3">
+        <div className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[#d4af37]">
           Tokens disponibles
         </div>
         <div className="flex flex-wrap gap-2">
-          {DEFAULT_TOKENS.map(([token, description]) => (
+          {TOKENS.map(([token, description]) => (
             <button
               key={token}
               type="button"
               title={description}
-              onClick={() => void insertToken(token)}
-              className="px-2.5 py-1.5 rounded-lg border border-[#3d4f40] bg-[#18201a] text-[#f3ece0] text-[10px] hover:border-[#d4af37]"
+              onClick={() => void copyToken(token)}
+              className="inline-flex items-center gap-1 rounded-lg border border-[#3c4d40] bg-[#18201a] px-2 py-1.5 text-[10px] text-[#f3ece0] hover:border-[#d4af37]"
             >
-              {copied === token ? (
-                <span className="inline-flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" /> Copié
-                </span>
-              ) : (
-                <span>{token}</span>
-              )}
+              {copied === token ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+              {token}
             </button>
           ))}
         </div>
-        <p className="mt-2 text-[10px] text-[#7f8d82]">
-          Un clic copie le token ; collez-le ensuite à l’endroit voulu dans l’objet ou le corps.
+        <p className="mt-2 text-[10px] text-[#78857b]">
+          Cliquez sur un token pour le copier, puis collez-le dans l’objet ou le corps du mail.
         </p>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <input
           type="password"
-          value={adminCode}
-          onChange={(event) => setAdminCode(event.target.value)}
-          placeholder="Code administrateur pour enregistrer"
-          className="flex-1 bg-[#121613] border border-[#38483b] text-[#f3ece0] text-xs rounded-xl px-3 py-2.5 outline-none focus:border-[#d4af37]"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          placeholder="Code administrateur"
+          className="flex-1 rounded-xl border border-[#39493d] bg-[#101511] px-3 py-2.5 text-xs text-[#f3ece0] outline-none focus:border-[#d4af37]"
         />
         <button
           type="button"
           onClick={() => void load().catch((error) => setMessage(error.message))}
-          className="px-4 py-2.5 rounded-xl bg-[#28362b] border border-[#3b4b3e] text-[#f3ece0] text-xs font-bold inline-flex items-center justify-center gap-2"
+          className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#39493d] bg-[#243126] px-4 py-2.5 text-xs font-bold text-[#f3ece0]"
         >
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw className="h-4 w-4" />
           Recharger
         </button>
         <button
           type="button"
-          disabled={saving}
           onClick={() => void save()}
-          className="px-4 py-2.5 rounded-xl bg-[#d4af37] text-[#121613] text-xs font-bold inline-flex items-center justify-center gap-2 disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#d4af37] px-4 py-2.5 text-xs font-bold text-[#121613]"
         >
-          <Save className="w-4 h-4" />
-          {saving ? 'Enregistrement…' : 'Enregistrer'}
+          <Save className="h-4 w-4" />
+          Enregistrer
         </button>
       </div>
 
-      {message && (
-        <p className="text-xs text-[#d4af37]">{message}</p>
-      )}
+      {message && <p className="text-xs text-[#d4af37]">{message}</p>}
     </section>
   );
 };
