@@ -32,6 +32,11 @@ export interface EditorBlock {
   fontFamily?: string;
   fontSize?: string;
   color?: string;
+  fontWeight?: string;
+  fontStyle?: string;
+  textDecoration?: string;
+  whiteSpace?: string;
+  lineHeight?: string;
 }
 
 export interface SiteEditorConfig {
@@ -641,7 +646,7 @@ export const SiteVisualEditor: React.FC<Props> = ({
             <div className="min-w-0">
               <div className="text-sm font-semibold">Éditeur du site</div>
               <div className="text-[10px] uppercase tracking-[.18em] text-[#87968a]">
-                Cliquez un élément de la page
+                Personnalisation centralisée
               </div>
             </div>
 
@@ -655,17 +660,6 @@ export const SiteVisualEditor: React.FC<Props> = ({
         </div>
 
         <div className="p-4 space-y-4">
-          <button
-            type="button"
-            onClick={() => setSelecting(true)}
-            className={`w-full rounded-xl px-4 py-3 text-sm font-medium ${selecting ? 'bg-[#d4af37] text-black' : 'bg-[#263129] text-[#f5eedf]'}`}
-          >
-            <span className="inline-flex items-center gap-2">
-              <Type size={16} />
-              {selecting ? 'Clique maintenant sur un texte ou une image' : 'Sélectionner un élément'}
-            </span>
-          </button>
-
           {selected && (
             <div className="rounded-xl border border-[#39483e] p-3 space-y-4">
               <div className="text-xs text-[#aab6ac]">

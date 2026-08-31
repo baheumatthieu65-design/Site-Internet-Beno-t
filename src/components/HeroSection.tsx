@@ -242,7 +242,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 style={discoverButtonInlineStyle}
                 className={`px-7 py-3.5 text-sm uppercase tracking-widest flex items-center space-x-2 ${secondaryBtnClass}`}
               >
-                <span data-vce-id="hero-discover-button-text">{discoverText} la collection ({jackets.length} {jackets.length > 1 ? 'créations' : 'création'} {getCategoryLabel(activeCategory)})</span>
+                <span data-vce-id="hero-discover-button-text">{discoverText}</span> <span data-vce-id="hero-discover-button-context">la collection ({jackets.length} {jackets.length > 1 ? 'créations' : 'création'} {getCategoryLabel(activeCategory)})</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -318,7 +318,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 style={discoverButtonInlineStyle}
                   className={`px-5 py-3 text-xs uppercase tracking-widest flex items-center space-x-1.5 ${secondaryBtnClass}`}
                 >
-                  <span data-vce-id="hero-discover-button-text">{discoverText} la collection ({jackets.length} {jackets.length > 1 ? 'créations' : 'création'} {getCategoryLabel(activeCategory)})</span>
+                  <span data-vce-id="hero-discover-button-text">{discoverText}</span> <span data-vce-id="hero-discover-button-context">la collection ({jackets.length} {jackets.length > 1 ? 'créations' : 'création'} {getCategoryLabel(activeCategory)})</span>
                 </button>
               </div>
             </div>

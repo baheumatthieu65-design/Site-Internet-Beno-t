@@ -76,6 +76,7 @@ import { prepareImageForUpload, uploadBackgroundVideo } from '../utils/mediaUplo
 import { defaultGiteConfig } from '../data/giteConfig';
 import { getCatalogCategories } from '../utils/catalogCategories';
 import { GiteCustomizerPanel } from './GiteCustomizerPanel';
+import type { EditorBlock, SiteEditorConfig } from './SiteVisualEditor';
 
 interface BrandCustomizerModalProps {
   isOpen: boolean;
@@ -86,7 +87,9 @@ interface BrandCustomizerModalProps {
   onOpenCatalog?: () => void;
   products: JacketModel[];
   onRefreshProducts: () => void;
-  initialTab?: 'landing' | 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite';
+  initialTab?: 'landing' | 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite' | 'boutique-text';
+  siteEditorConfig?: SiteEditorConfig;
+  onSiteEditorConfigChange?: (config: SiteEditorConfig) => void;
 }
 
 const samplePresetImages = [
@@ -108,6 +111,8 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   products,
   onRefreshProducts,
   initialTab = 'theme',
+  siteEditorConfig,
+  onSiteEditorConfigChange,
 }) => {
   if (!isOpen) return null;
 
@@ -148,15 +153,15 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     }
   }, [isOpen]);
 
-  const getInitialTab = (): 'landing' | 'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite' => {
+  const getInitialTab = (): 'landing' | 'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite' | 'boutique-text' => {
     if (initialTab === 'j1' || initialTab === 'j2' || initialTab === 'articles') return 'articles';
-    if (initialTab === 'landing' || initialTab === 'brand' || initialTab === 'theme' || initialTab === 'layouts' || initialTab === 'labels' || initialTab === 'security' || initialTab === 'orders' || initialTab === 'github' || initialTab === 'gite') {
+    if (initialTab === 'landing' || initialTab === 'brand' || initialTab === 'theme' || initialTab === 'layouts' || initialTab === 'labels' || initialTab === 'security' || initialTab === 'orders' || initialTab === 'github' || initialTab === 'gite' || initialTab === 'boutique-text') {
       return initialTab;
     }
     return 'theme';
   };
 
-  const [activeTab, setActiveTab] = useState<'landing' | 'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite'>(
+  const [activeTab, setActiveTab] = useState<'landing' | 'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite' | 'boutique-text'>(
     getInitialTab()
   );
 
@@ -197,14 +202,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   }, [isOpen]);
 
   useEffect(() => {
-    const textareas = document.querySelectorAll<HTMLTextAreaElement>('[data-story-autosize]');
-    textareas.forEach((textarea) => {
-      textarea.style.height = 'auto';
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    });
-  }, [formData.storyText1, formData.storyText2]);
-
-  useEffect(() => {
     if (!isOpen) return;
     setOrderEmailMessage(null);
     setOrderEmailCode('');
@@ -234,6 +231,91 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
       }
     }
   }, [initialTab]);
+
+  const boutiqueTextCatalog = useMemo(() => {
+    const safeProducts = Array.isArray(draftProducts) ? draftProducts : [];
+    const items: Array<{
+      id: string;
+      label: string;
+      group: string;
+      section: 'hero' | 'collection' | 'comparatif' | 'origines' | 'lookbook' | 'contact';
+      defaultText: string;
+      editable?: boolean;
+      automatic?: boolean;
+    }> = [
+      { id: 'hero-designer-location', label: 'Localisation / signature créateur', group: 'Hero', section: 'hero', defaultText: String(formData.designerLocation || '') },
+      { id: 'hero-badge-text', label: 'Badge du Hero', group: 'Hero', section: 'hero', defaultText: 'Collection 2025' },
+      { id: 'hero-title-prefix', label: 'Préfixe du titre Hero', group: 'Hero', section: 'hero', defaultText: String(formData.theme?.heroTitlePrefix || 'L’ART DE LA VESTE') },
+      { id: 'hero-brand-name', label: 'Nom de marque Hero', group: 'Hero', section: 'hero', defaultText: String(formData.brandName || '') },
+      { id: 'hero-tagline', label: 'Accroche Hero', group: 'Hero', section: 'hero', defaultText: String(formData.tagline || '') },
+      { id: 'hero-subtitle', label: 'Sous-titre Hero', group: 'Hero', section: 'hero', defaultText: String(formData.subtitle || '') },
+      { id: 'hero-order-button-text', label: 'Bouton Commander Hero', group: 'Hero', section: 'hero', defaultText: String(formData.theme?.orderButtonText || 'Commander') },
+      { id: 'hero-discover-button-text', label: 'Bouton Découvrir Hero', group: 'Hero', section: 'hero', defaultText: String(formData.theme?.discoverButtonText || 'Découvrir') },
+      { id: 'hero-discover-button-context', label: 'Contexte dynamique du bouton', group: 'Hero', section: 'hero', defaultText: 'La collection — nombre et catégorie automatiques', editable: false, automatic: true },
+      { id: 'navbar-order-button-text', label: 'Bouton Commander navigation', group: 'Navigation', section: 'hero', defaultText: String(formData.theme?.orderButtonText || 'Commander') },
+      { id: 'story-title', label: 'Titre Récit & Terroir', group: 'Récit & terroir', section: 'origines', defaultText: String(formData.storyTitle || '') },
+      { id: 'story-designer-location', label: 'Localisation Récit', group: 'Récit & terroir', section: 'origines', defaultText: String(formData.designerLocation || '') },
+      { id: 'story-text-1', label: 'Texte principal du récit', group: 'Récit & terroir', section: 'origines', defaultText: String(formData.storyText1 || '') },
+      { id: 'story-text-2', label: 'Suite du récit', group: 'Récit & terroir', section: 'origines', defaultText: String(formData.storyText2 || '') },
+      { id: 'story-stat-label-local-wool', label: 'Statistique — laine locale', group: 'Récit & terroir', section: 'origines', defaultText: 'Laine Vierge Locale' },
+      { id: 'story-stat-label-models', label: 'Statistique — modèles', group: 'Récit & terroir', section: 'origines', defaultText: "Modèles d'Exception" },
+      { id: 'story-stat-label-mountain', label: 'Statistique — conception', group: 'Récit & terroir', section: 'origines', defaultText: 'Conception de Montagne' },
+      { id: 'comparison-title', label: 'Titre Comparatif', group: 'Comparatif', section: 'comparatif', defaultText: 'Comparer nos créations' },
+      { id: 'comparison-subtitle', label: 'Sous-titre Comparatif', group: 'Comparatif', section: 'comparatif', defaultText: 'Découvrez en un coup d’œil quelle création correspond le mieux à votre style de vie et vos escapades dans les Pyrénées.' },
+      { id: 'comparison-category', label: 'Catégorie du comparatif', group: 'Comparatif', section: 'comparatif', defaultText: 'Catégorie sélectionnée automatiquement', editable: false, automatic: true },
+      { id: 'lookbook-title', label: 'Titre Lookbook', group: 'Lookbook', section: 'lookbook', defaultText: 'Le Lookbook' },
+      { id: 'lookbook-subtitle', label: 'Sous-titre Lookbook', group: 'Lookbook', section: 'lookbook', defaultText: 'L’esprit de nos créations en images.' },
+      ...safeProducts.flatMap((product) => [
+        { id: `product-${product.id}-category`, label: `${product.name || product.id} — catégorie`, group: 'Articles / cartes boutique', section: 'hero' as const, defaultText: String(product.category || ''), editable: false, automatic: true },
+        { id: `product-${product.id}-name`, label: `${product.name || product.id} — nom`, group: 'Articles / cartes boutique', section: 'hero' as const, defaultText: String(product.name || ''), editable: false, automatic: true },
+        { id: `product-${product.id}-description`, label: `${product.name || product.id} — description`, group: 'Articles / cartes boutique', section: 'hero' as const, defaultText: String(product.description || ''), editable: false, automatic: true },
+        { id: `product-${product.id}-price`, label: `${product.name || product.id} — prix`, group: 'Articles / cartes boutique', section: 'hero' as const, defaultText: `${product.price ?? ''} ${product.currency || '€'}`, editable: false, automatic: true },
+        { id: `product-${product.id}-discover`, label: `${product.name || product.id} — action`, group: 'Articles / cartes boutique', section: 'hero' as const, defaultText: String(formData.theme?.discoverButtonText || 'Découvrir'), editable: false, automatic: true },
+      ]),
+    ];
+    return items;
+  }, [draftProducts, formData]);
+
+  const getBoutiqueBlock = (item: typeof boutiqueTextCatalog[number]): EditorBlock => {
+    const existing = (siteEditorConfig?.blocks || []).find((block) => block.id === item.id && block.kind === 'text');
+    return existing || {
+      id: item.id,
+      type: 'text',
+      kind: 'text',
+      section: item.section,
+      x: 0,
+      y: 0,
+      text: item.defaultText,
+      visible: true,
+    };
+  };
+
+  const updateBoutiqueText = (item: typeof boutiqueTextCatalog[number], patch: Partial<EditorBlock>) => {
+    if (item.editable === false || !siteEditorConfig || !onSiteEditorConfigChange) return;
+    const existing = getBoutiqueBlock(item);
+    const nextBlock: EditorBlock = {
+      ...existing,
+      id: item.id,
+      type: 'text',
+      kind: 'text',
+      section: item.section,
+      visible: true,
+      ...patch,
+    };
+    const blocks = [...(siteEditorConfig.blocks || [])];
+    const index = blocks.findIndex((block) => block.id === item.id);
+    if (index >= 0) blocks[index] = nextBlock;
+    else blocks.push(nextBlock);
+    onSiteEditorConfigChange({ ...siteEditorConfig, blocks });
+  };
+
+  const removeBoutiqueTextOverride = (item: typeof boutiqueTextCatalog[number]) => {
+    if (!siteEditorConfig || !onSiteEditorConfigChange) return;
+    onSiteEditorConfigChange({
+      ...siteEditorConfig,
+      blocks: (siteEditorConfig.blocks || []).filter((block) => block.id !== item.id),
+    });
+  };
 
   const currentTheme = formData.theme || defaultThemeConfig;
 
@@ -361,7 +443,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
       case 'weight': return product.specs?.weight || '';
       case 'fit': return product.specs?.fitType || '';
       case 'care': return product.specs?.care || '';
-      case 'price': return `${product.price} ${product.currency || '€'} TTC`;
+      case 'price': return `${product.price} ${product.currency || '€'}`;
       default: return product.customSpecs?.[criterion.key] || '';
     }
   };
@@ -1088,6 +1170,19 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
 
           <button
             type="button"
+            onClick={() => setActiveTab('boutique-text')}
+            className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'boutique-text'
+                ? 'bg-[#29362c] text-[#d4af37] border border-[#d4af37]/60 shadow'
+                : 'text-[#9eb0a0] hover:text-[#f3ece0] hover:bg-[#1a211c]'
+            }`}
+          >
+            <Type className="w-4 h-4 text-[#d4af37]" />
+            <span>Texte de la page boutique</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('theme')}
             className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs uppercase tracking-wider font-semibold transition-all whitespace-nowrap cursor-pointer ${
               activeTab === 'theme'
@@ -1230,6 +1325,89 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           {/* ========================================================= */}
           {/* TAB 1: THEME & BUTTONS PRESETS                            */}
           {/* ========================================================= */}
+          {activeTab === 'boutique-text' && (
+            <div className="space-y-7 animate-fadeIn">
+              <div className="rounded-2xl border border-[#3c4c3f] bg-[#1a221c] p-5 space-y-2">
+                <h4 className="font-serif text-xl text-[#f3ece0] font-semibold flex items-center gap-2">
+                  <Type className="w-5 h-5 text-[#d4af37]" /> Texte de la page boutique
+                </h4>
+                <p className="text-xs leading-relaxed text-[#aeb9ae]">
+                  Tous les textes identifiés par un ID stable sont regroupés ici. Les modifications sont enregistrées comme des overrides liés à l’ID : elles ne cassent plus les données dynamiques du catalogue.
+                </p>
+                <p className="text-[11px] text-[#87968a]">Conseil : utilisez les retours à la ligne directement dans le champ texte. Ils seront conservés à l’affichage.</p>
+              </div>
+
+              {!siteEditorConfig || !onSiteEditorConfigChange ? (
+                <div className="rounded-xl border border-[#704d36] bg-[#2b2118] p-4 text-sm text-[#e8cda8]">
+                  Le moteur d’édition du texte n’est pas connecté à cette version de l’application.
+                </div>
+              ) : (
+                Array.from(new Set(boutiqueTextCatalog.map((item) => item.group))).map((group) => (
+                  <div key={group} className="rounded-2xl border border-[#334036] bg-[#151b17] p-4 space-y-4">
+                    <div className="text-xs uppercase tracking-[.16em] text-[#d4af37] font-semibold">{group}</div>
+                    {boutiqueTextCatalog.filter((item) => item.group === group).map((item) => {
+                      const block = getBoutiqueBlock(item);
+                      const overridden = (siteEditorConfig.blocks || []).some((candidate) => candidate.id === item.id && candidate.kind === 'text');
+                      const value = block.text ?? item.defaultText;
+                      return (
+                        <div key={item.id} className="rounded-xl border border-[#303d33] bg-[#111613] p-4 space-y-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="text-sm font-medium text-[#f3ece0]">{item.label}</div>
+                              <div className="text-[10px] text-[#718073] mt-1 font-mono">ID : {item.id}</div>
+                            </div>
+                            {item.automatic ? <span className="text-[10px] uppercase tracking-wider text-[#8fa096] border border-[#455248] rounded-full px-2 py-1">Automatique / catalogue</span> : overridden && <span className="text-[10px] uppercase tracking-wider text-[#d4af37] border border-[#d4af37]/40 rounded-full px-2 py-1">Personnalisé</span>}
+                          </div>
+
+                          <textarea
+                            value={value}
+                            rows={Math.min(8, Math.max(2, String(value).split('\n').length + 1))}
+                            onChange={(e) => updateBoutiqueText(item, { text: e.target.value, whiteSpace: 'pre-wrap' })}
+                            disabled={item.editable === false}
+                            className="w-full min-h-[72px] resize-y rounded-xl bg-[#1b231e] border border-[#455248] px-3 py-2.5 text-sm text-white outline-none focus:border-[#d4af37]"
+                            placeholder={item.defaultText}
+                          />
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <label className="text-xs text-[#a3b1a5]">Police
+                              <select value={block.fontFamily || 'Playfair Display'} onChange={(e) => updateBoutiqueText(item, { fontFamily: e.target.value })}
+                                disabled={item.editable === false} className="mt-1 w-full rounded-lg bg-[#1b231e] border border-[#455248] px-2.5 py-2 text-sm" style={{fontFamily:block.fontFamily || 'Playfair Display'}}>
+                                {['Playfair Display','Cormorant Garamond','Bodoni Moda','Cinzel','Libre Baskerville','EB Garamond','Lora','DM Serif Display','Great Vibes','Allura','Alex Brush','Ballet','Berkshire Swash','Bonheur Royale','Clicker Script','Dancing Script','Italianno','Lovers Quarrel','Mrs Saint Delafield','Parisienne','Pinyon Script','Sacramento','Tangerine','Qwigley','Lavishly Yours','Mea Culpa','Ms Madi','WindSong','Water Brush','Inter','Montserrat','Arial'].map((fontName) => <option key={fontName} value={fontName} style={{fontFamily:fontName}}>{fontName}</option>)}
+                              </select>
+                            </label>
+                            <label className="text-xs text-[#a3b1a5]">Taille
+                              <select value={block.fontSize || 'inherit'} onChange={(e) => updateBoutiqueText(item, { fontSize: e.target.value === 'inherit' ? undefined : e.target.value })}
+                                disabled={item.editable === false} className="mt-1 w-full rounded-lg bg-[#1b231e] border border-[#455248] px-2.5 py-2 text-sm">
+                                <option value="inherit">Taille actuelle</option><option value="12px">12 px</option><option value="14px">14 px</option><option value="16px">16 px</option><option value="18px">18 px</option><option value="20px">20 px</option><option value="24px">24 px</option><option value="28px">28 px</option><option value="32px">32 px</option><option value="36px">36 px</option><option value="42px">42 px</option><option value="48px">48 px</option><option value="56px">56 px</option><option value="64px">64 px</option><option value="72px">72 px</option>
+                              </select>
+                            </label>
+                          </div>
+
+                          <div className="flex flex-wrap gap-2">
+                            <button type="button" disabled={item.editable === false} onClick={() => updateBoutiqueText(item, { fontWeight: block.fontWeight === '700' ? undefined : '700' })} className={`rounded-lg border px-3 py-2 text-sm font-bold ${block.fontWeight === '700' ? 'border-[#d4af37] bg-[#29362c] text-[#d4af37]' : 'border-[#455248] text-[#d8dfd7]'}`}>G</button>
+                            <button type="button" disabled={item.editable === false} onClick={() => updateBoutiqueText(item, { fontStyle: block.fontStyle === 'italic' ? undefined : 'italic' })} className={`rounded-lg border px-3 py-2 text-sm italic ${block.fontStyle === 'italic' ? 'border-[#d4af37] bg-[#29362c] text-[#d4af37]' : 'border-[#455248] text-[#d8dfd7]'}`}>I</button>
+                            <button type="button" disabled={item.editable === false} onClick={() => updateBoutiqueText(item, { textDecoration: block.textDecoration === 'underline' ? undefined : 'underline' })} className={`rounded-lg border px-3 py-2 text-sm underline ${block.textDecoration === 'underline' ? 'border-[#d4af37] bg-[#29362c] text-[#d4af37]' : 'border-[#455248] text-[#d8dfd7]'}`}>S</button>
+                            <label className="inline-flex items-center gap-2 rounded-lg border border-[#455248] px-3 py-2 text-xs text-[#d8dfd7]">Couleur
+                              <input type="color" value={/^#[0-9a-f]{6}$/i.test(block.color || '') ? block.color! : '#F5EEDF'} onChange={(e) => updateBoutiqueText(item, { color: e.target.value })}
+                                disabled={item.editable === false} className="h-6 w-8 rounded bg-transparent" />
+                            </label>
+                            <div className="flex items-center gap-1.5 rounded-lg border border-[#455248] px-2 py-1.5">
+                              {['#F5EEDF','#D4AF37','#C2A26D','#A3B1A5','#B8C5BA','#D0C5B4','#8FA096','#E2D5C3','#FFFFFF','#111613','#5C7A62','#8C6D3F'].map((swatch) => (
+                                <button key={swatch} type="button" disabled={item.editable === false} title={swatch} onClick={() => updateBoutiqueText(item, { color: swatch })} className="h-5 w-5 rounded-full border border-white/20 disabled:opacity-40" style={{ backgroundColor: swatch }} />
+                              ))}
+                            </div>
+                            <button type="button" disabled={item.editable === false} onClick={() => updateBoutiqueText(item, { whiteSpace: block.whiteSpace === 'pre-wrap' ? undefined : 'pre-wrap' })} className={`rounded-lg border px-3 py-2 text-xs ${block.whiteSpace === 'pre-wrap' ? 'border-[#d4af37] bg-[#29362c] text-[#d4af37]' : 'border-[#455248] text-[#d8dfd7]'}`}>↵ Retours à la ligne</button>
+                            <button type="button" onClick={() => removeBoutiqueTextOverride(item)} disabled={!overridden} className="rounded-lg border border-[#455248] px-3 py-2 text-xs text-[#aeb9ae] disabled:opacity-40">Réinitialiser</button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
           {activeTab === 'theme' && (
             <div className="space-y-8 animate-fadeIn">
               <div className="p-5 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
@@ -1983,7 +2161,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                     required
                     value={formData.ordersEmail || ''}
                     onChange={(e) => handleChangeBrand('ordersEmail', e.target.value)}
-                    placeholder="ex: baheu.matthieu65@gmail.com"
+                    placeholder="ex: contact@maisondespyrenees.fr"
                     className="w-full bg-[#1b231d] border border-[#435747] text-sm text-[#f3ece0] px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
                   />
                 </div>
@@ -2034,11 +2212,10 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                     </div>
                     <textarea
                       rows={4}
-                      data-story-autosize="true"
                       value={formData.storyText1 || ''}
                       onChange={(e) => handleChangeBrand('storyText1', e.target.value)}
                       placeholder="Premier paragraphe du récit (ou laisser vide)"
-                      className="w-full overflow-hidden resize-none bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                      className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
                     />
                   </div>
                   <div>
@@ -2058,11 +2235,10 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                     </div>
                     <textarea
                       rows={4}
-                      data-story-autosize="true"
                       value={formData.storyText2 || ''}
                       onChange={(e) => handleChangeBrand('storyText2', e.target.value)}
                       placeholder="Second paragraphe du récit (ou laisser vide)"
-                      className="w-full overflow-hidden resize-none bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                      className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
                     />
                   </div>
                 </div>

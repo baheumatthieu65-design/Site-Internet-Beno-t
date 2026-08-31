@@ -87,7 +87,8 @@ type CustomizerTab =
   | 'labels'
   | 'security'
   | 'github'
-  | 'gite';
+  | 'gite'
+  | 'boutique-text';
 
 export default function App() {
   // ===========================================================================
@@ -1956,6 +1957,12 @@ export default function App() {
         initialTab={
           customizerTab
         }
+        siteEditorConfig={siteEditorConfig}
+        onSiteEditorConfigChange={(nextConfig) => {
+          const safeConfig = sanitizeHeroEditorConfig(nextConfig);
+          siteEditorConfigRef.current = safeConfig;
+          setSiteEditorConfig(safeConfig);
+        }}
       />
     </div>
   );
