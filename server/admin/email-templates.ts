@@ -16,9 +16,18 @@ function json(res: any, status: number, data: unknown) {
 }
 
 export default async function handler(req: any, res: any) {
-  const session = verifySessionToken(
-    parseCookies(req.headers.cookie).admin_session
-  );
+  let session;
+  try {
+    session = verifySessionToken(
+      parseCookies(req.headers.cookie).admin_session
+    );
+  } catch (error) {
+    console.error('Vérification session admin:', error);
+    return json(res, 500, {
+      success: false,
+      message: 'Impossible de vérifier la session administrateur.',
+    });
+  }
 
   if (!session.valid) {
     return json(res, 401, {

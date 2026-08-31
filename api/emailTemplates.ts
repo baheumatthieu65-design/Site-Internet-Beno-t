@@ -85,71 +85,17 @@ const escapeHtml = (value: string): string =>
 
 const getBrandName = async (): Promise<string> => {
   const redis = getRedisClient();
-  if (!redis) return 'Maison Mailhagut';
+  if (!redis) return 'Maison des Pyrénées';
 
   try {
     const config = await redis.get<any>('mdp_site_config');
-    const logoText = config?.logos?.boutique?.text;
-    if (typeof logoText === 'string' && logoText.trim()) {
-      // The primary boutique logo text is the source of truth for emails.
-      return logoText.trim().replace(/\s*\n\s*/g, ' ');
-    }
-
-    // Backward-compatible fallback for older saved configurations.
     return (
-      String(config?.brandName || 'Maison Mailhagut').trim() ||
-      'Maison Mailhagut'
+      String(config?.brandName || 'Maison des Pyrénées').trim() ||
+      'Maison des Pyrénées'
     );
   } catch {
-    return 'Maison Mailhagut';
+    return 'Maison des Pyrénées';
   }
-};
-
-const buildArticlesTable = (
-  items: Array<{
-    jacketName: string;
-    color: string;
-    size: string;
-    quantity: number;
-    unitPrice: number;
-    totalPrice: number;
-    imageUrl?: string;
-  }>,
-  currency: string
-): string => {
-  if (!items.length) {
-    return '<span style="font-family:Arial,sans-serif;font-size:13px;">Aucun article.</span>';
-  }
-
-  const rows = items.map((item) => {
-    const image = item.imageUrl
-      ? `<img src="${escapeHtml(item.imageUrl)}" alt="" width="48" height="48" style="display:block;width:48px;height:48px;object-fit:cover;border-radius:5px;border:1px solid #d9d9d9;" />`
-      : '<div style="width:48px;height:48px;line-height:48px;text-align:center;background:#f2f2f2;color:#777;border-radius:5px;">—</div>';
-
-    return `
-      <tr>
-        <td style="padding:4px 6px;border:1px solid #d9d9d9;text-align:center;width:62px;height:56px;">${image}</td>
-        <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:center;">${item.quantity}</td>
-        <td style="padding:4px 7px;border:1px solid #d9d9d9;">${escapeHtml(item.jacketName)}</td>
-        <td style="padding:4px 7px;border:1px solid #d9d9d9;">${escapeHtml(item.color)}</td>
-        <td style="padding:4px 7px;border:1px solid #d9d9d9;">${escapeHtml(item.size)}</td>
-        <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:right;white-space:nowrap;">${item.totalPrice} ${escapeHtml(currency)}</td>
-      </tr>`;
-  }).join('');
-
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;border-spacing:0;margin:0;padding:0;font-family:Arial,sans-serif;font-size:13px;line-height:1.2;">
-    <thead>
-      <tr>
-        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:center;">Image de l'article</th>
-        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:center;">Nombre</th>
-        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Nom de l'article</th>
-        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Couleur</th>
-        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Taille</th>
-        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:right;">Coût</th>
-      </tr>
-    </thead>
-    <tbody>${rows}</tbody>
-  </table>`;
 };
 
 export const renderEmailTemplate = (
@@ -168,6 +114,29 @@ export const renderEmailTemplate = (
   };
 };
 
+const renderBodyWithArticleTable = (
+  templateBody: string,
+  values: Record<string, string>,
+  articleTable: string
+): string => {
+  const token = /{{\s*articles\s*}}/g;
+  const parts = templateBody.split(token);
+
+  return parts
+    .map((part, index) => {
+      const replaced = part.replace(
+        /{{\s*([a-zA-Z0-9_]+)\s*}}/g,
+        (_, name: string) => values[name] ?? ''
+      );
+
+      const html = replaced.replace(/\r?\n/g, '<br>');
+      return index === 0
+        ? html.replace(/(?:<br>\s*)+$/g, '')
+        : `<div style="margin:0;padding:0;">${html.replace(/^(?:<br>\s*)+/g, '')}</div>`;
+    })
+    .join(articleTable);
+};
+
 export const sendTemplatedOrderEmail = async (orderData: {
   id: string;
   clientName: string;
@@ -183,7 +152,6 @@ export const sendTemplatedOrderEmail = async (orderData: {
     quantity: number;
     unitPrice: number;
     totalPrice: number;
-    imageUrl?: string;
   }>;
   totalPrice: number;
   currency: string;
@@ -206,45 +174,54 @@ export const sendTemplatedOrderEmail = async (orderData: {
     ? 'Demande de rendez-vous atelier'
     : orderData.orderTypeLabel || 'Commande';
 
-  const articles = buildArticlesTable(orderData.items, orderData.currency);
+  const articles = orderData.items.length
+    ? orderData.items
+        .map(
+          (item) =>
+            `- ${item.quantity}x ${item.jacketName} (${item.color}, ${item.size}) — ${item.totalPrice} ${orderData.currency}`
+        )
+        .join('\n')
+    : 'Aucun — demande de rendez-vous atelier';
 
-  const rendered = renderEmailTemplate(
-    appointment ? templates.appointment : templates.order,
-    {
-      marque: escapeHtml(brandName),
-      reference: escapeHtml(orderData.id),
-      date: escapeHtml(orderData.formattedDate),
-      civilite: escapeHtml(orderData.salutation || 'Monsieur'),
-      nom: escapeHtml(orderData.clientName),
-      email: escapeHtml(orderData.clientEmail),
-      telephone: escapeHtml(orderData.clientPhone || 'Non renseigné'),
-      remarques: escapeHtml(orderData.clientNotes || 'Aucune'),
-      type: escapeHtml(type),
-      articles,
-      total: escapeHtml(String(orderData.totalPrice)),
-      devise: escapeHtml(orderData.currency),
-    }
+  const values = {
+    marque: escapeHtml(brandName),
+    reference: escapeHtml(orderData.id),
+    date: escapeHtml(orderData.formattedDate),
+    civilite: escapeHtml(orderData.salutation || 'Monsieur'),
+    nom: escapeHtml(orderData.clientName),
+    email: escapeHtml(orderData.clientEmail),
+    telephone: escapeHtml(orderData.clientPhone || 'Non renseigné'),
+    remarques: escapeHtml(orderData.clientNotes || 'Aucune'),
+    type: escapeHtml(type),
+    total: escapeHtml(String(orderData.totalPrice)),
+    devise: escapeHtml(orderData.currency),
+  };
+
+  const selectedTemplate = appointment
+    ? templates.appointment
+    : templates.order;
+
+  const rendered = {
+    subject: selectedTemplate.subject.replace(
+      /{{\s*([a-zA-Z0-9_]+)\s*}}/g,
+      (_, name: string) => values[name] ?? ''
+    ),
+    body: selectedTemplate.body,
+  };
+
+  const htmlBodyContent = renderBodyWithArticleTable(
+    rendered.body,
+    values,
+    articles
   );
 
-  // Admin-authored template text is converted to readable HTML. The
-  // {{articles}} token is intentionally replaced with the generated table.
-  const ARTICLE_TOKEN = /{{\\s*articles\\s*}}/g;
-  const articleTable = articles;
-  const htmlBodyContent = rendered.body
-    .split(ARTICLE_TOKEN)
-    .map((part: string, index: number) => {
-      const compact = part
-        .replace(/(?:\\r?\\n|<br\\s*\\/?>)+\\s*$/gi, '')
-        .replace(/^\\s*(?:<br\\s*\\/?>|\\r?\\n)+/gi, '');
-      return index === 0
-        ? compact.replace(/\\r?\\n/g, '<br>')
-        : `<div style="margin:0;padding:0;">${compact.replace(/\\r?\\n/g, '<br>')}</div>`;
-    })
-    .join(articleTable);
+  const htmlBody =
+    `<div style="font-family:Arial,sans-serif;line-height:1.45;margin:0;padding:0;">` +
+    htmlBodyContent +
+    `</div>`;
 
-  const htmlBody = `<div style="font-family:Arial,sans-serif;line-height:1.45;margin:0;padding:0;">${htmlBodyContent}</div>`;
   const fromEmail =
-    process.env.EMAIL_FROM || 'Maison Mailhagut <onboarding@resend.dev>';
+    process.env.EMAIL_FROM || 'Maison des Pyrénées <onboarding@resend.dev>';
 
   try {
     const response = await fetch('https://api.resend.com/emails', {
@@ -258,7 +235,7 @@ export const sendTemplatedOrderEmail = async (orderData: {
         to: [adminEmail],
         subject: rendered.subject,
         html: htmlBody,
-        text: rendered.body.replace(/{{\s*articles\s*}}/g, 'Voir le tableau des articles.').replace(/<[^>]+>/g, ''),
+        text: rendered.body,
       }),
     });
 
