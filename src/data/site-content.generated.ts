@@ -13,7 +13,7 @@ export const publishedSiteContent = {
     "heroBgImage": "",
     "storyTitle": "Aux origines de la Maison",
     "storyText1": "Pensée entre pâturages verdoyants et sommets acérés, notre maison fait le pari d’un luxe brut et authentique. Chaque veste est façonnée pour affronter les brumes pyrénéennes tout en offrant une silhouette d’une distinction rare.",
-    "storyText2": "Nous avons sélectionné des laines de bergers pyrénéens et des toiles techniques imperméables d’exception pour façonner ces deux pièces signatures : La Veste des Cimes et Le Manteau Pastorale.\n\n\n\n\n\n\n\n\ntest",
+    "storyText2": "Nous avons sélectionné des laines de bergers pyrénéens et des toiles techniques imperméables d’exception pour façonner ces deux pièces signatures : La Veste des Cimes et Le Manteau Pastorale.",
     "manifesto": [
       "Artisanat pyrénéen \u0026 matières naturelles nobles",
       "Conception durable, coupes millimétrées \u0026 résistance aux éléments",
@@ -2214,5 +2214,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1788207908532
+  "publishedAt": 1788207932468
 } as const;
