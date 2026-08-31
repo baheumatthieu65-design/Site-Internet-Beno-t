@@ -1388,7 +1388,7 @@ export const publishedSiteContent = {
       {
         "name": "Todebag",
         "subTitle": "Confection Artisanale des Pyrénées",
-        "category": "Homme \u0026 Femme",
+        "category": "Homme \u0026 Femme 2",
         "price": 50,
         "currency": "€",
         "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787315218449-ChatGPT-Image-21-ao--t-2026--14_26_45.webp",
@@ -2188,5 +2188,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1788185281888
+  "publishedAt": 1788185297877
 } as const;
