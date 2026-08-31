@@ -2095,7 +2095,6 @@ export const publishedSiteContent = {
         "text": "Maison Mailhagut",
         "visible": true,
         "color": "#D0C5B4",
-        "fontStyle": "italic",
         "fontWeight": "700",
         "fontSize": "20px"
       }
@@ -2263,5 +2262,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1788211159451
+  "publishedAt": 1788211173039
 } as const;
