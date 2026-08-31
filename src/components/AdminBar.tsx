@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   ShieldCheck,
   LogOut,
@@ -214,32 +215,50 @@ export const AdminBar: React.FC<AdminBarProps> = ({
         </div>
       </div>
 
-      {emailTemplatesOpen && (
-        <div
-          data-vce-panel="true"
-          className="fixed inset-0 z-[2147483647] bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setEmailTemplatesOpen(false);
-            }
-          }}
-        >
-          <div className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-3xl border border-[#d4af37]/50 bg-[#111612] p-4 sm:p-6 shadow-2xl">
-            <button
-              type="button"
-              onClick={() => setEmailTemplatesOpen(false)}
-              className="absolute right-4 top-4 z-10 rounded-full border border-[#3c4d40] bg-[#202922] p-2 text-[#c4ceb8] hover:bg-[#304133] hover:text-white"
-              aria-label="Fermer l'éditeur d'e-mails"
+      {emailTemplatesOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            data-vce-panel="true"
+            className="fixed inset-0 z-[2147483647] bg-black/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 md:p-6"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) {
+                setEmailTemplatesOpen(false);
+              }
+            }}
+          >
+            <div
+              className="relative w-[min(96vw,1100px)] h-[min(94vh,900px)] overflow-hidden rounded-3xl border border-[#d4af37]/50 bg-[#111612] shadow-2xl flex flex-col"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Modification des e-mails"
             >
-              <X className="h-5 w-5" />
-            </button>
+              <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6 border-b border-[#2e3b30] bg-[#161c17] shrink-0">
+                <div>
+                  <h2 className="text-base sm:text-lg font-semibold text-[#f3ece0]">
+                    Modification des e-mails
+                  </h2>
+                  <p className="text-xs text-[#9eaa9f]">
+                    Commandes et rendez-vous atelier
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEmailTemplatesOpen(false)}
+                  className="shrink-0 rounded-full border border-[#3c4d40] bg-[#202922] p-2 text-[#c4ceb8] hover:bg-[#304133] hover:text-white"
+                  aria-label="Fermer l'éditeur d'e-mails"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
 
-            <div className="pr-12">
-              <EmailTemplatesEditor />
+              <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-5">
+                <EmailTemplatesEditor />
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 };
