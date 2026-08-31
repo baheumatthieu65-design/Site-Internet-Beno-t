@@ -267,7 +267,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                           : 'bg-amber-400'
                     }`}
                   />
-                  <span>{j.name} — {j.price} {j.currency}</span>
+                  <span>{j.name} — {j.price} {j.currency} TTC</span>
                 </button>
               ))}
             </div>
@@ -355,7 +355,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     </h3>
                     <div className="mt-2 flex items-center justify-between">
                       <span className="font-serif text-sm font-semibold text-[#c2a26d]">
-                        {j.price} {j.currency}
+                        {j.price} {j.currency} TTC
                       </span>
                       <span className="text-xs text-[#d4af37] inline-flex items-center space-x-1 font-medium">
                         <span>Sélectionner</span>
@@ -393,7 +393,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
 
             {/* Dynamic Jackets Display Cards in Hero */}
-            <div className={`mt-5 md:mt-8 grid grid-cols-1 ${jackets.length === 1 ? 'max-w-md' : jackets.length === 2 ? 'md:grid-cols-2 max-w-4xl' : 'md:grid-cols-2 lg:grid-cols-3 max-w-6xl'} gap-6 mx-auto w-full`}>
+            <div className={`mt-2 md:mt-4 grid grid-cols-1 ${jackets.length === 1 ? 'max-w-md' : jackets.length === 2 ? 'md:grid-cols-2 max-w-4xl' : 'md:grid-cols-2 lg:grid-cols-3 max-w-6xl'} gap-6 mx-auto w-full`}>
               {jackets.map((j, idx) => {
                 const isMediaTop = cardMediaPos === 'top';
                 const isMediaRight = cardMediaPos === 'right';
@@ -449,7 +449,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                       </p>
                       <div className="mt-3 flex items-center justify-between">
                         <span data-vce-id={`product-${j.id}-price`} className="font-serif text-base font-semibold text-[#c2a26d]">
-                          {j.price} {j.currency}
+                          {j.price} {j.currency} TTC
                         </span>
                         <span className="text-xs text-[#d4af37] group-hover:translate-x-1 transition-transform inline-flex items-center space-x-1 font-medium">
                           <span data-vce-id={`product-${j.id}-discover`}>{discoverText}</span>

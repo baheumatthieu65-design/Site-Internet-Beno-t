@@ -361,7 +361,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
       case 'weight': return product.specs?.weight || '';
       case 'fit': return product.specs?.fitType || '';
       case 'care': return product.specs?.care || '';
-      case 'price': return `${product.price} ${product.currency || '€'}`;
+      case 'price': return `${product.price} ${product.currency || '€'} TTC`;
       default: return product.customSpecs?.[criterion.key] || '';
     }
   };
