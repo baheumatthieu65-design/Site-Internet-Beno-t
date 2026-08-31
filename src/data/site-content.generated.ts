@@ -1758,22 +1758,7 @@ export const publishedSiteContent = {
   },
   "editorConfig": {
     "adminBarPosition": "bottom",
-    "floatingImages": [
-      {
-        "id": "floating-1787938325607-11yecy",
-        "section": "hero",
-        "url": "/assets/persistent-media-2.png",
-        "alt": "",
-        "x": 26,
-        "y": 25,
-        "size": 106,
-        "rotate": -25,
-        "opacity": 100,
-        "animation": "float",
-        "mobile": true,
-        "visible": true
-      }
-    ],
+    "floatingImages": [],
     "schemaVersion": 5,
     "blocks": [
       {
@@ -2219,5 +2204,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1788194173169
+  "publishedAt": 1788200781485
 } as const;
