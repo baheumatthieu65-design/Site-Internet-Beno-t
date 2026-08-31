@@ -60,6 +60,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
   const [customerReplyTemplate, setCustomerReplyTemplate] = useState<{ subject: string; body: string } | null>(null);
   const [brandName, setBrandName] = useState('Maison Mailhagut');
   const [replyPreviewOrder, setReplyPreviewOrder] = useState<CustomerOrder | null>(null);
+  const [replyMailClient, setReplyMailClient] = useState<'gmail' | 'outlook' | 'yahoo' | 'default'>('gmail');
 
   useEffect(() => {
     const loadCustomerReplyTemplate = async () => {
@@ -527,20 +528,20 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
         </div>
 
         {/* SEARCH AND FILTER BAR */}
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(240px,1fr)_auto] items-center gap-3 pt-1 w-full">
-          <div className="relative w-full lg:max-w-sm h-10">
-            <Search className="w-4 h-4 absolute left-3.5 top-3 text-[#7d8c7f]" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Rechercher nom, ref, mail, veste..."
-              className="w-full h-10 bg-[#121613] border border-[#334235] text-xs text-white pl-10 pr-3.5 rounded-xl outline-none focus:border-[#d4af37]"
-            />
-          </div>
+        <div className="w-full overflow-x-auto">
+          <div className="flex min-w-max items-center gap-3 pt-1 pb-1">
+            <div className="relative w-[300px] h-10 shrink-0">
+              <Search className="w-4 h-4 absolute left-3.5 top-3 text-[#7d8c7f]" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Rechercher nom, ref, mail, veste..."
+                className="w-full h-10 bg-[#121613] border border-[#334235] text-xs text-white pl-10 pr-3.5 rounded-xl outline-none focus:border-[#d4af37]"
+              />
+            </div>
 
-          <div className="flex flex-wrap items-center justify-start lg:justify-end gap-2 w-full">
-            <div className="h-10 flex items-center gap-1.5">
+            <div className="h-10 flex items-center gap-1.5 shrink-0">
               <Filter className="w-3.5 h-3.5 text-[#d4af37]" />
               <span className="text-xs text-[#a3b1a5] whitespace-nowrap">Type :</span>
               <select
@@ -555,7 +556,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
               </select>
             </div>
 
-            <div className="h-10 flex items-center gap-1.5">
+            <div className="h-10 flex items-center gap-1.5 shrink-0">
               <span className="text-xs text-[#a3b1a5] whitespace-nowrap">État :</span>
               <select
                 value={selectedStatusFilter}
@@ -567,7 +568,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
               </select>
             </div>
 
-            <div className="h-10 flex items-center gap-1.5">
+            <div className="h-10 flex items-center gap-1.5 shrink-0">
               <select
                 value={periodMode}
                 onChange={(e) => {
@@ -585,12 +586,10 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
               </select>
               {periodMode === 'week' && <input type="week" value={periodValue || getWeekInputValue(new Date())} onChange={(e) => setPeriodValue(e.target.value)} className="h-10 bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-2.5 rounded-xl outline-none focus:border-[#d4af37]" />}
               {periodMode === 'month' && <input type="month" value={periodValue || getMonthInputValue(new Date())} onChange={(e) => setPeriodValue(e.target.value)} className="h-10 bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-2.5 rounded-xl outline-none focus:border-[#d4af37]" />}
-              {periodMode === 'year' && <select value={periodValue || getYearInputValue(new Date())} onChange={(e) => setPeriodValue(e.target.value)} className="h-10 bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 rounded-xl outline-none focus:border-[#d4af37]">
-                {Array.from(new Set(orders.map((o) => new Date(getOrderTimestamp(o)).getFullYear()).filter((y) => Number.isFinite(y)))).sort((a,b) => b-a).map((year) => <option key={year} value={String(year)}>{year}</option>)}
-              </select>}
+              {periodMode === 'year' && <select value={periodValue || getYearInputValue(new Date())} onChange={(e) => setPeriodValue(e.target.value)} className="h-10 bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 rounded-xl outline-none focus:border-[#d4af37]"><option value={getYearInputValue(new Date())}>{getYearInputValue(new Date())}</option>{Array.from(new Set(orders.map((o) => new Date(getOrderTimestamp(o)).getFullYear()).filter((y) => Number.isFinite(y)))).sort((a,b) => b-a).map((year) => <option key={year} value={String(year)}>{year}</option>)}</select>}
             </div>
 
-            <div className="h-10 flex items-center gap-1.5">
+            <div className="h-10 flex items-center gap-1.5 shrink-0">
               <ArrowUpDown className="w-3.5 h-3.5 text-[#d4af37]" />
               <span className="text-xs text-[#a3b1a5] whitespace-nowrap">Date :</span>
               <select value={dateSort} onChange={(e) => setDateSort(e.target.value as typeof dateSort)} className="h-10 bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 rounded-xl outline-none focus:border-[#d4af37]">
@@ -633,7 +632,6 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
             </button>
           </div>
         </div>
-      </div>
       {/* ----------------------------------------------------------------- */}
       {/* ORDERS LIST CLASSIFIED BY STATUS (WITH 'Commande passée' FIRST)     */}
       {/* ----------------------------------------------------------------- */}
@@ -858,15 +856,34 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
               </div>
               <div className="flex flex-col sm:flex-row justify-end gap-2 px-5 py-4 border-t border-[#2a382d]">
                 <button type="button" onClick={() => setReplyPreviewOrder(null)} className="px-4 py-2 rounded-xl border border-[#3b4b3e] text-[#d9d1c4] hover:border-[#d4af37]">Fermer</button>
+                <select
+                  value={replyMailClient}
+                  onChange={(e) => setReplyMailClient(e.target.value as typeof replyMailClient)}
+                  className="h-10 px-3 rounded-xl bg-[#18201a] border border-[#4a5d4d] text-[#f3ece0] text-sm outline-none focus:border-[#d4af37]"
+                  aria-label="Choisir le client e-mail"
+                >
+                  <option value="gmail">Gmail</option>
+                  <option value="outlook">Outlook / Hotmail</option>
+                  <option value="yahoo">Yahoo Mail</option>
+                  <option value="default">Client e-mail par défaut</option>
+                </select>
                 <button
                   type="button"
                   onClick={() => {
-                    const mailto = `mailto:${replyPreviewOrder.clientEmail}?subject=${encodeURIComponent(rendered.subject)}&body=${encodeURIComponent(rendered.body)}`;
-                    window.open(mailto, '_blank', 'noopener,noreferrer');
+                    const to = encodeURIComponent(replyPreviewOrder.clientEmail);
+                    const subject = encodeURIComponent(rendered.subject);
+                    const body = encodeURIComponent(rendered.body);
+                    const urls = {
+                      gmail: `https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${subject}&body=${body}`,
+                      outlook: `https://outlook.live.com/mail/0/deeplink/compose?to=${to}&subject=${subject}&body=${body}`,
+                      yahoo: `https://compose.mail.yahoo.com/?to=${to}&subject=${subject}&body=${body}`,
+                      default: `mailto:${replyPreviewOrder.clientEmail}?subject=${subject}&body=${body}`,
+                    };
+                    window.open(urls[replyMailClient], '_blank', 'noopener,noreferrer');
                   }}
                   className="px-4 py-2 rounded-xl bg-[#d4af37] text-[#121613] font-bold hover:bg-[#e2c45a]"
                 >
-                  Ouvrir dans le client e-mail
+                  Ouvrir Gmail / Outlook
                 </button>
               </div>
             </div>
