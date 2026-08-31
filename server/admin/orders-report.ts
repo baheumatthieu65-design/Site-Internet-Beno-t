@@ -34,10 +34,11 @@ export default async function handler(req: any, res: any) {
 
     const allOrders = await getOrdersFromDB();
     const allProducts = await getProductsFromDB();
-    const productFinancials = new Map<string, { adminRevenue: number; adminProfit: number }>();
+    const productFinancials = new Map<string, { adminCost: number; adminRevenue: number; adminProfit: number }>();
     (Array.isArray(allProducts) ? allProducts : []).forEach((product: any) => {
       if (!product?.id) return;
       productFinancials.set(String(product.id), {
+        adminCost: Number.isFinite(Number(product.adminCost)) ? Number(product.adminCost) : 0,
         adminRevenue: Number.isFinite(Number(product.adminRevenue)) ? Number(product.adminRevenue) : Number(product.price) || 0,
         adminProfit: Number.isFinite(Number(product.adminProfit)) ? Number(product.adminProfit) : 0,
       });
@@ -136,6 +137,7 @@ export default async function handler(req: any, res: any) {
               : `<div style="width:52px;height:52px;line-height:52px;text-align:center;background:#f2f2f2;color:#777;border-radius:5px;">—</div>`;
             const financials = getItemFinancials(item);
             const quantity = Number(item.quantity) || 0;
+            const lineCost = financials.adminCost * quantity;
             const lineRevenue = financials.adminRevenue * quantity;
             const lineProfit = financials.adminProfit * quantity;
             return `<tr>
@@ -144,7 +146,7 @@ export default async function handler(req: any, res: any) {
               <td style="padding:4px 7px;border:1px solid #d9d9d9;">${escapeHtml(item.jacketName || '')}</td>
               <td style="padding:4px 7px;border:1px solid #d9d9d9;">${escapeHtml(item.color || '')}</td>
               <td style="padding:4px 7px;border:1px solid #d9d9d9;">${escapeHtml(item.size || '')}</td>
-              <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:right;white-space:nowrap;">${escapeHtml(item.totalPrice || 0)} ${escapeHtml(order.currency || '€')}</td>
+              <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:right;white-space:nowrap;">${lineCost.toLocaleString('fr-FR')} ${escapeHtml(order.currency || '€')}</td>
               <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:right;white-space:nowrap;">${lineRevenue.toLocaleString('fr-FR')} ${escapeHtml(order.currency || '€')}</td>
               <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:right;white-space:nowrap;">${lineProfit.toLocaleString('fr-FR')} ${escapeHtml(order.currency || '€')}</td>
             </tr>`;

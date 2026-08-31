@@ -214,7 +214,11 @@ export interface JacketModel {
   currency: string;
 
   /** Données de gestion financière visibles uniquement dans l'administration. */
+  /** Coût de revient unitaire, réservé à l’administration. */
+  adminCost?: number;
+  /** Chiffre d’affaires unitaire retenu pour les rapports. */
   adminRevenue?: number;
+  /** Bénéfice unitaire retenu pour les rapports. */
   adminProfit?: number;
 
   heroImage: string;

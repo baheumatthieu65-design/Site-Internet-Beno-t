@@ -61,7 +61,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
   const [brandName, setBrandName] = useState('Maison Mailhagut');
   const [replyPreviewOrder, setReplyPreviewOrder] = useState<CustomerOrder | null>(null);
   const [replyMailClient, setReplyMailClient] = useState<'gmail' | 'outlook' | 'yahoo' | 'default'>('gmail');
-  const [adminProductFinancials, setAdminProductFinancials] = useState<Record<string, { adminRevenue: number; adminProfit: number }>>({});
+  const [adminProductFinancials, setAdminProductFinancials] = useState<Record<string, { adminCost: number; adminRevenue: number; adminProfit: number }>>({});
 
   useEffect(() => {
     const loadCustomerReplyTemplate = async () => {
@@ -107,10 +107,11 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
         if (!response.ok) return;
         const data = await response.json();
         const products = Array.isArray(data?.products) ? data.products : [];
-        const next: Record<string, { adminRevenue: number; adminProfit: number }> = {};
+        const next: Record<string, { adminCost: number; adminRevenue: number; adminProfit: number }> = {};
         products.forEach((product: any) => {
           if (!product?.id) return;
           next[String(product.id)] = {
+            adminCost: Number.isFinite(Number(product.adminCost)) ? Number(product.adminCost) : 0,
             adminRevenue: Number.isFinite(Number(product.adminRevenue)) ? Number(product.adminRevenue) : Number(product.price) || 0,
             adminProfit: Number.isFinite(Number(product.adminProfit)) ? Number(product.adminProfit) : 0,
           };
@@ -126,6 +127,9 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
   const getItemFinancials = (item: any) => {
     const fallback = adminProductFinancials[String(item?.jacketId || '')];
     return {
+      adminCost: Number.isFinite(Number(item?.adminCost))
+        ? Number(item.adminCost)
+        : (fallback?.adminCost ?? 0),
       adminRevenue: Number.isFinite(Number(item?.adminRevenue))
         ? Number(item.adminRevenue)
         : (fallback?.adminRevenue ?? (Number.isFinite(Number(item?.unitPrice)) ? Number(item?.unitPrice) : 0)),
