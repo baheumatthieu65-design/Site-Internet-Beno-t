@@ -57,7 +57,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
 
   const [orderLines, setOrderLines] = useState<OrderLineItem[]>([createInitialLine()]);
   const [orderType, setOrderType] = useState<'commander' | 'sur_mesure' | 'essayage'>('commander');
-  const [salutation, setSalutation] = useState<'Monsieur' | 'Madame' | 'Autre'>('Autre');
+  const [salutation, setSalutation] = useState<'Monsieur' | 'Madame' | 'Autre'>('Monsieur');
   const [clientName, setClientName] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [clientPhone, setClientPhone] = useState('');
@@ -490,9 +490,9 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
                       onChange={(e) => setSalutation(e.target.value as 'Monsieur' | 'Madame' | 'Autre')}
                       className="w-full h-[46px] bg-[#1b231d] border border-[#38483b] text-[#f3ece0] text-xs rounded-xl px-3 focus:border-[#d4af37] outline-none cursor-pointer"
                     >
-                      <option value="Autre">Autre</option>
                       <option value="Monsieur">Monsieur</option>
                       <option value="Madame">Madame</option>
+                      <option value="Autre">Autre</option>
                     </select>
                   </div>
 

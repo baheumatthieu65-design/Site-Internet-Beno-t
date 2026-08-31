@@ -118,40 +118,38 @@ const buildArticlesTable = (
   currency: string
 ): string => {
   if (!items.length) {
-    return '<p style="margin:0">Aucun article.</p>';
+    return '<span style="font-family:Arial,sans-serif;font-size:13px;">Aucun article.</span>';
   }
 
   const rows = items.map((item) => {
     const image = item.imageUrl
-      ? `<img src="${escapeHtml(item.imageUrl)}" alt="" width="64" height="64" style="display:block;width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid #d9d9d9;" />`
-      : '<div style="width:64px;height:64px;line-height:64px;text-align:center;background:#f2f2f2;color:#777;border-radius:6px;">—</div>';
+      ? `<img src="${escapeHtml(item.imageUrl)}" alt="" width="48" height="48" style="display:block;width:48px;height:48px;object-fit:cover;border-radius:5px;border:1px solid #d9d9d9;" />`
+      : '<div style="width:48px;height:48px;line-height:48px;text-align:center;background:#f2f2f2;color:#777;border-radius:5px;">—</div>';
 
     return `
       <tr>
-        <td style="padding:8px;border:1px solid #d9d9d9;text-align:center;width:80px;">${image}</td>
-        <td style="padding:8px;border:1px solid #d9d9d9;text-align:center;">${item.quantity}</td>
-        <td style="padding:8px;border:1px solid #d9d9d9;">${escapeHtml(item.jacketName)}</td>
-        <td style="padding:8px;border:1px solid #d9d9d9;">${escapeHtml(item.color)}</td>
-        <td style="padding:8px;border:1px solid #d9d9d9;">${escapeHtml(item.size)}</td>
-        <td style="padding:8px;border:1px solid #d9d9d9;text-align:right;white-space:nowrap;">${item.totalPrice} ${escapeHtml(currency)}</td>
+        <td style="padding:4px 6px;border:1px solid #d9d9d9;text-align:center;width:62px;height:56px;">${image}</td>
+        <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:center;">${item.quantity}</td>
+        <td style="padding:4px 7px;border:1px solid #d9d9d9;">${escapeHtml(item.jacketName)}</td>
+        <td style="padding:4px 7px;border:1px solid #d9d9d9;">${escapeHtml(item.color)}</td>
+        <td style="padding:4px 7px;border:1px solid #d9d9d9;">${escapeHtml(item.size)}</td>
+        <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:right;white-space:nowrap;">${item.totalPrice} ${escapeHtml(currency)}</td>
       </tr>`;
   }).join('');
 
-  return `
-    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px;">
-      <thead>
-        <tr>
-          <th style="padding:8px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:center;">Image de l'article</th>
-          <th style="padding:8px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:center;">Nombre</th>
-          <th style="padding:8px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Nom de l'article</th>
-          <th style="padding:8px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Couleur</th>
-          <th style="padding:8px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Taille</th>
-          <th style="padding:8px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:right;">Coût</th>
-        </tr>
-      </thead>
-      <tbody>${rows}
-      </tbody>
-    </table>`;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;border-spacing:0;margin:0;padding:0;font-family:Arial,sans-serif;font-size:13px;line-height:1.2;">
+    <thead>
+      <tr>
+        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:center;">Image de l'article</th>
+        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:center;">Nombre</th>
+        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Nom de l'article</th>
+        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Couleur</th>
+        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Taille</th>
+        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:right;">Coût</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>`;
 };
 
 export const renderEmailTemplate = (
@@ -216,7 +214,7 @@ export const sendTemplatedOrderEmail = async (orderData: {
       marque: escapeHtml(brandName),
       reference: escapeHtml(orderData.id),
       date: escapeHtml(orderData.formattedDate),
-      civilite: escapeHtml(orderData.salutation || 'Autre'),
+      civilite: escapeHtml(orderData.salutation || 'Monsieur'),
       nom: escapeHtml(orderData.clientName),
       email: escapeHtml(orderData.clientEmail),
       telephone: escapeHtml(orderData.clientPhone || 'Non renseigné'),
@@ -230,7 +228,21 @@ export const sendTemplatedOrderEmail = async (orderData: {
 
   // Admin-authored template text is converted to readable HTML. The
   // {{articles}} token is intentionally replaced with the generated table.
-  const htmlBody = `<div style="font-family:Arial,sans-serif;line-height:1.55">${rendered.body.replace(/\r?\n/g, '<br>')}</div>`;
+  const ARTICLE_TOKEN = /{{\\s*articles\\s*}}/g;
+  const articleTable = articles;
+  const htmlBodyContent = rendered.body
+    .split(ARTICLE_TOKEN)
+    .map((part: string, index: number) => {
+      const compact = part
+        .replace(/(?:\\r?\\n|<br\\s*\\/?>)+\\s*$/gi, '')
+        .replace(/^\\s*(?:<br\\s*\\/?>|\\r?\\n)+/gi, '');
+      return index === 0
+        ? compact.replace(/\\r?\\n/g, '<br>')
+        : `<div style="margin:0;padding:0;">${compact.replace(/\\r?\\n/g, '<br>')}</div>`;
+    })
+    .join(articleTable);
+
+  const htmlBody = `<div style="font-family:Arial,sans-serif;line-height:1.45;margin:0;padding:0;">${htmlBodyContent}</div>`;
   const fromEmail =
     process.env.EMAIL_FROM || 'Maison Mailhagut <onboarding@resend.dev>';
 
@@ -246,7 +258,7 @@ export const sendTemplatedOrderEmail = async (orderData: {
         to: [adminEmail],
         subject: rendered.subject,
         html: htmlBody,
-        text: rendered.body.replace(/<[^>]+>/g, ''),
+        text: rendered.body.replace(/{{\s*articles\s*}}/g, 'Voir le tableau des articles.').replace(/<[^>]+>/g, ''),
       }),
     });
 
