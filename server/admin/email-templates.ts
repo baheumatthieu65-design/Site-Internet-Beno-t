@@ -62,10 +62,13 @@ export default async function handler(req: any, res: any) {
       !templates ||
       !templates.order ||
       !templates.appointment ||
+      !templates.customerReply ||
       typeof templates.order.subject !== 'string' ||
       typeof templates.order.body !== 'string' ||
       typeof templates.appointment.subject !== 'string' ||
-      typeof templates.appointment.body !== 'string'
+      typeof templates.appointment.body !== 'string' ||
+      typeof templates.customerReply.subject !== 'string' ||
+      typeof templates.customerReply.body !== 'string'
     ) {
       return json(res, 400, {
         success: false,

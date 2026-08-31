@@ -1,6 +1,6 @@
 import { getOrderNotificationEmail, getRedisClient } from './_helpers.js';
 
-export type EmailTemplateType = 'order' | 'appointment';
+export type EmailTemplateType = 'order' | 'appointment' | 'customerReply';
 
 export interface EmailTemplate {
   subject: string;
@@ -10,6 +10,7 @@ export interface EmailTemplate {
 export interface EmailTemplates {
   order: EmailTemplate;
   appointment: EmailTemplate;
+  customerReply: EmailTemplate;
 }
 
 const KEY = 'mdp_email_templates_v1';
@@ -46,6 +47,29 @@ Il/elle est disponible au Téléphone : {{telephone}} et à l’adresse suivante
 
 Remarques : {{remarques}}`,
   },
+  customerReply: {
+    subject: '[{{marque}}] Confirmation de votre demande — {{reference}}',
+    body: `Bonjour {{civilite}} {{nom}},
+
+Nous vous confirmons la bonne prise en compte de votre demande concernant {{type}}.
+
+Référence : {{reference}}
+Date : {{date}}
+
+{{articles}}
+
+Montant total : {{total}} {{devise}}
+
+Nous revenons vers vous rapidement pour la suite de votre demande.
+
+Si nécessaire, merci de nous transmettre votre RIB ou de nous indiquer le mode de règlement souhaité.
+
+Vos remarques :
+{{remarques}}
+
+Cordialement,
+{{marque}}`,
+  },
 };
 
 export const getEmailTemplates = async (): Promise<EmailTemplates> => {
@@ -59,6 +83,10 @@ export const getEmailTemplates = async (): Promise<EmailTemplates> => {
       appointment: {
         ...DEFAULT_EMAIL_TEMPLATES.appointment,
         ...(saved?.appointment || {}),
+      },
+      customerReply: {
+        ...DEFAULT_EMAIL_TEMPLATES.customerReply,
+        ...(saved?.customerReply || {}),
       },
     };
   } catch (error) {

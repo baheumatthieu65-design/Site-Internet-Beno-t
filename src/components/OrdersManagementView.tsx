@@ -56,6 +56,97 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
   const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [isSendingReport, setIsSendingReport] = useState(false);
+  const [customerReplyTemplate, setCustomerReplyTemplate] = useState<{ subject: string; body: string } | null>(null);
+  const [brandName, setBrandName] = useState('Maison Mailhagut');
+
+  useEffect(() => {
+    const loadCustomerReplyTemplate = async () => {
+      try {
+        const [templatesResponse, configResponse] = await Promise.all([
+          fetch('/api/admin/email-templates', {
+            credentials: 'include',
+            cache: 'no-store',
+          }),
+          fetch('/api/site-config', {
+            cache: 'no-store',
+          }),
+        ]);
+
+        if (templatesResponse.ok) {
+          const data = await templatesResponse.json();
+          if (data?.success && data.templates?.customerReply) {
+            setCustomerReplyTemplate(data.templates.customerReply);
+          }
+        }
+
+        if (configResponse.ok) {
+          const data = await configResponse.json();
+          const logoText = data?.config?.logos?.boutique?.text;
+          if (typeof logoText === 'string' && logoText.trim()) {
+            setBrandName(logoText.trim().replace(/\\s*\\n\\s*/g, ' '));
+          } else if (typeof data?.config?.brandName === 'string' && data.config.brandName.trim()) {
+            setBrandName(data.config.brandName.trim());
+          }
+        }
+      } catch (error) {
+        console.warn('Impossible de charger le modèle de réponse client :', error);
+      }
+    };
+
+    void loadCustomerReplyTemplate();
+  }, []);
+
+  const renderCustomerReply = (order: CustomerOrder) => {
+    if (!customerReplyTemplate) return null;
+
+    const articles = order.items.length
+      ? order.items
+          .map(
+            (item) =>
+              `${item.quantity} × ${item.jacketName} (${item.color}, ${item.size}) — ${item.totalPrice} ${order.currency || '€'}`
+          )
+          .join('\n')
+      : 'Aucun article — demande de rendez-vous atelier';
+
+    const values: Record<string, string> = {
+      civilite: order.salutation || 'Monsieur',
+      nom: order.clientName || '',
+      telephone: order.clientPhone || 'Non renseigné',
+      email: order.clientEmail || '',
+      remarques: order.clientNotes || 'Aucune',
+      date: order.date || '',
+      reference: order.id || '',
+      marque: brandName,
+      type: order.orderTypeLabel || 'Demande',
+      articles,
+      total: String(order.totalPrice ?? 0),
+      devise: order.currency || '€',
+      statut: order.status || '',
+    };
+
+    const replaceTokens = (input: string) =>
+      input.replace(
+        /{{\s*([a-zA-Z0-9_]+)\s*}}/g,
+        (_, token: string) => values[token] ?? ''
+      );
+
+    return {
+      subject: replaceTokens(customerReplyTemplate.subject),
+      body: replaceTokens(customerReplyTemplate.body),
+    };
+  };
+
+  const handleReplyToCustomer = (order: CustomerOrder) => {
+    const rendered = renderCustomerReply(order);
+
+    if (!rendered) {
+      showToast('Le modèle de réponse client est encore en cours de chargement.');
+      return;
+    }
+
+    const mailto = `mailto:${order.clientEmail}?subject=${encodeURIComponent(rendered.subject)}&body=${encodeURIComponent(rendered.body)}`;
+    window.open(mailto, '_blank', 'noopener,noreferrer');
+  };
 
   const getWeekInputValue = (date: Date) => {
     const copy = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -655,6 +746,15 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
                             <ExternalLink className="w-3.5 h-3.5" />
                             <span>Ouvrir dans client e-mail</span>
                           </a>
+                          <button
+                            type="button"
+                            onClick={() => handleReplyToCustomer(order)}
+                            className="px-3 py-1 rounded-lg bg-[#28362b] hover:bg-[#344638] border border-emerald-500/70 text-emerald-300 text-xs font-bold flex items-center space-x-1 cursor-pointer"
+                            title="Préparer une réponse personnalisée pour le client"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            <span>Répondre au client</span>
+                          </button>
                         </div>
                       </div>
 

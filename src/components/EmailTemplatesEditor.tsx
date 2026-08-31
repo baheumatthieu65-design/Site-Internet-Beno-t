@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FileText, Save, RotateCcw, Copy, Check } from 'lucide-react';
 
 type Template = { subject: string; body: string };
-type Templates = { order: Template; appointment: Template };
+type Templates = { order: Template; appointment: Template; customerReply: Template };
 
 const TOKENS = [
   ['{{civilite}}', 'Monsieur / Madame / Autre'],
@@ -17,11 +17,12 @@ const TOKENS = [
   ['{{articles}}', 'Liste des articles'],
   ['{{total}}', 'Total'],
   ['{{devise}}', 'Devise'],
+  ['{{statut}}', 'État de traitement de la commande ou demande'],
 ] as const;
 
 export const EmailTemplatesEditor: React.FC = () => {
   const [templates, setTemplates] = useState<Templates | null>(null);
-  const [active, setActive] = useState<'order' | 'appointment'>('order');
+  const [active, setActive] = useState<'order' | 'appointment' | 'customerReply'>('order');
   const [message, setMessage] = useState('');
   const [copied, setCopied] = useState('');
 
@@ -101,12 +102,12 @@ export const EmailTemplatesEditor: React.FC = () => {
             Personnalisation des e-mails
           </h4>
           <p className="text-xs text-[#9eaa9f]">
-            Modifiez séparément le mail de commande et le mail de rendez-vous atelier. Vous êtes déjà authentifié en administrateur.
+            Modifiez le mail de commande, le mail de rendez-vous atelier et le modèle de réponse à envoyer au client.
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
         <button
           type="button"
           onClick={() => setActive('order')}
@@ -128,6 +129,17 @@ export const EmailTemplatesEditor: React.FC = () => {
           }`}
         >
           Mail de rendez-vous atelier
+        </button>
+        <button
+          type="button"
+          onClick={() => setActive('customerReply')}
+          className={`rounded-xl border px-3 py-2 text-xs font-bold ${
+            active === 'customerReply'
+              ? 'border-[#d4af37] bg-[#d4af37] text-[#121613]'
+              : 'border-[#39493d] bg-[#121613] text-[#a3b1a5]'
+          }`}
+        >
+          Réponse au client
         </button>
       </div>
 
