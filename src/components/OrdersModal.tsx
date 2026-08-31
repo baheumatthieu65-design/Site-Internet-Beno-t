@@ -1,7 +1,6 @@
 import React from 'react';
 import { X, ShoppingBag } from 'lucide-react';
 import { OrdersManagementView } from './OrdersManagementView';
-import { EmailTemplatesEditor } from './EmailTemplatesEditor';
 
 interface OrdersModalProps {
   isOpen: boolean;
@@ -37,10 +36,11 @@ export const OrdersModal: React.FC<OrdersModalProps> = ({
                 Espace Réception des Commandes & Réservations
               </h3>
               <p className="text-xs text-[#a3b1a5]">
-                Suivi des commandes, réservations et modèles d’e-mails
+                Suivi dédié des commandes client, gestion des statuts de traitement et suppression
               </p>
             </div>
           </div>
+
           <button
             onClick={onClose}
             className="p-2 rounded-full text-[#9ea99f] hover:text-white hover:bg-[#253026] transition-colors cursor-pointer"
@@ -50,13 +50,15 @@ export const OrdersModal: React.FC<OrdersModalProps> = ({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
-          <EmailTemplatesEditor />
-          <OrdersManagementView ordersEmail={ordersEmail} reportEmail={reportEmail} />
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <OrdersManagementView
+            ordersEmail={ordersEmail}
+            reportEmail={reportEmail}
+          />
         </div>
 
         <div className="px-6 py-3 bg-[#111612] border-t border-[#2a362c] flex items-center justify-between text-xs text-[#a3b1a5] flex-shrink-0">
-          <span>Maison Mailhagut — Espace de réception des commandes et réservations</span>
+          <span>Maison des Pyrénées — Espace spécifique de réception de commandes</span>
           <button
             type="button"
             onClick={onClose}
