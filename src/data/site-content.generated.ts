@@ -1233,7 +1233,7 @@ export const publishedSiteContent = {
         "id": "veste-des-cimes",
         "name": "La Veste des Cimes",
         "subTitle": "Modèle N°1 — Draps de Laine des Pyrénées \u0026 Coupe Structurée",
-        "category": "Homme \u0026 Femme 2",
+        "category": "Homme \u0026 Femme",
         "price": 110,
         "currency": "€",
         "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787255862341-Image-1.jpg",
@@ -1329,7 +1329,7 @@ export const publishedSiteContent = {
       {
         "name": "Veste des Cîmes Enfant",
         "subTitle": "Confection Artisanale des Pyrénées",
-        "category": "Test2",
+        "category": "Enfants",
         "price": 60,
         "currency": "€",
         "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787255936718-Image-3.jpg",
@@ -1388,7 +1388,7 @@ export const publishedSiteContent = {
       {
         "name": "Todebag",
         "subTitle": "Confection Artisanale des Pyrénées",
-        "category": "Homme \u0026 Femme 2",
+        "category": "Homme \u0026 Femme",
         "price": 50,
         "currency": "€",
         "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787315218449-ChatGPT-Image-21-ao--t-2026--14_26_45.webp",
@@ -1647,7 +1647,8 @@ export const publishedSiteContent = {
         "produit-1787242939553-ezbmjg"
       ],
       "catalogCategories": [
-        "Test2"
+        "Homme \u0026 Femme",
+        "Enfants"
       ],
       "productBlocksOrder": [
         "title-price",
@@ -2191,5 +2192,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1788187786067
+  "publishedAt": 1788187840365
 } as const;
