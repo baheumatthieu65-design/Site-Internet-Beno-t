@@ -1947,7 +1947,7 @@ export const publishedSiteContent = {
         "selector": "[data-vce-hero-line=\"1\"]",
         "kind": "text",
         "text": "Maison Mailhagut",
-        "fontFamily": "ui-serif",
+        "fontFamily": "Bodoni Moda",
         "fontSize": "72px",
         "color": "rgb(194, 162, 109)",
         "locator": {
@@ -2219,5 +2219,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1788188333782
+  "publishedAt": 1788188516930
 } as const;
