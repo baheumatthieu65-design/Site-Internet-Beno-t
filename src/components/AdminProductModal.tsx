@@ -310,7 +310,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
     setEditingProduct({
       name: '',
       subTitle: 'Confection Artisanale des Pyrénées',
-      category: 'Homme & Femme',
+      category: (products || []).map((product) => String(product.category || '').trim()).find(Boolean) || 'Signatures',
       price: 490,
       currency: '€',
       heroImage: 'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&q=80&w=1000',
@@ -646,11 +646,18 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                   <label className="block text-[#a3b1a5] font-semibold mb-1">Catégorie</label>
                   <input
                     type="text"
+                    list="catalog-category-suggestions"
                     value={editingProduct.category || ''}
                     onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
-                    placeholder="ex: Homme, Femme, Unisept"
+                    placeholder="ex: Signatures, Sport, Goodies"
                     className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
                   />
+                  <datalist id="catalog-category-suggestions">
+                    {Array.from(new Set((draftProducts || []).map((product) => String(product.category || '').trim()).filter(Boolean))).map((category) => (
+                      <option key={category} value={category} />
+                    ))}
+                  </datalist>
+                  <p className="text-[10px] text-[#718073] mt-1.5">Cette catégorie sert aussi de typologie publique : les onglets de la boutique sont générés automatiquement à partir des catégories présentes dans le catalogue.</p>
                 </div>
 
                 <div className="md:col-span-2 rounded-2xl bg-[#111612] border border-[#2e3b30] overflow-hidden">

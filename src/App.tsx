@@ -8,6 +8,7 @@ import {
   SectionId,
   GiteContentBlock,
 } from './types';
+import { getCatalogCategories, getProductsForCategory } from './utils/catalogCategories';
 
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
@@ -123,6 +124,38 @@ export default function App() {
   const [selectedJacketId, setSelectedJacketId] = useState<string>(
     getDefaultShowcaseProductId(brandData.jackets || [])
   );
+
+  // La catégorie déjà présente sur chaque article est la typologie publique.
+  const [selectedCategory, setSelectedCategory] = useState<string>(() =>
+    getCatalogCategories(brandData.jackets || [])[0]?.id || ''
+  );
+
+  const handleSelectCategory = (category: string) => {
+    const categories = getCatalogCategories(brandData.jackets || []);
+    const validCategory = categories.some((item) => item.id === category)
+      ? category
+      : categories[0]?.id || '';
+    setSelectedCategory(validCategory);
+
+    const productsForCategory = getProductsForCategory(brandData.jackets || [], validCategory);
+    const nextProductId = getDefaultShowcaseProductId(productsForCategory);
+    if (nextProductId) setSelectedJacketId(nextProductId);
+  };
+
+  useEffect(() => {
+    const categories = getCatalogCategories(brandData.jackets || []);
+    const validCategory = categories.some((item) => item.id === selectedCategory)
+      ? selectedCategory
+      : categories[0]?.id || '';
+
+    if (validCategory !== selectedCategory) setSelectedCategory(validCategory);
+
+    const productsForCategory = getProductsForCategory(brandData.jackets || [], validCategory);
+    if (!productsForCategory.some((product) => product.id === selectedJacketId)) {
+      const nextProductId = getDefaultShowcaseProductId(productsForCategory);
+      if (nextProductId) setSelectedJacketId(nextProductId);
+    }
+  }, [brandData.jackets, selectedCategory, selectedJacketId]);
 
   // ===========================================================================
   // INQUIRY / ORDER MODAL
@@ -1401,6 +1434,8 @@ export default function App() {
             onOpenInquiry={
               handleOpenInquiry
             }
+            selectedCategory={selectedCategory}
+            onSelectCategory={handleSelectCategory}
           />
         );
         break;
@@ -1427,6 +1462,8 @@ export default function App() {
             onSelectJacket={
               setSelectedJacketId
             }
+            selectedCategory={selectedCategory}
+            onSelectCategory={handleSelectCategory}
             onOpenInquiry={
               handleOpenInquiry
             }
@@ -1456,6 +1493,8 @@ export default function App() {
             onSelectJacket={
               setSelectedJacketId
             }
+            selectedCategory={selectedCategory}
+            onSelectCategory={handleSelectCategory}
             onOpenInquiry={
               handleOpenInquiry
             }

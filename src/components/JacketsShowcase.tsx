@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { initialBrandData } from '../data/brandData';
 import { createPortal } from 'react-dom';
 import { JacketModel, Hotspot, ThemeConfig, ProductBlockId } from '../types';
+import { CreationTypeTabs } from './CreationTypeTabs';
+import { getCatalogCategories, getCategoryLabel } from '../utils/catalogCategories';
 import {
   Check,
   Info,
@@ -55,6 +57,8 @@ interface JacketsShowcaseProps {
   isDragReorderMode?: boolean;
   onOpenEditorSection?: (tab: 'brand' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
   onSelectJacket: (id: string) => void;
+  selectedCategory: string;
+  onSelectCategory: (typeId: string) => void;
   onOpenInquiry: (jacketId: string, color?: string, size?: string) => void;
   onReorderProductBlocks?: (newOrder: ProductBlockId[]) => void;
   sectionBackgroundImage?: string;
@@ -70,6 +74,8 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   isDragReorderMode = true,
   onOpenEditorSection,
   onSelectJacket,
+  selectedCategory,
+  onSelectCategory,
   onOpenInquiry,
   onReorderProductBlocks,
   sectionBackgroundImage,
@@ -79,7 +85,17 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
   // Showcase : affiche tous les articles, y compris « Bientôt disponible »
   // et « Épuisé ». L'ordre commercial reste En vente → Bientôt disponible
   // → Épuisé, puis par numéro de modèle.
-  const orderedJackets = sortProductsByAvailability(Array.isArray(jackets) ? jackets : []);
+  const categories = getCatalogCategories(jackets);
+  const activeCategory = categories.some((type) => type.id === selectedCategory)
+    ? selectedCategory
+    : categories[0]?.id || '';
+  const counts = categories.reduce<Record<string, number>>((acc, type) => {
+    acc[type.id] = (Array.isArray(jackets) ? jackets : []).filter((product) => String(product.category || '').trim() === type.id).length;
+    return acc;
+  }, {});
+
+  const orderedJackets = sortProductsByAvailability(Array.isArray(jackets) ? jackets : [])
+    .filter((product) => String(product.category || '').trim() === activeCategory);
   const visibleJackets = orderedJackets
     .sort((a, b) => {
       const modelNumber = (product: JacketModel) => {
@@ -535,12 +551,19 @@ export const JacketsShowcase: React.FC<JacketsShowcaseProps> = ({
             Mise en valeur exclusive
           </span>
           <h2 className="font-serif text-3xl sm:text-5xl font-light text-[#f3ece0] mt-2 mb-4">
-            Nos {jackets.length} Créations Signatures
+            Nos {visibleJackets.length} {visibleJackets.length > 1 ? 'Créations' : 'Création'} {getCategoryLabel(activeCategory)}
           </h2>
           <p className="text-sm sm:text-base text-[#a3b1a5] font-sans">
             Des modèles pensés pour allier l’authenticité du grand air pyrénéen et l’élégance urbaine la plus raffinée.
           </p>
         </div>
+
+        <CreationTypeTabs
+          types={categories}
+          selectedCategory={activeCategory}
+          onSelect={onSelectCategory}
+          counts={counts}
+        />
 
         {/* Jacket Selector Tabs */}
         <div className="flex justify-center mb-10 overflow-x-auto pb-2">

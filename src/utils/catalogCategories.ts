@@ -1,0 +1,29 @@
+import { JacketModel } from '../types';
+
+export interface CatalogCategory {
+  id: string;
+  label: string;
+}
+
+/**
+ * Les onglets publics de la boutique sont directement dérivés du champ
+ * `category` déjà présent sur chaque article du catalogue.
+ * Aucune seconde donnée de typologie n'est stockée.
+ */
+export const getCatalogCategories = (products: JacketModel[]): CatalogCategory[] => {
+  const seen = new Map<string, CatalogCategory>();
+  for (const product of Array.isArray(products) ? products : []) {
+    const label = String(product?.category || '').trim();
+    if (!label) continue;
+    const key = label.toLocaleLowerCase();
+    if (!seen.has(key)) seen.set(key, { id: label, label });
+  }
+  return Array.from(seen.values());
+};
+
+export const getProductsForCategory = (products: JacketModel[], category: string): JacketModel[] =>
+  (Array.isArray(products) ? products : []).filter(
+    (product) => String(product?.category || '').trim() === String(category || '').trim()
+  );
+
+export const getCategoryLabel = (category: string): string => String(category || '').trim() || 'Créations';

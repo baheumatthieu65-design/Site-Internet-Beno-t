@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrandConfig } from '../types';
+import { CreationTypeTabs } from './CreationTypeTabs';
+import { getCatalogCategories, getCategoryLabel } from '../utils/catalogCategories';
 import { Mountain, ArrowDown, Sparkles, Shield, Compass, ChevronRight, Edit3, Layers, Plus } from 'lucide-react';
 import { getProductAvailabilityStatus, getProductStatusLabel } from '../utils/productStatus';
 import { sortProductsByAvailability } from '../utils/productOrdering';
@@ -18,6 +20,8 @@ interface HeroSectionProps {
   isAdminLoggedIn?: boolean;
   onOpenEditorSection?: (tab: 'brand' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
   onSelectJacket: (jacketId: string) => void;
+  selectedCategory: string;
+  onSelectCategory: (typeId: string) => void;
   onOpenInquiry: (jacketId?: string) => void;
   sectionBackgroundImage?: string;
   sectionBackgroundOpacity?: number;
@@ -29,15 +33,27 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   isAdminLoggedIn,
   onOpenEditorSection,
   onSelectJacket,
+  selectedCategory,
+  onSelectCategory,
   onOpenInquiry,
   sectionBackgroundImage,
   sectionBackgroundOpacity = 100,
   sectionBackgroundMediaType,
 }) => {
   const allJackets = brandData.jackets && brandData.jackets.length > 0 ? brandData.jackets : [];
+  const categories = getCatalogCategories(allJackets);
+  const activeCategory = categories.some((type) => type.id === selectedCategory)
+    ? selectedCategory
+    : categories[0]?.id || '';
+  const counts = categories.reduce<Record<string, number>>((acc, type) => {
+    acc[type.id] = allJackets.filter((product) => String(product.category || '').trim() === type.id).length;
+    return acc;
+  }, {});
   // Le Hero suit le même ordre commercial que les autres modules :
   // En vente → Bientôt disponible → Épuisé. Les trois statuts restent visibles.
-  const jackets = sortProductsByAvailability(allJackets).filter((j) => getProductAvailabilityStatus(j) !== 'sold-out');
+  const jackets = sortProductsByAvailability(allJackets)
+    .filter((j) => String(j.category || '').trim() === activeCategory)
+    .filter((j) => getProductAvailabilityStatus(j) !== 'sold-out');
   const theme = brandData.theme;
 
   // Le Hero utilise exactement la même source que le Lookbook :
@@ -179,6 +195,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         {/* Top Heritage Badge */}
         {badgePosition === 'top' && renderBadge()}
 
+        <div className="mt-8">
+          <CreationTypeTabs
+            types={categories}
+            selectedCategory={activeCategory}
+            onSelect={onSelectCategory}
+            counts={counts}
+          />
+        </div>
+
         {/* LAYOUT VARIANT: CENTERED MINIMAL */}
         {layout === 'centered-minimal' ? (
           <div className={`${textAlignClass} max-w-4xl mx-auto space-y-6`}>
@@ -217,7 +242,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 style={discoverButtonInlineStyle}
                 className={`px-7 py-3.5 text-sm uppercase tracking-widest flex items-center space-x-2 ${secondaryBtnClass}`}
               >
-                <span data-vce-id="hero-discover-button-text">{discoverText} la collection ({jackets.length} créations)</span>
+                <span data-vce-id="hero-discover-button-text">{discoverText} la collection ({jackets.length} {jackets.length > 1 ? 'créations' : 'création'} {getCategoryLabel(activeCategory)})</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -284,7 +309,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 style={discoverButtonInlineStyle}
                   className={`px-5 py-3 text-xs uppercase tracking-widest flex items-center space-x-1.5 ${secondaryBtnClass}`}
                 >
-                  <span data-vce-id="hero-discover-button-text">{discoverText} la collection</span>
+                  <span data-vce-id="hero-discover-button-text">{discoverText} la collection ({jackets.length} {jackets.length > 1 ? 'créations' : 'création'} {getCategoryLabel(activeCategory)})</span>
                 </button>
               </div>
             </div>

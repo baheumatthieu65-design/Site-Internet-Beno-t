@@ -1,5 +1,7 @@
 import React from 'react';
 import { JacketModel, ThemeConfig, ComparisonCriterion } from '../types';
+import { CreationTypeTabs } from './CreationTypeTabs';
+import { getCatalogCategories, getCategoryLabel } from '../utils/catalogCategories';
 import { Scale, ArrowRight, Edit3 } from 'lucide-react';
 import { getProductAvailabilityStatus } from '../utils/productStatus';
 import {
@@ -17,6 +19,8 @@ interface JacketComparisonProps {
   isAdminLoggedIn?: boolean;
   onOpenEditorSection?: (tab: 'brand' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
   onSelectJacket: (id: string) => void;
+  selectedCategory: string;
+  onSelectCategory: (typeId: string) => void;
   onOpenInquiry: (id: string) => void;
 }
 
@@ -52,7 +56,17 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
     ? theme.comparisonCriteria
     : DEFAULT_CRITERIA;
 
+  const categories = getCatalogCategories(jackets);
+  const activeCategory = categories.some((type) => type.id === selectedCategory)
+    ? selectedCategory
+    : categories[0]?.id || '';
+  const counts = categories.reduce<Record<string, number>>((acc, type) => {
+    acc[type.id] = jackets.filter((product) => String(product.category || '').trim() === type.id).length;
+    return acc;
+  }, {});
+
   const comparisonJackets = [...jackets]
+    .filter((j) => String(j.category || '').trim() === activeCategory)
     .filter((j) => getProductAvailabilityStatus(j) !== 'sold-out')
     .sort((a, b) => {
       const numberOf = (j: JacketModel) => {
@@ -114,12 +128,19 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
             <span>Guide de choix</span>
           </div>
           <h2 data-vce-id="comparison-title" className="font-serif text-3xl sm:text-5xl font-light text-[#f3ece0]">
-            {sectionTitle}
+            {sectionTitle} — {getCategoryLabel(activeCategory)}
           </h2>
           <p data-vce-id="comparison-subtitle" className="text-sm text-[#a3b0a2] mt-3 font-sans max-w-xl mx-auto">
             Découvrez en un coup d’œil quelle création correspond le mieux à votre style de vie et vos escapades dans les Pyrénées.
           </p>
         </div>
+
+        <CreationTypeTabs
+          types={categories}
+          selectedCategory={activeCategory}
+          onSelect={onSelectCategory}
+          counts={counts}
+        />
 
         {/* Comparison Matrix Table */}
         <div className="overflow-x-auto">
