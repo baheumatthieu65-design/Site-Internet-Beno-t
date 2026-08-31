@@ -1,29 +1,30 @@
 import React from 'react';
-import { CatalogCategory } from '../utils/catalogCategories';
 
-interface CreationTypeTabsProps {
-  types: CatalogCategory[];
-  selectedCategory: string;
-  onSelect: (category: string) => void;
-  counts?: Record<string, number>;
-  compact?: boolean;
+export interface CreationType {
+  id: string;
+  label: string;
+  count: number;
 }
 
-export const CreationTypeTabs: React.FC<CreationTypeTabsProps> = ({
+interface CreationTypeTabsProps {
+  types: CreationType[];
+  selectedType: string;
+  onSelect: (typeId: string) => void;
+}
+
+export function CreationTypeTabs({
   types,
-  selectedCategory,
+  selectedType,
   onSelect,
-  counts = {},
-  compact = false,
-}) => {
+}: CreationTypeTabsProps) {
   if (!types.length) return null;
 
   return (
-    <div className={`flex justify-center ${compact ? 'mb-6' : 'mb-8'} overflow-x-auto pb-2`}>
-      <div className={`inline-flex ${compact ? 'p-1' : 'p-1.5'} rounded-full bg-[#1e2520] border border-[#3b473e] shadow-xl flex-wrap justify-center gap-1">
+    <div className="w-full overflow-x-auto">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-max pb-2">
         {types.map((type) => {
-          const selected = type.id === selectedCategory;
-          const count = counts[type.id] ?? 0;
+          const selected = selectedType === type.id;
+
           return (
             <button
               key={type.id}
@@ -33,12 +34,19 @@ export const CreationTypeTabs: React.FC<CreationTypeTabsProps> = ({
               className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs sm:text-sm uppercase tracking-widest transition-all font-medium whitespace-nowrap ${
                 selected
                   ? 'bg-gradient-to-r from-[#2c372f] to-[#3b493e] text-[#f3ece0] border border-[#d4af37]/60 shadow-lg ring-1 ring-[#d4af37]/30'
-                  : 'text-[#9eb0a0] hover:text-[#f3ece0]'
+                  : 'bg-transparent text-[#2c372f] border border-[#2c372f]/30 hover:border-[#d4af37] hover:text-[#8d7020]'
               }`}
             >
               <span>{type.label}</span>
-              <span className={`text-[10px] font-semibold ${selected ? 'text-[#d4af37]' : 'text-[#738174]'}`}>
-                {count}
+
+              <span
+                className={`inline-flex items-center justify-center min-w-[1.5rem] h-6 px-1.5 rounded-full text-[10px] font-semibold ${
+                  selected
+                    ? 'bg-[#d4af37]/20 text-[#f3ece0]'
+                    : 'bg-[#2c372f]/10 text-[#2c372f]'
+                }`}
+              >
+                {type.count}
               </span>
             </button>
           );
@@ -46,4 +54,4 @@ export const CreationTypeTabs: React.FC<CreationTypeTabsProps> = ({
       </div>
     </div>
   );
-};
+}
