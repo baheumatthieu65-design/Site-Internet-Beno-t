@@ -528,8 +528,8 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
         </div>
 
         {/* SEARCH AND FILTER BAR */}
-        <div className="w-full overflow-x-hidden">
-          <div className="flex min-w-max items-center gap-3 pt-1 pb-1">
+        <div className="w-full overflow-visible">
+          <div className="flex flex-wrap items-center gap-3 pt-1 pb-1">
             <div className="relative w-[300px] h-10 shrink-0">
               <Search className="w-4 h-4 absolute left-3.5 top-3 text-[#7d8c7f]" />
               <input
@@ -541,7 +541,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
               />
             </div>
 
-            <div className="h-10 flex items-center gap-1.5 shrink-0">
+            <div className="h-10 flex items-center gap-1.5">
               <Filter className="w-3.5 h-3.5 text-[#d4af37]" />
               <span className="text-xs text-[#a3b1a5] whitespace-nowrap">Type :</span>
               <select
@@ -556,7 +556,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
               </select>
             </div>
 
-            <div className="h-10 flex items-center gap-1.5 shrink-0">
+            <div className="h-10 flex items-center gap-1.5">
               <span className="text-xs text-[#a3b1a5] whitespace-nowrap">État :</span>
               <select
                 value={selectedStatusFilter}
@@ -568,7 +568,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
               </select>
             </div>
 
-            <div className="h-10 flex items-center gap-1.5 shrink-0">
+            <div className="h-10 flex items-center gap-1.5">
               <select
                 value={periodMode}
                 onChange={(e) => {
@@ -589,7 +589,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
               {periodMode === 'year' && <select value={periodValue || getYearInputValue(new Date())} onChange={(e) => setPeriodValue(e.target.value)} className="h-10 bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 rounded-xl outline-none focus:border-[#d4af37]"><option value={getYearInputValue(new Date())}>{getYearInputValue(new Date())}</option>{Array.from(new Set(orders.map((o) => new Date(getOrderTimestamp(o)).getFullYear()).filter((y) => Number.isFinite(y)))).sort((a,b) => b-a).map((year) => <option key={year} value={String(year)}>{year}</option>)}</select>}
             </div>
 
-            <div className="h-10 flex items-center gap-1.5 shrink-0">
+            <div className="h-10 flex items-center gap-1.5">
               <ArrowUpDown className="w-3.5 h-3.5 text-[#d4af37]" />
               <span className="text-xs text-[#a3b1a5] whitespace-nowrap">Date :</span>
               <select value={dateSort} onChange={(e) => setDateSort(e.target.value as typeof dateSort)} className="h-10 bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 rounded-xl outline-none focus:border-[#d4af37]">
