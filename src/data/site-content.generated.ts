@@ -2097,6 +2097,21 @@ export const publishedSiteContent = {
         "color": "#D0C5B4",
         "fontWeight": "700",
         "fontSize": "20px"
+      },
+      {
+        "id": "hero-brand-name",
+        "type": "text",
+        "kind": "text",
+        "section": "hero",
+        "x": 0,
+        "y": 0,
+        "text": "Thème Champêtre \u0026 Élégance",
+        "visible": true,
+        "fontFamily": "Playfair Display",
+        "fontSize": "64px",
+        "fontWeight": "300",
+        "color": "#f5eedf",
+        "fontStyle": "italic"
       }
     ],
     "editorElements": {
@@ -2259,8 +2274,16 @@ export const publishedSiteContent = {
         "section": "hero",
         "selector": null,
         "locator": "data-vce-id"
+      },
+      "hero-brand-name": {
+        "id": "hero-brand-name",
+        "type": "text",
+        "kind": "text",
+        "section": "hero",
+        "selector": null,
+        "locator": "data-vce-id"
       }
     }
   },
-  "publishedAt": 1788211217721
+  "publishedAt": 1788211566393
 } as const;
