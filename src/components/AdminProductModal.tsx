@@ -631,109 +631,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                   </div>
                 </div>
 
-<div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#6b5a24] space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-[#d4af37] block">Données financières internes — Administration</span>
-                      <span className="text-[10px] text-[#8f9d91]">Ces montants sont réservés à l’administration et servent aux commandes et aux rapports.</span>
-                    </div>
-                    <DollarSign className="w-4 h-4 text-[#d4af37]" />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block text-[10px] uppercase tracking-wider text-[#a3b1a5] mb-1">Coût de création de l’article</label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={editingProduct.adminCost ?? 0}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, adminCost: Number(e.target.value) })}
-                          className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                        />
-                        <span className="text-xs text-[#a3b1a5]">{editingProduct.currency || '€'}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] uppercase tracking-wider text-[#a3b1a5] mb-1">Chiffre d'affaires unitaire</label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={editingProduct.adminRevenue ?? editingProduct.price ?? 0}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, adminRevenue: Number(e.target.value) })}
-                          className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                        />
-                        <span className="text-xs text-[#a3b1a5]">{editingProduct.currency || '€'}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] uppercase tracking-wider text-[#a3b1a5] mb-1">Bénéfice unitaire</label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={editingProduct.adminProfit ?? 0}
-                          onChange={(e) => setEditingProduct({ ...editingProduct, adminProfit: Number(e.target.value) })}
-                          className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
-                        />
-                        <span className="text-xs text-[#a3b1a5]">{editingProduct.currency || '€'}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-[#7f8d82]">Ces montants sont réservés à l’administration. Le coût de création correspond à votre coût réel de fabrication ; le CA et le bénéfice sont enregistrés par article.</p>
-                </div>
-
-                <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#273429] space-y-3">
-                  <div>
-                    <span className="font-bold text-[#f3ece0] block">Statut de disponibilité</span>
-                    <span className="text-[11px] text-[#a3b1a5]">Choisis l’état commercial de l’article. Il apparaît sous forme de pastille sur le Hero et le Lookbook.</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {([
-                      ['on-sale', 'En vente'],
-                      ['sold-out', 'Épuisé'],
-                      ['coming-soon', 'Bientôt disponible'],
-                    ] as [JacketAvailabilityStatus, string][]).map(([value, label]) => (
-                      <button key={value} type="button" onClick={() => setEditingProduct({ ...editingProduct, availabilityStatus: value, isAvailable: value === 'on-sale' })} className={`px-3 py-2.5 rounded-xl border text-xs font-bold transition-all ${getProductAvailabilityStatus(editingProduct as JacketModel) === value ? 'border-[#d4af37] bg-[#253127] text-[#d4af37]' : 'border-[#354238] bg-[#182019] text-[#a3b1a5] hover:border-[#526355]'}`}>
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-[#a3b1a5] font-semibold">Catégorie / typologie</label>
-                    <span className="text-[10px] uppercase tracking-wider text-[#718073]">1 choix</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 rounded-2xl border border-[#2e3b30] bg-[#111612] p-3">
-                    {(categoryOptions.length ? categoryOptions : Array.from(new Set((draftProducts || []).map((product) => String(product.category || '').trim()).filter(Boolean)))).map((category) => {
-                      const checked = String(editingProduct.category || '').trim().toLocaleLowerCase() === String(category).trim().toLocaleLowerCase();
-                      return (
-                        <label
-                          key={category}
-                          className={`flex items-center gap-3 px-3 py-3 rounded-xl border cursor-pointer transition-all ${checked ? 'border-[#d4af37] bg-[#273329] shadow-sm' : 'border-[#344437] bg-[#182019] hover:border-[#657467]'}`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={() => setEditingProduct({ ...editingProduct, category })}
-                            className="sr-only"
-                          />
-                          <span className={`flex items-center justify-center w-5 h-5 rounded-md border-2 shrink-0 ${checked ? 'border-[#d4af37] bg-[#d4af37] text-[#121613]' : 'border-[#607063] bg-transparent'}`}>
-                            {checked ? <CheckCircle2 className="w-3.5 h-3.5" /> : null}
-                          </span>
-                          <span className={`text-xs font-semibold ${checked ? 'text-[#f3ece0]' : 'text-[#c2ccc4]'}`}>{category}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                  <p className="text-[10px] text-[#718073] mt-2">Coche une seule catégorie. Elle détermine directement l’onglet public de l’article dans le Hero, le Showcase et le tableau comparatif. Les catégories se gèrent juste au-dessus dans « Paramétrage du catalogue ».</p>
-                </div>
-
-                <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#2e3b30] space-y-4">
+<div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#2e3b30] space-y-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <span className="font-bold text-[#d4af37] block">Données financières internes — Administration</span>
@@ -809,6 +707,56 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                   })()}
                   <p className="text-[10px] text-[#7f8d82]">Formule : Prix TTC ÷ (1 + TVA) = CA HT. TVA = TTC − HT. Bénéfice HT = CA HT − coût de fabrication HT.</p>
                 </div>
+
+                <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#273429] space-y-3">
+                  <div>
+                    <span className="font-bold text-[#f3ece0] block">Statut de disponibilité</span>
+                    <span className="text-[11px] text-[#a3b1a5]">Choisis l’état commercial de l’article. Il apparaît sous forme de pastille sur le Hero et le Lookbook.</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {([
+                      ['on-sale', 'En vente'],
+                      ['sold-out', 'Épuisé'],
+                      ['coming-soon', 'Bientôt disponible'],
+                    ] as [JacketAvailabilityStatus, string][]).map(([value, label]) => (
+                      <button key={value} type="button" onClick={() => setEditingProduct({ ...editingProduct, availabilityStatus: value, isAvailable: value === 'on-sale' })} className={`px-3 py-2.5 rounded-xl border text-xs font-bold transition-all ${getProductAvailabilityStatus(editingProduct as JacketModel) === value ? 'border-[#d4af37] bg-[#253127] text-[#d4af37]' : 'border-[#354238] bg-[#182019] text-[#a3b1a5] hover:border-[#526355]'}`}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-[#a3b1a5] font-semibold">Catégorie / typologie</label>
+                    <span className="text-[10px] uppercase tracking-wider text-[#718073]">1 choix</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 rounded-2xl border border-[#2e3b30] bg-[#111612] p-3">
+                    {(categoryOptions.length ? categoryOptions : Array.from(new Set((draftProducts || []).map((product) => String(product.category || '').trim()).filter(Boolean)))).map((category) => {
+                      const checked = String(editingProduct.category || '').trim().toLocaleLowerCase() === String(category).trim().toLocaleLowerCase();
+                      return (
+                        <label
+                          key={category}
+                          className={`flex items-center gap-3 px-3 py-3 rounded-xl border cursor-pointer transition-all ${checked ? 'border-[#d4af37] bg-[#273329] shadow-sm' : 'border-[#344437] bg-[#182019] hover:border-[#657467]'}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => setEditingProduct({ ...editingProduct, category })}
+                            className="sr-only"
+                          />
+                          <span className={`flex items-center justify-center w-5 h-5 rounded-md border-2 shrink-0 ${checked ? 'border-[#d4af37] bg-[#d4af37] text-[#121613]' : 'border-[#607063] bg-transparent'}`}>
+                            {checked ? <CheckCircle2 className="w-3.5 h-3.5" /> : null}
+                          </span>
+                          <span className={`text-xs font-semibold ${checked ? 'text-[#f3ece0]' : 'text-[#c2ccc4]'}`}>{category}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[10px] text-[#718073] mt-2">Coche une seule catégorie. Elle détermine directement l’onglet public de l’article dans le Hero, le Showcase et le tableau comparatif. Les catégories se gèrent juste au-dessus dans « Paramétrage du catalogue ».</p>
+                </div>
+
+                
 
                 <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#273429] space-y-4">
                   <div className="flex items-center justify-between">
