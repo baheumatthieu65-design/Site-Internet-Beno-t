@@ -197,6 +197,14 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   }, [isOpen]);
 
   useEffect(() => {
+    const textareas = document.querySelectorAll<HTMLTextAreaElement>('[data-story-autosize]');
+    textareas.forEach((textarea) => {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    });
+  }, [formData.storyText1, formData.storyText2]);
+
+  useEffect(() => {
     if (!isOpen) return;
     setOrderEmailMessage(null);
     setOrderEmailCode('');
@@ -2026,10 +2034,11 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                     </div>
                     <textarea
                       rows={4}
+                      data-story-autosize="true"
                       value={formData.storyText1 || ''}
                       onChange={(e) => handleChangeBrand('storyText1', e.target.value)}
                       placeholder="Premier paragraphe du récit (ou laisser vide)"
-                      className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                      className="w-full overflow-hidden resize-none bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
                     />
                   </div>
                   <div>
@@ -2049,10 +2058,11 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                     </div>
                     <textarea
                       rows={4}
+                      data-story-autosize="true"
                       value={formData.storyText2 || ''}
                       onChange={(e) => handleChangeBrand('storyText2', e.target.value)}
                       placeholder="Second paragraphe du récit (ou laisser vide)"
-                      className="w-full bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                      className="w-full overflow-hidden resize-none bg-[#18201a] border border-[#313f33] text-sm text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
                     />
                   </div>
                 </div>

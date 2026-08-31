@@ -393,7 +393,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
 
             {/* Dynamic Jackets Display Cards in Hero */}
-            <div className={`mt-10 md:mt-14 grid grid-cols-1 ${jackets.length === 1 ? 'max-w-md' : jackets.length === 2 ? 'md:grid-cols-2 max-w-4xl' : 'md:grid-cols-2 lg:grid-cols-3 max-w-6xl'} gap-6 mx-auto w-full`}>
+            <div className={`mt-5 md:mt-8 grid grid-cols-1 ${jackets.length === 1 ? 'max-w-md' : jackets.length === 2 ? 'md:grid-cols-2 max-w-4xl' : 'md:grid-cols-2 lg:grid-cols-3 max-w-6xl'} gap-6 mx-auto w-full`}>
               {jackets.map((j, idx) => {
                 const isMediaTop = cardMediaPos === 'top';
                 const isMediaRight = cardMediaPos === 'right';
