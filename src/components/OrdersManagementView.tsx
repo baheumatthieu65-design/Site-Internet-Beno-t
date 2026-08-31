@@ -528,7 +528,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
         </div>
 
         {/* SEARCH AND FILTER BAR */}
-        <div className="w-full overflow-x-auto">
+        <div className="w-full overflow-x-hidden">
           <div className="flex min-w-max items-center gap-3 pt-1 pb-1">
             <div className="relative w-[300px] h-10 shrink-0">
               <Search className="w-4 h-4 absolute left-3.5 top-3 text-[#7d8c7f]" />
@@ -825,7 +825,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
                         </div>
                       </div>
 
-                      <pre className="text-xs font-mono text-[#d1c5b4] bg-[#151c16] p-3.5 rounded-xl overflow-x-auto whitespace-pre-wrap border border-[#232f25]">
+                      <pre className="text-xs font-mono text-[#d1c5b4] bg-[#151c16] p-3.5 rounded-xl whitespace-pre-wrap border border-[#232f25]">
                         {order.generatedEmail.body}
                       </pre>
                     </div>
