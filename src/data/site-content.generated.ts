@@ -2084,6 +2084,20 @@ export const publishedSiteContent = {
         "fontFamily": "Dancing Script",
         "fontSize": "48px",
         "color": "rgb(243, 236, 224)"
+      },
+      {
+        "id": "hero-title-prefix",
+        "type": "text",
+        "kind": "text",
+        "section": "hero",
+        "x": 0,
+        "y": 0,
+        "text": "Maison Mailhagut",
+        "visible": true,
+        "color": "#D0C5B4",
+        "fontStyle": "italic",
+        "fontWeight": "700",
+        "fontSize": "20px"
       }
     ],
     "editorElements": {
@@ -2238,8 +2252,16 @@ export const publishedSiteContent = {
         "section": "collection",
         "selector": null,
         "locator": "data-vce-id"
+      },
+      "hero-title-prefix": {
+        "id": "hero-title-prefix",
+        "type": "text",
+        "kind": "text",
+        "section": "hero",
+        "selector": null,
+        "locator": "data-vce-id"
       }
     }
   },
-  "publishedAt": 1788208200842
+  "publishedAt": 1788211159451
 } as const;
