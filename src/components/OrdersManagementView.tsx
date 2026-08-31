@@ -39,8 +39,8 @@ interface OrdersManagementViewProps {
 }
 
 export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
-  ordersEmail = 'contact@maisondespyrenees.fr',
-  reportEmail = 'contact@maisondespyrenees.fr',
+  ordersEmail = 'baheu.matthieu65@gmail.com',
+  reportEmail = 'baheu.matthieu65@gmail.com',
 }) => {
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [availableStatuses, setAvailableStatuses] = useState<string[]>([]);

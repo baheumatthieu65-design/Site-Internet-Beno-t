@@ -118,7 +118,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
       copy.theme.navOrder = ['collection', 'comparatif', 'origines', 'lookbook', 'contact'];
     }
     if (!copy.ordersEmail) {
-      copy.ordersEmail = 'contact@maisondespyrenees.fr';
+      copy.ordersEmail = 'baheu.matthieu65@gmail.com';
     }
     if (!Array.isArray(copy.jackets)) {
       copy.jackets = [];
@@ -186,7 +186,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   useEffect(() => {
     const creds = getStoredCredentials();
     setAdminUsername(creds.username);
-    setAdminEmail(creds.email && !creds.email.includes('baheu.matthieu65') ? creds.email : 'contact@maisondespyrenees.fr');
+    setAdminEmail(creds.email || 'baheu.matthieu65@gmail.com');
   }, [isOpen]);
 
   useEffect(() => {
@@ -811,7 +811,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
 
     saveAdminCredentials({
       username: adminUsername.trim() || 'admin',
-      email: adminEmail.trim() || 'contact@maisondespyrenees.fr',
+      email: adminEmail.trim() || 'baheu.matthieu65@gmail.com',
       lastUpdated: new Date().toISOString(),
     });
 
@@ -1874,7 +1874,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                     required
                     value={formData.ordersEmail || ''}
                     onChange={(e) => handleChangeBrand('ordersEmail', e.target.value)}
-                    placeholder="ex: contact@maisondespyrenees.fr"
+                    placeholder="ex: baheu.matthieu65@gmail.com"
                     className="w-full bg-[#1b231d] border border-[#435747] text-sm text-[#f3ece0] px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
                   />
                 </div>
@@ -2011,7 +2011,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                         required
                         value={adminEmail}
                         onChange={(e) => setAdminEmail(e.target.value)}
-                        placeholder="contact@maisondespyrenees.fr"
+                        placeholder="baheu.matthieu65@gmail.com"
                         className="w-full bg-[#121613] border border-[#d4af37]/60 text-sm text-[#f3ece0] px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
                       />
                     </div>
@@ -2099,7 +2099,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                     type="email"
                     value={formData.ordersEmail || ''}
                     onChange={(e) => handleChangeBrand('ordersEmail', e.target.value)}
-                    placeholder="contact@maisondespyrenees.fr"
+                    placeholder="baheu.matthieu65@gmail.com"
                     className="flex-1 bg-[#121613] border border-[#435747] text-sm text-[#f3ece0] px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
                   />
                   <button

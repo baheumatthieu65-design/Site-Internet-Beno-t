@@ -6,7 +6,7 @@ export interface AdminCredentials {
 
 const DEFAULT_ADMIN: AdminCredentials = {
   username: 'admin',
-  email: 'contact@maisondespyrenees.fr',
+  email: 'baheu.matthieu65@gmail.com',
   lastUpdated: new Date().toISOString(),
 };
 
@@ -127,9 +127,12 @@ export const verifyAdminLoginServer = async (
         : username;
 
     // On conserve uniquement des informations non sensibles.
+    const existingCredentials = getStoredCredentials();
     saveAdminCredentials({
       username: authenticatedUsername,
-      email: DEFAULT_ADMIN.email,
+      // Conserver l'adresse de récupération déjà enregistrée dans le navigateur.
+      // À défaut, utiliser l'adresse Gmail de configuration initiale.
+      email: existingCredentials.email || DEFAULT_ADMIN.email,
       lastUpdated: new Date().toISOString(),
     });
 

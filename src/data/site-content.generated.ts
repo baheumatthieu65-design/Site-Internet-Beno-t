@@ -19,8 +19,8 @@ export const publishedSiteContent = {
       "Conception durable, coupes millimétrées \u0026 résistance aux éléments",
       "Chic champêtre \u0026 raffinement intemporel"
     ],
-    "contactEmail": "contact@maisondespyrenees.fr",
-    "ordersEmail": "obiones@hotmail.fr",
+    "contactEmail": "baheu.matthieu65@gmail.com",
+    "ordersEmail": "baheu.matthieu65@gmail.com",
     "instagram": "@maison.des.pyrenees",
     "gite": {
       "name": "Le Gîte",

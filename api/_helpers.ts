@@ -448,19 +448,34 @@ export const saveOrdersToDB =
 // ============================================================
 
 const ORDER_EMAIL_KEY = 'mdp_order_notification_email';
+const ORDER_EMAIL_MIGRATION_KEY = 'mdp_order_notification_email_gmail_migration_v1';
+const DEFAULT_SITE_EMAIL = 'baheu.matthieu65@gmail.com';
 
 export const getOrderNotificationEmail = async (): Promise<string> => {
   const redis = getRedisClient();
   if (redis) {
     try {
       const stored = await redis.get<string>(ORDER_EMAIL_KEY);
-      if (typeof stored === 'string' && stored.trim()) return stored.trim();
+      if (typeof stored === 'string' && stored.trim()) {
+        const cleanStored = stored.trim();
+        // Migration unique de l'ancienne configuration vers l'adresse Gmail
+        // demandée. Une fois marquée, une modification volontaire depuis
+        // l'administration (même vers Hotmail) est conservée.
+        const migrated = await redis.get<string>(ORDER_EMAIL_MIGRATION_KEY);
+        if (!migrated && ['obiones@hotmail.fr', 'contact@maisondespyrenees.fr'].includes(cleanStored.toLowerCase())) {
+          await redis.set(ORDER_EMAIL_KEY, DEFAULT_SITE_EMAIL);
+          await redis.set(ORDER_EMAIL_MIGRATION_KEY, '1');
+          return DEFAULT_SITE_EMAIL;
+        }
+        if (!migrated) await redis.set(ORDER_EMAIL_MIGRATION_KEY, '1');
+        return cleanStored;
+      }
     } catch (error) {
       console.error('Erreur lecture email commandes Redis:', error);
     }
   }
 
-  return String(process.env.ADMIN_EMAIL || 'baheu.matthieu65@gmail.com').trim();
+  return String(process.env.ADMIN_EMAIL || DEFAULT_SITE_EMAIL).trim();
 };
 
 export const saveOrderNotificationEmail = async (email: string): Promise<void> => {

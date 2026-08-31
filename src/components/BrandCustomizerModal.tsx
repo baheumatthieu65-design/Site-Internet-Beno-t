@@ -1975,7 +1975,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                     required
                     value={formData.ordersEmail || ''}
                     onChange={(e) => handleChangeBrand('ordersEmail', e.target.value)}
-                    placeholder="ex: contact@maisondespyrenees.fr"
+                    placeholder="ex: baheu.matthieu65@gmail.com"
                     className="w-full bg-[#1b231d] border border-[#435747] text-sm text-[#f3ece0] px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
                   />
                 </div>

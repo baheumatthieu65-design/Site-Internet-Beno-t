@@ -42,7 +42,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
   preselectedJacketId,
   preselectedColor,
   preselectedSize,
-  ordersEmail = 'contact@maisondespyrenees.fr',
+  ordersEmail = 'baheu.matthieu65@gmail.com',
 }) => {
   const validJackets = Array.isArray(jackets) ? jackets.filter((j) => j.isAvailable !== false) : [];
   const defaultJacket = validJackets.find((j) => j.id === preselectedJacketId) || validJackets[0];
@@ -195,7 +195,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
         items: itemsPayload,
         totalPrice: orderType === 'essayage' ? 0 : totalPrice,
         currency: primaryCurrency,
-        recipientEmail: ordersEmail || 'contact@maisondespyrenees.fr',
+        recipientEmail: ordersEmail || 'baheu.matthieu65@gmail.com',
       });
       window.dispatchEvent(new CustomEvent('pyrenees-order-created', { detail: { orderId: ref } }));
     } catch (err) {
@@ -212,7 +212,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
         items: itemsPayload,
         totalPrice: orderType === 'essayage' ? 0 : totalPrice,
         currency: primaryCurrency,
-        recipientEmail: ordersEmail || 'contact@maisondespyrenees.fr',
+        recipientEmail: ordersEmail || 'baheu.matthieu65@gmail.com',
       });
       window.dispatchEvent(new CustomEvent('pyrenees-order-created', { detail: { orderId: ref, localOnly: true } }));
     } finally {

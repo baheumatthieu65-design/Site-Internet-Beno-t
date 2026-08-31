@@ -29,8 +29,8 @@ export const initialBrandData: BrandConfig = {
     'Conception durable, coupes millimétrées & résistance aux éléments',
     'Chic champêtre & raffinement intemporel'
   ],
-  contactEmail: 'contact@maisondespyrenees.fr',
-  ordersEmail: 'contact@maisondespyrenees.fr',
+  contactEmail: 'baheu.matthieu65@gmail.com',
+  ordersEmail: 'baheu.matthieu65@gmail.com',
   instagram: '@maison.des.pyrenees',
   gite: JSON.parse(JSON.stringify(defaultGiteConfig)),
   jackets: [
