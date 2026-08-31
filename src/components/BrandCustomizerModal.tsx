@@ -59,7 +59,8 @@ import {
   SlidersHorizontal,
   GripVertical,
   MousePointer,
-  Scale
+  Scale,
+  Edit2
 } from 'lucide-react';
 import {
   sectionMeta,
