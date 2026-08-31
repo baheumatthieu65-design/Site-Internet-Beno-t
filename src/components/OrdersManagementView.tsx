@@ -632,6 +632,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
             </button>
           </div>
         </div>
+      </div>
       {/* ----------------------------------------------------------------- */}
       {/* ORDERS LIST CLASSIFIED BY STATUS (WITH 'Commande passée' FIRST)     */}
       {/* ----------------------------------------------------------------- */}
