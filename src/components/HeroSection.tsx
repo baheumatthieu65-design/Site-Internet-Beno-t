@@ -87,6 +87,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const orderText = theme?.orderButtonText || 'Commander';
   const discoverText = theme?.discoverButtonText || 'Découvrir';
 
+  const renderCategoryTabs = () => (
+    <div className="mt-5 w-full">
+      <CreationTypeTabs
+        types={categories}
+        selectedCategory={activeCategory}
+        onSelect={onSelectCategory}
+        counts={counts}
+      />
+    </div>
+  );
+
   const renderBadge = () => {
     if (badgePosition === 'hidden') return null;
     return (
@@ -195,15 +206,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         {/* Top Heritage Badge */}
         {badgePosition === 'top' && renderBadge()}
 
-        <div className="mt-8">
-          <CreationTypeTabs
-            types={categories}
-            selectedCategory={activeCategory}
-            onSelect={onSelectCategory}
-            counts={counts}
-          />
-        </div>
-
         {/* LAYOUT VARIANT: CENTERED MINIMAL */}
         {layout === 'centered-minimal' ? (
           <div className={`${textAlignClass} max-w-4xl mx-auto space-y-6`}>
@@ -225,6 +227,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 {brandData.subtitle}
               </p>
             )}
+
+            {renderCategoryTabs()}
 
             {/* CTA Buttons */}
             <div className={`pt-6 flex flex-wrap items-center ${buttonAlignClass} gap-4`}>
@@ -294,6 +298,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   {brandData.subtitle}
                 </p>
               )}
+
+              {renderCategoryTabs()}
 
               <div className={`pt-3 flex flex-wrap items-center gap-3 ${buttonAlignClass}`}>
                 <button
@@ -390,6 +396,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   {brandData.subtitle}
                 </p>
               )}
+
+              {renderCategoryTabs()}
             </div>
 
             {/* Dynamic Jackets Display Cards in Hero */}
