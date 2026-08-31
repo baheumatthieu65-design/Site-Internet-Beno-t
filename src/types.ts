@@ -371,6 +371,8 @@ export interface ThemeConfig {
   sectionBackgroundOpacity?: Partial<Record<SectionId, number>>;
   /** Articles sélectionnés pour le Lookbook. Vide/absent = tous les articles. */
   lookbookProductIds?: string[];
+  /** Catégories gérées dans le catalogue. Les articles continuent de stocker leur catégorie dans `JacketModel.category`. */
+  catalogCategories?: string[];
 
   /* Ordre des blocs */
 

@@ -127,11 +127,11 @@ export default function App() {
 
   // La catégorie déjà présente sur chaque article est la typologie publique.
   const [selectedCategory, setSelectedCategory] = useState<string>(() =>
-    getCatalogCategories(brandData.jackets || [])[0]?.id || ''
+    getCatalogCategories(brandData.jackets || [], brandData.theme?.catalogCategories || [])[0]?.id || ''
   );
 
   const handleSelectCategory = (category: string) => {
-    const categories = getCatalogCategories(brandData.jackets || []);
+    const categories = getCatalogCategories(brandData.jackets || [], brandData.theme?.catalogCategories || []);
     const validCategory = categories.some((item) => item.id === category)
       ? category
       : categories[0]?.id || '';
@@ -143,7 +143,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    const categories = getCatalogCategories(brandData.jackets || []);
+    const categories = getCatalogCategories(brandData.jackets || [], brandData.theme?.catalogCategories || []);
     const validCategory = categories.some((item) => item.id === selectedCategory)
       ? selectedCategory
       : categories[0]?.id || '';
