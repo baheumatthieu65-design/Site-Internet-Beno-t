@@ -251,6 +251,36 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     updateTheme({ catalogCategories: next });
   };
 
+  const handleRenameCatalogCategory = (oldLabel: string, newLabel: string) => {
+    const nextLabel = newLabel.trim();
+    if (!nextLabel) {
+      alert('Le nom de la catégorie ne peut pas être vide.');
+      return false;
+    }
+    if (oldLabel.trim().toLocaleLowerCase() === nextLabel.toLocaleLowerCase()) return true;
+
+    const existing = (currentTheme.catalogCategories || []).filter(
+      (item) => item.trim().toLocaleLowerCase() !== oldLabel.trim().toLocaleLowerCase()
+    );
+    if (existing.some((item) => item.trim().toLocaleLowerCase() === nextLabel.toLocaleLowerCase())) {
+      alert(`La catégorie « ${nextLabel} » existe déjà.`);
+      return false;
+    }
+
+    updateTheme({
+      catalogCategories: existing.concat(nextLabel),
+    });
+
+    // La catégorie est la source de vérité des articles : on renomme aussi
+    // la valeur existante sur les articles qui utilisaient l'ancien libellé.
+    setDraftProducts((current) => current.map((product) => (
+      String(product.category || '').trim().toLocaleLowerCase() === oldLabel.trim().toLocaleLowerCase()
+        ? { ...product, category: nextLabel }
+        : product
+    )));
+    return true;
+  };
+
   const DEFAULT_CRITERIA_LIST: ComparisonCriterion[] = [
     { id: 'crit_category', label: 'Style principal', key: 'category' },
     { id: 'crit_fabric', label: 'Tissu signature', key: 'fabric' },
@@ -1487,18 +1517,31 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                     const count = draftProducts.filter((product) => String(product.category || '').trim().toLocaleLowerCase() === category.id.toLocaleLowerCase()).length;
                     return (
                       <div key={category.id} className="flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl border border-[#344437] bg-[#151b17]">
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <div className="text-xs font-semibold text-[#f3ece0] truncate">{category.label}</div>
                           <div className="text-[10px] text-[#718073]">{count} article{count > 1 ? 's' : ''}</div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteCatalogCategory(category.label)}
-                          className="p-2 rounded-lg border border-red-900/50 text-red-300 hover:bg-red-950/40 hover:text-red-200 cursor-pointer shrink-0"
-                          title={count ? 'Réaffectez d’abord les articles de cette catégorie' : 'Supprimer cette catégorie'}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const renamed = window.prompt('Nouveau nom de la catégorie :', category.label);
+                              if (renamed !== null) handleRenameCatalogCategory(category.label, renamed);
+                            }}
+                            className="p-2 rounded-lg border border-[#4a5a4c] text-[#d4af37] hover:bg-[#28362b] cursor-pointer"
+                            title="Renommer cette catégorie"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCatalogCategory(category.label)}
+                            className="p-2 rounded-lg border border-red-900/50 text-red-300 hover:bg-red-950/40 hover:text-red-200 cursor-pointer"
+                            title={count ? 'Réaffectez d’abord les articles de cette catégorie' : 'Supprimer cette catégorie'}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
