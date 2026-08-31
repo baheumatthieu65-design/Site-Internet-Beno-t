@@ -2051,6 +2051,25 @@ export const publishedSiteContent = {
         "fontFamily": "ui-serif",
         "fontSize": "14px",
         "color": "rgb(208, 197, 180)"
+      },
+      {
+        "id": "vce-1yslrsk",
+        "type": "text",
+        "section": "origines",
+        "x": 50,
+        "y": 50,
+        "visible": true,
+        "locator": {
+          "tag": "p",
+          "text": "Nous avons sélectionné des laines de bergers pyrénéens et des toiles techniques imperméables d’exception pour façonner ces deux pièces signatures : La Veste des Cimes et Le Manteau Pastorale.",
+          "sectionId": "origines",
+          "occurrence": 0
+        },
+        "kind": "text",
+        "text": "Nous avons sélectionné des laines de bergers pyrénéens et des toiles techniques imperméables d’exception pour façonner ces deux pièces signatures : La Veste des Cimes et Le Manteau Pastorale. ddd",
+        "fontFamily": "-apple-system",
+        "fontSize": "16px",
+        "color": "rgb(184, 197, 186)"
       }
     ],
     "editorElements": {
@@ -2189,8 +2208,16 @@ export const publishedSiteContent = {
         "section": "origines",
         "selector": null,
         "locator": "data-vce-id"
+      },
+      "vce-1yslrsk": {
+        "id": "vce-1yslrsk",
+        "type": "text",
+        "kind": "text",
+        "section": "origines",
+        "selector": null,
+        "locator": "data-vce-id"
       }
     }
   },
-  "publishedAt": 1788187840365
+  "publishedAt": 1788188216305
 } as const;
