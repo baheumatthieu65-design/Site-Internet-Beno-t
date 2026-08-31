@@ -22,7 +22,6 @@ const TOKENS = [
 export const EmailTemplatesEditor: React.FC = () => {
   const [templates, setTemplates] = useState<Templates | null>(null);
   const [active, setActive] = useState<'order' | 'appointment'>('order');
-  const [code, setCode] = useState('');
   const [message, setMessage] = useState('');
   const [copied, setCopied] = useState('');
 
@@ -60,11 +59,6 @@ export const EmailTemplatesEditor: React.FC = () => {
 
   const save = async () => {
     if (!templates) return;
-    if (!code.trim()) {
-      setMessage('Saisissez le code administrateur pour enregistrer.');
-      return;
-    }
-
     setMessage('Enregistrement...');
 
     try {
@@ -72,7 +66,7 @@ export const EmailTemplatesEditor: React.FC = () => {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, templates }),
+        body: JSON.stringify({ templates }),
       });
 
       const data = await response.json();
@@ -107,7 +101,7 @@ export const EmailTemplatesEditor: React.FC = () => {
             Personnalisation des e-mails
           </h4>
           <p className="text-xs text-[#9eaa9f]">
-            Modifiez séparément le mail de commande et le mail de rendez-vous atelier.
+            Modifiez séparément le mail de commande et le mail de rendez-vous atelier. Vous êtes déjà authentifié en administrateur.
           </p>
         </div>
       </div>
@@ -184,13 +178,6 @@ export const EmailTemplatesEditor: React.FC = () => {
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row">
-        <input
-          type="password"
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          placeholder="Code administrateur"
-          className="flex-1 rounded-xl border border-[#39493d] bg-[#101511] px-3 py-2.5 text-xs text-[#f3ece0] outline-none focus:border-[#d4af37]"
-        />
         <button
           type="button"
           onClick={() => void load().catch((error) => setMessage(error.message))}

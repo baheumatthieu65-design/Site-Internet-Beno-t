@@ -2,19 +2,15 @@ import {
   getProductsFromDB,
   getOrdersFromDB,
   saveOrdersToDB,
-  sendOrderEmailNotification,
   getOrderNotificationEmail,
 } from './_helpers.js';
+import { sendTemplatedOrderEmail } from './emailTemplates.js';
 
-export default async function handler(
-  req: any,
-  res: any
-) {
+export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({
       success: false,
-      message:
-        'Méthode non autorisée. Utilisez POST.',
+      message: 'Méthode non autorisée. Utilisez POST.',
     });
   }
 
@@ -26,6 +22,7 @@ export default async function handler(
 
     const {
       clientName,
+      salutation,
       clientEmail,
       clientPhone,
       clientNotes,
@@ -33,357 +30,221 @@ export default async function handler(
       items,
     } = body;
 
-    // ============================================================
-    // VALIDATION CLIENT
-    // ============================================================
-
-    if (
-      !clientName ||
-      !String(clientName).trim()
-    ) {
+    if (!clientName || !String(clientName).trim()) {
       return res.status(400).json({
         success: false,
-        message:
-          'Le nom du client est obligatoire.',
+        message: 'Le nom du client est obligatoire.',
       });
     }
 
-    if (
-      !clientEmail ||
-      !String(clientEmail).trim()
-    ) {
+    if (!clientEmail || !String(clientEmail).trim()) {
       return res.status(400).json({
         success: false,
-        message:
-          "L'adresse e-mail du client est obligatoire.",
+        message: "L'adresse e-mail du client est obligatoire.",
       });
     }
 
     const requestedItems = Array.isArray(items) ? items : [];
 
-    // Une réservation atelier peut être créée sans article : le formulaire
-    // ne demande alors que les coordonnées et les demandes particulières.
-    if (
-      orderType !== 'essayage' &&
-      requestedItems.length === 0
-    ) {
+    if (orderType !== 'essayage' && requestedItems.length === 0) {
       return res.status(400).json({
         success: false,
-        message:
-          'La commande doit contenir au moins un article.',
+        message: 'La commande doit contenir au moins un article.',
       });
     }
 
-    // ============================================================
-    // RÉCUPÉRATION DES PRODUITS OFFICIELS
-    // ============================================================
-
-    const officialProducts =
-      await getProductsFromDB();
+    const officialProducts = await getProductsFromDB();
 
     if (
       orderType !== 'essayage' &&
-      (!Array.isArray(officialProducts) ||
-      officialProducts.length === 0)
+      (!Array.isArray(officialProducts) || officialProducts.length === 0)
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          'Aucun produit disponible.',
+        message: 'Aucun produit disponible.',
       });
     }
-
-    // ============================================================
-    // VALIDATION + CALCUL SERVEUR
-    // ============================================================
 
     let primaryCurrency = '€';
-
     const validatedItems: any[] = [];
 
-    for (
-      let index = 0;
-      index < requestedItems.length;
-      index++
-    ) {
+    for (let index = 0; index < requestedItems.length; index++) {
       const item = requestedItems[index];
 
-      if (
-        !item ||
-        !item.jacketId
-      ) {
+      if (!item || !item.jacketId) {
         return res.status(400).json({
           success: false,
-          message:
-            `Article ${index + 1} invalide.`,
+          message: `Article ${index + 1} invalide.`,
         });
       }
 
-      const dbJacket =
-        officialProducts.find(
-          (product: any) =>
-            product.id === item.jacketId
-        );
+      const dbJacket = officialProducts.find(
+        (product: any) => product.id === item.jacketId
+      );
 
       if (!dbJacket) {
         return res.status(400).json({
           success: false,
-          message:
-            `Produit introuvable : ${item.jacketId}`,
+          message: `Produit introuvable : ${item.jacketId}`,
         });
       }
 
       if (dbJacket.isAvailable === false) {
         return res.status(400).json({
           success: false,
-          message:
-            `Le produit "${dbJacket.name}" n'est plus disponible.`,
+          message: `Le produit "${dbJacket.name}" n'est plus disponible.`,
         });
       }
 
-      const officialUnitPrice =
-        Number(dbJacket.price);
+      const officialUnitPrice = Number(dbJacket.price);
 
-      if (
-        !Number.isFinite(officialUnitPrice) ||
-        officialUnitPrice < 0
-      ) {
+      if (!Number.isFinite(officialUnitPrice) || officialUnitPrice < 0) {
         return res.status(500).json({
           success: false,
-          message:
-            `Prix invalide pour le produit "${dbJacket.name}".`,
+          message: `Prix invalide pour le produit "${dbJacket.name}".`,
         });
       }
 
-      const quantity =
-        Math.floor(Number(item.quantity));
+      const quantity = Math.floor(Number(item.quantity));
 
-      if (
-        !Number.isFinite(quantity) ||
-        quantity < 1 ||
-        quantity > 100
-      ) {
+      if (!Number.isFinite(quantity) || quantity < 1 || quantity > 100) {
         return res.status(400).json({
           success: false,
-          message:
-            'La quantité demandée est invalide.',
+          message: 'La quantité demandée est invalide.',
         });
       }
 
       if (dbJacket.currency) {
-        primaryCurrency =
-          dbJacket.currency;
+        primaryCurrency = dbJacket.currency;
       }
 
-      const totalPrice =
-        officialUnitPrice * quantity;
-
       validatedItems.push({
-        id:
-          item.id ||
-          `line-${Date.now()}-${index}`,
+        id: item.id || `line-${Date.now()}-${index}`,
         jacketId: dbJacket.id,
         jacketName: dbJacket.name,
         color: item.color || 'Standard',
         size: item.size || 'M',
         quantity,
         unitPrice: officialUnitPrice,
-        totalPrice,
+        totalPrice: officialUnitPrice * quantity,
       });
     }
 
-    // ============================================================
-    // TOTAL SERVEUR
-    // ============================================================
+    const computedTotalOrderPrice = validatedItems.reduce(
+      (total: number, item: any) => total + item.totalPrice,
+      0
+    );
 
-    const computedTotalOrderPrice =
-      validatedItems.reduce(
-        (
-          total: number,
-          item: any
-        ) =>
-          total +
-          item.totalPrice,
-        0
-      );
-
-    const totalQuantity =
-      validatedItems.reduce(
-        (
-          total: number,
-          item: any
-        ) =>
-          total +
-          item.quantity,
-        0
-      );
-
-    // ============================================================
-    // CRÉATION COMMANDE
-    // ============================================================
+    const totalQuantity = validatedItems.reduce(
+      (total: number, item: any) => total + item.quantity,
+      0
+    );
 
     const now = new Date();
 
     const formattedDate =
-      `${now.toLocaleDateString(
-        'fr-FR'
-      )} à ${now.toLocaleTimeString(
-        'fr-FR',
-        {
-          hour: '2-digit',
-          minute: '2-digit',
-        }
-      )}`;
+      `${now.toLocaleDateString('fr-FR')} à ` +
+      `${now.toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}`;
 
     const orderRef =
-      `MDP-${now.getFullYear()}-${String(
-        now.getTime()
-      ).slice(-6)}`;
+      `MDP-${now.getFullYear()}-${String(now.getTime()).slice(-6)}`;
 
-    const typeLabels: Record<
-      string,
-      string
-    > = {
-      commander:
-        'Commande Directe & Expédition',
-
-      essayage:
-        'Réservation Atelier & Essayage',
-
-      sur_mesure:
-        'Commande Sur-Mesure Artisanale',
+    const typeLabels: Record<string, string> = {
+      commander: 'Commande Directe & Expédition',
+      essayage: 'Réservation Atelier & Essayage',
+      sur_mesure: 'Commande Sur-Mesure Artisanale',
     };
 
     const orderTypeLabel =
-      typeLabels[orderType] ||
-      'Commande Directe';
+      typeLabels[orderType] || 'Commande Directe';
+
+    const cleanSalutation =
+      ['Monsieur', 'Madame', 'Autre'].includes(String(salutation))
+        ? String(salutation)
+        : 'Autre';
+
+    const cleanName = String(clientName).trim();
+    const cleanEmail = String(clientEmail).trim();
+    const cleanPhone = String(clientPhone || '').trim();
+    const cleanNotes = String(clientNotes || '').trim();
 
     const createdOrder = {
       id: orderRef,
-
       date: formattedDate,
-
-      timestamp:
-        now.getTime(),
-
-      clientName:
-        String(clientName).trim(),
-
-      clientEmail:
-        String(clientEmail).trim(),
-
-      clientPhone:
-        String(
-          clientPhone || ''
-        ).trim(),
-
-      clientNotes:
-        String(
-          clientNotes || ''
-        ).trim(),
-
-      orderType:
-        orderType ||
-        'commander',
-
+      timestamp: now.getTime(),
+      clientName: cleanName,
+      salutation: cleanSalutation,
+      clientEmail: cleanEmail,
+      clientPhone: cleanPhone,
+      clientNotes: cleanNotes,
+      orderType: orderType || 'commander',
       orderTypeLabel,
-
-      items:
-        validatedItems,
-
+      items: validatedItems,
       totalQuantity,
+      totalPrice: computedTotalOrderPrice,
+      currency: primaryCurrency,
+      status: 'Demande',
+      recipientEmail: await getOrderNotificationEmail(),
 
-      totalPrice:
-        computedTotalOrderPrice,
-
-      currency:
-        primaryCurrency,
-
-      status:
-        'Demande',
-
-      recipientEmail:
-        await getOrderNotificationEmail(),
-
+      // Aperçu historique conservé dans la commande.
+      // L'email réellement envoyé est généré par sendTemplatedOrderEmail().
       generatedEmail: {
-        subject:
-          `[MAISON DES PYRÉNÉES] Nouvelle Commande ${orderRef} - ${String(clientName).trim()}`,
-
-        body:
-          `Réf: ${orderRef}\n` +
-          `Client: ${String(clientName).trim()} (${String(clientEmail).trim()})\n` +
-          `Total: ${computedTotalOrderPrice} ${primaryCurrency}\n` +
-          `Articles: ${validatedItems.length > 0
-            ? validatedItems
-                .map(
-                  (item) =>
-                    `${item.quantity}x ${item.jacketName} (${item.color}, ${item.size})`
-                )
-                .join(', ')
-            : 'Aucun — demande de rendez-vous atelier'}`,
+        subject: '',
+        body: '',
       },
     };
 
-    // ============================================================
-    // ENREGISTREMENT
-    // ============================================================
+    const existingOrders = await getOrdersFromDB();
 
-    const existingOrders =
-      await getOrdersFromDB();
-
-    const updatedOrders = [
+    await saveOrdersToDB([
       createdOrder,
       ...existingOrders,
-    ];
+    ]);
 
-    await saveOrdersToDB(
-      updatedOrders
-    );
+    const emailResult = await sendTemplatedOrderEmail({
+      id: orderRef,
+      clientName: cleanName,
+      clientEmail: cleanEmail,
+      clientPhone: cleanPhone,
+      clientNotes: cleanNotes,
+      salutation: cleanSalutation,
+      orderTypeLabel,
+      items: validatedItems,
+      totalPrice: computedTotalOrderPrice,
+      currency: primaryCurrency,
+      formattedDate,
+    });
 
-    // ============================================================
-    // EMAIL
-    // ============================================================
+    // On conserve dans l'historique le sujet et le corps réellement générés.
+    createdOrder.generatedEmail = {
+      subject: emailResult.subject || '',
+      body: emailResult.body || '',
+    };
 
-    const emailResult =
-      await sendOrderEmailNotification({
-        id: orderRef,
-        clientName:
-          createdOrder.clientName,
-        clientEmail:
-          createdOrder.clientEmail,
-        clientPhone:
-          createdOrder.clientPhone,
-        clientNotes:
-          createdOrder.clientNotes,
-        orderTypeLabel:
-          createdOrder.orderTypeLabel,
-        items:
-          createdOrder.items,
-        totalPrice:
-          createdOrder.totalPrice,
-        currency:
-          createdOrder.currency,
-        formattedDate,
-      });
+    // Mettre à jour l'entrée déjà sauvegardée avec l'email réellement généré.
+    await saveOrdersToDB([
+      createdOrder,
+      ...existingOrders,
+    ]);
 
     return res.status(200).json({
       success: true,
       order: createdOrder,
-      emailSent:
-        emailResult.sent,
-      message:
-        'Commande enregistrée et transmise à l’atelier avec succès.',
+      emailSent: emailResult.sent,
+      emailError: emailResult.sent ? undefined : emailResult.message,
+      message: emailResult.sent
+        ? 'Demande enregistrée et e-mail transmis à l’atelier avec succès.'
+        : 'Demande enregistrée, mais l’e-mail n’a pas pu être envoyé.',
     });
   } catch (error: any) {
-    console.error(
-      'Order Handler Error:',
-      error
-    );
+    console.error('Order Handler Error:', error);
 
     return res.status(500).json({
       success: false,
-      message:
-        'Erreur lors du traitement de la commande.',
+      message: 'Erreur lors du traitement de la demande.',
     });
   }
 }

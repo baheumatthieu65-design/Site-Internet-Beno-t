@@ -1,5 +1,4 @@
 import {
-  checkResetCode,
   parseCookies,
   verifySessionToken,
 } from '../../api/_helpers.js';
@@ -48,15 +47,7 @@ export default async function handler(req: any, res: any) {
         ? JSON.parse(req.body)
         : req.body || {};
 
-    const code = String(body.code || '').trim();
     const templates = body.templates as EmailTemplates;
-
-    if (!code || !checkResetCode(code)) {
-      return json(res, 401, {
-        success: false,
-        message: 'Code administrateur incorrect.',
-      });
-    }
 
     if (
       !templates ||
