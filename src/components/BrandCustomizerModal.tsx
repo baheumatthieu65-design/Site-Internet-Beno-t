@@ -161,8 +161,6 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     return 'theme';
   };
 
-  const [expandedBoutiqueTextId, setExpandedBoutiqueTextId] = useState<string | null>(null);
-
   const [activeTab, setActiveTab] = useState<'landing' | 'brand' | 'articles' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite' | 'boutique-text'>(
     getInitialTab()
   );
@@ -1329,7 +1327,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                   <Type className="w-5 h-5 text-[#d4af37]" /> Texte de la page boutique
                 </h4>
                 <p className="text-[11px] leading-relaxed text-[#aeb9ae] mt-1">
-                  Cliquez sur un texte pour ouvrir ses réglages. Les textes automatiques peuvent être stylisés mais leur contenu reste protégé.
+                  Les textes sont présentés dans l’ordre d’affichage sur la boutique. Modifiez directement le contenu et la présentation. Les textes automatiques peuvent être stylisés, mais leur contenu reste protégé.
                 </p>
               </div>
 
@@ -1338,45 +1336,49 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                   Le moteur d’édition du texte n’est pas connecté à cette version de l’application.
                 </div>
               ) : (
-                Array.from(new Set(boutiqueTextCatalog.map((item) => item.group))).map((group) => (
-                  <div key={group} className="rounded-2xl border border-[#334036] bg-[#151b17] p-3 space-y-2">
-                    <div className="px-1 text-[10px] uppercase tracking-[.16em] text-[#d4af37] font-semibold">{group}</div>
-                    {boutiqueTextCatalog.filter((item) => item.group === group).map((item) => {
-                      const block = getBoutiqueBlock(item);
-                      const overridden = (siteEditorConfig.blocks || []).some((candidate) => candidate.id === item.id && candidate.kind === 'text');
-                      const value = block.text ?? item.defaultText;
-                      const expanded = expandedBoutiqueTextId === item.id;
+                <div className="space-y-4">
+                  {[
+                    'Hero',
+                    'Récit & terroir',
+                    'Comparatif',
+                    'Lookbook',
+                    'Articles / cartes boutique',
+                  ].map((group) => {
+                    const groupItems = boutiqueTextCatalog.filter((item) => item.group === group);
+                    if (!groupItems.length) return null;
 
-                      return (
-                        <div key={item.id} className="rounded-xl border border-[#303d33] bg-[#111613] overflow-hidden">
-                          <button
-                            type="button"
-                            onClick={() => setExpandedBoutiqueTextId(expanded ? null : item.id)}
-                            className="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-[#182019] transition-colors"
-                          >
-                            <div className="min-w-0">
-                              <div className="text-xs font-medium text-[#f3ece0] truncate">{item.label}</div>
-                              <div className="text-[9px] text-[#68776c] mt-0.5 font-mono truncate">
-                                {item.id}
+                    return (
+                      <div key={group} className="rounded-2xl border border-[#334036] bg-[#151b17] p-3 space-y-2">
+                        <div className="px-1 py-1 text-[10px] uppercase tracking-[.16em] text-[#d4af37] font-semibold">{group}</div>
+
+                        {groupItems.map((item) => {
+                          const block = getBoutiqueBlock(item);
+                          const overridden = (siteEditorConfig.blocks || []).some(
+                            (candidate) => candidate.id === item.id && candidate.kind === 'text'
+                          );
+                          const value = block.text ?? item.defaultText;
+
+                          return (
+                            <div key={item.id} className="rounded-xl border border-[#303d33] bg-[#111613] p-3 space-y-2.5">
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="min-w-0">
+                                  <div className="text-xs font-medium text-[#f3ece0]">{item.label}</div>
+                                  <div className="text-[9px] text-[#68776c] mt-0.5 font-mono truncate">{item.id}</div>
+                                </div>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  {item.automatic && (
+                                    <span className="text-[9px] uppercase tracking-wider text-[#8fa096] border border-[#455248] rounded-full px-2 py-0.5">
+                                      Automatique
+                                    </span>
+                                  )}
+                                  {overridden && (
+                                    <span className="text-[9px] uppercase tracking-wider text-[#d4af37] border border-[#d4af37]/40 rounded-full px-2 py-0.5">
+                                      Personnalisé
+                                    </span>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              {item.automatic && (
-                                <span className="text-[9px] uppercase tracking-wider text-[#8fa096] border border-[#455248] rounded-full px-2 py-0.5">
-                                  Automatique
-                                </span>
-                              )}
-                              {overridden && (
-                                <span className="text-[9px] uppercase tracking-wider text-[#d4af37] border border-[#d4af37]/40 rounded-full px-2 py-0.5">
-                                  Personnalisé
-                                </span>
-                              )}
-                              <span className="text-[#9eb0a0] text-xs">{expanded ? '−' : '+'}</span>
-                            </div>
-                          </button>
 
-                          {expanded && (
-                            <div className="border-t border-[#303d33] px-3 py-3 space-y-3">
                               {item.editable === false ? (
                                 <div className="rounded-lg border border-[#303d33] bg-[#171e19] px-3 py-2">
                                   <div className="text-[9px] uppercase tracking-wider text-[#68776c] mb-1">Texte protégé</div>
@@ -1399,22 +1401,37 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                                   value={value}
                                   rows={Math.min(5, Math.max(2, String(value).split('\n').length))}
                                   onChange={(e) => updateBoutiqueText(item, { text: e.target.value, whiteSpace: 'pre-wrap' })}
-                                  className="w-full min-h-[60px] resize-y rounded-lg bg-[#1b231e] border border-[#455248] px-3 py-2 text-xs text-white outline-none focus:border-[#d4af37]"
+                                  className="w-full min-h-[58px] resize-y rounded-lg bg-[#1b231e] border border-[#455248] px-3 py-2 text-xs text-white outline-none focus:border-[#d4af37]"
                                   placeholder={item.defaultText}
                                 />
                               )}
 
                               <div className="grid grid-cols-2 gap-2">
                                 <label className="text-[10px] text-[#a3b1a5]">Police
-                                  <select value={block.fontFamily || 'Playfair Display'} onChange={(e) => updateBoutiqueText(item, { fontFamily: e.target.value })}
-                                    className="mt-1 w-full rounded-lg bg-[#1b231e] border border-[#455248] px-2 py-1.5 text-xs" style={{fontFamily:block.fontFamily || 'Playfair Display'}}>
-                                    {['Playfair Display','Cormorant Garamond','Bodoni Moda','Cinzel','Libre Baskerville','EB Garamond','Lora','DM Serif Display','Great Vibes','Allura','Alex Brush','Ballet','Berkshire Swash','Bonheur Royale','Clicker Script','Dancing Script','Italianno','Lovers Quarrel','Mrs Saint Delafield','Parisienne','Pinyon Script','Sacramento','Tangerine','Qwigley','Lavishly Yours','Mea Culpa','Ms Madi','WindSong','Water Brush','Inter','Montserrat','Arial'].map((fontName) => <option key={fontName} value={fontName} style={{fontFamily:fontName}}>{fontName}</option>)}
+                                  <select
+                                    value={block.fontFamily || 'Playfair Display'}
+                                    onChange={(e) => updateBoutiqueText(item, { fontFamily: e.target.value })}
+                                    className="mt-1 w-full rounded-lg bg-[#1b231e] border border-[#455248] px-2 py-1.5 text-xs"
+                                    style={{fontFamily:block.fontFamily || 'Playfair Display'}}
+                                  >
+                                    {['Playfair Display','Cormorant Garamond','Bodoni Moda','Cinzel','Libre Baskerville','EB Garamond','Lora','DM Serif Display','Great Vibes','Allura','Alex Brush','Ballet','Berkshire Swash','Bonheur Royale','Clicker Script','Dancing Script','Italianno','Lovers Quarrel','Mrs Saint Delafield','Parisienne','Pinyon Script','Sacramento','Tangerine','Qwigley','Lavishly Yours','Mea Culpa','Ms Madi','WindSong','Water Brush','Inter','Montserrat','Arial'].map((fontName) => (
+                                      <option key={fontName} value={fontName} style={{fontFamily:fontName}}>{fontName}</option>
+                                    ))}
                                   </select>
                                 </label>
+
                                 <label className="text-[10px] text-[#a3b1a5]">Taille
-                                  <select value={block.fontSize || 'inherit'} onChange={(e) => updateBoutiqueText(item, { fontSize: e.target.value === 'inherit' ? undefined : e.target.value })}
-                                    className="mt-1 w-full rounded-lg bg-[#1b231e] border border-[#455248] px-2 py-1.5 text-xs">
-                                    <option value="inherit">Taille actuelle</option><option value="12px">12 px</option><option value="14px">14 px</option><option value="16px">16 px</option><option value="18px">18 px</option><option value="20px">20 px</option><option value="24px">24 px</option><option value="28px">28 px</option><option value="32px">32 px</option><option value="36px">36 px</option><option value="42px">42 px</option><option value="48px">48 px</option><option value="56px">56 px</option><option value="64px">64 px</option><option value="72px">72 px</option>
+                                  <select
+                                    value={block.fontSize || 'inherit'}
+                                    onChange={(e) => updateBoutiqueText(item, { fontSize: e.target.value === 'inherit' ? undefined : e.target.value })}
+                                    className="mt-1 w-full rounded-lg bg-[#1b231e] border border-[#455248] px-2 py-1.5 text-xs"
+                                  >
+                                    <option value="inherit">Taille actuelle</option>
+                                    <option value="12px">12 px</option><option value="14px">14 px</option><option value="16px">16 px</option>
+                                    <option value="18px">18 px</option><option value="20px">20 px</option><option value="24px">24 px</option>
+                                    <option value="28px">28 px</option><option value="32px">32 px</option><option value="36px">36 px</option>
+                                    <option value="42px">42 px</option><option value="48px">48 px</option><option value="56px">56 px</option>
+                                    <option value="64px">64 px</option><option value="72px">72 px</option>
                                   </select>
                                 </label>
                               </div>
@@ -1423,25 +1440,38 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                                 <button type="button" onClick={() => updateBoutiqueText(item, { fontWeight: block.fontWeight === '700' ? undefined : '700' })} className={`rounded-lg border px-2.5 py-1.5 text-xs font-bold ${block.fontWeight === '700' ? 'border-[#d4af37] bg-[#29362c] text-[#d4af37]' : 'border-[#455248] text-[#d8dfd7]'}`}>G</button>
                                 <button type="button" onClick={() => updateBoutiqueText(item, { fontStyle: block.fontStyle === 'italic' ? undefined : 'italic' })} className={`rounded-lg border px-2.5 py-1.5 text-xs italic ${block.fontStyle === 'italic' ? 'border-[#d4af37] bg-[#29362c] text-[#d4af37]' : 'border-[#455248] text-[#d8dfd7]'}`}>I</button>
                                 <button type="button" onClick={() => updateBoutiqueText(item, { textDecoration: block.textDecoration === 'underline' ? undefined : 'underline' })} className={`rounded-lg border px-2.5 py-1.5 text-xs underline ${block.textDecoration === 'underline' ? 'border-[#d4af37] bg-[#29362c] text-[#d4af37]' : 'border-[#455248] text-[#d8dfd7]'}`}>S</button>
-                                <label className="inline-flex items-center gap-1.5 rounded-lg border border-[#455248] px-2.5 py-1.5 text-[10px] text-[#d8dfd7]">Couleur
-                                  <input type="color" value={/^#[0-9a-f]{6}$/i.test(block.color || '') ? block.color! : '#F5EEDF'} onChange={(e) => updateBoutiqueText(item, { color: e.target.value })}
-                                    className="h-5 w-7 rounded bg-transparent" />
+
+                                <label className="inline-flex items-center gap-1.5 rounded-lg border border-[#455248] px-2.5 py-1.5 text-[10px] text-[#d8dfd7]">
+                                  Couleur
+                                  <input
+                                    type="color"
+                                    value={/^#[0-9a-f]{6}$/i.test(block.color || '') ? block.color! : '#F5EEDF'}
+                                    onChange={(e) => updateBoutiqueText(item, { color: e.target.value })}
+                                    className="h-5 w-7 rounded bg-transparent"
+                                  />
                                 </label>
+
                                 <div className="flex items-center gap-1 rounded-lg border border-[#455248] px-2 py-1.5">
                                   {['#F5EEDF','#D4AF37','#C2A26D','#A3B1A5','#B8C5BA','#D0C5B4','#8FA096','#E2D5C3','#FFFFFF','#111613','#5C7A62','#8C6D3F'].map((swatch) => (
                                     <button key={swatch} type="button" title={swatch} onClick={() => updateBoutiqueText(item, { color: swatch })} className="h-4 w-4 rounded-full border border-white/20" style={{ backgroundColor: swatch }} />
                                   ))}
                                 </div>
-                                <button type="button" onClick={() => updateBoutiqueText(item, { whiteSpace: block.whiteSpace === 'pre-wrap' ? undefined : 'pre-wrap' })} className={`rounded-lg border px-2.5 py-1.5 text-[10px] ${block.whiteSpace === 'pre-wrap' ? 'border-[#d4af37] bg-[#29362c] text-[#d4af37]' : 'border-[#455248] text-[#d8dfd7]'}`}>↵ Retours</button>
-                                <button type="button" onClick={() => removeBoutiqueTextOverride(item)} disabled={!overridden} className="rounded-lg border border-[#455248] px-2.5 py-1.5 text-[10px] text-[#aeb9ae] disabled:opacity-40">Réinitialiser</button>
+
+                                <button type="button" onClick={() => updateBoutiqueText(item, { whiteSpace: block.whiteSpace === 'pre-wrap' ? undefined : 'pre-wrap' })} className={`rounded-lg border px-2.5 py-1.5 text-[10px] ${block.whiteSpace === 'pre-wrap' ? 'border-[#d4af37] bg-[#29362c] text-[#d4af37]' : 'border-[#455248] text-[#d8dfd7]'}`}>
+                                  ↵ Retours
+                                </button>
+
+                                <button type="button" onClick={() => removeBoutiqueTextOverride(item)} disabled={!overridden} className="rounded-lg border border-[#455248] px-2.5 py-1.5 text-[10px] text-[#aeb9ae] disabled:opacity-40">
+                                  Réinitialiser
+                                </button>
                               </div>
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
           )}
