@@ -1455,7 +1455,7 @@ export const publishedSiteContent = {
         "name": "test",
         "subTitle": "Confection Artisanale des Pyrénées",
         "category": "Homme \u0026 Femme",
-        "price": 490,
+        "price": 50,
         "currency": "€",
         "heroImage": "https://images.unsplash.com/photo-1544441893-675973e31985?auto=format\u0026fit=crop\u0026q=80\u0026w=1000",
         "gallery": [
@@ -1504,7 +1504,8 @@ export const publishedSiteContent = {
         "hotspots": [],
         "customSpecs": {},
         "id": "produit-1787294817714-0t3rcd",
-        "adminVatRate": 20
+        "adminVatRate": 20,
+        "adminCost": 35
       },
       {
         "name": "Tapis de yoga",
@@ -2213,5 +2214,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1788206834626
+  "publishedAt": 1788207013043
 } as const;
