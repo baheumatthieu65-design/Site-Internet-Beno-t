@@ -40,6 +40,9 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
   theme,
   isAdminLoggedIn,
   onOpenEditorSection,
+  onSelectJacket,
+  selectedCategory,
+  onSelectCategory,
   onOpenInquiry,
 }) => {
   const cardStyle = getCardClasses(theme);
@@ -56,7 +59,7 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
     ? theme.comparisonCriteria
     : DEFAULT_CRITERIA;
 
-  const categories = getCatalogCategories(jackets, theme?.catalogCategories || []);
+  const categories = getCatalogCategories(jackets);
   const activeCategory = categories.some((type) => type.id === selectedCategory)
     ? selectedCategory
     : categories[0]?.id || '';
