@@ -1325,8 +1325,7 @@ export const publishedSiteContent = {
         "isAvailable": true,
         "availabilityStatus": "on-sale",
         "customSpecs": {},
-        "adminCost": 85,
-        "adminProfit": 25
+        "adminCost": 70
       },
       {
         "name": "Veste des Cîmes Enfant",
@@ -1386,8 +1385,7 @@ export const publishedSiteContent = {
         "id": "produit-1787241378430-715p3s",
         "availabilityStatus": "on-sale",
         "customSpecs": {},
-        "adminCost": 50,
-        "adminProfit": 10
+        "adminCost": 50
       },
       {
         "name": "Todebag",
@@ -1448,7 +1446,6 @@ export const publishedSiteContent = {
         "id": "produit-1787242939553-ezbmjg",
         "availabilityStatus": "on-sale",
         "customSpecs": {},
-        "adminProfit": 10,
         "adminCost": 40
       },
       {
@@ -1554,8 +1551,7 @@ export const publishedSiteContent = {
         "customSpecs": {},
         "id": "produit-1787937546249-yac3yh",
         "showcaseEyebrow": "Un moment de détente encré dans les traditions",
-        "adminCost": 150,
-        "adminProfit": 30
+        "adminCost": 150
       }
     ],
     "theme": {
@@ -2212,5 +2208,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1788205526533
+  "publishedAt": 1788206400047
 } as const;
