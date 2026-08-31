@@ -213,6 +213,10 @@ export interface JacketModel {
 
   currency: string;
 
+  /** Données de gestion financière visibles uniquement dans l'administration. */
+  adminRevenue?: number;
+  adminProfit?: number;
+
   heroImage: string;
   gallery: string[];
 

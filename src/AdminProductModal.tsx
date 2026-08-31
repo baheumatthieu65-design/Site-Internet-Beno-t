@@ -315,6 +315,8 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       category: categoryOptions[0] || (products || []).map((product) => String(product.category || '').trim()).find(Boolean) || 'Signatures',
       price: 490,
       currency: '€',
+      adminRevenue: 490,
+      adminProfit: 0,
       heroImage: 'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&q=80&w=1000',
       gallery: [
         'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&q=80&w=1000',
@@ -623,6 +625,45 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                       <option value="CHF">CHF</option>
                       <option value="£">£ (GBP)</option>
                     </select>
+                  </div>
+                </div>
+
+                <div className="md:col-span-2 p-4 rounded-2xl bg-[#111612] border border-[#6b5a24] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-bold text-[#d4af37] block">Données financières internes — Administration</span>
+                      <span className="text-[10px] text-[#8f9d91]">Ces montants ne sont jamais affichés sur le site public.</span>
+                    </div>
+                    <DollarSign className="w-4 h-4 text-[#d4af37]" />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-[#a3b1a5] mb-1">Chiffre d'affaires unitaire</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={editingProduct.adminRevenue ?? editingProduct.price ?? 0}
+                          onChange={(e) => setEditingProduct({ ...editingProduct, adminRevenue: Number(e.target.value) })}
+                          className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                        />
+                        <span className="text-xs text-[#a3b1a5]">{editingProduct.currency || '€'}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-[#a3b1a5] mb-1">Bénéfice unitaire</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={editingProduct.adminProfit ?? 0}
+                          onChange={(e) => setEditingProduct({ ...editingProduct, adminProfit: Number(e.target.value) })}
+                          className="w-full bg-[#121613] border border-[#38483b] text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                        />
+                        <span className="text-xs text-[#a3b1a5]">{editingProduct.currency || '€'}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -1066,6 +1107,10 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                         <div className="flex items-center justify-between pt-1 border-t border-[#253227] text-xs">
                           <span className="font-serif text-lg font-bold text-[#d4af37]">
                             {p.price} {p.currency || '€'}
+                          </span>
+                          <span className="text-[10px] text-[#a3b1a5] text-right">
+                            CA {Number(p.adminRevenue ?? p.price ?? 0).toLocaleString('fr-FR')} {p.currency || '€'} ·
+                            Bénéfice {Number(p.adminProfit ?? 0).toLocaleString('fr-FR')} {p.currency || '€'}
                           </span>
                           <span className="text-[11px] text-[#a3b1a5]">
                             {p.sizes?.length || 0} taille(s) | {p.colors?.length || 0} nuance(s)

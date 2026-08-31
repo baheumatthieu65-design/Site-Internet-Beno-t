@@ -61,6 +61,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
   const [brandName, setBrandName] = useState('Maison Mailhagut');
   const [replyPreviewOrder, setReplyPreviewOrder] = useState<CustomerOrder | null>(null);
   const [replyMailClient, setReplyMailClient] = useState<'gmail' | 'outlook' | 'yahoo' | 'default'>('gmail');
+  const [adminProductFinancials, setAdminProductFinancials] = useState<Record<string, { adminRevenue: number; adminProfit: number }>>({});
 
   useEffect(() => {
     const loadCustomerReplyTemplate = async () => {
@@ -98,6 +99,53 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
 
     void loadCustomerReplyTemplate();
   }, []);
+
+  useEffect(() => {
+    const loadAdminProductFinancials = async () => {
+      try {
+        const response = await fetch('/api/admin/products', { credentials: 'include', cache: 'no-store' });
+        if (!response.ok) return;
+        const data = await response.json();
+        const products = Array.isArray(data?.products) ? data.products : [];
+        const next: Record<string, { adminRevenue: number; adminProfit: number }> = {};
+        products.forEach((product: any) => {
+          if (!product?.id) return;
+          next[String(product.id)] = {
+            adminRevenue: Number.isFinite(Number(product.adminRevenue)) ? Number(product.adminRevenue) : Number(product.price) || 0,
+            adminProfit: Number.isFinite(Number(product.adminProfit)) ? Number(product.adminProfit) : 0,
+          };
+        });
+        setAdminProductFinancials(next);
+      } catch (error) {
+        console.warn('Impossible de charger les données financières administrateur :', error);
+      }
+    };
+    void loadAdminProductFinancials();
+  }, []);
+
+  const getItemFinancials = (item: any) => {
+    const fallback = adminProductFinancials[String(item?.jacketId || '')];
+    return {
+      adminRevenue: Number.isFinite(Number(item?.adminRevenue))
+        ? Number(item.adminRevenue)
+        : (fallback?.adminRevenue ?? (Number.isFinite(Number(item?.unitPrice)) ? Number(item?.unitPrice) : 0)),
+      adminProfit: Number.isFinite(Number(item?.adminProfit))
+        ? Number(item.adminProfit)
+        : (fallback?.adminProfit ?? 0),
+    };
+  };
+
+  const getOrderFinancials = (order: CustomerOrder) =>
+    (order.items || []).reduce(
+      (acc, item) => {
+        const financials = getItemFinancials(item);
+        const quantity = Number(item.quantity || 0);
+        acc.revenue += financials.adminRevenue * quantity;
+        acc.profit += financials.adminProfit * quantity;
+        return acc;
+      },
+      { revenue: 0, profit: 0 }
+    );
 
   const escapeHtml = (value: string) =>
     value
@@ -387,6 +435,16 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
     return total + (Number(order.totalPrice) || 0);
   }, 0);
   const activeTotal = filteredOrders.reduce((total, order) => total + (order.status === 'Commande annulée' ? 0 : Number(order.totalPrice) || 0), 0);
+  const filteredFinancialTotals = filteredOrders.reduce(
+    (acc, order) => {
+      if (order.status === 'Commande annulée') return acc;
+      const financials = getOrderFinancials(order);
+      acc.revenue += financials.revenue;
+      acc.profit += financials.profit;
+      return acc;
+    },
+    { revenue: 0, profit: 0 }
+  );
 
   // Status color badge map
   const getStatusBadgeStyle = (st: string) => {
@@ -457,6 +515,17 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
               <strong className={`text-sm font-mono ${String(color)}`}>{Number(value).toLocaleString('fr-FR')} €</strong>
             </div>
           ))}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+          <div className="rounded-xl bg-[#121613] border border-[#2e3b30] px-3 py-2">
+            <span className="text-[9px] uppercase tracking-wider text-[#8f9d91] block">Chiffre d'affaires — sélection</span>
+            <strong className="text-sm font-mono text-[#d4af37]">{filteredFinancialTotals.revenue.toLocaleString('fr-FR')} €</strong>
+          </div>
+          <div className="rounded-xl bg-[#121613] border border-[#2e3b30] px-3 py-2">
+            <span className="text-[9px] uppercase tracking-wider text-[#8f9d91] block">Bénéfice — sélection</span>
+            <strong className="text-sm font-mono text-emerald-300">{filteredFinancialTotals.profit.toLocaleString('fr-FR')} €</strong>
+          </div>
         </div>
 
         {/* ----------------------------------------------------------------- */}
@@ -762,9 +831,19 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
                       <span className="text-xs uppercase tracking-widest font-bold text-[#d4af37] font-serif">
                         Détail des Articles ({order.totalQuantity} pièces)
                       </span>
-                      <span className="font-serif text-sm font-bold text-[#f3ece0]">
-                        Total : {order.totalPrice} {order.currency || '€'}
-                      </span>
+                      <div className="text-right">
+                        <span className="font-serif text-sm font-bold text-[#f3ece0] block">
+                          Total : {order.totalPrice} {order.currency || '€'}
+                        </span>
+                        {(() => {
+                          const financials = getOrderFinancials(order);
+                          return (
+                            <span className="text-[10px] text-[#a3b1a5] block mt-0.5">
+                              CA : {financials.revenue.toLocaleString('fr-FR')} {order.currency || '€'} · Bénéfice : {financials.profit.toLocaleString('fr-FR')} {order.currency || '€'}
+                            </span>
+                          );
+                        })()}
+                      </div>
                     </div>
 
                     <div className="space-y-1.5">
@@ -780,9 +859,20 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
                             </span>
                           </div>
                           <div className="text-right pl-3 flex-shrink-0">
-                            <span className="font-mono text-white font-bold block">
-                              {item.quantity} × {item.unitPrice} € = {item.totalPrice} €
-                            </span>
+                            {(() => {
+                              const financials = getItemFinancials(item);
+                              const quantity = Number(item.quantity || 0);
+                              return (
+                                <>
+                                  <span className="font-mono text-white font-bold block">
+                                    {item.quantity} × {item.unitPrice} € = {item.totalPrice} €
+                                  </span>
+                                  <span className="text-[10px] text-[#a3b1a5] block">
+                                    CA {(financials.adminRevenue * quantity).toLocaleString('fr-FR')} {order.currency || '€'} · Bénéfice {(financials.adminProfit * quantity).toLocaleString('fr-FR')} {order.currency || '€'}
+                                  </span>
+                                </>
+                              );
+                            })()}
                           </div>
                         </div>
                       ))}

@@ -15,8 +15,12 @@ const normalizeProductImages = (product: any) => {
     )
   );
 
+  const publicProduct = { ...product };
+  delete publicProduct.adminRevenue;
+  delete publicProduct.adminProfit;
+
   return {
-    ...product,
+    ...publicProduct,
     heroImage,
     gallery: Array.from(new Set([heroImage, ...secondaryImages].filter(Boolean))),
   };
