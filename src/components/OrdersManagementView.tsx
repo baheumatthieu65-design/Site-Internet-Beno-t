@@ -57,6 +57,97 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
   const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [isSendingReport, setIsSendingReport] = useState(false);
+  const [customerReplyTemplate, setCustomerReplyTemplate] = useState<{ subject: string; body: string } | null>(null);
+  const [brandName, setBrandName] = useState('Maison Mailhagut');
+
+  useEffect(() => {
+    const loadCustomerReplyTemplate = async () => {
+      try {
+        const [templatesResponse, configResponse] = await Promise.all([
+          fetch('/api/admin/email-templates', {
+            credentials: 'include',
+            cache: 'no-store',
+          }),
+          fetch('/api/site-config', {
+            cache: 'no-store',
+          }),
+        ]);
+
+        if (templatesResponse.ok) {
+          const data = await templatesResponse.json();
+          if (data?.success && data.templates?.customerReply) {
+            setCustomerReplyTemplate(data.templates.customerReply);
+          }
+        }
+
+        if (configResponse.ok) {
+          const data = await configResponse.json();
+          const logoText = data?.config?.logos?.boutique?.text;
+          if (typeof logoText === 'string' && logoText.trim()) {
+            setBrandName(logoText.trim().replace(/\\s*\\n\\s*/g, ' '));
+          } else if (typeof data?.config?.brandName === 'string' && data.config.brandName.trim()) {
+            setBrandName(data.config.brandName.trim());
+          }
+        }
+      } catch (error) {
+        console.warn('Impossible de charger le modèle de réponse client :', error);
+      }
+    };
+
+    void loadCustomerReplyTemplate();
+  }, []);
+
+  const renderCustomerReply = (order: CustomerOrder) => {
+    if (!customerReplyTemplate) return null;
+
+    const articles = order.items.length
+      ? order.items
+          .map(
+            (item) =>
+              `${item.quantity} × ${item.jacketName} (${item.color}, ${item.size}) — ${item.totalPrice} ${order.currency || '€'}`
+          )
+          .join('\n')
+      : 'Aucun article — demande de rendez-vous atelier';
+
+    const values: Record<string, string> = {
+      civilite: order.salutation || 'Monsieur',
+      nom: order.clientName || '',
+      telephone: order.clientPhone || 'Non renseigné',
+      email: order.clientEmail || '',
+      remarques: order.clientNotes || 'Aucune',
+      date: order.date || '',
+      reference: order.id || '',
+      marque: brandName,
+      type: order.orderTypeLabel || 'Demande',
+      articles,
+      total: String(order.totalPrice ?? 0),
+      devise: order.currency || '€',
+      statut: order.status || '',
+    };
+
+    const replaceTokens = (input: string) =>
+      input.replace(
+        /{{\s*([a-zA-Z0-9_]+)\s*}}/g,
+        (_, token: string) => values[token] ?? ''
+      );
+
+    return {
+      subject: replaceTokens(customerReplyTemplate.subject),
+      body: replaceTokens(customerReplyTemplate.body),
+    };
+  };
+
+  const handleReplyToCustomer = (order: CustomerOrder) => {
+    const rendered = renderCustomerReply(order);
+
+    if (!rendered) {
+      showToast('Le modèle de réponse client est encore en cours de chargement.');
+      return;
+    }
+
+    const mailto = `mailto:${order.clientEmail}?subject=${encodeURIComponent(rendered.subject)}&body=${encodeURIComponent(rendered.body)}`;
+    window.open(mailto, '_blank', 'noopener,noreferrer');
+  };
 
   const getWeekInputValue = (date: Date) => {
     const copy = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -217,7 +308,9 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
       o.clientEmail.toLowerCase().includes(query) ||
       o.items.some((i) => i.jacketName.toLowerCase().includes(query));
     const matchesStatus = selectedStatusFilter === 'all' || o.status === selectedStatusFilter;
-    const isAppointment = o.orderType === 'essayage' || o.orderTypeLabel === 'Réservation Atelier & Essayage';
+    const isAppointment =
+      o.orderType === 'essayage' ||
+      o.orderTypeLabel === 'Réservation Atelier & Essayage';
     const matchesType =
       selectedTypeFilter === 'all' ||
       (selectedTypeFilter === 'appointments' && isAppointment) ||
@@ -373,7 +466,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
             <button
               type="button"
               onClick={handleAddStatus}
-              className="h-[46px] px-4 py-2.5 rounded-xl bg-[#28362b] border border-[#d4af37] text-[#d4af37] hover:bg-[#344638] text-xs font-bold uppercase tracking-wider flex items-center space-x-1.5 cursor-pointer whitespace-nowrap"
+              className="px-4 py-2.5 rounded-xl bg-[#28362b] border border-[#d4af37] text-[#d4af37] hover:bg-[#344638] text-xs font-bold uppercase tracking-wider flex items-center space-x-1.5 cursor-pointer whitespace-nowrap"
             >
               <Plus className="w-4 h-4" />
               <span>Ajouter au Menu Déroulant</span>
@@ -382,72 +475,94 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
         </div>
 
         {/* SEARCH AND FILTER BAR */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
-          <div className="relative w-full sm:w-72">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(240px,1fr)_auto] items-center gap-3 pt-1 w-full">
+          <div className="relative w-full lg:max-w-sm h-10">
             <Search className="w-4 h-4 absolute left-3.5 top-3 text-[#7d8c7f]" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Rechercher nom, ref, mail, veste..."
-              className="w-full bg-[#121613] border border-[#334235] text-xs text-white pl-10 pr-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+              className="w-full h-10 bg-[#121613] border border-[#334235] text-xs text-white pl-10 pr-3.5 rounded-xl outline-none focus:border-[#d4af37]"
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
-            <span className="text-xs text-[#a3b1a5] whitespace-nowrap flex items-center gap-1"><Filter className="w-3.5 h-3.5 text-[#d4af37]" /> Type :</span>
-            <select
-              value={selectedTypeFilter}
-              onChange={(e) => setSelectedTypeFilter(e.target.value as typeof selectedTypeFilter)}
-              className="bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 py-2 rounded-xl outline-none focus:border-[#d4af37] cursor-pointer"
-              title="Filtrer par type"
-            >
-              <option value="all">Commandes + rendez-vous</option>
-              <option value="orders">Commandes uniquement</option>
-              <option value="appointments">Rendez-vous atelier uniquement</option>
-            </select>
-            <span className="text-xs text-[#a3b1a5] whitespace-nowrap flex items-center gap-1">État :</span>
-            <select value={selectedStatusFilter} onChange={(e) => setSelectedStatusFilter(e.target.value)} className="bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 py-2 rounded-xl outline-none focus:border-[#d4af37] cursor-pointer">
-              <option value="all">Tous ({orders.length})</option>
-              {availableStatuses.map((st) => <option key={st} value={st}>{st}</option>)}
-            </select>
-            <select
-              value={periodMode}
-              onChange={(e) => {
-                const mode = e.target.value as typeof periodMode;
-                setPeriodMode(mode);
-                const now = new Date();
-                setPeriodValue(mode === 'week' ? getWeekInputValue(now) : mode === 'month' ? getMonthInputValue(now) : mode === 'year' ? getYearInputValue(now) : '');
-              }}
-              className="bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 py-2 rounded-xl outline-none focus:border-[#d4af37] cursor-pointer"
-            >
-              <option value="all">Toutes les périodes</option>
-              <option value="week">Semaine</option>
-              <option value="month">Mois</option>
-              <option value="year">Année</option>
-            </select>
-            {periodMode === 'week' && <input type="week" value={periodValue || getWeekInputValue(new Date())} onChange={(e) => setPeriodValue(e.target.value)} className="bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-2.5 py-2 rounded-xl outline-none focus:border-[#d4af37]" />}
-            {periodMode === 'month' && <input type="month" value={periodValue || getMonthInputValue(new Date())} onChange={(e) => setPeriodValue(e.target.value)} className="bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-2.5 py-2 rounded-xl outline-none focus:border-[#d4af37]" />}
-            {periodMode === 'year' && <select value={periodValue || getYearInputValue(new Date())} onChange={(e) => setPeriodValue(e.target.value)} className="bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 py-2 rounded-xl outline-none focus:border-[#d4af37]">
-              {Array.from(new Set(orders.map((o) => new Date(getOrderTimestamp(o)).getFullYear()).filter((y) => Number.isFinite(y)))).sort((a,b) => b-a).map((year) => <option key={year} value={String(year)}>{year}</option>)}
-            </select>}
-            <span className="text-xs text-[#a3b1a5] whitespace-nowrap flex items-center gap-1"><ArrowUpDown className="w-3.5 h-3.5 text-[#d4af37]" /> Date :</span>
-            <select value={dateSort} onChange={(e) => setDateSort(e.target.value as typeof dateSort)} className="bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 py-2 rounded-xl outline-none focus:border-[#d4af37]">
-              <option value="newest">Plus récentes</option>
-              <option value="oldest">Plus anciennes</option>
-            </select>
+          <div className="flex flex-wrap items-center justify-start lg:justify-end gap-2 w-full">
+            <div className="h-10 flex items-center gap-1.5">
+              <Filter className="w-3.5 h-3.5 text-[#d4af37]" />
+              <span className="text-xs text-[#a3b1a5] whitespace-nowrap">Type :</span>
+              <select
+                value={selectedTypeFilter}
+                onChange={(e) => setSelectedTypeFilter(e.target.value as typeof selectedTypeFilter)}
+                className="h-10 bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 rounded-xl outline-none focus:border-[#d4af37] cursor-pointer"
+                title="Filtrer par type"
+              >
+                <option value="all">Commandes + rendez-vous</option>
+                <option value="orders">Commandes uniquement</option>
+                <option value="appointments">Rendez-vous atelier uniquement</option>
+              </select>
+            </div>
+
+            <div className="h-10 flex items-center gap-1.5">
+              <span className="text-xs text-[#a3b1a5] whitespace-nowrap">État :</span>
+              <select
+                value={selectedStatusFilter}
+                onChange={(e) => setSelectedStatusFilter(e.target.value)}
+                className="h-10 bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 rounded-xl outline-none focus:border-[#d4af37] cursor-pointer"
+              >
+                <option value="all">Tous ({orders.length})</option>
+                {availableStatuses.map((st) => <option key={st} value={st}>{st}</option>)}
+              </select>
+            </div>
+
+            <div className="h-10 flex items-center gap-1.5">
+              <select
+                value={periodMode}
+                onChange={(e) => {
+                  const mode = e.target.value as typeof periodMode;
+                  setPeriodMode(mode);
+                  const now = new Date();
+                  setPeriodValue(mode === 'week' ? getWeekInputValue(now) : mode === 'month' ? getMonthInputValue(now) : mode === 'year' ? getYearInputValue(now) : '');
+                }}
+                className="h-10 bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 rounded-xl outline-none focus:border-[#d4af37] cursor-pointer"
+              >
+                <option value="all">Toutes les périodes</option>
+                <option value="week">Semaine</option>
+                <option value="month">Mois</option>
+                <option value="year">Année</option>
+              </select>
+              {periodMode === 'week' && <input type="week" value={periodValue || getWeekInputValue(new Date())} onChange={(e) => setPeriodValue(e.target.value)} className="h-10 bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-2.5 rounded-xl outline-none focus:border-[#d4af37]" />}
+              {periodMode === 'month' && <input type="month" value={periodValue || getMonthInputValue(new Date())} onChange={(e) => setPeriodValue(e.target.value)} className="h-10 bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-2.5 rounded-xl outline-none focus:border-[#d4af37]" />}
+              {periodMode === 'year' && <select value={periodValue || getYearInputValue(new Date())} onChange={(e) => setPeriodValue(e.target.value)} className="h-10 bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 rounded-xl outline-none focus:border-[#d4af37]">
+                {Array.from(new Set(orders.map((o) => new Date(getOrderTimestamp(o)).getFullYear()).filter((y) => Number.isFinite(y)))).sort((a,b) => b-a).map((year) => <option key={year} value={String(year)}>{year}</option>)}
+              </select>}
+            </div>
+
+            <div className="h-10 flex items-center gap-1.5">
+              <ArrowUpDown className="w-3.5 h-3.5 text-[#d4af37]" />
+              <span className="text-xs text-[#a3b1a5] whitespace-nowrap">Date :</span>
+              <select value={dateSort} onChange={(e) => setDateSort(e.target.value as typeof dateSort)} className="h-10 bg-[#121613] border border-[#38483b] text-xs text-[#f3ece0] px-3 rounded-xl outline-none focus:border-[#d4af37]">
+                <option value="newest">Plus récentes</option>
+                <option value="oldest">Plus anciennes</option>
+              </select>
+            </div>
+
             <button type="button" onClick={async () => {
               if (isSendingReport) return;
               setIsSendingReport(true);
               try {
                 const response = await fetch('/api/admin/orders-report', {
-                  method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                  method: 'POST',
+                  credentials: 'include',
+                  headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
                   body: JSON.stringify({
                     to: reportEmail,
                     orderIds: filteredOrders.map((order) => order.id),
                     status: selectedStatusFilter,
                     orderType: selectedTypeFilter,
-                    periodMode, periodValue, searchQuery,
+                    periodMode,
+                    periodValue,
+                    searchQuery,
                   }),
                 });
                 const data = await response.json().catch(() => null);
@@ -455,17 +570,18 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
                 showToast(`Rapport envoyé à ${reportEmail}.`);
               } catch (error) {
                 showToast(error instanceof Error ? error.message : 'Impossible d’envoyer le rapport.');
-              } finally { setIsSendingReport(false); }
-            }} disabled={isSendingReport} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#d4af37] text-[#121613] text-xs font-bold disabled:opacity-50" title="Envoyer un rapport par email avec les filtres actuels">
+              } finally {
+                setIsSendingReport(false);
+              }
+            }} disabled={isSendingReport} className="h-10 inline-flex items-center justify-center gap-1.5 px-3 rounded-xl bg-[#d4af37] text-[#121613] text-xs font-bold whitespace-nowrap disabled:opacity-50" title="Envoyer un rapport par email avec les filtres actuels">
               <Mail className="w-3.5 h-3.5" /> {isSendingReport ? 'Envoi…' : 'Rapport par mail'}
             </button>
-            <button type="button" onClick={() => void refreshData()} disabled={isRefreshing} className="p-2 rounded-xl bg-[#28362b] border border-[#3b4b3e] text-[#d4af37] hover:border-[#d4af37] disabled:opacity-50" title="Actualiser les commandes">
+
+            <button type="button" onClick={() => void refreshData()} disabled={isRefreshing} className="h-10 w-10 inline-flex items-center justify-center rounded-xl bg-[#28362b] border border-[#3b4b3e] text-[#d4af37] hover:border-[#d4af37] disabled:opacity-50" title="Actualiser les commandes">
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
-      </div>
-
       {/* ----------------------------------------------------------------- */}
       {/* ORDERS LIST CLASSIFIED BY STATUS (WITH 'Commande passée' FIRST)     */}
       {/* ----------------------------------------------------------------- */}
@@ -673,6 +789,15 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
                             <ExternalLink className="w-3.5 h-3.5" />
                             <span>Ouvrir dans client e-mail</span>
                           </a>
+                          <button
+                            type="button"
+                            onClick={() => handleReplyToCustomer(order)}
+                            className="px-3 py-1 rounded-lg bg-[#28362b] hover:bg-[#344638] border border-emerald-500/70 text-emerald-300 text-xs font-bold flex items-center space-x-1 cursor-pointer"
+                            title="Préparer une réponse personnalisée pour le client"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            <span>Répondre au client</span>
+                          </button>
                         </div>
                       </div>
 
