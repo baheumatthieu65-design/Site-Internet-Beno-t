@@ -1329,7 +1329,7 @@ export const publishedSiteContent = {
       {
         "name": "Veste des Cîmes Enfant",
         "subTitle": "Confection Artisanale des Pyrénées",
-        "category": "Femme \u0026 Enfant",
+        "category": "Femme \u0026 Enfant 2",
         "price": 60,
         "currency": "€",
         "heroImage": "https://fw3pw0zady2vfqcl.public.blob.vercel-storage.com/site-media/1787255936718-Image-3.jpg",
@@ -2188,5 +2188,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1788185270264
+  "publishedAt": 1788185281888
 } as const;
