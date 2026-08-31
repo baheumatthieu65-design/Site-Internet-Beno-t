@@ -3,27 +3,30 @@ import React from 'react';
 export interface CreationType {
   id: string;
   label: string;
-  count: number;
+  count?: number;
 }
 
 interface CreationTypeTabsProps {
   types: CreationType[];
-  selectedType: string;
-  onSelect: (typeId: string) => void;
+  selectedCategory: string;
+  onSelect: (category: string) => void;
+  counts?: Record<string, number>;
 }
 
 export function CreationTypeTabs({
   types,
-  selectedType,
+  selectedCategory,
   onSelect,
+  counts = {},
 }: CreationTypeTabsProps) {
   if (!types.length) return null;
 
   return (
     <div className="w-full overflow-x-auto">
-      <div className="flex items-center gap-2 sm:gap-3 min-w-max pb-2">
+      <div className="flex items-center justify-center gap-2 sm:gap-3 min-w-max pb-2">
         {types.map((type) => {
-          const selected = selectedType === type.id;
+          const selected = selectedCategory === type.id;
+          const count = counts[type.id] ?? type.count ?? 0;
 
           return (
             <button
@@ -38,7 +41,6 @@ export function CreationTypeTabs({
               }`}
             >
               <span>{type.label}</span>
-
               <span
                 className={`inline-flex items-center justify-center min-w-[1.5rem] h-6 px-1.5 rounded-full text-[10px] font-semibold ${
                   selected
@@ -46,7 +48,7 @@ export function CreationTypeTabs({
                     : 'bg-[#2c372f]/10 text-[#2c372f]'
                 }`}
               >
-                {type.count}
+                {count}
               </span>
             </button>
           );

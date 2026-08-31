@@ -40,6 +40,9 @@ export const JacketComparison: React.FC<JacketComparisonProps> = ({
   theme,
   isAdminLoggedIn,
   onOpenEditorSection,
+  onSelectJacket,
+  selectedCategory,
+  onSelectCategory,
   onOpenInquiry,
 }) => {
   const cardStyle = getCardClasses(theme);
