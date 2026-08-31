@@ -838,6 +838,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
       {replyPreviewOrder && (() => {
         const rendered = renderCustomerReply(replyPreviewOrder);
         if (!rendered) return null;
+
         return (
           <div className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
             <div className="w-full max-w-5xl max-h-[92vh] overflow-hidden rounded-3xl bg-[#101712] border border-[#4a5d4d] shadow-2xl flex flex-col">
@@ -848,25 +849,30 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
                 </div>
                 <button type="button" onClick={() => setReplyPreviewOrder(null)} className="w-10 h-10 rounded-full border border-[#3b4b3e] text-[#d9d1c4] hover:border-[#d4af37] hover:text-[#d4af37]">×</button>
               </div>
+
               <div className="px-5 py-3 border-b border-[#233026] text-sm text-[#d1c5b4]">
                 <strong className="text-[#f3ece0]">À :</strong> {replyPreviewOrder.clientEmail}
               </div>
+
               <div className="flex-1 overflow-y-auto bg-[#f5f5f5]">
-                <div className="mx-auto max-w-4xl bg-white text-[#1f2937] m-4 sm:m-6 p-5 sm:p-8 rounded-xl shadow" dangerouslySetInnerHTML={{ __html: rendered.html }} />
+                <div
+                  className="mx-auto max-w-4xl bg-white text-[#1f2937] m-4 sm:m-6 p-5 sm:p-8 rounded-xl shadow"
+                  dangerouslySetInnerHTML={{ __html: rendered.html }}
+                />
               </div>
+
               <div className="flex flex-col sm:flex-row justify-end gap-2 px-5 py-4 border-t border-[#2a382d]">
-                <button type="button" onClick={() => setReplyPreviewOrder(null)} className="px-4 py-2 rounded-xl border border-[#3b4b3e] text-[#d9d1c4] hover:border-[#d4af37]">Fermer</button>
                 <select
                   value={replyMailClient}
-                  onChange={(e) => setReplyMailClient(e.target.value as typeof replyMailClient)}
-                  className="h-10 px-3 rounded-xl bg-[#18201a] border border-[#4a5d4d] text-[#f3ece0] text-sm outline-none focus:border-[#d4af37]"
-                  aria-label="Choisir le client e-mail"
+                  onChange={(e) => setReplyMailClient(e.target.value as any)}
+                  className="px-4 py-2 rounded-xl border border-[#3b4b3e] bg-[#162019] text-[#f3ece0]"
                 >
                   <option value="gmail">Gmail</option>
                   <option value="outlook">Outlook / Hotmail</option>
                   <option value="yahoo">Yahoo Mail</option>
                   <option value="default">Client e-mail par défaut</option>
                 </select>
+
                 <button
                   type="button"
                   onClick={() => {
@@ -883,16 +889,13 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
                   }}
                   className="px-4 py-2 rounded-xl bg-[#d4af37] text-[#121613] font-bold hover:bg-[#e2c45a]"
                 >
-                  Ouvrir Gmail / Outlook
+                  Ouvrir dans le client e-mail
                 </button>
               </div>
             </div>
           </div>
         );
       })()}
-
-        </div>
-      </div>
     </div>
   );
 };
