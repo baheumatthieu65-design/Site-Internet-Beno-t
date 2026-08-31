@@ -42,7 +42,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
   preselectedJacketId,
   preselectedColor,
   preselectedSize,
-  ordersEmail = 'baheu.matthieu65@gmail.com',
+  ordersEmail = 'contact@maisondespyrenees.fr',
 }) => {
   const validJackets = Array.isArray(jackets) ? jackets.filter((j) => j.isAvailable !== false) : [];
   const defaultJacket = validJackets.find((j) => j.id === preselectedJacketId) || validJackets[0];
@@ -57,6 +57,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
 
   const [orderLines, setOrderLines] = useState<OrderLineItem[]>([createInitialLine()]);
   const [orderType, setOrderType] = useState<'commander' | 'sur_mesure' | 'essayage'>('commander');
+  const [salutation, setSalutation] = useState<'Monsieur' | 'Madame' | 'Autre'>('Autre');
   const [clientName, setClientName] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [clientPhone, setClientPhone] = useState('');
@@ -166,6 +167,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          salutation,
           clientName: clientName || 'Client Anonyme',
           clientEmail: clientEmail || 'client@example.com',
           clientPhone: clientPhone || '',
@@ -187,6 +189,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
       // Save locally to reflect in Admin Order Management View instantly
       createOrder({
         id: ref,
+        salutation,
         clientName: clientName || 'Client Anonyme',
         clientEmail: clientEmail || 'client@example.com',
         clientPhone: clientPhone || '',
@@ -195,7 +198,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
         items: itemsPayload,
         totalPrice: orderType === 'essayage' ? 0 : totalPrice,
         currency: primaryCurrency,
-        recipientEmail: ordersEmail || 'baheu.matthieu65@gmail.com',
+        recipientEmail: ordersEmail || 'contact@maisondespyrenees.fr',
       });
       window.dispatchEvent(new CustomEvent('pyrenees-order-created', { detail: { orderId: ref } }));
     } catch (err) {
@@ -204,6 +207,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
       setOrderReference(ref);
       createOrder({
         id: ref,
+        salutation,
         clientName: clientName || 'Client Anonyme',
         clientEmail: clientEmail || 'client@example.com',
         clientPhone: clientPhone || '',
@@ -212,7 +216,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
         items: itemsPayload,
         totalPrice: orderType === 'essayage' ? 0 : totalPrice,
         currency: primaryCurrency,
-        recipientEmail: ordersEmail || 'baheu.matthieu65@gmail.com',
+        recipientEmail: ordersEmail || 'contact@maisondespyrenees.fr',
       });
       window.dispatchEvent(new CustomEvent('pyrenees-order-created', { detail: { orderId: ref, localOnly: true } }));
     } finally {
@@ -475,6 +479,22 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
                 </span>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs uppercase tracking-wider text-[#a3b1a5] mb-1 font-medium">
+                      Civilité *
+                    </label>
+                    <select
+                      required
+                      value={salutation}
+                      onChange={(e) => setSalutation(e.target.value as 'Monsieur' | 'Madame' | 'Autre')}
+                      className="w-full h-[46px] bg-[#1b231d] border border-[#38483b] text-[#f3ece0] text-xs rounded-xl px-3 focus:border-[#d4af37] outline-none cursor-pointer"
+                    >
+                      <option value="Autre">Autre</option>
+                      <option value="Monsieur">Monsieur</option>
+                      <option value="Madame">Madame</option>
+                    </select>
+                  </div>
+
                   <div>
                     <label className="block text-xs uppercase tracking-wider text-[#a3b1a5] mb-1 font-medium flex items-center space-x-1.5">
                       <User className="w-3.5 h-3.5 text-[#d4af37]" />
