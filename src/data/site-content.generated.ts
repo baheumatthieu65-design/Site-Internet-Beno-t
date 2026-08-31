@@ -20,7 +20,7 @@ export const publishedSiteContent = {
       "Chic champêtre \u0026 raffinement intemporel"
     ],
     "contactEmail": "contact@maisondespyrenees.fr",
-    "ordersEmail": "contact@maisondespyrenees.fr",
+    "ordersEmail": "obiones@hotmail.fr",
     "instagram": "@maison.des.pyrenees",
     "gite": {
       "name": "Le Gîte",
@@ -2219,5 +2219,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1788188516930
+  "publishedAt": 1788189349488
 } as const;
