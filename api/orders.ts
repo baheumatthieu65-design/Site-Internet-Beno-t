@@ -127,6 +127,7 @@ export default async function handler(req: any, res: any) {
         quantity,
         unitPrice: officialUnitPrice,
         totalPrice: officialUnitPrice * quantity,
+        imageUrl: dbJacket.heroImage || dbJacket.imageUrl || dbJacket.image || '',
       });
     }
 

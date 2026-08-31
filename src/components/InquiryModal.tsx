@@ -159,6 +159,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
             quantity: line.quantity || 1,
             unitPrice: unitP,
             totalPrice: unitP * (line.quantity || 1),
+            imageUrl: j?.heroImage || '',
           };
         });
 
