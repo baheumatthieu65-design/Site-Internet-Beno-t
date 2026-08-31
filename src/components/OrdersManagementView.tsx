@@ -891,6 +891,8 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
         );
       })()}
 
+        </div>
+      </div>
     </div>
   );
 };
