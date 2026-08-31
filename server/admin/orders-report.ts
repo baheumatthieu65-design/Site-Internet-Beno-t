@@ -130,7 +130,7 @@ export default async function handler(req: any, res: any) {
     </div>`;
 
     const result = await sendOrdersReportEmail({ to, subject, text, html });
-    if (!result.sent) return res.status(502).json({ success: false, error: result.message || 'Rapport non envoyé. Si Resend renvoie 403, le destinataire n’est pas autorisé avec le domaine de test : configure EMAIL_FROM avec un domaine vérifié ou utilise l’adresse autorisée de ton compte Resend.' });
+    if (!result.sent) return res.status(502).json({ success: false, error: result.message || 'Rapport non envoyé. Resend peut refuser l’envoi (403) si le destinataire n’est pas autorisé avec onboarding@resend.dev. Vérifie le destinataire et EMAIL_FROM.' });
     return res.status(200).json({ success: true, count: filtered.length, totals });
   } catch (error) {
     console.error('Orders report error:', error);
