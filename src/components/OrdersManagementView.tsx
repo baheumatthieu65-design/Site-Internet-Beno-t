@@ -59,6 +59,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
   const [isSendingReport, setIsSendingReport] = useState(false);
   const [customerReplyTemplate, setCustomerReplyTemplate] = useState<{ subject: string; body: string } | null>(null);
   const [brandName, setBrandName] = useState('Maison Mailhagut');
+  const [replyPreviewOrder, setReplyPreviewOrder] = useState<CustomerOrder | null>(null);
 
   useEffect(() => {
     const loadCustomerReplyTemplate = async () => {
@@ -97,10 +98,54 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
     void loadCustomerReplyTemplate();
   }, []);
 
+  const escapeHtml = (value: string) =>
+    value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+
+  const buildReplyArticlesHtml = (order: CustomerOrder) => {
+    if (!order.items?.length) {
+      return '<p style="margin:0;font-family:Arial,sans-serif;">Aucun article — demande de rendez-vous atelier.</p>';
+    }
+
+    const rows = order.items.map((item) => {
+      const imageUrl = String((item as any).imageUrl || (item as any).heroImage || (item as any).image || '').trim();
+      const image = imageUrl
+        ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(item.jacketName || 'Article')}" width="52" height="52" style="display:block;width:52px;height:52px;object-fit:cover;border-radius:6px;" />`
+        : `<div style="width:52px;height:52px;line-height:52px;text-align:center;background:#f2f2f2;color:#777;border-radius:6px;">—</div>`;
+
+      return `<tr>
+        <td style="padding:4px 6px;border:1px solid #d9d9d9;text-align:center;vertical-align:middle;width:64px;">${image}</td>
+        <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:center;white-space:nowrap;vertical-align:middle;">${item.quantity}</td>
+        <td style="padding:4px 7px;border:1px solid #d9d9d9;vertical-align:middle;">${escapeHtml(item.jacketName || '')}</td>
+        <td style="padding:4px 7px;border:1px solid #d9d9d9;vertical-align:middle;">${escapeHtml(item.color || '')}</td>
+        <td style="padding:4px 7px;border:1px solid #d9d9d9;vertical-align:middle;">${escapeHtml(item.size || '')}</td>
+        <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:right;white-space:nowrap;vertical-align:middle;">${item.totalPrice} ${escapeHtml(order.currency || '€')}</td>
+      </tr>`;
+    }).join('');
+
+    return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:auto;max-width:100%;border-collapse:collapse;border-spacing:0;margin:0;font-family:Arial,sans-serif;font-size:13px;line-height:1.2;">
+      <thead>
+        <tr>
+          <th style="padding:4px 5px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:center;">Image de l'article</th>
+          <th style="padding:4px 5px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:center;">Nombre</th>
+          <th style="padding:4px 5px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Nom de l'article</th>
+          <th style="padding:4px 5px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Couleur</th>
+          <th style="padding:4px 5px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Taille</th>
+          <th style="padding:4px 5px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:right;">Coût</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  };
+
   const renderCustomerReply = (order: CustomerOrder) => {
     if (!customerReplyTemplate) return null;
 
-    const articles = order.items.length
+    const articlesText = order.items?.length
       ? order.items
           .map(
             (item) =>
@@ -119,34 +164,41 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
       reference: order.id || '',
       marque: brandName,
       type: order.orderTypeLabel || 'Demande',
-      articles,
       total: String(order.totalPrice ?? 0),
       devise: order.currency || '€',
       statut: order.status || '',
     };
 
-    const replaceTokens = (input: string) =>
-      input.replace(
-        /{{\s*([a-zA-Z0-9_]+)\s*}}/g,
-        (_, token: string) => values[token] ?? ''
-      );
+    const replaceText = (input: string) =>
+      input.replace(/{{\s*([a-zA-Z0-9_]+)\s*}}/g, (_, token: string) => values[token] ?? '');
+
+    const htmlParts = customerReplyTemplate.body.split(/{{\s*articles\s*}}/g);
+    const htmlBody = htmlParts
+      .map((part, index) => {
+        const text = replaceText(part).replace(/\r?\n/g, '<br>');
+        return index === 0
+          ? text.replace(/(?:<br>\s*)+$/g, '')
+          : `<div style="margin:0;padding:0;">${text.replace(/^(?:<br>\s*)+/g, '')}</div>`;
+      })
+      .join(buildReplyArticlesHtml(order));
+
+    const plainBody = replaceText(
+      customerReplyTemplate.body.replace(/{{\s*articles\s*}}/g, articlesText)
+    );
 
     return {
-      subject: replaceTokens(customerReplyTemplate.subject),
-      body: replaceTokens(customerReplyTemplate.body),
+      subject: replaceText(customerReplyTemplate.subject),
+      body: plainBody,
+      html: `<div style="font-family:Arial,sans-serif;line-height:1.45;">${htmlBody}</div>`,
     };
   };
 
   const handleReplyToCustomer = (order: CustomerOrder) => {
-    const rendered = renderCustomerReply(order);
-
-    if (!rendered) {
+    if (!customerReplyTemplate) {
       showToast('Le modèle de réponse client est encore en cours de chargement.');
       return;
     }
-
-    const mailto = `mailto:${order.clientEmail}?subject=${encodeURIComponent(rendered.subject)}&body=${encodeURIComponent(rendered.body)}`;
-    window.open(mailto, '_blank', 'noopener,noreferrer');
+    setReplyPreviewOrder(order);
   };
 
   const getWeekInputValue = (date: Date) => {
@@ -556,7 +608,6 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
                   credentials: 'include',
                   headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
                   body: JSON.stringify({
-                    to: reportEmail,
                     orderIds: filteredOrders.map((order) => order.id),
                     status: selectedStatusFilter,
                     orderType: selectedTypeFilter,
@@ -567,7 +618,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
                 });
                 const data = await response.json().catch(() => null);
                 if (!response.ok || !data?.success) throw new Error(data?.error || `Rapport : HTTP ${response.status}`);
-                showToast(`Rapport envoyé à ${reportEmail}.`);
+                showToast('Rapport envoyé à l’adresse configurée pour la réception des commandes.');
               } catch (error) {
                 showToast(error instanceof Error ? error.message : 'Impossible d’envoyer le rapport.');
               } finally {
@@ -762,34 +813,7 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
                           <strong className="text-[#f3ece0] font-serif">{order.generatedEmail.subject}</strong>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <button
-                            type="button"
-                            onClick={() => handleCopyEmail(order)}
-                            className="px-3 py-1 rounded-lg bg-[#1f2a21] hover:bg-[#2a382d] border border-[#3b4c3e] text-xs text-[#d4af37] font-medium flex items-center space-x-1 cursor-pointer"
-                          >
-                            {copiedEmailId === order.id ? (
-                              <>
-                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                                <span className="text-emerald-400">Copié !</span>
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3.5 h-3.5" />
-                                <span>Copier l'e-mail</span>
-                              </>
-                            )}
-                          </button>
-                          <a
-                            href={`mailto:${order.recipientEmail}?subject=${encodeURIComponent(
-                              order.generatedEmail.subject
-                            )}&body=${encodeURIComponent(order.generatedEmail.body)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-3 py-1 rounded-lg bg-[#28362b] hover:bg-[#344638] border border-[#d4af37] text-xs text-[#d4af37] font-bold flex items-center space-x-1 cursor-pointer"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                            <span>Ouvrir dans client e-mail</span>
-                          </a>
+                          
                           <button
                             type="button"
                             onClick={() => handleReplyToCustomer(order)}
@@ -813,6 +837,43 @@ export const OrdersManagementView: React.FC<OrdersManagementViewProps> = ({
           })}
         </div>
       )}
+      {replyPreviewOrder && (() => {
+        const rendered = renderCustomerReply(replyPreviewOrder);
+        if (!rendered) return null;
+        return (
+          <div className="fixed inset-0 z-[120] bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
+            <div className="w-full max-w-5xl max-h-[92vh] overflow-hidden rounded-3xl bg-[#101712] border border-[#4a5d4d] shadow-2xl flex flex-col">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-[#2a382d]">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-[#d4af37] font-bold">Réponse au client</div>
+                  <div className="text-sm text-[#f3ece0] font-semibold mt-1">{rendered.subject}</div>
+                </div>
+                <button type="button" onClick={() => setReplyPreviewOrder(null)} className="w-10 h-10 rounded-full border border-[#3b4b3e] text-[#d9d1c4] hover:border-[#d4af37] hover:text-[#d4af37]">×</button>
+              </div>
+              <div className="px-5 py-3 border-b border-[#233026] text-sm text-[#d1c5b4]">
+                <strong className="text-[#f3ece0]">À :</strong> {replyPreviewOrder.clientEmail}
+              </div>
+              <div className="flex-1 overflow-y-auto bg-[#f5f5f5]">
+                <div className="mx-auto max-w-4xl bg-white text-[#1f2937] m-4 sm:m-6 p-5 sm:p-8 rounded-xl shadow" dangerouslySetInnerHTML={{ __html: rendered.html }} />
+              </div>
+              <div className="flex flex-col sm:flex-row justify-end gap-2 px-5 py-4 border-t border-[#2a382d]">
+                <button type="button" onClick={() => setReplyPreviewOrder(null)} className="px-4 py-2 rounded-xl border border-[#3b4b3e] text-[#d9d1c4] hover:border-[#d4af37]">Fermer</button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const mailto = `mailto:${replyPreviewOrder.clientEmail}?subject=${encodeURIComponent(rendered.subject)}&body=${encodeURIComponent(rendered.body)}`;
+                    window.open(mailto, '_blank', 'noopener,noreferrer');
+                  }}
+                  className="px-4 py-2 rounded-xl bg-[#d4af37] text-[#121613] font-bold hover:bg-[#e2c45a]"
+                >
+                  Ouvrir dans le client e-mail
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
     </div>
   );
 };

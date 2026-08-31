@@ -1,4 +1,4 @@
-import { parseCookies, verifySessionToken, getOrdersFromDB, sendOrdersReportEmail } from '../../api/_helpers.js';
+import { parseCookies, verifySessionToken, getOrdersFromDB, getOrderNotificationEmail, sendOrdersReportEmail } from '../../api/_helpers.js';
 
 const parseBody = (body: any) => {
   if (!body) return {};
@@ -29,8 +29,8 @@ export default async function handler(req: any, res: any) {
 
   try {
     const body = parseBody(req.body);
-    const to = String(body.to || '').trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return res.status(400).json({ success: false, error: 'Adresse de rapport invalide.' });
+    const to = await getOrderNotificationEmail();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return res.status(500).json({ success: false, error: 'Adresse de réception des commandes non configurée.' });
 
     const allOrders = await getOrdersFromDB();
     const ids = Array.isArray(body.orderIds) ? new Set(body.orderIds.map(String)) : null;
@@ -69,8 +69,9 @@ export default async function handler(req: any, res: any) {
     }, { demande: 0, priseEnCompte: 0, passees: 0, annulees: 0 });
 
     const remaining = totals.demande + totals.priseEnCompte;
-    const subject = `[MAISON DES PYRÉNÉES] Rapport commandes — ${filtered.length} élément(s)`;
-    const filterLabel = [status ? `État : ${status}` : 'Tous les états', periodMode !== 'all' ? `Période : ${periodValue}` : 'Toutes les périodes', query ? `Recherche : ${query}` : ''].filter(Boolean).join(' • ');
+    const subject = `[RAPPORT] Commandes & rendez-vous — ${filtered.length} élément(s)`;
+    const typeLabel = orderType === 'orders' ? 'Commandes uniquement' : orderType === 'appointments' ? 'Rendez-vous atelier uniquement' : 'Commandes + rendez-vous';
+    const filterLabel = [typeLabel, status ? `État : ${status}` : 'Tous les états', periodMode !== 'all' ? `Période : ${periodValue}` : 'Toutes les périodes', query ? `Recherche : ${query}` : ''].filter(Boolean).join(' • ');
     const text = [
       'RAPPORT DE RÉCEPTION — MAISON DES PYRÉNÉES', '', filterLabel, '',
       `Demandes : ${totals.demande.toLocaleString('fr-FR')} €`,
@@ -130,8 +131,8 @@ export default async function handler(req: any, res: any) {
     </div>`;
 
     const result = await sendOrdersReportEmail({ to, subject, text, html });
-    if (!result.sent) return res.status(502).json({ success: false, error: result.message || 'Rapport non envoyé. Resend peut refuser l’envoi (403) si le destinataire n’est pas autorisé avec onboarding@resend.dev. Vérifie le destinataire et EMAIL_FROM.' });
-    return res.status(200).json({ success: true, count: filtered.length, totals });
+    if (!result.sent) return res.status(502).json({ success: false, error: result.message || 'Rapport non envoyé. Si Resend renvoie 403, le destinataire n’est pas autorisé avec le domaine de test : configure EMAIL_FROM avec un domaine vérifié ou utilise l’adresse autorisée de ton compte Resend.' });
+    return res.status(200).json({ success: true, count: filtered.length, totals, recipient: to });
   } catch (error) {
     console.error('Orders report error:', error);
     return res.status(500).json({ success: false, error: 'Impossible de générer le rapport.' });
