@@ -1325,7 +1325,8 @@ export const publishedSiteContent = {
         "isAvailable": true,
         "availabilityStatus": "on-sale",
         "customSpecs": {},
-        "adminCost": 70
+        "adminCost": 67,
+        "adminVatRate": 20
       },
       {
         "name": "Veste des Cîmes Enfant",
@@ -1385,7 +1386,8 @@ export const publishedSiteContent = {
         "id": "produit-1787241378430-715p3s",
         "availabilityStatus": "on-sale",
         "customSpecs": {},
-        "adminCost": 50
+        "adminCost": 35,
+        "adminVatRate": 20
       },
       {
         "name": "Todebag",
@@ -1446,7 +1448,8 @@ export const publishedSiteContent = {
         "id": "produit-1787242939553-ezbmjg",
         "availabilityStatus": "on-sale",
         "customSpecs": {},
-        "adminCost": 40
+        "adminCost": 25,
+        "adminVatRate": 20
       },
       {
         "name": "test",
@@ -1500,7 +1503,8 @@ export const publishedSiteContent = {
         },
         "hotspots": [],
         "customSpecs": {},
-        "id": "produit-1787294817714-0t3rcd"
+        "id": "produit-1787294817714-0t3rcd",
+        "adminVatRate": 20
       },
       {
         "name": "Tapis de yoga",
@@ -1551,7 +1555,8 @@ export const publishedSiteContent = {
         "customSpecs": {},
         "id": "produit-1787937546249-yac3yh",
         "showcaseEyebrow": "Un moment de détente encré dans les traditions",
-        "adminCost": 150
+        "adminCost": 130,
+        "adminVatRate": 20
       }
     ],
     "theme": {
@@ -2208,5 +2213,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1788206400047
+  "publishedAt": 1788206834626
 } as const;
