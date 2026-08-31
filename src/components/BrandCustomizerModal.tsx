@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { getCatalogCategories } from '../utils/catalogCategories';
 import {
   BrandConfig,
   JacketModel,
@@ -124,6 +123,13 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     if (!Array.isArray(copy.jackets)) {
       copy.jackets = [];
     }
+    if (!Array.isArray(copy.theme.catalogCategories)) {
+      copy.theme.catalogCategories = Array.from(new Set(
+        copy.jackets
+          .map((product: JacketModel) => String(product.category || '').trim())
+          .filter(Boolean)
+      ));
+    }
     if (!copy.gite) {
       copy.gite = JSON.parse(JSON.stringify(defaultGiteConfig));
     }
@@ -211,6 +217,39 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     }));
   };
 
+  const catalogCategories = getCatalogCategories(
+    draftProducts,
+    Array.isArray(currentTheme.catalogCategories) ? currentTheme.catalogCategories : []
+  );
+
+  const handleAddCatalogCategory = (value: string) => {
+    const label = value.trim();
+    if (!label) return false;
+    const existing = Array.isArray(currentTheme.catalogCategories)
+      ? [...currentTheme.catalogCategories]
+      : catalogCategories.map((category) => category.label);
+    if (existing.some((item) => item.trim().toLocaleLowerCase() === label.toLocaleLowerCase())) {
+      alert(`La catégorie « ${label} » existe déjà.`);
+      return false;
+    }
+    updateTheme({ catalogCategories: [...existing, label] });
+    return true;
+  };
+
+  const handleDeleteCatalogCategory = (label: string) => {
+    const used = draftProducts.some(
+      (product) => String(product.category || '').trim().toLocaleLowerCase() === label.trim().toLocaleLowerCase()
+    );
+    if (used) {
+      alert(`Impossible de supprimer « ${label} » : au moins un article utilise encore cette catégorie. Réaffecte d’abord ces articles à une autre catégorie.`);
+      return;
+    }
+    const next = (currentTheme.catalogCategories || []).filter(
+      (item) => item.trim().toLocaleLowerCase() !== label.trim().toLocaleLowerCase()
+    );
+    updateTheme({ catalogCategories: next });
+  };
+
   const DEFAULT_CRITERIA_LIST: ComparisonCriterion[] = [
     { id: 'crit_category', label: 'Style principal', key: 'category' },
     { id: 'crit_fabric', label: 'Tissu signature', key: 'fabric' },
@@ -223,6 +262,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   ];
 
   const [newCriterionLabel, setNewCriterionLabel] = useState('');
+  const [newCatalogCategory, setNewCatalogCategory] = useState('');
 
   const activeCriteria = currentTheme.comparisonCriteria && currentTheme.comparisonCriteria.length > 0
     ? currentTheme.comparisonCriteria
@@ -1429,6 +1469,65 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
           {/* ========================================================= */}
           {activeTab === 'articles' && (
             <div className="animate-fadeIn min-h-full">
+              <div className="mb-6 p-5 rounded-2xl bg-[#1a221c] border border-[#3c4c3f] space-y-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2 text-[#d4af37]">
+                      <Tag className="w-5 h-5" />
+                      <h4 className="font-serif text-base font-bold text-[#f3ece0]">Paramétrage du catalogue — Catégories</h4>
+                    </div>
+                    <p className="text-xs text-[#a3b1a5] mt-1">Crée, renomme ou supprime les catégories utilisées comme typologies publiques. La catégorie reste le champ déjà présent sur chaque article.</p>
+                  </div>
+                  <span className="text-xs text-[#a3b1a5] whitespace-nowrap">{catalogCategories.length} catégorie(s)</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {catalogCategories.map((category) => {
+                    const count = draftProducts.filter((product) => String(product.category || '').trim().toLocaleLowerCase() === category.id.toLocaleLowerCase()).length;
+                    return (
+                      <div key={category.id} className="flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl border border-[#344437] bg-[#151b17]">
+                        <div className="min-w-0">
+                          <div className="text-xs font-semibold text-[#f3ece0] truncate">{category.label}</div>
+                          <div className="text-[10px] text-[#718073]">{count} article{count > 1 ? 's' : ''}</div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCatalogCategory(category.label)}
+                          className="p-2 rounded-lg border border-red-900/50 text-red-300 hover:bg-red-950/40 hover:text-red-200 cursor-pointer shrink-0"
+                          title={count ? 'Réaffectez d’abord les articles de cette catégorie' : 'Supprimer cette catégorie'}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-[#2a362c]">
+                  <input
+                    value={newCatalogCategory}
+                    onChange={(e) => setNewCatalogCategory(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (handleAddCatalogCategory(newCatalogCategory)) setNewCatalogCategory('');
+                      }
+                    }}
+                    placeholder="Nouvelle catégorie (ex. Sport, Goodies, Femme & Enfant…)"
+                    className="flex-1 bg-[#121613] border border-[#38483b] text-xs text-white px-3.5 py-2.5 rounded-xl outline-none focus:border-[#d4af37]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => { if (handleAddCatalogCategory(newCatalogCategory)) setNewCatalogCategory(''); }}
+                    className="px-4 py-2.5 rounded-xl bg-[#28362b] border border-[#d4af37] text-[#d4af37] text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" /> Ajouter une catégorie
+                  </button>
+                </div>
+
+                <p className="text-[10px] text-[#718073]">Une catégorie ne peut être supprimée que si aucun article ne lui est encore affecté. Cela évite de casser les onglets publics existants.</p>
+              </div>
+
               <AdminProductModal
                 isOpen
                 embedded
@@ -1437,6 +1536,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
                 products={draftProducts}
                 onProductsChange={setDraftProducts}
                 technicalCriteria={activeCriteria}
+                categoryOptions={catalogCategories.map((category) => category.label)}
                 initialProductId={initialTab === 'j1' ? draftProducts[0]?.id : initialTab === 'j2' ? draftProducts[1]?.id : undefined}
                 onRefreshProducts={onRefreshProducts}
               />
