@@ -127,8 +127,8 @@ const buildArticlesTable = (
       : `<div style="width:52px;height:52px;line-height:52px;text-align:center;background:#f2f2f2;color:#777;border-radius:5px;">—</div>`;
 
     return `<tr>
-      <td style="padding:4px 6px;border:1px solid #d9d9d9;text-align:center;width:64px;height:60px;vertical-align:middle;">${imageHtml}</td>
-      <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:center;vertical-align:middle;">${item.quantity}</td>
+      <td style="padding:4px 6px;border:1px solid #d9d9d9;text-align:center;width:64px;min-width:64px;height:60px;vertical-align:middle;">${imageHtml}</td>
+      <td style="padding:4px 7px;border:1px solid #d9d9d9;text-align:center;vertical-align:middle;white-space:nowrap;">${item.quantity}</td>
       <td style="padding:4px 7px;border:1px solid #d9d9d9;vertical-align:middle;">${escapeHtml(item.jacketName)}</td>
       <td style="padding:4px 7px;border:1px solid #d9d9d9;vertical-align:middle;">${escapeHtml(item.color)}</td>
       <td style="padding:4px 7px;border:1px solid #d9d9d9;vertical-align:middle;">${escapeHtml(item.size)}</td>
@@ -136,7 +136,7 @@ const buildArticlesTable = (
     </tr>`;
   }).join('');
 
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;border-spacing:0;margin:0;padding:0;font-family:Arial,sans-serif;font-size:13px;line-height:1.2;">
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:auto;max-width:100%;border-collapse:collapse;border-spacing:0;margin:0;padding:0;font-family:Arial,sans-serif;font-size:13px;line-height:1.2;table-layout:auto;">
     <thead>
       <tr>
         <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:center;">Image de l'article</th>
@@ -144,7 +144,7 @@ const buildArticlesTable = (
         <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Nom de l'article</th>
         <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Couleur</th>
         <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:left;">Taille</th>
-        <th style="padding:5px 6px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:right;">Coût</th>
+        <th style="padding:4px 5px;border:1px solid #d9d9d9;background:#f4f4f4;text-align:right;white-space:nowrap;">Coût</th>
       </tr>
     </thead>
     <tbody>${rows}</tbody>
