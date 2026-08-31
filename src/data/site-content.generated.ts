@@ -2066,7 +2066,7 @@ export const publishedSiteContent = {
           "occurrence": 0
         },
         "kind": "text",
-        "text": "Nous avons sélectionné des laines de bergers pyrénéens et des toiles techniques imperméables d’exception pour façonner ces deux pièces signatures : La Veste des Cimes et Le Manteau Pastorale. ddd",
+        "text": "Nous avons sélectionné des laines de bergers pyrénéens et des toiles techniques imperméables d’exception pour façonner ces deux pièces signatures : La Veste des Cimes et Le Manteau Pastorale.",
         "fontFamily": "-apple-system",
         "fontSize": "16px",
         "color": "rgb(184, 197, 186)"
@@ -2219,5 +2219,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1788188300063
+  "publishedAt": 1788188333782
 } as const;
