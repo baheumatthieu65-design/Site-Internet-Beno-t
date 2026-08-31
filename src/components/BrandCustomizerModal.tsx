@@ -90,6 +90,7 @@ interface BrandCustomizerModalProps {
   initialTab?: 'landing' | 'brand' | 'articles' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security' | 'orders' | 'github' | 'gite' | 'boutique-text';
   siteEditorConfig?: SiteEditorConfig;
   onSiteEditorConfigChange?: (config: SiteEditorConfig) => void;
+  onSiteEditorConfigSave?: (config: SiteEditorConfig) => Promise<void> | void;
 }
 
 const samplePresetImages = [
@@ -113,6 +114,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   initialTab = 'theme',
   siteEditorConfig,
   onSiteEditorConfigChange,
+  onSiteEditorConfigSave,
 }) => {
   if (!isOpen) return null;
 
@@ -273,9 +275,37 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
     return items;
   }, [draftProducts, formData]);
 
+  const getBoutiqueBaseStyle = (item: typeof boutiqueTextCatalog[number]): Partial<EditorBlock> => {
+    const id = item.id;
+    // Bases reprises des classes réellement utilisées par les composants de la boutique.
+    // Les valeurs servent uniquement de point de départ tant qu'aucun override n'est enregistré.
+    if (id === 'hero-designer-location') return { fontFamily: 'Playfair Display', fontSize: '12px', color: '#d4af37' };
+    if (id === 'hero-badge-text') return { fontFamily: 'Playfair Display', fontSize: '12px', color: '#e2d5c3' };
+    if (id === 'hero-title-prefix') return { fontFamily: 'Playfair Display', fontSize: '56px', fontWeight: '400', fontStyle: 'italic', color: '#c2a26d' };
+    if (id === 'hero-brand-name') return { fontFamily: 'Playfair Display', fontSize: '64px', fontWeight: '300', color: '#f5eedf' };
+    if (id === 'hero-tagline') return { fontFamily: 'Playfair Display', fontSize: '30px', fontWeight: '300', fontStyle: 'italic', color: '#d0c5b4' };
+    if (id === 'hero-subtitle') return { fontFamily: 'Arial', fontSize: '16px', color: '#a3b0a2' };
+    if (id === 'story-title') return { fontFamily: 'Playfair Display', fontSize: '48px', fontWeight: '300', color: '#f3ece0' };
+    if (id === 'story-designer-location') return { fontFamily: 'Arial', fontSize: '12px', color: '#a3b1a5' };
+    if (id === 'story-text-1') return { fontFamily: 'Playfair Display', fontSize: '18px', fontStyle: 'italic', color: '#f3ece0' };
+    if (id === 'story-text-2') return { fontFamily: 'Arial', fontSize: '16px', color: '#f3ece0' };
+    if (id.startsWith('story-stat-label-')) return { fontFamily: 'Arial', fontSize: '11px', color: '#a3b0a2' };
+    if (id === 'comparison-title') return { fontFamily: 'Playfair Display', fontSize: '48px', fontWeight: '300', color: '#f3ece0' };
+    if (id === 'comparison-category') return { fontFamily: 'Playfair Display', fontSize: '48px', fontWeight: '300', color: '#f3ece0' };
+    if (id === 'comparison-subtitle') return { fontFamily: 'Arial', fontSize: '14px', color: '#a3b0a2' };
+    if (id === 'lookbook-title') return { fontFamily: 'Playfair Display', fontSize: '48px', fontWeight: '300', color: '#f3ece0' };
+    if (id === 'lookbook-subtitle') return { fontFamily: 'Arial', fontSize: '14px', color: '#a3b0a2' };
+    if (id.endsWith('-category')) return { fontFamily: 'Arial', fontSize: '11px', fontWeight: '500', color: '#a3b1a5' };
+    if (id.endsWith('-name')) return { fontFamily: 'Playfair Display', fontSize: '20px', fontWeight: '600', color: '#f3ece0' };
+    if (id.endsWith('-description')) return { fontFamily: 'Arial', fontSize: '12px', color: '#a8b5a9' };
+    if (id.endsWith('-price')) return { fontFamily: 'Playfair Display', fontSize: '16px', fontWeight: '600', color: '#c2a26d' };
+    return { fontFamily: 'Arial', fontSize: '16px', color: '#f3ece0' };
+  };
+
   const getBoutiqueBlock = (item: typeof boutiqueTextCatalog[number]): EditorBlock => {
     const existing = (siteEditorConfig?.blocks || []).find((block) => block.id === item.id && block.kind === 'text');
-    return existing || {
+    if (existing) return existing;
+    return {
       id: item.id,
       type: 'text',
       kind: 'text',
@@ -284,6 +314,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
       y: 0,
       text: item.defaultText,
       visible: true,
+      ...getBoutiqueBaseStyle(item),
     };
   };
 
@@ -941,7 +972,7 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
   };
 
   // Save & Security Handlers
-  const handleSave = (e?: React.FormEvent) => {
+  const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
     // Le catalogue est désormais géré exclusivement par AdminProductModal.
@@ -952,7 +983,16 @@ export const BrandCustomizerModal: React.FC<BrandCustomizerModalProps> = ({
       jackets: draftProducts,
     };
 
-    onSave(dataToSave);
+    if (siteEditorConfig && onSiteEditorConfigSave) {
+      try {
+        await onSiteEditorConfigSave(siteEditorConfig);
+      } catch (error) {
+        console.error('Erreur lors de la sauvegarde des textes de la boutique:', error);
+        return;
+      }
+    }
+
+    await Promise.resolve(onSave(dataToSave));
     onClose();
   };
 

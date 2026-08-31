@@ -1963,6 +1963,7 @@ export default function App() {
           siteEditorConfigRef.current = safeConfig;
           setSiteEditorConfig(safeConfig);
         }}
+        onSiteEditorConfigSave={handleSaveVisualEditor}
       />
     </div>
   );
