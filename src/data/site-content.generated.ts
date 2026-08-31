@@ -2065,6 +2065,25 @@ export const publishedSiteContent = {
         "fontFamily": "-apple-system",
         "fontSize": "16px",
         "color": "rgb(184, 197, 186)"
+      },
+      {
+        "id": "vce-upl7ft",
+        "type": "text",
+        "section": "collection",
+        "x": 50,
+        "y": 50,
+        "visible": true,
+        "locator": {
+          "tag": "h2",
+          "text": "Nos 2 Créations Homme \u0026 Femme",
+          "sectionId": "collection",
+          "occurrence": 0
+        },
+        "kind": "text",
+        "text": "Nos 2 Créations Homme \u0026 Femme",
+        "fontFamily": "Dancing Script",
+        "fontSize": "48px",
+        "color": "rgb(243, 236, 224)"
       }
     ],
     "editorElements": {
@@ -2211,8 +2230,16 @@ export const publishedSiteContent = {
         "section": "origines",
         "selector": null,
         "locator": "data-vce-id"
+      },
+      "vce-upl7ft": {
+        "id": "vce-upl7ft",
+        "type": "text",
+        "kind": "text",
+        "section": "collection",
+        "selector": null,
+        "locator": "data-vce-id"
       }
     }
   },
-  "publishedAt": 1788207932468
+  "publishedAt": 1788208200842
 } as const;
