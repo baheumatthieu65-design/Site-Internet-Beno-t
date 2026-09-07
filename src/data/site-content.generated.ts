@@ -2108,7 +2108,7 @@ export const publishedSiteContent = {
         "y": 0,
         "text": "Thème Champêtre \u0026 Élégance",
         "visible": true,
-        "fontFamily": "Playfair Display",
+        "fontFamily": "Libre Baskerville",
         "fontSize": "64px",
         "fontWeight": "300",
         "color": "#f5eedf",
@@ -2286,5 +2286,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1788765270937
+  "publishedAt": 1788765285734
 } as const;
