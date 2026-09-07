@@ -50,7 +50,6 @@ const normalizeProductRecord = (product: any) => {
     name: String(normalized.name || '').trim(),
     price: Number(normalized.price),
     currency: normalized.currency || '€',
-    adminVatRate: Number.isFinite(Number(normalized.adminVatRate)) ? Math.max(0, Math.min(100, Number(normalized.adminVatRate))) : 20,
     adminRevenue: Number.isFinite(Number(normalized.adminRevenue)) ? Number(normalized.adminRevenue) : Number(normalized.price) || 0,
     adminProfit: Number.isFinite(Number(normalized.adminProfit)) ? Number(normalized.adminProfit) : 0,
     isAvailable: normalized.isAvailable !== undefined ? Boolean(normalized.isAvailable) : true,
