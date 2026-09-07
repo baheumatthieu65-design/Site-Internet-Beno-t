@@ -1,99 +1,181 @@
-import React, { useState, useEffect } from 'react';
-import { BrandConfig } from '../types';
-import { Sparkles } from 'lucide-react';
-import { getButtonClasses } from '../utils/themeStyles';
-import adminSheep from '../assets/admin-sheep.png';
-import { LogoBlock } from './LogoBlock';
+import React from 'react';
+import { 
+  Radio, 
+  ShieldAlert, 
+  Compass, 
+  History, 
+  Sliders, 
+  Activity, 
+  MapPin, 
+  Layers,
+  Zap
+} from 'lucide-react';
+import { GPSCollar, GeofenceAlert } from '../types';
 
 interface NavbarProps {
-  brandData: BrandConfig;
-  isAdminLoggedIn: boolean;
-  onOpenLogin: () => void;
-  onLogout: () => void;
-  onOpenCustomizer: (tab?: 'brand' | 'j1' | 'j2' | 'theme' | 'layouts' | 'labels' | 'security') => void;
-  onOpenInquiry: (jacketId?: string) => void;
-  onOpenOrders?: () => void;
-  activeSection: string;
-  onOpenGite?: () => void;
+  activeTab: 'map' | 'collars' | 'zones' | 'alerts' | 'history';
+  setActiveTab: (tab: 'map' | 'collars' | 'zones' | 'alerts' | 'history') => void;
+  collars: GPSCollar[];
+  alerts: GeofenceAlert[];
+  onOpenAddCollar: () => void;
+  onOpenPushModal: () => void;
+  onTriggerSimulatedAlert: () => void;
 }
 
-declare global { interface Window { __pyreneesOpenAdminOrders?: () => void; } }
+export const Navbar: React.FC<NavbarProps> = ({
+  activeTab,
+  setActiveTab,
+  collars,
+  alerts,
+  onOpenPushModal,
+  onTriggerSimulatedAlert,
+}) => {
+  const activeAlertsCount = alerts.filter(a => a.status === 'ACTIVE').length;
+  const outOfZoneCount = collars.filter(c => c.status === 'out_of_zone').length;
+  const activePushCount = collars.filter(c => c.pushMode.active).length;
 
-export const Navbar: React.FC<NavbarProps> = ({ brandData, isAdminLoggedIn, onOpenLogin, onLogout, onOpenCustomizer, onOpenInquiry, onOpenOrders, activeSection, onOpenGite }) => {
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const theme = brandData.theme;
-  const primaryBtnClass = getButtonClasses(theme, 'primary', 'navbar-order');
-  const orderText = theme?.orderButtonText || 'Commander';
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const hiddenSections = theme?.hiddenSections || [];
-  const defaultNavOrder = ['collection', 'comparatif', 'origines', 'lookbook', 'contact'] as const;
-  const allNavLinks = [
-    { id: 'collection', label: theme?.collectionTabLabel || 'Les 2 Vestes' },
-    { id: 'comparatif', label: theme?.comparatifTabLabel || 'Tableau Comparatif' },
-    { id: 'origines', label: theme?.originesTabLabel || 'L’Esprit Pyrénées' },
-    { id: 'lookbook', label: theme?.lookbookTabLabel || 'Lookbook' },
-    { id: 'contact', label: theme?.contactTabLabel || 'Contact & Atelier' },
-  ];
-  const navOrder = theme?.navOrder?.length ? theme.navOrder : defaultNavOrder;
-  const navLinks = navOrder.map(id => allNavLinks.find(link => link.id === id)).filter((link): link is (typeof allNavLinks)[number] => Boolean(link)).filter(link => !hiddenSections.includes(link.id as typeof hiddenSections[number]));
-  const scrollTo = (id: string) => { setMobileMenuOpen(false); document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }); };
-  const openOrders = () => { if (isAdminLoggedIn) onOpenOrders?.(); };
-  const openGite = () => { setMobileMenuOpen(false); onOpenGite?.(); };
-
-  // L'univers actif est toujours placé à droite du duo de logos :
-  // Boutique active => Gîte / Boutique
-  // Gîte active    => Boutique / Gîte (la page Gîte utilise GiteNavigation).
-  // Ici la navbar principale représente l'univers Boutique, donc Boutique est à droite.
-  const logoPair = (
-    <div className="flex items-center gap-3 sm:gap-5 min-w-0">
-      <LogoBlock brandData={brandData} kind="gite" compact onClick={openGite} />
-      <span className="hidden sm:block h-10 w-[2px] bg-[#d4af37]/80 rotate-[15deg]" aria-hidden="true" />
-      <LogoBlock brandData={brandData} kind="boutique" compact onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
-    </div>
-  );
-
-  const navBackground = theme?.navBackgroundColor || '#1a1e1b';
-  const navOpacity = Math.max(0, Math.min(100, Number(theme?.navBackgroundOpacity ?? 0))) / 100;
-  const navBackgroundWithOpacity = (() => {
-    const value = navBackground.trim();
-    if (/^#[0-9a-f]{6}$/i.test(value)) {
-      const r = parseInt(value.slice(1, 3), 16);
-      const g = parseInt(value.slice(3, 5), 16);
-      const b = parseInt(value.slice(5, 7), 16);
-      return `rgba(${r}, ${g}, ${b}, ${navOpacity})`;
-    }
-    if (/^#[0-9a-f]{3}$/i.test(value)) {
-      const r = parseInt(value[1] + value[1], 16);
-      const g = parseInt(value[2] + value[2], 16);
-      const b = parseInt(value[3] + value[3], 16);
-      return `rgba(${r}, ${g}, ${b}, ${navOpacity})`;
-    }
-    return value;
-  })();
   return (
-    <header id="main-nav-header" style={{ backgroundColor: navBackgroundWithOpacity }} className={`fixed top-0 left-0 right-0 z-[1000] transition-all duration-300 backdrop-blur-md border-b border-[#3b473e]/50 ${scrolled ? 'py-3 shadow-xl' : 'py-4'}`}>
-      <div className="max-w-[1450px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
-        {logoPair}
-        <nav id="desktop-nav" className="hidden xl:flex items-center gap-5 2xl:gap-7 ml-auto">
-          {navLinks.map(link => <button key={link.id} id={`nav-link-${link.id}`} onClick={() => scrollTo(link.id)} className={`text-sm uppercase tracking-widest font-medium transition-all py-1 border-b-2 cursor-pointer ${activeSection === link.id ? 'border-[#d4af37] text-[#f3ece0]' : 'border-transparent text-[#c4ceb8] hover:text-[#f3ece0] hover:border-[#b89f74]/50'}`}>{link.label}</button>)}
-        </nav>
-        <div className="flex items-center space-x-2 shrink-0">
-          {isAdminLoggedIn && <button id="nav-orders-btn" onClick={openOrders} className="hidden sm:flex items-center px-3 py-1.5 text-xs tracking-wider uppercase rounded-full bg-[#2a372e] text-[#d4af37] border border-[#d4af37]/70 hover:bg-[#34463a] transition-all shadow-sm">Commandes</button>}
-          <button id="nav-order-btn" onClick={() => onOpenInquiry()} className={`ml-2 flex items-center space-x-2 px-5 py-2 text-xs tracking-widest uppercase font-semibold ${primaryBtnClass}`}><Sparkles className="w-3.5 h-3.5" /><span data-vce-id="navbar-order-button-text">{orderText}</span></button>
-          <button id="nav-admin-login-btn" type="button" onClick={isAdminLoggedIn ? onLogout : onOpenLogin} aria-label={isAdminLoggedIn ? 'Se déconnecter de l’administration' : 'Connexion administrateur'} title={isAdminLoggedIn ? 'Se déconnecter' : 'Connexion administrateur'} className={`relative flex items-center justify-center shrink-0 transition-all focus:outline-none ${isAdminLoggedIn ? 'w-8 h-8 rounded-full border border-red-300/50 bg-black/25 text-red-200 hover:text-white hover:border-red-300/90 hover:bg-red-950/30' : 'w-10 h-10 rounded-md hover:scale-110'}`}>
-            {isAdminLoggedIn ? <span className="text-[22px] leading-none font-light">×</span> : <><img src={adminSheep} alt="" aria-hidden="true" className="w-9 h-9 object-contain drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]" /><span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#d4af37] border border-[#111612]" /></>}
-          </button>
-          <button id="mobile-menu-toggle-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="xl:hidden p-2 text-[#c4ceb8] hover:text-white" aria-label="Menu"><svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">{mobileMenuOpen ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}</svg></button>
+    <header className="bg-white/95 backdrop-blur-md text-[#2C3327] border-b border-[#E2E6DF] sticky top-0 z-50 shadow-xs">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-13 py-1">
+          
+          {/* Brand Logo & Name */}
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-full bg-[#5A6F4E] flex items-center justify-center text-white shadow-xs">
+              <Compass className="w-4 h-4 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-1.5">
+                <h1 className="font-bold text-base tracking-tight text-[#3E4A35]">Pâtur'GPS</h1>
+                <span className="bg-[#D8E0D5] text-[#3E4A35] text-[10px] px-2 py-0.2 rounded-full font-bold border border-[#C5D1C1]">
+                  Brebis
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Flock Quick Stats */}
+          <div className="hidden lg:flex items-center space-x-3 bg-[#F2F4F1] px-3 py-1 rounded-xl border border-[#E2E6DF] text-xs text-[#3E4A35]">
+            <div className="flex items-center space-x-1">
+              <Radio className="w-3.5 h-3.5 text-[#5A6F4E]" />
+              <span>Colliers: <strong className="text-[#2C3327] font-bold">{collars.length}</strong></span>
+            </div>
+            <div className="h-3.5 w-[1px] bg-[#E2E6DF]" />
+            <div className="flex items-center space-x-1">
+              <span className="w-2 h-2 rounded-full bg-[#5A6F4E]" />
+              <span>En zone: <strong className="text-[#5A6F4E] font-bold">{collars.length - outOfZoneCount}</strong></span>
+            </div>
+            {outOfZoneCount > 0 && (
+              <>
+                <div className="h-3.5 w-[1px] bg-[#E2E6DF]" />
+                <div className="flex items-center space-x-1">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                  <span className="text-red-700 font-bold">Hors zone: {outOfZoneCount}</span>
+                </div>
+              </>
+            )}
+            {activePushCount > 0 && (
+              <>
+                <div className="h-3.5 w-[1px] bg-[#E2E6DF]" />
+                <div className="flex items-center space-x-1 text-[#E67E22] font-bold">
+                  <Zap className="w-3 h-3 animate-bounce" />
+                  <span>PUSH ({activePushCount})</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Action Buttons: Push Command & Alert Simulator */}
+          <div className="flex items-center space-x-1.5">
+            <button
+              onClick={onOpenPushModal}
+              className="flex items-center space-x-1 bg-[#E67E22] hover:bg-[#D35400] text-white font-bold text-xs px-3 py-1.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer"
+              title="Transmettre à cadences rapprochées"
+            >
+              <Zap className="w-3.5 h-3.5 fill-current" />
+              <span>Bouton PUSH</span>
+            </button>
+
+            <button
+              onClick={onTriggerSimulatedAlert}
+              className="hidden sm:flex items-center space-x-1 bg-[#F2F4F1] hover:bg-[#E2E6DF] text-[#3E4A35] text-xs px-2.5 py-1.5 rounded-xl border border-[#E2E6DF] font-medium transition-all cursor-pointer"
+              title="Tester une alerte de sortie de zone"
+            >
+              <Activity className="w-3.5 h-3.5 text-red-500" />
+              <span>Test Alerte</span>
+            </button>
+          </div>
         </div>
+
+        {/* Navigation Tabs (Single line layout without horizontal scroll) */}
+        <div className="hidden sm:grid grid-cols-5 gap-1 py-1.5 border-t border-[#E2E6DF]">
+          <button
+            onClick={() => setActiveTab('map')}
+            className={`flex items-center justify-center space-x-1.5 px-2 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              activeTab === 'map'
+                ? 'bg-[#5A6F4E] text-white shadow-xs'
+                : 'text-[#7D8A74] hover:text-[#2C3327] hover:bg-[#F2F4F1]'
+            }`}
+          >
+            <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="truncate">Carte & Direct</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('collars')}
+            className={`flex items-center justify-center space-x-1.5 px-2 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              activeTab === 'collars'
+                ? 'bg-[#5A6F4E] text-white shadow-xs'
+                : 'text-[#7D8A74] hover:text-[#2C3327] hover:bg-[#F2F4F1]'
+            }`}
+          >
+            <Radio className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="truncate">Colliers ({collars.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('zones')}
+            className={`flex items-center justify-center space-x-1.5 px-2 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              activeTab === 'zones'
+                ? 'bg-[#5A6F4E] text-white shadow-xs'
+                : 'text-[#7D8A74] hover:text-[#2C3327] hover:bg-[#F2F4F1]'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="truncate">Clôtures</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('alerts')}
+            className={`flex items-center justify-center space-x-1.5 px-2 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              activeTab === 'alerts'
+                ? 'bg-[#5A6F4E] text-white shadow-xs'
+                : 'text-[#7D8A74] hover:text-[#2C3327] hover:bg-[#F2F4F1]'
+            }`}
+          >
+            <ShieldAlert className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="truncate">Alertes</span>
+            {activeAlertsCount > 0 && (
+              <span className="bg-red-600 text-white font-bold text-[10px] px-1.5 py-0.2 rounded-full animate-pulse ml-0.5">
+                {activeAlertsCount}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`flex items-center justify-center space-x-1.5 px-2 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              activeTab === 'history'
+                ? 'bg-[#5A6F4E] text-white shadow-xs'
+                : 'text-[#7D8A74] hover:text-[#2C3327] hover:bg-[#F2F4F1]'
+            }`}
+          >
+            <History className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="truncate">Parcours</span>
+          </button>
+        </div>
+
       </div>
-      {mobileMenuOpen && <div id="mobile-nav-drawer" style={{ backgroundColor: navBackground }} className="xl:hidden border-b border-[#3b473e] px-4 pt-4 pb-6 space-y-3 animate-fadeIn"><div className="pb-3 border-b border-[#2a332d]">{logoPair}</div>{navLinks.map(link => <button key={link.id} onClick={() => scrollTo(link.id)} className="block w-full text-left py-2 text-sm uppercase tracking-widest text-[#e2d5c3] hover:text-[#d4af37] border-b border-[#2a332d]">{link.label}</button>)}<button onClick={openGite} className="block w-full text-left py-2 text-sm uppercase tracking-widest text-[#e2d5c3] hover:text-[#d4af37] border-b border-[#2a332d]">Gîte</button>{isAdminLoggedIn && <button onClick={openOrders} className="w-full text-center py-2.5 rounded-xl bg-[#28362b] text-[#d4af37] text-xs uppercase tracking-wider border border-[#d4af37]/70 font-semibold">Commandes</button>}</div>}
     </header>
   );
 };
