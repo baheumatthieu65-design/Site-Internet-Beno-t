@@ -2096,7 +2096,8 @@ export const publishedSiteContent = {
         "visible": true,
         "color": "#D0C5B4",
         "fontWeight": "700",
-        "fontSize": "64px"
+        "fontSize": "64px",
+        "fontStyle": "italic"
       },
       {
         "id": "hero-brand-name",
@@ -2285,5 +2286,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1788211587408
+  "publishedAt": 1788765268167
 } as const;
