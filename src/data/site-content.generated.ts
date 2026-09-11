@@ -20,7 +20,7 @@ export const publishedSiteContent = {
       "Chic champêtre \u0026 raffinement intemporel"
     ],
     "contactEmail": "contact@maisondespyrenees.fr",
-    "ordersEmail": "obiones@hotmail.fr",
+    "ordersEmail": "baheu.matthieu65@gmail.com",
     "instagram": "@maison.des.pyrenees",
     "gite": {
       "name": "Le Gîte",
@@ -1324,7 +1324,9 @@ export const publishedSiteContent = {
         ],
         "isAvailable": true,
         "availabilityStatus": "on-sale",
-        "customSpecs": {}
+        "customSpecs": {},
+        "adminCost": 67,
+        "adminVatRate": 20
       },
       {
         "name": "Veste des Cîmes Enfant",
@@ -1383,7 +1385,9 @@ export const publishedSiteContent = {
         "hotspots": [],
         "id": "produit-1787241378430-715p3s",
         "availabilityStatus": "on-sale",
-        "customSpecs": {}
+        "customSpecs": {},
+        "adminCost": 35,
+        "adminVatRate": 20
       },
       {
         "name": "Todebag",
@@ -1443,13 +1447,15 @@ export const publishedSiteContent = {
         ],
         "id": "produit-1787242939553-ezbmjg",
         "availabilityStatus": "on-sale",
-        "customSpecs": {}
+        "customSpecs": {},
+        "adminCost": 25,
+        "adminVatRate": 20
       },
       {
         "name": "test",
         "subTitle": "Confection Artisanale des Pyrénées",
         "category": "Homme \u0026 Femme",
-        "price": 490,
+        "price": 50,
         "currency": "€",
         "heroImage": "https://images.unsplash.com/photo-1544441893-675973e31985?auto=format\u0026fit=crop\u0026q=80\u0026w=1000",
         "gallery": [
@@ -1497,7 +1503,9 @@ export const publishedSiteContent = {
         },
         "hotspots": [],
         "customSpecs": {},
-        "id": "produit-1787294817714-0t3rcd"
+        "id": "produit-1787294817714-0t3rcd",
+        "adminVatRate": 20,
+        "adminCost": 35
       },
       {
         "name": "Tapis de yoga",
@@ -1547,7 +1555,9 @@ export const publishedSiteContent = {
         ],
         "customSpecs": {},
         "id": "produit-1787937546249-yac3yh",
-        "showcaseEyebrow": "Un moment de détente encré dans les traditions"
+        "showcaseEyebrow": "Un moment de détente encré dans les traditions",
+        "adminCost": 130,
+        "adminVatRate": 20
       }
     ],
     "theme": {
@@ -1758,22 +1768,7 @@ export const publishedSiteContent = {
   },
   "editorConfig": {
     "adminBarPosition": "bottom",
-    "floatingImages": [
-      {
-        "id": "floating-1787938325607-11yecy",
-        "section": "hero",
-        "url": "/assets/persistent-media-2.png",
-        "alt": "",
-        "x": 26,
-        "y": 25,
-        "size": 106,
-        "rotate": -25,
-        "opacity": 100,
-        "animation": "float",
-        "mobile": true,
-        "visible": true
-      }
-    ],
+    "floatingImages": [],
     "schemaVersion": 5,
     "blocks": [
       {
@@ -2070,6 +2065,54 @@ export const publishedSiteContent = {
         "fontFamily": "-apple-system",
         "fontSize": "16px",
         "color": "rgb(184, 197, 186)"
+      },
+      {
+        "id": "vce-upl7ft",
+        "type": "text",
+        "section": "collection",
+        "x": 50,
+        "y": 50,
+        "visible": true,
+        "locator": {
+          "tag": "h2",
+          "text": "Nos 2 Créations Homme \u0026 Femme",
+          "sectionId": "collection",
+          "occurrence": 0
+        },
+        "kind": "text",
+        "text": "Nos 2 Créations Homme \u0026 Femme",
+        "fontFamily": "Dancing Script",
+        "fontSize": "48px",
+        "color": "rgb(243, 236, 224)"
+      },
+      {
+        "id": "hero-title-prefix",
+        "type": "text",
+        "kind": "text",
+        "section": "hero",
+        "x": 0,
+        "y": 0,
+        "text": "Maison Mailhagut",
+        "visible": true,
+        "color": "#D0C5B4",
+        "fontWeight": "700",
+        "fontSize": "64px",
+        "fontStyle": "italic"
+      },
+      {
+        "id": "hero-brand-name",
+        "type": "text",
+        "kind": "text",
+        "section": "hero",
+        "x": 0,
+        "y": 0,
+        "text": "Thème Champêtre \u0026 Élégance",
+        "visible": true,
+        "fontFamily": "Libre Baskerville",
+        "fontSize": "64px",
+        "fontWeight": "300",
+        "color": "#f5eedf",
+        "fontStyle": "italic"
       }
     ],
     "editorElements": {
@@ -2216,8 +2259,32 @@ export const publishedSiteContent = {
         "section": "origines",
         "selector": null,
         "locator": "data-vce-id"
+      },
+      "vce-upl7ft": {
+        "id": "vce-upl7ft",
+        "type": "text",
+        "kind": "text",
+        "section": "collection",
+        "selector": null,
+        "locator": "data-vce-id"
+      },
+      "hero-title-prefix": {
+        "id": "hero-title-prefix",
+        "type": "text",
+        "kind": "text",
+        "section": "hero",
+        "selector": null,
+        "locator": "data-vce-id"
+      },
+      "hero-brand-name": {
+        "id": "hero-brand-name",
+        "type": "text",
+        "kind": "text",
+        "section": "hero",
+        "selector": null,
+        "locator": "data-vce-id"
       }
     }
   },
-  "publishedAt": 1788189577976
+  "publishedAt": 1789150325915
 } as const;
