@@ -1768,7 +1768,22 @@ export const publishedSiteContent = {
   },
   "editorConfig": {
     "adminBarPosition": "bottom",
-    "floatingImages": [],
+    "floatingImages": [
+      {
+        "id": "floating-1789150392341-zcn7kg",
+        "section": "gite-acces",
+        "url": "",
+        "alt": "",
+        "x": 67,
+        "y": 50,
+        "size": 500,
+        "rotate": 0,
+        "opacity": 100,
+        "animation": "float",
+        "mobile": true,
+        "visible": true
+      }
+    ],
     "schemaVersion": 5,
     "blocks": [
       {
@@ -2286,5 +2301,5 @@ export const publishedSiteContent = {
       }
     }
   },
-  "publishedAt": 1789150329216
+  "publishedAt": 1789150427990
 } as const;
